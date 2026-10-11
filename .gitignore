@@ -1,0 +1,48 @@
+# Dependencies and build products
+node_modules/
+dist/
+out/
+build/
+release/
+coverage/
+.vite/
+.next/
+.dart_tool/
+target/
+.venv/
+__pycache__/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.local.json
+*.local.yaml
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime data and private output
+data/
+userdata/
+outputs/
+cache/
+logs/
+models/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.log
+*.dmp
+
+# Local tools and temporary work
+.tools/
+.tmp/
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
+.DS_Store
