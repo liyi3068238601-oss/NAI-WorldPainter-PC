@@ -1,6 +1,6 @@
 # 绘世 PC 技术路线比较
 
-日期：2026-10-11。版本：0.3。状态：参考 UI 已运行；当前执行路线选定 Flutter Windows，绘世桌面性能与打包待验证。
+日期：2026-10-11。版本：0.4。状态：Flutter 三栏原型已实现并完成内置浏览器交互检查；原生平台验证结果见 PROTOTYPE_REVIEW.md，数据库与性能验证未完成。
 
 用户已明确先完整移植手机端全部功能。根据源码审查与 [内置浏览器实机体验](REFERENCE_UI_REVIEW.md)，下一步采用 **Flutter Windows 复用业务、独立重做桌面表现层**。参考中的多栏、标签、提示词编辑和蒙版交互没有显示必须依赖 React 的能力；业务完整性仍是选型的首要依据。Electron 为有触发条件的后备，不同时开发两套完整客户端。
 
@@ -19,7 +19,13 @@ NovelAI Local Web 是用户指定的界面、布局、动画和流畅感首要�
 
 Flutter 的复用优势目前是基于源码结构的判断，尚未测得移植工时。M1 先验证全渠道请求与图片解析、蒙版栅格化、SQLite 重开、Agent 工具调用、漫画导出、Pixiv 队列和 Windows 本地超分。若出现不可接受的阻碍，再对同一失败用例实现 Electron 对照并记录成本；不采用未经验证的 Dart/Node 常驻桥掩盖重写成本。
 
-Flutter 官方要求 Windows 开发环境与 C++ 桌面构建工具；Tauri Windows 开发涉及 C++ 构建工具、Rust 与 WebView2。参见 [Flutter Windows](https://docs.flutter.dev/platform-integration/windows/setup) 与 [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)。这些文档不代表当前机器已具备全部构建条件。
+Flutter 官方要求 Windows 开发环境与 C++ 桌面构建工具；Tauri Windows 开发涉及 C++ 构建工具、Rust 与 WebView2。参见 [Flutter Windows](https://docs.flutter.dev/platform-integration/windows/setup) 与 [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)。本机已实查 Flutter 3.47.7、Dart 3.13.5、VS 2022 C++ 桌面工具与 Windows SDK；原生依赖和清洁环境安装仍需逐项验证。
+
+## 当前原型边界
+
+`lib/main.dart` 提供绘世主题，`lib/prototype/workbench.dart` 提供桌面表现，`workbench_controller.dart` 提供纯内存演示任务与结果，`scene_art.dart` 提供无外部素材的示意画。当前为演示建立的状态字段不直接充当正式数据库模型；生产任务仍需草稿 ID/revision、持久化事务与资产身份。
+
+Windows 与 Web 预览复用同一 Flutter UI。Web 仅作为内置浏览器中的设计验收入口，不增加另一套 React 产品。图片处理、SQLite、文件对话框、凭据和超分以 Windows 原生探针单独验证。
 
 ## 建议模块边界
 
@@ -53,7 +59,7 @@ Electron 候选目录：`src/main/` 负责桌面与应用服务，`src/preload/`
 
 候选 Electron 实现应开启 context isolation 与 renderer sandbox，关闭 renderer Node integration，采用受限 CSP、校验 IPC 来源与参数、限制导航和外链。凭据只通过受控服务使用，保存前走系统保护能力；普通设置与日志不存明文秘密。文件对话框选定的目录与资产 ID 是文件操作边界，不向渲染层暴露任意文件读写命令。参见 [Electron 安全文档](https://www.electronjs.org/docs/latest/tutorial/security)。
 
-SQLite 驱动与凭据存储库暂不指定版本。M1 核实维护状态、许可、Windows 预编译支持与 Electron ABI，并验证实际安装包。图片解析与缩略图等耗时工作移入 worker 或独立任务，避免阻塞界面。所有发布依赖在采用时锁定版本。
+SQLite 驱动与凭据存储库暂不指定版本。当前 Flutter 路线的 M1 核实维护状态、许可、Windows 动态库/FFI 支持、中文路径、重开与事务，并验证实际发布构建；Electron ABI 只在启用备选路线时核对。图片解析与缩略图等耗时工作移入 isolate 或独立任务，避免阻塞界面。所有发布依赖在采用时锁定版本。
 
 ## M1 的选择依据
 

@@ -2,7 +2,13 @@
 
 面向 Windows 的绘世创作客户端。**先完整移植手机端全部现有功能，再增加其他功能**，包括 NovelAI 官方与现有兼容网关、其他已接入生图服务、提示词助手、图库后期、漫画、本地超分和 Pixiv 工作流。
 
-当前状态：**参考实机调查完成，执行路线选定 Flutter Windows，尚未开始应用实现**。仓库建立于 2026-10-11；目前没有绘世 PC 客户端或安装包。
+当前状态：**Flutter 三栏工作台交互原型已实现**。支持绘世深浅主题、提示词编辑、参数调整、画布与蒙版、图库筛选及模拟生成。数据库和真实服务尚未接入，不是全量移植完成版或正式安装包。
+
+- [原型验收记录](docs/PROTOTYPE_REVIEW.md)：实际交互、截图、自动化检查与明确限制。
+- 浏览器预览：在本目录执行 `pwsh -File scripts/preview.ps1 -Build`，然后在内置浏览器打开 `http://127.0.0.1:5080/`。已构建时可省略 `-Build`；端口被占用可传 `-Port 5081`。
+- Windows 构建：先运行 `flutter pub get`，再执行 `pwsh -File scripts/build-windows.ps1`（可传 `-FlutterPath`）；脚本解决当前 Flutter 工具链的中文构建路径问题。产物在 `build/windows/x64/runner/Release/worldpainter_pc.exe`，运行时保留完整 Release 目录，不能只复制 exe。
+- 验证：`flutter test --no-pub`、`dart analyze lib test`。本机 `flutter analyze` 的分析服务器在中文目录触发 JSON 解析异常，Dart 分析器可正常完成检查。
+- 工具链：Flutter 3.47.7 / Dart 3.13.5；本机 SDK 在父目录 `.tools/flutter`。依赖缓存、日志和构建产物分别放在本目录 `.tmp`、`build`，不提交到 Git。
 
 - GitHub：<https://github.com/liyi3068238601-oss/NAI-WorldPainter-PC>（私有）
 - 唯一工作目录：`E:\NAI-WorldPainter\PC端`
@@ -17,4 +23,4 @@ NovelAI Local Web 与浪白同时是功能实现代码参考：逐项评估成�
 
 全量移植首版完成应意味着：手机端现有能力逐项在 PC 上可达、可用、可持久化并经过验收。仅完成生图流程属于中间开发版本，不能称为移植完成；模拟接口通过不能代替真实服务兼容性验证。
 
-当前提交包含自写规划、调查证据、参考界面研究截图与演示启动工具，没有导入手机端或参考项目实现到 PC 产品。截图中的几何图片是测试数据，不是产品素材。首要参考克隆在用户指定的 `E:\NAI-WorldPainter\novelai_local_web`，浪白克隆在被忽略的 `.tmp/` 内。项目发行许可证待确定，第三方内容引入时单独记录来源和许可。
+当前包含自写原型、规划、调查证据与本地预览工具，没有导入手机端或参考项目业务实现。原型中的三幅风景是原创程序示意画，不是 AI 生成结果。首要参考克隆在用户指定的 `E:\NAI-WorldPainter\novelai_local_web`，浪白克隆在被忽略的 `.tmp/` 内。项目发行许可证待确定；字体、脚手架和图标来源见 [第三方记录](docs/THIRD_PARTY.md)。

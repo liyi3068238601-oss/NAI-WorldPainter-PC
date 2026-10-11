@@ -8,6 +8,8 @@ coverage/
 .vite/
 .next/
 .dart_tool/
+.flutter-plugins-dependencies
+*.iml
 target/
 .venv/
 __pycache__/
