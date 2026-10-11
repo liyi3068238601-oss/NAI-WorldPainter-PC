@@ -1,0 +1,26 @@
+00:00 +0: loading E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart
+00:00 +0: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: (setUpAll)
+00:00 +1: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: (setUpAll)
+00:00 +1: E:/NAI-WorldPainter/PC端/test/workbench_controller_test.dart: WorkbenchController prototype state freezes submitted prompt and output settings and ignores duplicate submit
+00:00 +2: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: SQLiteWorkspaceStore restores every root field and unknown fields after close and reopen
+00:00 +3: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: SQLiteWorkspaceStore restores every root field and unknown fields after close and reopen
+00:00 +4: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: SQLiteWorkspaceStore restores every root field and unknown fields after close and reopen
+00:00 +5: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: SQLiteWorkspaceStore restores every root field and unknown fields after close and reopen
+00:00 +6: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: SQLiteWorkspaceStore preserves gallery order and removes only deleted ids
+00:00 +7: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: SQLiteWorkspaceStore rolls back a mid-transaction SQLite constraint failure
+00:00 +8: E:/NAI-WorldPainter/PC端/test/sqlite_workspace_store_test.dart: SQLiteWorkspaceStore two independent connections use revision compare-and-swap
+00:00 +9: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:00 +10: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:00 +11: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:00 +12: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:01 +13: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:01 +14: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:01 +15: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:01 +16: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:01 +17: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:03 +18: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions keeps the prompt draft when navigation collapses and expands
+00:05 +19: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions switches between dark and light themes
+00:07 +20: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions prompt editor cancellation discards edits and apply writes them back
+00:08 +21: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions narrow window exposes the generate button in the settings drawer
+00:08 +22: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions main navigation drawer fits a 640x480 high-DPI viewport
+00:08 +23: All tests passed!

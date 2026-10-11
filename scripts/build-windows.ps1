@@ -158,7 +158,9 @@ try {
     Write-Host "Flutter: $FlutterPath"
     Write-Host "Log: $logPath"
 
-    & $FlutterPath build windows --release --no-pub --verbose 2>&1 | Tee-Object -FilePath $logPath
+    $developmentData = Join-Path $projectRoot 'data\desktop'
+    $developmentDataBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($developmentData))
+    & $FlutterPath build windows --release --no-pub "--dart-define=WORLDPAINTER_DATA_DIR_BASE64=$developmentDataBase64" --verbose 2>&1 | Tee-Object -FilePath $logPath
     $buildExitCode = $LASTEXITCODE
     if ($buildExitCode -ne 0) {
         throw "Flutter Windows Release build failed with exit code $buildExitCode. See $logPath"

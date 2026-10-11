@@ -13,16 +13,18 @@ class Workbench extends StatefulWidget {
     required this.reduceMotion,
     required this.onThemeChanged,
     required this.onMotionChanged,
+    required this.controller,
   });
   final bool dark, reduceMotion;
   final VoidCallback onThemeChanged;
   final ValueChanged<bool> onMotionChanged;
+  final WorkbenchController controller;
   @override
   State<Workbench> createState() => _WorkbenchState();
 }
 
 class _WorkbenchState extends State<Workbench> {
-  final c = WorkbenchController();
+  late final c = widget.controller;
   final positive = TextEditingController();
   final negative = TextEditingController();
   final seed = TextEditingController();
@@ -52,7 +54,29 @@ class _WorkbenchState extends State<Workbench> {
   @override
   void initState() {
     super.initState();
-    c.applyResult(c.selected);
+    if (!c.wasRestored) c.applyResult(c.selected);
+    final editor = c.editor;
+    character = editor['character'] as String? ?? '';
+    position = editor['position'] as String? ?? 'C3';
+    characterEnabled = editor['characterEnabled'] as bool? ?? true;
+    brush = (editor['brush'] as num?)?.toDouble() ?? 22;
+    for (final target in [(masks, editor['masks']), (redo, editor['redo'])]) {
+      if (target.$2 == null) continue;
+      for (final entry in (target.$2 as Map).entries) {
+        target.$1[entry.key as String] = (entry.value as List)
+            .map(
+              (stroke) => (stroke as List)
+                  .map(
+                    (point) => Offset(
+                      (point[0] as num).toDouble(),
+                      (point[1] as num).toDouble(),
+                    ),
+                  )
+                  .toList(),
+            )
+            .toList();
+      }
+    }
     _sync();
     c.addListener(_changed);
   }
@@ -82,12 +106,39 @@ class _WorkbenchState extends State<Workbench> {
   @override
   void dispose() {
     c.removeListener(_changed);
-    c.dispose();
     positive.dispose();
     negative.dispose();
     seed.dispose();
     transform.dispose();
     super.dispose();
+  }
+
+  void _saveEditor() => c.updateEditor({
+    'character': character,
+    'position': position,
+    'characterEnabled': characterEnabled,
+    'brush': brush,
+    'masks': {
+      for (final entry in masks.entries)
+        entry.key: entry.value
+            .map((stroke) => stroke.map((p) => [p.dx, p.dy]).toList())
+            .toList(),
+    },
+    'redo': {
+      for (final entry in redo.entries)
+        entry.key: entry.value
+            .map((stroke) => stroke.map((p) => [p.dx, p.dy]).toList())
+            .toList(),
+    },
+  });
+
+  Future<void> _saveNow() async {
+    try {
+      await c.flush(retry: true);
+      if (mounted) _message('工作台已保存');
+    } catch (_) {
+      if (mounted) _message(c.saveErrorMessage);
+    }
   }
 
   void _message(String message) => ScaffoldMessenger.of(context).showSnackBar(
@@ -315,7 +366,12 @@ class _WorkbenchState extends State<Workbench> {
                 ],
               ),
               const SizedBox(height: 7),
-              _muted('先让创作体验自然发生。\n演示内容仅在本次会话保留。', size: 10),
+              _muted(
+                c.hasStore
+                    ? '先让创作体验自然发生。\n工作台自动保存在此设备。'
+                    : '先让创作体验自然发生。\n会话预览模式。',
+                size: 10,
+              ),
             ],
           ),
         ),
@@ -458,6 +514,27 @@ class _WorkbenchState extends State<Workbench> {
           ),
         ),
         if (!tiny) _badge('演示模式 · 未连接服务'),
+        if (c.hasStore)
+          Tooltip(
+            message: c.saveFailed ? c.saveErrorMessage : c.storageLabel,
+            child: TextButton.icon(
+              onPressed: _saveNow,
+              icon: Icon(
+                c.saveFailed
+                    ? Icons.error_outline
+                    : c.saving
+                    ? Icons.sync
+                    : Icons.cloud_done_outlined,
+                size: 16,
+                semanticLabel: tiny ? c.saveStatus : null,
+                color: c.saveFailed ? colors.error : colors.primary,
+              ),
+              label: Text(
+                tiny ? '' : c.saveStatus,
+                style: const TextStyle(fontSize: 11),
+              ),
+            ),
+          ),
         const SizedBox(width: 10),
         _icon(Icons.receipt_long_outlined, '查看任务', _taskDialog),
         if (!inlinePanel && page == 0)
@@ -604,14 +681,20 @@ class _WorkbenchState extends State<Workbench> {
                                   label: '画布：${c.selected.title}，原创程序绘制示意图',
                                   image: true,
                                   child: GestureDetector(
+                                    onPanEnd: inpaint
+                                        ? (_) => _saveEditor()
+                                        : null,
+                                    onPanCancel: inpaint ? _saveEditor : null,
                                     onPanStart: inpaint
                                         ? (details) => setState(() {
                                             strokes.add([
                                               Offset(
-                                                details.localPosition.dx /
-                                                    width,
-                                                details.localPosition.dy /
-                                                    height,
+                                                (details.localPosition.dx /
+                                                        width)
+                                                    .clamp(0, 1),
+                                                (details.localPosition.dy /
+                                                        height)
+                                                    .clamp(0, 1),
                                               ),
                                             ]);
                                             redos.clear();
@@ -673,18 +756,24 @@ class _WorkbenchState extends State<Workbench> {
                           '撤销蒙版',
                           strokes.isEmpty
                               ? null
-                              : () => setState(
-                                  () => redos.add(strokes.removeLast()),
-                                ),
+                              : () {
+                                  setState(
+                                    () => redos.add(strokes.removeLast()),
+                                  );
+                                  _saveEditor();
+                                },
                         ),
                         _icon(
                           Icons.redo_rounded,
                           '重做蒙版',
                           redos.isEmpty
                               ? null
-                              : () => setState(
-                                  () => strokes.add(redos.removeLast()),
-                                ),
+                              : () {
+                                  setState(
+                                    () => strokes.add(redos.removeLast()),
+                                  );
+                                  _saveEditor();
+                                },
                         ),
                         _muted('画笔'),
                         Expanded(
@@ -693,6 +782,7 @@ class _WorkbenchState extends State<Workbench> {
                             min: 8,
                             max: 60,
                             onChanged: (v) => setState(() => brush = v),
+                            onChangeEnd: (_) => _saveEditor(),
                           ),
                         ),
                         _muted('${brush.round()} px'),
@@ -1249,7 +1339,10 @@ class _WorkbenchState extends State<Workbench> {
           ),
           Switch(
             value: characterEnabled,
-            onChanged: (v) => setState(() => characterEnabled = v),
+            onChanged: (v) {
+              setState(() => characterEnabled = v);
+              _saveEditor();
+            },
           ),
         ],
       ),
@@ -1258,7 +1351,10 @@ class _WorkbenchState extends State<Workbench> {
       TextFormField(
         initialValue: character,
         enabled: characterEnabled,
-        onChanged: (v) => character = v,
+        onChanged: (v) {
+          character = v;
+          _saveEditor();
+        },
         minLines: 3,
         maxLines: 5,
         style: const TextStyle(fontSize: 12),
@@ -1296,7 +1392,10 @@ class _WorkbenchState extends State<Workbench> {
                   ),
                 ),
                 onPressed: characterEnabled
-                    ? () => setState(() => position = '$x$y')
+                    ? () {
+                        setState(() => position = '$x$y');
+                        _saveEditor();
+                      }
                     : null,
                 child: Text('$x$y', style: const TextStyle(fontSize: 10)),
               ),
@@ -1376,7 +1475,7 @@ class _WorkbenchState extends State<Workbench> {
             ],
           ),
           const SizedBox(height: 18),
-          _muted('${results.length} 件演示作品 · 当前会话'),
+          _muted('${results.length} 件演示作品 · ${c.hasStore ? '本地工作区' : '当前会话'}'),
           const SizedBox(height: 14),
           Expanded(
             child: results.isEmpty
@@ -1494,6 +1593,26 @@ class _WorkbenchState extends State<Workbench> {
                 ),
               ),
               const SizedBox(height: 28),
+              if (c.hasStore) ...[
+                _settingCard(
+                  '本地工作区 · ${c.saveStatus}',
+                  c.storageLabel,
+                  Icons.storage_rounded,
+                  TextButton(
+                    onPressed: _saveNow,
+                    child: Text(c.saveFailed ? '重试保存' : '立即保存'),
+                  ),
+                ),
+                if (c.saveFailed)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      c.saveErrorMessage,
+                      style: TextStyle(color: colors.error),
+                    ),
+                  ),
+                const SizedBox(height: 14),
+              ],
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -1510,7 +1629,7 @@ class _WorkbenchState extends State<Workbench> {
                     ),
                     const SizedBox(height: 9),
                     _muted(
-                      '当前验证工作台布局、主题与主要交互。生成是模拟流程，图片为程序绘制的示意作品。\n所有编辑仅在当前会话保留；数据库、真实渠道和其他功能尚未接入。',
+                      '生成仍是模拟流程，图片为程序绘制的示意作品。\n${c.hasStore ? '草稿、参数、图库记录、收藏和编辑状态自动保存。浏览器预览与 Windows 的数据相互独立；清理站点数据会删除浏览器预览数据。' : '当前处于无数据库的会话预览。'}\n真实渠道和手机端其他功能将逐项迁移。',
                       size: 12,
                     ),
                     const SizedBox(height: 14),

@@ -13,7 +13,22 @@
 OFL 文件 SHA-256：`1C05C68C34F9708415AADA51F17E1B0092D2CEA709BF4A94CD38114F9E73D7D9`。
 已重新下载上述固定提交中的字体，与工作区文件校验一致。
 
-依赖锁定见 `pubspec.lock`；当前没有业务第三方包，运行时直接依赖 Flutter SDK，测试使用 flutter_test/flutter_lints 及其锁定依赖。
+SQLite 持久化依赖锁定于 `pubspec.lock`。Windows 使用 `sqflite_common_ffi` 原生 FFI 后端作为生产存储路径；`sqflite_common_ffi_web` 仅用于实验性浏览器预览。
+
+| 包 | 固定版本 | 用途 | 许可副本 |
+| --- | --- | --- | --- |
+| `sqflite_common` | 2.5.13+1 | SQLite 公共 API | BSD-2-Clause；[上游](https://github.com/tekartik/sqflite/tree/master/sqflite_common)，[许可证副本](../licenses/dependencies/sqflite_common-2.5.13+1-LICENSE.txt) |
+| `sqflite_common_ffi` | 2.4.3 | Windows 原生 FFI 存储后端 | BSD-2-Clause；[上游](https://github.com/tekartik/sqflite/tree/master/sqflite_common_ffi)，[许可证副本](../licenses/dependencies/sqflite_common_ffi-2.4.3-LICENSE.txt) |
+| `sqflite_common_ffi_web` | 1.2.0 | 实验性浏览器预览后端及 worker setup | BSD-2-Clause；[上游](https://github.com/tekartik/sqflite/tree/master/packages_web/sqflite_common_ffi_web)，[许可证副本](../licenses/dependencies/sqflite_common_ffi_web-1.2.0-LICENSE.txt) |
+| `sqlite3` | 3.7.0 | FFI/Web SQLite 绑定及 Web WASM 发布资产 | MIT；[上游](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3)，[许可证副本](../licenses/dependencies/sqlite3-3.7.0-LICENSE.txt)。WASM 中的 SQLite 引擎按 [SQLite 官方说明](https://sqlite.org/copyright.html) 属于公有领域。 |
+| `path` | 1.9.1 | 路径处理 | BSD-3-Clause；[上游](https://github.com/dart-lang/core/tree/main/pkgs/path)，[许可证副本](../licenses/dependencies/path-1.9.1-LICENSE.txt) |
+| `crypto` | 3.0.7 | 哈希等加密工具 | BSD-3-Clause；[上游](https://github.com/dart-lang/core/tree/main/pkgs/crypto)，[许可证副本](../licenses/dependencies/crypto-3.0.7-LICENSE.txt) |
+
+`web/sqflite_sw.js` 由 `sqflite_common_ffi_web 1.2.0` 官方 setup 生成。其 setup 子项目锁定 `sqlite3 3.7.0`；本仓库的 `web/sqlite3.wasm` 来自 sqlite3.dart 的 3.7.0 官方 release，替换 setup 默认的 3.6.0 WASM。固定包归档校验和、许可证副本校验和、Web 资产大小与 SHA-256 记录在 [`dependency-assets.json`](evidence/persistence/dependency-assets.json)。
+
+其他间接包的固定版本见 `pubspec.lock`，Flutter SDK 及其余 SDK 组件的通知见 Flutter `NOTICES` 资产。
+
+许可证副本按原始字节保留；`path` 许可证第一行自带一个尾空格，未为消除 Git 空白提示而改动上游原文。生成的 worker 固定为 LF，避免 Windows checkout 改变已记录的资产哈希。
 
 本轮参考 NovelAI Local Web 的三栏分工、独立参数滚动、固定生成区、大提示词编辑器与图库往返体验。没有复制其 AGPL 实现、浪白实现或手机端业务代码。后续引入业务代码仍需逐模块登记许可。
 

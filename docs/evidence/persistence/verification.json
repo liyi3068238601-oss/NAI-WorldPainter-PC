@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "verified_on": "2026-10-11",
+  "base_commit": "e37cacf",
+  "phase": "M1 persistence increment, not full mobile parity",
+  "checks": {
+    "dart_analysis": "No issues found",
+    "flutter_tests_passed": 23,
+    "windows_release_build": "passed",
+    "web_release_build": "passed",
+    "native_probe_run": "20261011-224107-211",
+    "native_write_exit": 0,
+    "native_read_exit": 0,
+    "native_revision": 1,
+    "browser_origin": "http://127.0.0.1:5080/",
+    "browser_check": "Closed tab and reopened: draft, seed, dimensions, 4 gallery records, favorite, theme, character B2 and mask restored",
+    "browser_console_errors": 0
+  },
+  "artifacts": [
+    {
+      "path": "build/windows/x64/runner/Release/worldpainter_pc.exe",
+      "bytes": 124928,
+      "sha256": "3e6b2fa79bebfbceb2c46dff2b4c65d072720ced8e45b3a212f68621ff0b9c2a"
+    },
+    {
+      "path": "build/windows/x64/runner/Release/data/app.so",
+      "bytes": 6423432,
+      "sha256": "6e3e80b91d6eee2ce8efa91576404b715cace5098e4663d624114aaa9b2b07c5"
+    },
+    {
+      "path": "build/windows/x64/runner/Release/sqlite3.dll",
+      "bytes": 1709056,
+      "sha256": "98b4be674137b85ec111a7a29223e87aa41c3e964d61f73602471ddd7b9c56ce"
+    },
+    {
+      "path": "build/windows/x64/runner/Release/native_assets.json",
+      "bytes": 191,
+      "sha256": "4f7ddf1e885540122cf2a88ef463734baadf2d526d41ceeaf61a94432765665a"
+    },
+    {
+      "path": "build/web/main.dart.js",
+      "bytes": 2847374,
+      "sha256": "18aac799d343e5f2ff91650e58d1788c6114a776194ddacf8a46290c800b89a4"
+    },
+    {
+      "path": "web/sqflite_sw.js",
+      "bytes": 263881,
+      "sha256": "f9b71613fb27cd7b4df498b2889cd886d8eed055a035ef5d1b1745476ed4d7d0"
+    },
+    {
+      "path": "web/sqlite3.wasm",
+      "bytes": 750007,
+      "sha256": "fbcd2e8214f9231ea961e1b7706a22dd1194cfbfe6f26f13841b5aa7a0be1a1f"
+    }
+  ],
+  "sources": [
+    {
+      "path": "lib/main.dart",
+      "sha256": "6e7c6058793a1e0e626bda7d9227d89f569b17e6be705f2b665f1a9d48cdc3ec"
+    },
+    {
+      "path": "lib/platform/desktop_lifecycle_io.dart",
+      "sha256": "391372fab00979e1ddeb4d840d24aaaac97219eb84f28dfce4d9c30c8da69a63"
+    },
+    {
+      "path": "lib/platform/desktop_lifecycle_stub.dart",
+      "sha256": "a6478dbc44717ba2fc8d4af668537662e595da56742f847cce800eec8d2b3d8a"
+    },
+    {
+      "path": "lib/platform/desktop_lifecycle.dart",
+      "sha256": "22f67a3d93c1c193ab74cb61a53d567b19bd5f05ae5bb79e20ac6ba520f1c102"
+    },
+    {
+      "path": "lib/platform/storage_probe_io.dart",
+      "sha256": "83e88256ca98a1432838401cbfeeba4f0f4396e8b2e5cf38bac281df0f9c285d"
+    },
+    {
+      "path": "lib/platform/storage_probe_stub.dart",
+      "sha256": "54a2edcc7957b49d1bedf6335a6b898cc37cb6b8bac5bffcb5af6c6b95304253"
+    },
+    {
+      "path": "lib/platform/storage_probe.dart",
+      "sha256": "472e6f8b07f2e1681d9484009a594a5aaba7531db60c328bfa2f60aee72f6291"
+    },
+    {
+      "path": "lib/prototype/scene_art.dart",
+      "sha256": "27b05311a25babfa4c7d37faaf0fd4ab3f60c498fe8a2569e191484f007989f2"
+    },
+    {
+      "path": "lib/prototype/workbench_controller.dart",
+      "sha256": "b78c32e8f15dd6c8b1c52a25fbd700490135e4378f598e9018dc2e27b1e81e79"
+    },
+    {
+      "path": "lib/prototype/workbench.dart",
+      "sha256": "8182a851c66255df719c6106f8add07f6144a37650de84781db6904f0560e06c"
+    },
+    {
+      "path": "lib/storage/platform_store_io.dart",
+      "sha256": "93c30f62034155f152c8c7b8968705ee5bb851d2fa0040c6a4ae1ed9e21132ae"
+    },
+    {
+      "path": "lib/storage/platform_store_web.dart",
+      "sha256": "0dec0313ce51f9e5fd18bd897f0cb6681be3f2dd3eb927f8870de5a438e4efcd"
+    },
+    {
+      "path": "lib/storage/platform_store.dart",
+      "sha256": "474872e1b3a7ff4c71ed76d779ef92d65841d14d0c7832b0fff914a6894e1049"
+    },
+    {
+      "path": "lib/storage/sqlite_workspace_store.dart",
+      "sha256": "acb5538354cd6134d1ca6cc6ee897f5ec01939da0e7b8485149f512c80c4f27f"
+    },
+    {
+      "path": "lib/storage/workspace_store.dart",
+      "sha256": "307232a4bef111feb2fff2555866aa0cae1ec2d5d99801df63e191891ebcd025"
+    },
+    {
+      "path": "windows/runner/flutter_window.cpp",
+      "sha256": "f1ad54c3ef54423f5550d546b676b2c5288a5919091fc9747eb1033d4f89241f"
+    },
+    {
+      "path": "windows/runner/flutter_window.h",
+      "sha256": "60d818a49087ff4812ae169bdf1c9e2a9d9d61312c2d5d890540ed0991081f9d"
+    },
+    {
+      "path": "windows/runner/main.cpp",
+      "sha256": "a8f3af4b303c43f4777811863f89b3e1cb739e0bad54e560e14179ca163f36b1"
+    },
+    {
+      "path": "windows/runner/resource.h",
+      "sha256": "d0e8bf7835468b4b6b1f8f0747f2e8f25c19841f2df2ac60aaa584ddae3aa7c6"
+    },
+    {
+      "path": "windows/runner/utils.cpp",
+      "sha256": "a128b67b9f3c2579e2ecef5b0dde2c33f222a097cdfe5da2a3067c73d1485b39"
+    },
+    {
+      "path": "windows/runner/utils.h",
+      "sha256": "832e246b6758253f89016fb0374b30791242e97ad950d27fc678b3d9feacfdc4"
+    },
+    {
+      "path": "windows/runner/win32_window.cpp",
+      "sha256": "4e4f4dcf8e86ea6e097562cb3476039e693449bd8045367538afee579c017511"
+    },
+    {
+      "path": "windows/runner/win32_window.h",
+      "sha256": "d154cf89ba85f820631a9b5bedacbe64fc5815e428fe6bc5da579ce649f69841"
+    }
+  ],
+  "limitations": [
+    "Prototype gallery records, procedural artwork; PNG probe is a separate synthetic fixture",
+    "No phone v22 business import or migration yet",
+    "No credentials, paid generation, upscaler, system restart/power failure or clean-machine install validation"
+  ]
+}

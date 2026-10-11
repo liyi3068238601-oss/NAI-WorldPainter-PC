@@ -12,3 +12,7 @@
 *.jpg binary
 *.webp binary
 *.ico binary
+# Preserve checksummed generated assets and verbatim upstream license files.
+web/sqflite_sw.js text eol=lf
+web/sqlite3.wasm binary
+licenses/dependencies/*.txt -text

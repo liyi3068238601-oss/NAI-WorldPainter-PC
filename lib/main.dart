@@ -1,15 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
+import 'platform/desktop_lifecycle.dart';
+import 'platform/storage_probe.dart';
+import 'storage/platform_store.dart';
+import 'prototype/workbench_controller.dart';
+
 import 'prototype/workbench.dart';
 
-void main() {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const WorldPainterApp());
+  if (await runStorageProbe(args)) return;
+  runApp(const WorkspaceBootstrap());
+}
+
+class WorkspaceBootstrap extends StatefulWidget {
+  const WorkspaceBootstrap({super.key});
+  @override
+  State<WorkspaceBootstrap> createState() => _WorkspaceBootstrapState();
+}
+
+class _WorkspaceBootstrapState extends State<WorkspaceBootstrap> {
+  late Future<WorkbenchController> workspace;
+  @override
+  void initState() {
+    super.initState();
+    DesktopLifecycle.install(() async => true);
+    workspace = _load();
+  }
+
+  Future<WorkbenchController> _load() async {
+    final store = await openWorkspaceStore();
+    try {
+      return WorkbenchController(store: store, restored: await store.load());
+    } catch (_) {
+      await store.close();
+      rethrow;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<WorkbenchController>(
+    future: workspace,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) return WorldPainterApp(controller: snapshot.data!);
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          fontFamily: 'NotoSansSC',
+        ).copyWith(scaffoldBackgroundColor: const Color(0xFF0A0A0C)),
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: snapshot.hasError
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.storage_rounded,
+                          size: 36,
+                          color: Color(0xFFF5D57A),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text('无法打开本地工作区', style: TextStyle(fontSize: 20)),
+                        const SizedBox(height: 12),
+                        const Text(
+                          '请检查存储目录权限、可用空间或数据库版本。\n现有数据未被重置。',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 20),
+                        FilledButton(
+                          onPressed: () => setState(() => workspace = _load()),
+                          child: const Text('重试'),
+                        ),
+                      ],
+                    )
+                  : const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(color: Color(0xFFF5D57A)),
+                        SizedBox(height: 20),
+                        Text('正在恢复你的工作台…'),
+                      ],
+                    ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 class WorldPainterApp extends StatefulWidget {
-  const WorldPainterApp({super.key});
+  const WorldPainterApp({super.key, this.controller});
+  final WorkbenchController? controller;
   @override
   State<WorldPainterApp> createState() => _WorldPainterAppState();
 }
@@ -18,15 +104,29 @@ class _WorldPainterAppState extends State<WorldPainterApp> {
   bool dark = true;
   bool reduceMotion = false;
   late final SemanticsHandle semantics;
+  late final WorkbenchController controller;
   @override
   void initState() {
     super.initState();
+    controller = widget.controller ?? WorkbenchController();
+    dark = controller.darkTheme;
+    reduceMotion = controller.reduceMotion;
     semantics = SemanticsBinding.instance.ensureSemantics();
+    DesktopLifecycle.install(() async {
+      try {
+        await controller.closeStorage();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    });
   }
 
   @override
   void dispose() {
     semantics.dispose();
+    DesktopLifecycle.uninstall();
+    controller.dispose();
     super.dispose();
   }
 
@@ -121,10 +221,17 @@ class _WorldPainterAppState extends State<WorldPainterApp> {
         ),
       ),
       home: Workbench(
+        controller: controller,
         dark: dark,
         reduceMotion: reduceMotion,
-        onThemeChanged: () => setState(() => dark = !dark),
-        onMotionChanged: (value) => setState(() => reduceMotion = value),
+        onThemeChanged: () => setState(() {
+          dark = !dark;
+          controller.updatePreferences(darkTheme: dark);
+        }),
+        onMotionChanged: (value) => setState(() {
+          reduceMotion = value;
+          controller.updatePreferences(reduceMotion: value);
+        }),
       ),
     );
   }

@@ -1,6 +1,6 @@
 # 绘世 PC 技术路线比较
 
-日期：2026-10-11。版本：0.4。状态：Flutter 三栏原型已实现并完成内置浏览器交互检查；原生平台验证结果见 PROTOTYPE_REVIEW.md，数据库与性能验证未完成。
+日期：2026-10-11。版本：0.5。状态：Flutter 三栏原型、SQLite 自动保存与 Windows 存储探针已实现；验证见 PERSISTENCE_REVIEW.md。完整业务、凭据、超分与性能验收仍待完成。
 
 用户已明确先完整移植手机端全部功能。根据源码审查与 [内置浏览器实机体验](REFERENCE_UI_REVIEW.md)，下一步采用 **Flutter Windows 复用业务、独立重做桌面表现层**。参考中的多栏、标签、提示词编辑和蒙版交互没有显示必须依赖 React 的能力；业务完整性仍是选型的首要依据。Electron 为有触发条件的后备，不同时开发两套完整客户端。
 
@@ -23,7 +23,7 @@ Flutter 官方要求 Windows 开发环境与 C++ 桌面构建工具；Tauri Wind
 
 ## 当前原型边界
 
-`lib/main.dart` 提供绘世主题，`lib/prototype/workbench.dart` 提供桌面表现，`workbench_controller.dart` 提供纯内存演示任务与结果，`scene_art.dart` 提供无外部素材的示意画。当前为演示建立的状态字段不直接充当正式数据库模型；生产任务仍需草稿 ID/revision、持久化事务与资产身份。
+`lib/main.dart` 先恢复工作区再显示绘世主题；`lib/prototype/workbench.dart` 提供桌面表现，`workbench_controller.dart` 管理演示任务、自动保存与恢复，`scene_art.dart` 提供无外部素材的示意画。`lib/storage/` 使用 schema 1 的 SQLite 原型数据库与修订号 CAS；不是手机端 v22 业务数据库移植。生产任务仍需多草稿 ID、资产身份与完整业务迁移。
 
 Windows 与 Web 预览复用同一 Flutter UI。Web 仅作为内置浏览器中的设计验收入口，不增加另一套 React 产品。图片处理、SQLite、文件对话框、凭据和超分以 Windows 原生探针单独验证。
 
@@ -59,7 +59,7 @@ Electron 候选目录：`src/main/` 负责桌面与应用服务，`src/preload/`
 
 候选 Electron 实现应开启 context isolation 与 renderer sandbox，关闭 renderer Node integration，采用受限 CSP、校验 IPC 来源与参数、限制导航和外链。凭据只通过受控服务使用，保存前走系统保护能力；普通设置与日志不存明文秘密。文件对话框选定的目录与资产 ID 是文件操作边界，不向渲染层暴露任意文件读写命令。参见 [Electron 安全文档](https://www.electronjs.org/docs/latest/tutorial/security)。
 
-SQLite 驱动与凭据存储库暂不指定版本。当前 Flutter 路线的 M1 核实维护状态、许可、Windows 动态库/FFI 支持、中文路径、重开与事务，并验证实际发布构建；Electron ABI 只在启用备选路线时核对。图片解析与缩略图等耗时工作移入 isolate 或独立任务，避免阻塞界面。所有发布依赖在采用时锁定版本。
+SQLite 已采用锁定的 `sqflite_common_ffi 2.4.3` / `sqlite3 3.7.0`，Windows 在后台 isolate 执行数据库操作。Web 预览采用 `sqflite_common_ffi_web 1.2.0` 的 SharedWorker + IndexedDB，属于实验性预览实现，不作为正式 Windows 存储。保存使用事务和 revision CAS；失败保留内存状态并阻止正常关窗，过新或损坏数据库不自动重置。详见 [持久化验证](PERSISTENCE_REVIEW.md)。凭据库、完整资产仓库及其平台能力仍待验证；图片解析与缩略图等耗时工作移入 isolate 或独立任务。
 
 ## M1 的选择依据
 

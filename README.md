@@ -2,11 +2,17 @@
 
 面向 Windows 的绘世创作客户端。**先完整移植手机端全部现有功能，再增加其他功能**，包括 NovelAI 官方与现有兼容网关、其他已接入生图服务、提示词助手、图库后期、漫画、本地超分和 Pixiv 工作流。
 
-当前状态：**Flutter 三栏工作台交互原型已实现**。支持绘世深浅主题、提示词编辑、参数调整、画布与蒙版、图库筛选及模拟生成。数据库和真实服务尚未接入，不是全量移植完成版或正式安装包。
+当前状态：**Flutter 三栏原型已接入 SQLite 自动保存**。草稿、参数、图库记录、收藏、主题和编辑状态支持重开恢复；生成仍为模拟流程，真实服务尚未接入。这不是全量移植完成版或正式安装包。
 
 - [原型验收记录](docs/PROTOTYPE_REVIEW.md)：实际交互、截图、自动化检查与明确限制。
+- [持久化与 Windows 验证](docs/PERSISTENCE_REVIEW.md)：数据库重开、关闭前保存、中文路径与实际发布 exe 探针。
+- [手机端逐项迁移顺序](docs/MOBILE_MIGRATION_NEXT.md)：下一批实现及仍需适配的平台能力。
+- 开发环境：在 PC端 目录的 PowerShell 先设置 `$env:PUB_CACHE = Join-Path (Get-Location) '.tmp/pub-cache'`，再解析依赖或运行测试；避免缓存写到项目外。
 - 浏览器预览：在本目录执行 `pwsh -File scripts/preview.ps1 -Build`，然后在内置浏览器打开 `http://127.0.0.1:5080/`。已构建时可省略 `-Build`；端口被占用可传 `-Port 5081`。
 - Windows 构建：先运行 `flutter pub get`，再执行 `pwsh -File scripts/build-windows.ps1`（可传 `-FlutterPath`）；脚本解决当前 Flutter 工具链的中文构建路径问题。产物在 `build/windows/x64/runner/Release/worldpainter_pc.exe`，运行时保留完整 Release 目录，不能只复制 exe。
+- Windows 存储验证：构建后执行 `pwsh -File scripts/probe-windows.ps1`，在本目录 `.tmp` 下启动两个隐藏的实际 exe 进程完成写入与重开校验。测试与构建串行运行，避免 SQLite DLL 占用。
+- 本地开发数据：构建脚本将默认数据目录固定为本仓库 `data/desktop`（Git 忽略）；可用 `WORLDPAINTER_DATA_DIR` 覆盖。浏览器预览使用当前站点的 IndexedDB，与 exe 相互独立；清理站点数据会删除预览记录，请固定使用 5080 端口。
+- Web SQLite 资产已锁定并纳入仓库；更新时执行 `pwsh -File scripts/setup-web-storage.ps1`，核对 [依赖与许可](docs/THIRD_PARTY.md) 后重新构建。
 - 验证：`flutter test --no-pub`、`dart analyze lib test`。本机 `flutter analyze` 的分析服务器在中文目录触发 JSON 解析异常，Dart 分析器可正常完成检查。
 - 工具链：Flutter 3.47.7 / Dart 3.13.5；本机 SDK 在父目录 `.tools/flutter`。依赖缓存、日志和构建产物分别放在本目录 `.tmp`、`build`，不提交到 Git。
 
