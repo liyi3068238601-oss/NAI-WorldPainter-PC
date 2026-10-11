@@ -1,0 +1,139 @@
+- alert
+- heading "NovelAI Local" [level=6]
+- button "收起侧边栏" [active]:
+- separator
+- list:
+  - button "AI 绘画":
+    - generic: AI 绘画
+  - button "参考图库":
+    - generic: 参考图库
+  - button "本地图库":
+    - generic: 本地图库
+  - button "提示词反推":
+    - generic: 提示词反推
+  - button "本地放大":
+    - generic: 本地放大
+  - button "设置":
+    - generic: 设置
+- button "亮色模式":
+  - generic: 亮色模式
+- combobox "选择界面语言": 中文
+- textbox: zh-CN
+- button "账户":
+  - generic: 账户
+- generic: NovelAI Local
+- main:
+  - tablist:
+    - tab "AI 绘画" [selected]:
+      - text: AI 绘画
+    - tab "本地图库":
+      - text: 本地图库
+    - tab "设置":
+      - text: 设置
+  - button "生成" [pressed]:
+    - text: 生成
+  - button "局部重绘":
+    - text: 局部重绘
+  - img "生成的图像"
+  - button "向左滚动":
+  - img "预览图像"
+  - button "向右滚动":
+  - generic "使用此图参数":
+    - button "使用此图参数":
+      - text: 使用此图参数
+  - generic "复制图像":
+    - button "复制图像":
+      - text: 复制图像
+  - generic "下载图像":
+    - button "下载图像":
+      - text: 下载图像
+  - generic "删除图像":
+    - button "删除图像":
+      - text: 删除图像
+  - button "点击将此 Seed 应用到当前参数":
+    - generic: Seed 1035
+  - button "打开画廊":
+  - region "提示词":
+    - tablist:
+      - tab "正向" [selected]
+      - tab "负向"
+    - button "随机提示词":
+    - button "提示词笔记":
+    - button "保存到笔记":
+    - button "提示词设置":
+    - generic: blue
+    - generic: sky
+    - text: ","
+    - generic: clouds
+    - text: ","
+    - generic: desktop
+    - generic: draft
+    - text: B
+    - textbox "描述希望生成的画面…": blue sky, clouds, desktop draft B
+    - button "展开正向提示词编辑器":
+    - button "清空正向提示词":
+    - button "复制正向提示词":
+  - region "模型与基础参数":
+    - generic: AI 模型
+    - combobox "AI 模型": NAI Diffusion 4
+    - textbox: nai-diffusion-4-full
+    - generic: AI 模型
+    - paragraph: 图像大小
+    - button "启用大图模式":
+      - text: 启用大图模式
+    - generic: 宽
+    - spinbutton "宽": "640"
+    - generic: px
+    - generic: 宽
+    - generic: 高
+    - spinbutton "高": "896"
+    - generic: px
+    - generic: 高
+    - button "方形 1024×1024":
+      - generic: 方形 1024×1024
+    - button "横向 1216×832":
+      - generic: 横向 1216×832
+    - button "纵向 832×1216":
+      - generic: 纵向 832×1216
+    - paragraph:
+      - text: 采样步数
+    - paragraph: "28"
+    - slider "采样步数": "28"
+    - paragraph:
+      - text: 提示词引导（CFG Scale）
+    - paragraph: "5.0"
+    - slider "提示词引导（CFG Scale）": "5"
+    - generic: Seed
+    - textbox "Seed": "1035"
+    - button "清空 Seed":
+    - button "随机 Seed":
+    - generic: Seed
+    - generic: 采样器
+    - combobox "采样器": Euler
+    - textbox: k_euler
+    - generic: 采样器
+    - heading "其它设置" [level=3]:
+      - button "其它设置":
+        - paragraph: 其它设置
+    - generic: 噪声计划
+  - heading "图生图" [level=3]:
+    - button "图生图":
+      - paragraph: 图生图
+  - heading "Vibe Transfer" [level=3]:
+    - button "Vibe Transfer":
+      - paragraph: Vibe Transfer
+  - heading "角色控制" [level=3]:
+    - button "角色控制":
+      - paragraph: 角色控制
+  - heading "额外配置" [level=3]:
+    - button "额外配置":
+      - paragraph: 额外配置
+  - 'button "余额: 1,000"':
+    - generic: 余额
+    - generic: 1,000
+  - button "查看错误详情":
+    - generic: "0"
+  - button "生成 1 张图像 · 640×896":
+    - generic: 生成图像
+    - generic "预计 11":
+      - generic: 预计 11

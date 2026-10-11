@@ -1,0 +1,194 @@
+{
+  "date": "2026-10-11",
+  "reference_commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+  "browser": "Codex In-app Browser",
+  "server": "http://127.0.0.1:5071",
+  "python": "3.12.10",
+  "node": "24.16.0",
+  "next": "15.5.24",
+  "build": "npm run build passed; production static export",
+  "upstream": "injected DemoUpstream; no paid NovelAI call",
+  "fixtures_before": 36,
+  "fixtures_after": 37,
+  "viewports_css": [
+    [
+      1440,
+      900
+    ],
+    [
+      1280,
+      720
+    ],
+    [
+      1920,
+      1080
+    ]
+  ],
+  "observed_dpr": 1.0000000149011612,
+  "motion": "10 sampled CDP screencast frames; irregular intervals; not an FPS benchmark",
+  "files": [
+    {
+      "path": "docs/evidence/reference-ui/01-gallery-1440.jpg",
+      "bytes": 76165,
+      "sha256": "9216b143d98ebba0b402214407f325b54be49b3f59493fdf420ef87a910a1d4d",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/02-image-detail.jpg",
+      "bytes": 72516,
+      "sha256": "e80971571ae81be72bf9d4ed215d51d05132f2f9f004e3169e29fc0e92e48ec9",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/03-prompt-editor.jpg",
+      "bytes": 57127,
+      "sha256": "0aa405dad1515ba3ede637a16611c4624b9e5f1b4818185daf4809b4856a0d2a",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/04-animation-settings.jpg",
+      "bytes": 30112,
+      "sha256": "1ab56df58b979b34c773126f2afeb37446024c8b4bbeb07d66e49bb6e383d619",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/05-workspace-light-1280.jpg",
+      "bytes": 59386,
+      "sha256": "4769485e5439cf0f7745064759b13faf9444176905959664eff4546aa989ceeb",
+      "pixels": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/06-inpaint-mask.jpg",
+      "bytes": 72824,
+      "sha256": "c585646a247fe6394604320d9d436e447530f4ec662b46b18b22152c0a3105fa",
+      "pixels": [
+        1280,
+        720
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/07-workspace-dark-1920.jpg",
+      "bytes": 107588,
+      "sha256": "48b407cc337ac5339f2c1b2a8e6426a5c4386cbc8a03e6ec4e49c6065c34373b",
+      "pixels": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-000.jpg",
+      "bytes": 25787,
+      "sha256": "1ad0b603502eb64b89d956c758698ffe78c079c5dc2b776c3a7a6c90b9d6b260",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-001.jpg",
+      "bytes": 25787,
+      "sha256": "1ad0b603502eb64b89d956c758698ffe78c079c5dc2b776c3a7a6c90b9d6b260",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-002.jpg",
+      "bytes": 22289,
+      "sha256": "a3217a1966cb92ff4c5b8c22d29a569f4e559fb51358f70f17fd7af8379fab84",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-003.jpg",
+      "bytes": 22299,
+      "sha256": "737d9aa84d450d3e7d5be70d2ac91cb357fdde6dbb5c10642b3c6381404d4ffb",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-004.jpg",
+      "bytes": 24451,
+      "sha256": "3e275d6587a34361e2e5b78c953ffde177c6b022207c6dd709f98064c99b9aa6",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-005.jpg",
+      "bytes": 25407,
+      "sha256": "dd1dbb654202afa1218ebab3ecf88c846e241253f7c4a00dfc9cbfd42e47d9e8",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-006.jpg",
+      "bytes": 25653,
+      "sha256": "78372a11ed0d3f553be84ccf1b327339e396b39b41bef8408375eef2cc83abcf",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-007.jpg",
+      "bytes": 25778,
+      "sha256": "62be0c37674781987b04b17b92cb41850c8125012346b321a4a78568c4ee403d",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-008.jpg",
+      "bytes": 25724,
+      "sha256": "7347912c345f3c53576249ee7d111304c499db8428e1b01a4e3e14bd82cd09ad",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/frame-009.jpg",
+      "bytes": 25741,
+      "sha256": "d86527c6f082e4c8fb2642ceb337b167e45ab3239947f33737668a903e5bde3d",
+      "pixels": [
+        1440,
+        900
+      ]
+    },
+    {
+      "path": "docs/evidence/reference-ui/motion/timestamps.json",
+      "bytes": 2421,
+      "sha256": "377b2abfdbda84c6e9fe23c092572c3dc81b39eba2778feff01c19e6f718a69c"
+    },
+    {
+      "path": "docs/evidence/reference-ui/observed-workspace.txt",
+      "bytes": 3886,
+      "sha256": "982925c71d1d849c8caf148a5d5f2be1bc291414cf864c2e70b5d49da05b3e17"
+    }
+  ]
+}

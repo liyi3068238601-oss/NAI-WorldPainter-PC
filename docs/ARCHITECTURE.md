@@ -1,8 +1,8 @@
 # 绘世 PC 技术路线比较
 
-日期：2026-10-11。版本：0.2。状态：全量移植约束下重新比较，尚未进行桌面性能或打包验证。
+日期：2026-10-11。版本：0.3。状态：参考 UI 已运行；当前执行路线选定 Flutter Windows，绘世桌面性能与打包待验证。
 
-用户已明确先完整移植手机端全部功能。本次撤销原先 Electron 的默认优先级，优先验证 Flutter Windows 复用方案。布局参考与技术框架分开决策；最终路线必须覆盖全部现有能力。
+用户已明确先完整移植手机端全部功能。根据源码审查与 [内置浏览器实机体验](REFERENCE_UI_REVIEW.md)，下一步采用 **Flutter Windows 复用业务、独立重做桌面表现层**。参考中的多栏、标签、提示词编辑和蒙版交互没有显示必须依赖 React 的能力；业务完整性仍是选型的首要依据。Electron 为有触发条件的后备，不同时开发两套完整客户端。
 
 NovelAI Local Web 是用户指定的界面、布局、动画和流畅感首要参考，浪白为第二参考。这是桌面体验优先级，不要求移植其 Flask/Next.js 后端，也不替代手机端全部功能。
 
@@ -12,12 +12,12 @@ NovelAI Local Web 是用户指定的界面、布局、动画和流畅感首要�
 
 | 方案 | 当前可利用的基础 | 需要承担的成本 | 结论 |
 | --- | --- | --- | --- |
-| Flutter Windows | 手机端已有 Dart 领域模型、请求适配、Agent、漫画及数据库结构 | 根许可证待核实；Windows runner、SQLite、相册保存、后台任务和本地超分要适配；桌面 UI 重做 | 优先验证，评估复用能否降低全量移植风险 |
-| Electron + React + TypeScript | 成熟桌面 Web UI；可用 TypeScript 统一界面、契约和服务；已有同类 Electron 项目可调查 | 全部 Dart 业务需重实现或找到明确授权的对应实现；双栈桥接会额外增加维护；原生模块需验证 | 对照候选，不能只凭布局好看或空窗口选择 |
+| Flutter Windows | 手机端已有 Dart 领域模型、请求适配、Agent、漫画及数据库结构 | 根许可证待核实；Windows runner、SQLite、相册保存、后台任务和本地超分要适配；桌面 UI 重做 | 当前实施路线，M1 验证高风险能力 |
+| Electron + React + TypeScript | 浪白现有 MIT 的 NAI 请求、元数据回填、漫画队列可适配 | Dart 业务需迁移或逐项找到等价实现；数据模型和 IPC 不可原样套用；原生模块需验证 | 关键用例失败且成本不可接受时启用的后备 |
 | Tauri + React + Rust | Web 前端和 Rust 桌面命令；使用系统 WebView | Rust 与 TS 双栈；Windows 构建工具和 WebView2；双接入及桌面插件需验证 | 后续若体积或系统资源要求更严格，可重新评估 |
 | 本地 Web + Python | 首要界面参考已有 React/Flask 工作流 | 双运行时、端口/生命周期/打包；仍需补齐手机端其他功能；现有参考为 AGPL | 研究界面实现；参考优先级不代表采用其整套技术栈 |
 
-Flutter 的复用优势目前是基于源码结构的判断，尚未测得移植工时。M1 用同一批高风险场景比较两条路线：全渠道请求与图片解析、蒙版栅格化、SQLite 重开、Agent 工具调用、漫画导出、Pixiv 队列和 Windows 本地超分。若选择 Electron，必须逐项说明替代实现与验证成本，不采用未经验证的 Dart/Node 常驻桥来掩盖重写成本。
+Flutter 的复用优势目前是基于源码结构的判断，尚未测得移植工时。M1 先验证全渠道请求与图片解析、蒙版栅格化、SQLite 重开、Agent 工具调用、漫画导出、Pixiv 队列和 Windows 本地超分。若出现不可接受的阻碍，再对同一失败用例实现 Electron 对照并记录成本；不采用未经验证的 Dart/Node 常驻桥掩盖重写成本。
 
 Flutter 官方要求 Windows 开发环境与 C++ 桌面构建工具；Tauri Windows 开发涉及 C++ 构建工具、Rust 与 WebView2。参见 [Flutter Windows](https://docs.flutter.dev/platform-integration/windows/setup) 与 [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)。这些文档不代表当前机器已具备全部构建条件。
 
