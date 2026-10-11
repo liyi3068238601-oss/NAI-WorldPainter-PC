@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-11",
+  "scope": "UI reference and local working-tree style inspection; not runtime QA or product asset import",
+  "files": [
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "LICENSE",
+      "sha256": "2b4c42737f1ccc403f97328c597e0abd272aad5e413a22539b3ba5c31ea943c2"
+    },
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "README.md",
+      "sha256": "da0d609189ef1b1c16709f3eeae14ebd4bdf7d4e41dae24682b644f0cb9cbd8f"
+    },
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "docs/screenshots/workspace.png",
+      "sha256": "3b7830d4b945fb75010635798c0915f621274ea950f5a360a5b238330e61fbfd"
+    },
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "next_nai_web/src/app/main/page.js",
+      "sha256": "87cd0da895d53f4addf67783465ceb1a08fc04154b83e613cedb514edbd21e6c"
+    },
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "next_nai_web/src/providers/AppThemeProvider.js",
+      "sha256": "6210ec2655969c98a0278b4823e6c14ffd2166b5d9b4726780888622d0ccf825"
+    },
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "next_nai_web/src/components/ai-painting/ItemDisplay.js",
+      "sha256": "d2a19bdfee3e9679be200c78b38beba95458f968efdae4a19d0081b7bbef24d9"
+    },
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "next_nai_web/src/components/ai-painting/ItemPreview.js",
+      "sha256": "fdb1a33f3968b86b587165da824218c30994cc55953762e0a6ecd3f76a2652f9"
+    },
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "next_nai_web/src/components/ai-painting/PromptEditor/usePromptSuggestions.js",
+      "sha256": "02ac69b00648828a7e5b4ad37ccda5050a2f990545a368ada7b36f9392d145e4"
+    },
+    {
+      "source": "primary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\novelai_local_web",
+      "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+      "path": "next_nai_web/src/components/ai-painting/PromptEditor/EnhancedPreview.js",
+      "sha256": "1d7c7bea4853b782ce27afaa6e6bfd0fe1bf5dd2c0c25705e1f8b2bcb1f3dc2f"
+    },
+    {
+      "source": "secondary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\PC端\\.tmp\\novelai-image-desktop",
+      "commit": "2d609393c3902874afae5200c26165d86b76055f",
+      "path": "LICENSE",
+      "sha256": "8ce853e17881d0cf63c5c63a073ed37f1ad079809abed9d6b7553eabc4d7749d"
+    },
+    {
+      "source": "secondary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\PC端\\.tmp\\novelai-image-desktop",
+      "commit": "2d609393c3902874afae5200c26165d86b76055f",
+      "path": "README.md",
+      "sha256": "b29cbe1f5c05c322ccb68a0aa689ca89a5c8039c97f0b58255fdd365017014a8"
+    },
+    {
+      "source": "secondary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\PC端\\.tmp\\novelai-image-desktop",
+      "commit": "2d609393c3902874afae5200c26165d86b76055f",
+      "path": "docs/assets/readme/ASSETS.md",
+      "sha256": "2540fde31e7492427ea40efca8046a0790257ab278ab76a6e5f1ff1d6886d7b9"
+    },
+    {
+      "source": "secondary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\PC端\\.tmp\\novelai-image-desktop",
+      "commit": "2d609393c3902874afae5200c26165d86b76055f",
+      "path": "docs/assets/readme/workbench-light.png",
+      "sha256": "66462c7a30f513c8d06ce06472dc4fe42438fc122ff005e4a21fd2c16ce6ea49"
+    },
+    {
+      "source": "secondary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\PC端\\.tmp\\novelai-image-desktop",
+      "commit": "2d609393c3902874afae5200c26165d86b76055f",
+      "path": "src/app/AppChrome.tsx",
+      "sha256": "4b2a996ecd7f6ca84da58cd3db97f488df2125addb964b107d41911cf0eaeaee"
+    },
+    {
+      "source": "secondary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\PC端\\.tmp\\novelai-image-desktop",
+      "commit": "2d609393c3902874afae5200c26165d86b76055f",
+      "path": "src/app/AppTabBar.tsx",
+      "sha256": "39ebb6378091dacc714b48cb001e7ee0c242c6c4e1312fecebbb0fc1b31670a7"
+    },
+    {
+      "source": "secondary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\PC端\\.tmp\\novelai-image-desktop",
+      "commit": "2d609393c3902874afae5200c26165d86b76055f",
+      "path": "src/app/navigation.ts",
+      "sha256": "9b1f9c9ca340db41791ccc0d5a6dea070ffea2e30ca36c4247b52818253c6f81"
+    },
+    {
+      "source": "secondary_ui_reference",
+      "root": "E:\\NAI-WorldPainter\\PC端\\.tmp\\novelai-image-desktop",
+      "commit": "2d609393c3902874afae5200c26165d86b76055f",
+      "path": "src/styles.css",
+      "sha256": "a85fe3f7dee87e190bf51a9d5d859324663d433fcc9b0670a455b77620193287"
+    },
+    {
+      "source": "worldpainter_working_tree_style",
+      "root": "E:\\NAI-WorldPainter\\手机端",
+      "commit": "bd530001a80a32aa1e1b39653275a59f7ec5fd18",
+      "path": "lib/presentation/app_theme.dart",
+      "sha256": "445b1cc4e15d2ded4dc09fb092c2da449cb9f90864aec1d096580af2e8496f0a"
+    },
+    {
+      "source": "worldpainter_working_tree_style",
+      "root": "E:\\NAI-WorldPainter\\手机端",
+      "commit": "bd530001a80a32aa1e1b39653275a59f7ec5fd18",
+      "path": "lib/presentation/app.dart",
+      "sha256": "4b98816188598d4cd71554f90a583e8c4c6c7fd6ff1b4baab677e186c5cca6cb"
+    },
+    {
+      "source": "worldpainter_working_tree_style",
+      "root": "E:\\NAI-WorldPainter\\手机端",
+      "commit": "bd530001a80a32aa1e1b39653275a59f7ec5fd18",
+      "path": "lib/presentation/pages/theme_appearance_page.dart",
+      "sha256": "e7d6a3c1ada32d927fd35025903083186944bbb669bc74be31051adcf60190ce"
+    },
+    {
+      "source": "worldpainter_design_preview",
+      "root": "E:\\NAI-WorldPainter\\设计预览",
+      "commit": null,
+      "path": "HTML预览_创作工作台.jpg",
+      "sha256": "81d29c4590746c76cdf3f9d001919a75c21801e8ff4ed2ad33d05dac7bd66c5a"
+    }
+  ]
+}

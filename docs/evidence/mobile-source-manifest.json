@@ -1,0 +1,1380 @@
+{
+  "schemaVersion": 1,
+  "source": "local_working_tree",
+  "repository": "E:/NAI-WorldPainter/手机端",
+  "branch": "feat/mobile-frontend",
+  "baselineHead": "bd530001a80a32aa1e1b39653275a59f7ec5fd18",
+  "generatedAt": "2026-10-11T20:17:34+08:00",
+  "hashAlgorithm": "SHA-256",
+  "scope": "Text source, source data, Android manifests/build configuration, Dart tests, and relevant text assets under lib/, android/, test/, assets/, plus pubspec.yaml and analysis_options.yaml. File contents and secrets are not included.",
+  "excluded": [
+    "binary images and icons",
+    "native .so libraries",
+    "model weights and binary assets",
+    "APK/release artifacts",
+    "generated build/cache files",
+    "README and historical documentation"
+  ],
+  "workingTree": {
+    "hasUncommittedChanges": true,
+    "modifiedOrDeletedTrackedFiles": [
+      {
+        "status": "M",
+        "path": "lib/presentation/app_theme.dart"
+      },
+      {
+        "status": "M",
+        "path": "lib/presentation/pages/generate_page.dart"
+      },
+      {
+        "status": "M",
+        "path": "lib/presentation/pages/history_detail_page.dart"
+      },
+      {
+        "status": "M",
+        "path": "lib/presentation/pages/history_page.dart"
+      },
+      {
+        "status": "M",
+        "path": "lib/presentation/pages/home_page.dart"
+      },
+      {
+        "status": "M",
+        "path": "lib/presentation/pages/settings_page.dart"
+      },
+      {
+        "status": "M",
+        "path": "lib/presentation/widgets/floating_toast.dart"
+      },
+      {
+        "status": "M",
+        "path": "lib/presentation/widgets/llm_chat/chat_drawer.dart"
+      },
+      {
+        "status": "M",
+        "path": "test/widget_test.dart"
+      }
+    ],
+    "untrackedFiles": [
+      "lib/presentation/navigation/app_destination.dart",
+      "lib/presentation/widgets/generation_result_card.dart",
+      "test/mobile_creation_layout_test.dart",
+      "test/presentation/pages/history_detail_page_test.dart",
+      "test/support/frontend_generation_fake.dart"
+    ],
+    "diffNameStatusFromHead": [
+      "M\tlib/presentation/app_theme.dart",
+      "M\tlib/presentation/pages/generate_page.dart",
+      "M\tlib/presentation/pages/history_detail_page.dart",
+      "M\tlib/presentation/pages/history_page.dart",
+      "M\tlib/presentation/pages/home_page.dart",
+      "M\tlib/presentation/pages/settings_page.dart",
+      "M\tlib/presentation/widgets/floating_toast.dart",
+      "M\tlib/presentation/widgets/llm_chat/chat_drawer.dart",
+      "M\ttest/widget_test.dart"
+    ]
+  },
+  "fileCount": 260,
+  "files": [
+    {
+      "path": "analysis_options.yaml",
+      "worktreeState": "clean",
+      "sha256": "f2de2b3d32409892ff6819f834aa2e7671c90f9646e888fa0f6049cffe5a369e"
+    },
+    {
+      "path": "android/app/build.gradle.kts",
+      "worktreeState": "clean",
+      "sha256": "331cde86173db067dfb997695fab1ca199e0f6b3f7f553719d55415c3463757b"
+    },
+    {
+      "path": "android/app/src/debug/AndroidManifest.xml",
+      "worktreeState": "clean",
+      "sha256": "b01a4541a8144c15bc617bab7eb267c99fa1476368fbbda5a12cdbf4e316a34c"
+    },
+    {
+      "path": "android/app/src/main/AndroidManifest.xml",
+      "worktreeState": "clean",
+      "sha256": "66f27fccb84dd34e4573490551529e4e2b75446d6cddc500939ae91b19611926"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/naihuishi/nai_huishi/MainActivity.kt",
+      "worktreeState": "clean",
+      "sha256": "f6d18dc069084bc359ba69be14d16893355259fde5864858af1539187901c263"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/naihuishi/nai_huishi/SuperResolutionPlugin.kt",
+      "worktreeState": "clean",
+      "sha256": "667a13fcc1cbe51f917ce468ab4f14f5a04ee3f03badad90d9dd1b6d3da8a318"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-v21/launch_background.xml",
+      "worktreeState": "clean",
+      "sha256": "dca312ec77de83e43ef70a825c299b51451247286c29167d62f19165750b8793"
+    },
+    {
+      "path": "android/app/src/main/res/drawable/launch_background.xml",
+      "worktreeState": "clean",
+      "sha256": "2df60e2cfbee873ce2858088cf003e6b93498f2f568476da437610467ea1a9d7"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "worktreeState": "clean",
+      "sha256": "06fbf5bf0947e8dd7e2324fa0b9805ad13e0d21ebe09749db48fb9ed25ef03a4"
+    },
+    {
+      "path": "android/app/src/main/res/values-night/styles.xml",
+      "worktreeState": "clean",
+      "sha256": "ea763597dc1a84c8034251caee98d7753e0fbf57340ffc94677427de4b537516"
+    },
+    {
+      "path": "android/app/src/main/res/values/colors.xml",
+      "worktreeState": "clean",
+      "sha256": "20eafcfa2dde5a0b6014ea538e9fcb19985db66dbc20ae4e55d98d4f42c0f272"
+    },
+    {
+      "path": "android/app/src/main/res/values/styles.xml",
+      "worktreeState": "clean",
+      "sha256": "cca15a99b59380a548bf6a890f7ca5380ee509b1f9bbb2f5f9ec3589fa25c2f7"
+    },
+    {
+      "path": "android/app/src/profile/AndroidManifest.xml",
+      "worktreeState": "clean",
+      "sha256": "b01a4541a8144c15bc617bab7eb267c99fa1476368fbbda5a12cdbf4e316a34c"
+    },
+    {
+      "path": "android/build.gradle.kts",
+      "worktreeState": "clean",
+      "sha256": "437bfc0833895e92e8f573c0adfbc10a9f8a165892fc2c004fa2a860b6d40542"
+    },
+    {
+      "path": "android/gradle.properties",
+      "worktreeState": "clean",
+      "sha256": "7b1b6839f9e3c025f951a27b23c4e0e8006e4280207320656cfeb8615bcc3d31"
+    },
+    {
+      "path": "android/gradle/wrapper/gradle-wrapper.properties",
+      "worktreeState": "clean",
+      "sha256": "1220fdd333a881e47441de07b23f9dd1ebd35459730543ae429cf249847d91bf"
+    },
+    {
+      "path": "android/settings.gradle.kts",
+      "worktreeState": "clean",
+      "sha256": "78cf7bf75dc4e9cab5772b166c038aa3ff9424b288c4af7e6d7c5b788d13ec38"
+    },
+    {
+      "path": "assets/artist_prompts/artist_prompts.json",
+      "worktreeState": "clean",
+      "sha256": "39c1a7e7f7f7d286dfc3948f21460b020c7aa1787b6179b5c15dd42d2cd8e0b0"
+    },
+    {
+      "path": "assets/nai5-prompting/NAI5_All_Prompting.md",
+      "worktreeState": "clean",
+      "sha256": "a0b35a51169c66bbf139a074a742e957d782b0927a7c4bd323804a5369f402e3"
+    },
+    {
+      "path": "assets/nai5-prompting/references/通用构思.md",
+      "worktreeState": "clean",
+      "sha256": "9fdc8cce237496737d016ffee42a76a68d2689f00f280835abff1318437fec63"
+    },
+    {
+      "path": "assets/nai5-prompting/references/通用写法.md",
+      "worktreeState": "clean",
+      "sha256": "494dc7526c99c353e29f0786861a465f1581aef042b3fda298c63197e66e0426"
+    },
+    {
+      "path": "assets/nai5-prompting/SKILL.md",
+      "worktreeState": "clean",
+      "sha256": "c2461185579f280f4db68266dd9bee4f83604e48233074a095c95bee3455c360"
+    },
+    {
+      "path": "assets/pixiv/characters.json",
+      "worktreeState": "clean",
+      "sha256": "7e94f293475069f67ddf5f73833123c599cd8d4dd3f14b90f80de4a12cdb2fbb"
+    },
+    {
+      "path": "assets/pixiv/surroundings.json",
+      "worktreeState": "clean",
+      "sha256": "51aec048c0ef48a9c0352cee3a8edc728c01e3d64f7c947ae7423716e245cef1"
+    },
+    {
+      "path": "assets/style_presets/style_presets.json",
+      "worktreeState": "clean",
+      "sha256": "1581be07f38a5d501c4eff16f6bc536e079a66e6c2ab90718afe05f7f1816c3a"
+    },
+    {
+      "path": "lib/assets/nsfw_knowledge.json",
+      "worktreeState": "clean",
+      "sha256": "fe8788cb82dd8a6ef7ebf5bd11b39d7fa7b1dec4f912835d5bf525bb7d9ac66c"
+    },
+    {
+      "path": "lib/core/constants/api_constants.dart",
+      "worktreeState": "clean",
+      "sha256": "739bb231095a87674b134e7ba4e0ee5237268802380e4679bdbd853dc34979a1"
+    },
+    {
+      "path": "lib/core/constants/app_constants.dart",
+      "worktreeState": "clean",
+      "sha256": "4f66baa174468b4a643a17e6974ebd011a36f6b6fe83e29ab03e73c4bf7d25ca"
+    },
+    {
+      "path": "lib/core/constants/prompt_capsule_data.dart",
+      "worktreeState": "clean",
+      "sha256": "6735e090e8248a68c1445f2d593c851d721537357ab2ec2973b2e96d9b7cbb17"
+    },
+    {
+      "path": "lib/core/constants/prompt_capsule_library.dart",
+      "worktreeState": "clean",
+      "sha256": "fbefca33a4b66789293e0005a6306664128a51f0646c83008725d9293782be9a"
+    },
+    {
+      "path": "lib/core/di/injection.dart",
+      "worktreeState": "clean",
+      "sha256": "0dff5cfa3e71f4f5cef153bca937b6f9be9e4d269983ee27547d7d6f7a98a4e3"
+    },
+    {
+      "path": "lib/core/errors/exceptions.dart",
+      "worktreeState": "clean",
+      "sha256": "b5246ef68d330c2701bc7e0d19ffa8805fabfeeadeaa40e20d7b044547621ad9"
+    },
+    {
+      "path": "lib/core/network/robust_http_adapter.dart",
+      "worktreeState": "clean",
+      "sha256": "cdd3f0cd1b94ca11bc5133dc982e4329c4a47221ff9869b5a5211ad8611166e4"
+    },
+    {
+      "path": "lib/core/queue/generation_queue.dart",
+      "worktreeState": "clean",
+      "sha256": "8966ccb20d86813437d189f8ed6bc435f42ab75d8ac6b6317df6a102b77328b2"
+    },
+    {
+      "path": "lib/core/services/background_keepalive_service.dart",
+      "worktreeState": "clean",
+      "sha256": "106b6c7d64e24485f76c826d80dd755fc18f63d51181afcbb5b807c53e65f639"
+    },
+    {
+      "path": "lib/core/services/comic_asset_store.dart",
+      "worktreeState": "clean",
+      "sha256": "2d96aa32718b709747f6bb8ba387b3d56054858f876f48a1af096d1d5ab8a86d"
+    },
+    {
+      "path": "lib/core/services/pixiv_upload_queue_service.dart",
+      "worktreeState": "clean",
+      "sha256": "afc0ad21bd868f4d8c1ece26f11011c4922fa8977f592694a622033424103fed"
+    },
+    {
+      "path": "lib/core/utils/comic_storyboard_importer.dart",
+      "worktreeState": "clean",
+      "sha256": "aa6e0821fb176e931128999b9b5c0d3bbbc154f1fea8ea21a79e9e53445ecb4c"
+    },
+    {
+      "path": "lib/core/utils/image_utils.dart",
+      "worktreeState": "clean",
+      "sha256": "dfe733cbd03f10aa9324a15042f36f357cc6b54a76dc3fc0bf211bbfad25b0bc"
+    },
+    {
+      "path": "lib/core/utils/official_cost_calculator.dart",
+      "worktreeState": "clean",
+      "sha256": "c7356ae1129801a78a106385a8a6721d98a0902fd32eee3d4f04f4a384d8a777"
+    },
+    {
+      "path": "lib/data/datasources/local/asset_prompting_skill_loader.dart",
+      "worktreeState": "clean",
+      "sha256": "4eb651531fc76fbec980fe10620f48b515ae4a92ee7696b3d828c2d9d7e6ec14"
+    },
+    {
+      "path": "lib/data/datasources/local/daily_stats_local_datasource.dart",
+      "worktreeState": "clean",
+      "sha256": "89de2bc2389240c574164306be103f535619d636922790b6fa7f0ef9e1fb5613"
+    },
+    {
+      "path": "lib/data/datasources/local/database_helper.dart",
+      "worktreeState": "clean",
+      "sha256": "da9f7f75c79cf20280965becec9565945f4b7e1d6c64ec9fa73911d7a9c5814d"
+    },
+    {
+      "path": "lib/data/datasources/local/llm_chat_local_datasource.dart",
+      "worktreeState": "clean",
+      "sha256": "bbe71311dab04a9a436c63a9a549bbdcc2df9cfd2501876f49f685a7c0927417"
+    },
+    {
+      "path": "lib/data/datasources/local/nai_metadata_parser.dart",
+      "worktreeState": "clean",
+      "sha256": "e605c1c46306e8cfc5d05ab923cf8055f009d5520ae0123a60aaa798176dd585"
+    },
+    {
+      "path": "lib/data/datasources/local/official_novelai_token_store.dart",
+      "worktreeState": "clean",
+      "sha256": "cfa662d549b7f90767b4199d7faadfdfffefcd82a872fae935c5a0fff56f0d49"
+    },
+    {
+      "path": "lib/data/datasources/local/pixiv_image_cloaker.dart",
+      "worktreeState": "clean",
+      "sha256": "a8a170764a933fd89d5b59f710fb459c8322cb1a74c90ecbdc4629b5da6e3405"
+    },
+    {
+      "path": "lib/data/datasources/local/pixiv_settings_local_datasource.dart",
+      "worktreeState": "clean",
+      "sha256": "99f773b343c6555c6d1b957295a5c9e6623c5c0b98929fe462bbaadc53a1edd2"
+    },
+    {
+      "path": "lib/data/datasources/local/pixiv_title_generator.dart",
+      "worktreeState": "clean",
+      "sha256": "72c0cdb65a84da7506978d9d44c8c3c1271ff4d459fbd97a578c996032f83990"
+    },
+    {
+      "path": "lib/data/datasources/local/settings_local_datasource.dart",
+      "worktreeState": "clean",
+      "sha256": "4bc2fbbd10a9136d4af5cecec1006ca5ac7a0e56d4af1ee49092ae999637cf48"
+    },
+    {
+      "path": "lib/data/datasources/remote/bing_search_service.dart",
+      "worktreeState": "clean",
+      "sha256": "fafbb452231597e15dadf1773a70801feb6f15c44e15b59df60cd1c691de41dd"
+    },
+    {
+      "path": "lib/data/datasources/remote/danbooru_api_service.dart",
+      "worktreeState": "clean",
+      "sha256": "8c7439b011006f44a67cff945baebbc3ac0e25aa7e56106b5269338d146c713d"
+    },
+    {
+      "path": "lib/data/datasources/remote/gpt_api_service.dart",
+      "worktreeState": "clean",
+      "sha256": "10014353157b9aa5adaf6d7b07ee7bb75970b1f8f3d52191003b5a0804da717c"
+    },
+    {
+      "path": "lib/data/datasources/remote/llm_api_service.dart",
+      "worktreeState": "clean",
+      "sha256": "aa2e7a0055b7f9200346e5b115f218f31e2811a2fde08cd8754436f99fd2ea96"
+    },
+    {
+      "path": "lib/data/datasources/remote/nano_banana_api_service.dart",
+      "worktreeState": "clean",
+      "sha256": "72a03a1b63957cf4bd929c7a936066873a97c18c7eb5dee71bfbdd1f64d4b8ff"
+    },
+    {
+      "path": "lib/data/datasources/remote/novelai_api_service.dart",
+      "worktreeState": "clean",
+      "sha256": "1b1541fd9b61b166d7f572845a3efd9b6dfe857c295d8da2723ae7fcbc754a4f"
+    },
+    {
+      "path": "lib/data/datasources/remote/official_novelai_api_service.dart",
+      "worktreeState": "clean",
+      "sha256": "72f688d25bf4f9fc81142456dad84afdcb50224fb0fca3cddf8cb6010058277e"
+    },
+    {
+      "path": "lib/data/datasources/remote/pixiv_api_service.dart",
+      "worktreeState": "clean",
+      "sha256": "553d0413069a6e06c2f79e103b26f3989423f67d72ef69bb285e88b8cc894c45"
+    },
+    {
+      "path": "lib/data/datasources/remote/wd_tagger_api_service.dart",
+      "worktreeState": "clean",
+      "sha256": "31f171467afce1c9a55fb5112818a30157d420da4f3d9db3a173ab2cb5a8cbb5"
+    },
+    {
+      "path": "lib/data/datasources/super_resolution_channel.dart",
+      "worktreeState": "clean",
+      "sha256": "c1e5a67c2185a2d9444ba77f45e9c9d1c79534d9c846e8542ed3284fa30249d6"
+    },
+    {
+      "path": "lib/data/models/artist_prompt_model.dart",
+      "worktreeState": "clean",
+      "sha256": "828a3ac10d2dd2126a8e50259c2cae3fba2d1369ba03f8ce31e1358fb4562819"
+    },
+    {
+      "path": "lib/data/models/generation_task_model.dart",
+      "worktreeState": "clean",
+      "sha256": "b77f4eb66314cd8a05d8e77c4af9b9e16e82570f1d87eacf3c9cff07dda38f9c"
+    },
+    {
+      "path": "lib/data/models/preset_model.dart",
+      "worktreeState": "clean",
+      "sha256": "1142b8b61b48cd6f81cc40ab5b4fa0b47f39fe8b221e0469c80bca79a3459e1f"
+    },
+    {
+      "path": "lib/data/models/prompt_memory_model.dart",
+      "worktreeState": "clean",
+      "sha256": "a475a829b7c9c533301086b130022d262a63f642e675fce7fc481402148a37b6"
+    },
+    {
+      "path": "lib/data/models/prompt_template_model.dart",
+      "worktreeState": "clean",
+      "sha256": "a9475314bd343da28a827e57f9ddd87408806b6cae95519497a73e8e6dbd4105"
+    },
+    {
+      "path": "lib/data/models/style_preset_model.dart",
+      "worktreeState": "clean",
+      "sha256": "38fd2da0edefcaace6f334b88330b8e92abf5573a99ce48c9d0d373c170f0b71"
+    },
+    {
+      "path": "lib/data/models/vibe_encoding_model.dart",
+      "worktreeState": "clean",
+      "sha256": "2391feaad144a1018a44732f5afcd0c828dc08d1293c153f1e379db92f83a94b"
+    },
+    {
+      "path": "lib/data/nsfw_book.dart",
+      "worktreeState": "clean",
+      "sha256": "ba43cac9992e44413ec43ddaa13a72adf57384bad19f028fdaf2d8cf9efca9ab"
+    },
+    {
+      "path": "lib/data/repositories/artist_prompt_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "07b122f828bd42ee7454bbdd4df583c6986a338c7da9a0a8c78b94e853f1178e"
+    },
+    {
+      "path": "lib/data/repositories/comic_project_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "49c0ae9b5d165c54d06a6bf70e9d11e070a2b1a935b58b583f9275a9d14f5f30"
+    },
+    {
+      "path": "lib/data/repositories/generation_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "8311e50403c69062da343698c4e5f08160a61cb60447afb7bc99444c8094e070"
+    },
+    {
+      "path": "lib/data/repositories/history_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "a2f0a653f1023640ce2186174a11774cea9fafbd934ee5db3d48d52eb6f69887"
+    },
+    {
+      "path": "lib/data/repositories/llm_chat_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "0a83208957637e978eca200b5938bb9ca48767e84c2ef58802d29d3d9d92804e"
+    },
+    {
+      "path": "lib/data/repositories/pixiv_settings_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "1a3be1779fbb4bb20f17aad1e64feb9719d082d9fce0a444d67dadf899a39aeb"
+    },
+    {
+      "path": "lib/data/repositories/pixiv_upload_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "64562e76d4dc4e0665262cc13aac0ab2d263321e09e328f2f86d92e74a068933"
+    },
+    {
+      "path": "lib/data/repositories/preset_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "f48f4dfd408a6629813dc6756edf131f0c9c88de7f54a9732094379900f9e1cd"
+    },
+    {
+      "path": "lib/data/repositories/prompt_memory_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "e0c944df3e5fa68d1694a7c30c34206b80abd15f97e0bab763b21e5ac3c07ff6"
+    },
+    {
+      "path": "lib/data/repositories/prompt_template_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "2de1fa16778f2813121d47aaae8376063180131df06f552fa79d201292880d89"
+    },
+    {
+      "path": "lib/data/repositories/settings_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "40451bc98ca1b3023a876b9ed7c9fce170cf475109782f7f5cc7ec6a89ddeaf2"
+    },
+    {
+      "path": "lib/data/repositories/style_preset_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "4c1cf118d8fa619c79f06b857a3730a0b720b27b4743c72131bac3fda0a6ed66"
+    },
+    {
+      "path": "lib/data/repositories/super_resolution_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "f66541c32bb81e7dcce526716e7c67052d5a6606160a67bcfb11ab62cfd9ab2b"
+    },
+    {
+      "path": "lib/data/repositories/vibe_encoding_repository_impl.dart",
+      "worktreeState": "clean",
+      "sha256": "1e73d43a77c40c2bd83d62f81bef09272967398671ab1a0c91d96f4d6c75c743"
+    },
+    {
+      "path": "lib/domain/agents/agent_event.dart",
+      "worktreeState": "clean",
+      "sha256": "eb24ff72ece5832024b6de9b8c9811a8309062d88f28cb6fd4ae28937db077fc"
+    },
+    {
+      "path": "lib/domain/agents/agent_loop.dart",
+      "worktreeState": "clean",
+      "sha256": "7675e4a9570f8fe7864d88549de40b625e8dafbea11f14deea1a973811b7c62c"
+    },
+    {
+      "path": "lib/domain/agents/agent_result.dart",
+      "worktreeState": "clean",
+      "sha256": "b34bd08384d250c674690609d89228a862969f9b24f168b7f500e79fc23074c3"
+    },
+    {
+      "path": "lib/domain/agents/agent_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "5dbc9f0143bb6d7f350e3db3997fa081529ed57fe41455eebc0326952522f059"
+    },
+    {
+      "path": "lib/domain/agents/prompt_box_accessor.dart",
+      "worktreeState": "clean",
+      "sha256": "aef6dff474786e5d2fa635c42a6fbad9736b3805cb0e4f42450d5847653581eb"
+    },
+    {
+      "path": "lib/domain/agents/tool_registry.dart",
+      "worktreeState": "clean",
+      "sha256": "5f738f2a2adf91ec742e504419f82e5336dd618c9049015f17e5df59fe48a385"
+    },
+    {
+      "path": "lib/domain/agents/tools/ask_user_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "d8e2488d83de8ce476f6c45a33ffb808f3360090218d273ad0e0e41fb8cfca73"
+    },
+    {
+      "path": "lib/domain/agents/tools/comic_panel_prompt_tools.dart",
+      "worktreeState": "clean",
+      "sha256": "e0380c480244e581d6e149a492793f7748b920bc973c517786f43bf2aa37c824"
+    },
+    {
+      "path": "lib/domain/agents/tools/generate_image_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "acaa510182da03633b89e292f20df68199b25342c1b2d4b025ab657b9d345831"
+    },
+    {
+      "path": "lib/domain/agents/tools/get_memories_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "801f0ceeced92dfe4dcd98080b57e95768a07bc50e5691154af11d29bcdd77a2"
+    },
+    {
+      "path": "lib/domain/agents/tools/read_current_prompts_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "4701bc2dd6604f3b0417106ca5bc346a9faab7b6cf03032594af22218b8dd410"
+    },
+    {
+      "path": "lib/domain/agents/tools/read_prompting_reference_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "f21b3a37cdcc40beacd1de1fb85421f379e0cb46285ad926e1f1d6fda73d4038"
+    },
+    {
+      "path": "lib/domain/agents/tools/remove_character_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "0814f211d65bc8dd8d2598ae534526b4b56397a94b257f0c747d80758bdb869e"
+    },
+    {
+      "path": "lib/domain/agents/tools/save_image_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "6cf79161013a0c319b48eef1bdefa74c2107ba7d1d4cf9adf8ad93d37d05a88d"
+    },
+    {
+      "path": "lib/domain/agents/tools/save_memory_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "d411d258f912dabc6539896077c422675c2a8201b27ae17af682e1dacbdb317b"
+    },
+    {
+      "path": "lib/domain/agents/tools/search_danbooru_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "679c83b3ffae7c2c70ab6f94f01427d93ca78ee4984af8045ca5077d46e70c07"
+    },
+    {
+      "path": "lib/domain/agents/tools/upload_to_pixiv_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "5f42482da2ea25b54839560db228e51c0a9bcced093298dd6ccc069cf0b62949"
+    },
+    {
+      "path": "lib/domain/agents/tools/upscale_image_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "d22313a248ac7b0369cb20d64325bf54614164a992418e2b20fc00da91fb93ce"
+    },
+    {
+      "path": "lib/domain/agents/tools/write_prompt_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "c0e959805f6ae7adab720948356e5c13a9b82adc36743898037c5bd97e2817db"
+    },
+    {
+      "path": "lib/domain/entities/api_endpoint.dart",
+      "worktreeState": "clean",
+      "sha256": "46374649fafc5260b5ebf0a1e385f62d1443a11f5cf95d3e377f733ba61f9b23"
+    },
+    {
+      "path": "lib/domain/entities/artist_prompt.dart",
+      "worktreeState": "clean",
+      "sha256": "8033eb9f56d4377003cf409d46bc87edee01c513e4204c0d6f192619f9729df9"
+    },
+    {
+      "path": "lib/domain/entities/comic_project.dart",
+      "worktreeState": "clean",
+      "sha256": "a79e96aeb8c12df9de4e6c407b724026ce031f0a07d40816fdee852ed68caaad"
+    },
+    {
+      "path": "lib/domain/entities/danbooru_tag.dart",
+      "worktreeState": "clean",
+      "sha256": "bb826056e3c626adfb4cd64c4521aeeea0795eea1614de19b41d9d7cb3715308"
+    },
+    {
+      "path": "lib/domain/entities/director_tool.dart",
+      "worktreeState": "clean",
+      "sha256": "68f638c0cf4c1efae9e57666b38c63598ac37d55e2540edd719a2797e8373a77"
+    },
+    {
+      "path": "lib/domain/entities/generation_task.dart",
+      "worktreeState": "clean",
+      "sha256": "1dd7b07736cb010c375796455e0082d0560dc478e91edb97ce95685331d4dedc"
+    },
+    {
+      "path": "lib/domain/entities/image_tag_result.dart",
+      "worktreeState": "clean",
+      "sha256": "31949323a568924adee3f7e3f5b004e89709bce3e97a08b879e5e9f83c299a3d"
+    },
+    {
+      "path": "lib/domain/entities/inpaint_workspace.dart",
+      "worktreeState": "clean",
+      "sha256": "3edb59792ba31f39fc1f4c5140baae11983196c52a44a3ba695c9d101e9e1d38"
+    },
+    {
+      "path": "lib/domain/entities/llm_interaction.dart",
+      "worktreeState": "clean",
+      "sha256": "730b8cc8191f0d87623d60ccb61fc596788b5679232a346325af3ec9f654e6e5"
+    },
+    {
+      "path": "lib/domain/entities/llm_message.dart",
+      "worktreeState": "clean",
+      "sha256": "e2f5b5efa8f3bec038aff1b4d8597755863f4a206f6aa09eea09e571cd211a7a"
+    },
+    {
+      "path": "lib/domain/entities/llm_profile_role.dart",
+      "worktreeState": "clean",
+      "sha256": "4708c08b85a23fa2f96aa3725e350a5deccb5d6c91e470c5e70d81ed164633bb"
+    },
+    {
+      "path": "lib/domain/entities/llm_provider.dart",
+      "worktreeState": "clean",
+      "sha256": "74b3e1b1aad19dfe5896a2ea32aab8c946981ca710789de6a67e716f8a2892e9"
+    },
+    {
+      "path": "lib/domain/entities/llm_response.dart",
+      "worktreeState": "clean",
+      "sha256": "5b29b44922615472b7dfffa979c0ba12bbb5df94334cd4068c5dfe89acf4cd55"
+    },
+    {
+      "path": "lib/domain/entities/llm_role_binding.dart",
+      "worktreeState": "clean",
+      "sha256": "8a231e9694fdb2234cf6af4def90e5d97306f7197fe2befbbcad35e048845cad"
+    },
+    {
+      "path": "lib/domain/entities/llm_role_config.dart",
+      "worktreeState": "clean",
+      "sha256": "6002b132b529f65419d54286a812bcafc314dfb5f03854f278e437dcb9349611"
+    },
+    {
+      "path": "lib/domain/entities/llm_session.dart",
+      "worktreeState": "clean",
+      "sha256": "c41e3482d8d02c84bca5260b2a7ab7cb0f667c0b08ee85dd74d5631da1adbd35"
+    },
+    {
+      "path": "lib/domain/entities/nai_model.dart",
+      "worktreeState": "clean",
+      "sha256": "45921bf05b359c70c34031877590283c79213035f248157a240886cdec130813"
+    },
+    {
+      "path": "lib/domain/entities/nai_prompt_version.dart",
+      "worktreeState": "clean",
+      "sha256": "e111420237db0cf56cef16d025ee4c412c309de29eb4acc4e59b4b289a617dbb"
+    },
+    {
+      "path": "lib/domain/entities/novelai_route.dart",
+      "worktreeState": "clean",
+      "sha256": "3600a44e2bd651ad02ff0a497708829a037bf97e0f5c0afc19bc3a92454e5fc6"
+    },
+    {
+      "path": "lib/domain/entities/pixiv_settings.dart",
+      "worktreeState": "clean",
+      "sha256": "0ecaa1790f2456e375028f6b884323c43095ad3b6473fcac87e2c6b63ac6977c"
+    },
+    {
+      "path": "lib/domain/entities/pixiv_upload_task.dart",
+      "worktreeState": "clean",
+      "sha256": "569c5ec9ffea73ecd99b5700cf08e5811df2495355d0ced57fe86301d94c24d7"
+    },
+    {
+      "path": "lib/domain/entities/preset.dart",
+      "worktreeState": "clean",
+      "sha256": "d5ffb91a45ea0d6baf16054bbefa932199735687ae44a809368c4ca93297cf47"
+    },
+    {
+      "path": "lib/domain/entities/prompt_memory.dart",
+      "worktreeState": "clean",
+      "sha256": "50bb91a60c1e1e3a6c321af92f296aacb3ef3ba11abbd3acf92c1c9fcc3ca318"
+    },
+    {
+      "path": "lib/domain/entities/prompt_template.dart",
+      "worktreeState": "clean",
+      "sha256": "3a105a3595f641426b0316bed7eb9e7cce984ed661fdaf26cccca8b190a9d8e6"
+    },
+    {
+      "path": "lib/domain/entities/sr_model.dart",
+      "worktreeState": "clean",
+      "sha256": "f73135fc3717bafe83b5e275a338baf44bf3656fbdea10e855b5699f9d2b679e"
+    },
+    {
+      "path": "lib/domain/entities/style_preset.dart",
+      "worktreeState": "clean",
+      "sha256": "27ff57c1d452299031c6241027331301e841874f2822ac33dfc43199d46bc357"
+    },
+    {
+      "path": "lib/domain/entities/tiled_img2img.dart",
+      "worktreeState": "clean",
+      "sha256": "4426ca1e1606fce59c50d7b1ba85944675ffb5468c344f0bd0ae8e5b7118d734"
+    },
+    {
+      "path": "lib/domain/entities/tool_call.dart",
+      "worktreeState": "clean",
+      "sha256": "d24492bd1b9c4cde25453c282988a97d937370f4de14a1a0b9ca9c81c21c5346"
+    },
+    {
+      "path": "lib/domain/entities/vibe_encoding.dart",
+      "worktreeState": "clean",
+      "sha256": "e67a3952d48d897782424c4269d8dbae6417a4a7dd8813a8e41ce5623836c1d8"
+    },
+    {
+      "path": "lib/domain/repositories/artist_prompt_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "ef0976365f240aa16e0337af3e783175ef98dc6bae3a706aff49c65f2f928c0b"
+    },
+    {
+      "path": "lib/domain/repositories/comic_project_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "b50a7b3b61981de63674b628ca467562b7843e69aa5d46c435513ea3008f400c"
+    },
+    {
+      "path": "lib/domain/repositories/generation_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "1596538cb33fed28adc921f296c06ff96a9d27a3cdbd42e2076c588110c7cc73"
+    },
+    {
+      "path": "lib/domain/repositories/history_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "52e223e09a3e37990f987eb5198372d3ec054e024d470fdef78aa7c5ace79645"
+    },
+    {
+      "path": "lib/domain/repositories/llm_chat_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "ce9532ed3637c84787591c6021b5802556608745605737bd81d580f6ca574c37"
+    },
+    {
+      "path": "lib/domain/repositories/pixiv_settings_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "8a9cf55e6d6371edcb39f1086f2de5fb1fa195623110fa21c0a89dc34c4e0ae7"
+    },
+    {
+      "path": "lib/domain/repositories/pixiv_upload_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "8e129deb406aedf178af2a5391b7850794c72d9eb07e8421f2ba12a8363b97da"
+    },
+    {
+      "path": "lib/domain/repositories/preset_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "3e27081ef05d57dabdf00bfbc632df90ed84df6213cdfefc3da78c39c5df853b"
+    },
+    {
+      "path": "lib/domain/repositories/prompt_memory_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "c0111fa10e8c9c18396d5ced8370e42e24c1c649073f9a41ce0f059a881e740e"
+    },
+    {
+      "path": "lib/domain/repositories/prompt_template_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "ea4ec571f5367477951a83342281287a0f5a4703d4eeba17dabbf13b54482f56"
+    },
+    {
+      "path": "lib/domain/repositories/settings_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "9b8dd19f2970c1a83bb89d22b7809c6fcf898d117fd53652ab7e208e9351a5d2"
+    },
+    {
+      "path": "lib/domain/repositories/style_preset_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "090bcde01b314b54b7fdc6802b8fdbbdf75722f01141623e0bf81065245e54c2"
+    },
+    {
+      "path": "lib/domain/repositories/super_resolution_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "9d00c4339d20c930267782a00e20c16bda601f786267aaddd7fc18bcb1fdfc99"
+    },
+    {
+      "path": "lib/domain/repositories/vibe_encoding_repository.dart",
+      "worktreeState": "clean",
+      "sha256": "8340d5c6a8b0968ee575cf030ca027f5882b4a26ece3ca60b362b5a21350d957"
+    },
+    {
+      "path": "lib/domain/services/comic_generation_coordinator.dart",
+      "worktreeState": "clean",
+      "sha256": "d46297a55c92368f60cf03eb57e386ebf0f508fdf47306654b87ae7bfe6b7ce3"
+    },
+    {
+      "path": "lib/domain/services/comic_overlay_renderer.dart",
+      "worktreeState": "clean",
+      "sha256": "f6299b324b1dc58568fa7a61b213ce7ebe3d58d8772363745e90333a375de9a9"
+    },
+    {
+      "path": "lib/domain/services/comic_rasterizer.dart",
+      "worktreeState": "clean",
+      "sha256": "679dad88bd5e1bfbb3d283c26d93d5d7ea59dd617b90275a1dcd7f31b6edecde"
+    },
+    {
+      "path": "lib/domain/services/comic_task_builder.dart",
+      "worktreeState": "clean",
+      "sha256": "d45255e1f06524767cb4096d02f64269ad238d822e6e06bcfe07090a2f85d00f"
+    },
+    {
+      "path": "lib/domain/services/comic_text_recognition_service.dart",
+      "worktreeState": "clean",
+      "sha256": "b10ddf33882fa059df8e38c668a3108e948a6c71765de138acce53e59913323c"
+    },
+    {
+      "path": "lib/domain/services/inpaint_rasterizer.dart",
+      "worktreeState": "clean",
+      "sha256": "1324a62d109e377621d0ddf2c65da456105e727d44bea9afb7022fcc717088ca"
+    },
+    {
+      "path": "lib/domain/services/prompting_skill_loader.dart",
+      "worktreeState": "clean",
+      "sha256": "a5f83d3d3c728c157ac411fb74c4ea376eda8584eba51988abf7a029fb19bdaf"
+    },
+    {
+      "path": "lib/domain/services/tiled_img2img_service.dart",
+      "worktreeState": "clean",
+      "sha256": "13a65f3d5d210459522a48195229fea7e995bc904e25ae1fff696d88b0dcd85a"
+    },
+    {
+      "path": "lib/domain/usecases/analyze_image_tags.dart",
+      "worktreeState": "clean",
+      "sha256": "ed9ee13f7730a2149afc8ca6ce3efd1e46243b521110c30826104f965619b7f5"
+    },
+    {
+      "path": "lib/domain/usecases/calibrate_with_danbooru.dart",
+      "worktreeState": "clean",
+      "sha256": "35386d8bc5889e38bab3831c88bbe2ba69c903be20584e27d28d955704b296e6"
+    },
+    {
+      "path": "lib/domain/usecases/extract_keywords.dart",
+      "worktreeState": "clean",
+      "sha256": "7dd24f5decfccae576888a1a3d4da3de944aea5012490aed3fba95e55c3e1b73"
+    },
+    {
+      "path": "lib/domain/usecases/generate_image.dart",
+      "worktreeState": "clean",
+      "sha256": "bc79db8500546bb664efb58acea9d59f32ee5ce984ec9393c6647e8cc12eeb57"
+    },
+    {
+      "path": "lib/domain/usecases/get_history.dart",
+      "worktreeState": "clean",
+      "sha256": "b3f3884f5864cdd7d81d1e9cc73f18296427cab6e6187a43b141ff3a0486a0c4"
+    },
+    {
+      "path": "lib/domain/usecases/manage_artist_prompts.dart",
+      "worktreeState": "clean",
+      "sha256": "3d8be4f7f2943f27b43d67be95e25bd922e0010fb3a5d7425ca91a972e708c05"
+    },
+    {
+      "path": "lib/domain/usecases/manage_comic_projects.dart",
+      "worktreeState": "clean",
+      "sha256": "03f39c871c2dce92f70c7b8bae6ba7457c7111d5ce6347eaa9d94eb3aa21d2d3"
+    },
+    {
+      "path": "lib/domain/usecases/manage_llm_chat.dart",
+      "worktreeState": "clean",
+      "sha256": "81747db8f5e9533c637be9a25667ba20bc3b46472e38f1314dbf32cd6474ecd4"
+    },
+    {
+      "path": "lib/domain/usecases/manage_pixiv_settings.dart",
+      "worktreeState": "clean",
+      "sha256": "1269f419e687e5ce46e52a4c05e7a44ebcef3ff45668e6caccfcc494dc7889ba"
+    },
+    {
+      "path": "lib/domain/usecases/manage_presets.dart",
+      "worktreeState": "clean",
+      "sha256": "e8dcad6c7daa344c6f92dd590097ba86d329eb03f342136c4e82c698a39db78a"
+    },
+    {
+      "path": "lib/domain/usecases/manage_prompt_memories.dart",
+      "worktreeState": "clean",
+      "sha256": "27e158a02a89263433b14618aadf317498caee6a313090f66435b3e848e3d0c3"
+    },
+    {
+      "path": "lib/domain/usecases/manage_prompt_templates.dart",
+      "worktreeState": "clean",
+      "sha256": "09b2a82a7cbf3433789c2e158c8ba0e6be420f2b3ed8aa3596e1a13703051340"
+    },
+    {
+      "path": "lib/domain/usecases/manage_settings.dart",
+      "worktreeState": "clean",
+      "sha256": "8b394b9a00d9ece2d4a03376daca1d6d17d79c17d64f68a41fb4070672f2b1f9"
+    },
+    {
+      "path": "lib/domain/usecases/manage_style_presets.dart",
+      "worktreeState": "clean",
+      "sha256": "fee30eb19200354fac63eb707109df663a079e11290a6af43157558e8c5631cc"
+    },
+    {
+      "path": "lib/domain/usecases/manage_vibe_encodings.dart",
+      "worktreeState": "clean",
+      "sha256": "520f7e4ff6ad85b04888ddd01f9d70782e9d7e901423e948e8e27fa02d9354b9"
+    },
+    {
+      "path": "lib/domain/usecases/save_image.dart",
+      "worktreeState": "clean",
+      "sha256": "03c5417bb76dbc20aabfc43030a3510807c4e71fa23d817638857fed94e0662d"
+    },
+    {
+      "path": "lib/domain/usecases/search_danbooru_tags.dart",
+      "worktreeState": "clean",
+      "sha256": "7e1a95ab03f29459f88fbbddc702ca1853619e811686f92ba77489573c52eb2c"
+    },
+    {
+      "path": "lib/domain/usecases/suggest_pixiv_tags.dart",
+      "worktreeState": "clean",
+      "sha256": "89fa465f9ec2429c5dbff5b72cb0ed41f9de3f796c98a9ec6d2481932c8468d9"
+    },
+    {
+      "path": "lib/domain/usecases/upload_to_pixiv.dart",
+      "worktreeState": "clean",
+      "sha256": "61b75aff1ea7be42a51e7c3add8f617f1805332837ae804be91c4e08968071c8"
+    },
+    {
+      "path": "lib/domain/usecases/upscale_image.dart",
+      "worktreeState": "clean",
+      "sha256": "53f654f0d9bfb699506ce5b2f0f5fca88107be89e37f4e4541a4a646e2eb3012"
+    },
+    {
+      "path": "lib/main.dart",
+      "worktreeState": "clean",
+      "sha256": "df8af69d51c700dacfc2ca58366535bd2bb03efd4b2c409547f031144ded1d25"
+    },
+    {
+      "path": "lib/presentation/app_theme.dart",
+      "worktreeState": "modified",
+      "sha256": "445b1cc4e15d2ded4dc09fb092c2da449cb9f90864aec1d096580af2e8496f0a"
+    },
+    {
+      "path": "lib/presentation/app.dart",
+      "worktreeState": "clean",
+      "sha256": "4b98816188598d4cd71554f90a583e8c4c6c7fd6ff1b4baab677e186c5cca6cb"
+    },
+    {
+      "path": "lib/presentation/navigation/app_destination.dart",
+      "worktreeState": "untracked",
+      "sha256": "664eb282d0ce4dd8cbfe8246d93fcd52817fd37de31d8c72da0bfeeab9a4617e"
+    },
+    {
+      "path": "lib/presentation/pages/advanced_parameters_page.dart",
+      "worktreeState": "clean",
+      "sha256": "2628f215843ab164e8a911a97dbb9841aa6c1416e3c386ea4909f1e3a2fa8bdf"
+    },
+    {
+      "path": "lib/presentation/pages/api_config_page.dart",
+      "worktreeState": "clean",
+      "sha256": "fc6d437fe143736860e3612c3b89249cf5cf8c78ae5e5b9921f0c4695eb1c679"
+    },
+    {
+      "path": "lib/presentation/pages/artist_prompt_manager_page.dart",
+      "worktreeState": "clean",
+      "sha256": "1a42dff62f972fdefcfffc1146e1d864413a45e7f68d07bb1cbfebed5d37c9e0"
+    },
+    {
+      "path": "lib/presentation/pages/comic_editor_page.dart",
+      "worktreeState": "clean",
+      "sha256": "6e150b757e756cbcd03ff0f7fc14b33b556191ca9b56bfea3d506fc6e0212363"
+    },
+    {
+      "path": "lib/presentation/pages/comic_post_editor_page.dart",
+      "worktreeState": "clean",
+      "sha256": "79250180d156f1824778a5e7089025e54b15b252afde0f4ceeb42afec4de1106"
+    },
+    {
+      "path": "lib/presentation/pages/comic_projects_page.dart",
+      "worktreeState": "clean",
+      "sha256": "8c3b18a5cb5589eeb52068c3e9c6c718a5a5645556ca45153d0d57061a8f7310"
+    },
+    {
+      "path": "lib/presentation/pages/danbooru_tag_search_page.dart",
+      "worktreeState": "clean",
+      "sha256": "7d4638478c095f3b07420d2b0fd1567954e465e84553d292304e1db87e60375f"
+    },
+    {
+      "path": "lib/presentation/pages/director_tools_page.dart",
+      "worktreeState": "clean",
+      "sha256": "9c8ecb72700c18f60a26d415f76eb01f36c83b7bfcc0b248aa9f5e2bb53f44fc"
+    },
+    {
+      "path": "lib/presentation/pages/generate_page.dart",
+      "worktreeState": "modified",
+      "sha256": "61ec877707f1c4e0461477573d2498850dc62d8e184c85851606eaee981a9ab5"
+    },
+    {
+      "path": "lib/presentation/pages/history_detail_page.dart",
+      "worktreeState": "modified",
+      "sha256": "94fe5c1cb8fd0de84024073115c7b0240bea9e158562c3b9fc4d6ef76c434ec1"
+    },
+    {
+      "path": "lib/presentation/pages/history_page.dart",
+      "worktreeState": "modified",
+      "sha256": "7622803076d681312d3cd1093fc3d7cbd37cc133b51cff85068a29b9da041ce4"
+    },
+    {
+      "path": "lib/presentation/pages/home_page.dart",
+      "worktreeState": "modified",
+      "sha256": "b377b502bc62cdc330477a3dbf5fe8f040940b89856d2108d5172bc4e3a53ba4"
+    },
+    {
+      "path": "lib/presentation/pages/image_enhance_page.dart",
+      "worktreeState": "clean",
+      "sha256": "5f61aeda00058b890044df2a6fb7b44757175bef613e36954727faf52eea74aa"
+    },
+    {
+      "path": "lib/presentation/pages/image_tag_page.dart",
+      "worktreeState": "clean",
+      "sha256": "f7d39dff6f6d12b7d57bffae92f8907cbc35daf48da98e19e3920c5aac8c1c2b"
+    },
+    {
+      "path": "lib/presentation/pages/inpaint_workspace_page.dart",
+      "worktreeState": "clean",
+      "sha256": "ac1a60b2b18de3e5b6c73524582abc7677309b2d534ff999fca0c06e86d5de87"
+    },
+    {
+      "path": "lib/presentation/pages/llm_provider_edit_page.dart",
+      "worktreeState": "clean",
+      "sha256": "e24c46c89bc9f7751fa4042a8b6d1cc32969405944df345c9597c72f7885ec33"
+    },
+    {
+      "path": "lib/presentation/pages/llm_provider_manage_page.dart",
+      "worktreeState": "clean",
+      "sha256": "925944595e0958cc8feddf96de0259d7088f497550ebd5a84c7bac7a0c89da9d"
+    },
+    {
+      "path": "lib/presentation/pages/pixiv_queue_page.dart",
+      "worktreeState": "clean",
+      "sha256": "d524413e230dfc508c07b02b0a1258242fa8fe7b90829bd7c540e7ff50519477"
+    },
+    {
+      "path": "lib/presentation/pages/pixiv_settings_page.dart",
+      "worktreeState": "clean",
+      "sha256": "3d0c2967d392eaa980feff93fbfd7e527030261359531211f18a3123bcf43b95"
+    },
+    {
+      "path": "lib/presentation/pages/pixiv_upload_page.dart",
+      "worktreeState": "clean",
+      "sha256": "49f188351109cfaf9dcfc840f292bd5d1c1655ef8056dd6fb798432deaee2cbe"
+    },
+    {
+      "path": "lib/presentation/pages/prompt_memory_page.dart",
+      "worktreeState": "clean",
+      "sha256": "8e1c5c204e35bee740d421c8cba2c647d4fbce64a01898547039d8088d559fff"
+    },
+    {
+      "path": "lib/presentation/pages/settings_page.dart",
+      "worktreeState": "modified",
+      "sha256": "823551939d5b9d0d1e25a202aacb79063ce4000472a1abaaeb2e95221dd6930a"
+    },
+    {
+      "path": "lib/presentation/pages/style_preset_detail_page.dart",
+      "worktreeState": "clean",
+      "sha256": "816b0b27a0c6ea652b702e77d955ab0ddd780662d65a08c2046388c8e0b88f55"
+    },
+    {
+      "path": "lib/presentation/pages/style_preset_page.dart",
+      "worktreeState": "clean",
+      "sha256": "069cbefd456d8d454b5feecc471d4b948194d9a3edabba6540805f9a3cae1c11"
+    },
+    {
+      "path": "lib/presentation/pages/theme_appearance_page.dart",
+      "worktreeState": "clean",
+      "sha256": "e7d6a3c1ada32d927fd35025903083186944bbb669bc74be31051adcf60190ce"
+    },
+    {
+      "path": "lib/presentation/pages/vibe_encoding_library_page.dart",
+      "worktreeState": "clean",
+      "sha256": "c3535ded6f0d1013befea1c7f400140fad90333ed94c620bd99723878b7fdec9"
+    },
+    {
+      "path": "lib/presentation/viewmodels/artist_prompt_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "4c864bc8996dd4bd7d1f2f8478aeed22aeadb9733c585379aa776c0e552c11fe"
+    },
+    {
+      "path": "lib/presentation/viewmodels/comic_project_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "2580796a1f0a9ff58a12891b85ff30a954cbfa510de9f3118ae17b3a06ae75f4"
+    },
+    {
+      "path": "lib/presentation/viewmodels/director_tools_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "cf9e9a58baa423431a614bbc00b3ce3f6a64b9a0013083a8a524ec6329684791"
+    },
+    {
+      "path": "lib/presentation/viewmodels/generation_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "3c298dee18cc31a4f623a3f85ff9ad9bb79ffa442580c0a29a6d2f31dcf752b2"
+    },
+    {
+      "path": "lib/presentation/viewmodels/history_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "76ce4db5886fbad036673908aba84abe41bc1ae4cab711f2571bf1ceab639d99"
+    },
+    {
+      "path": "lib/presentation/viewmodels/image_tag_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "38a7b59403dc6bf0646e37fb4abdb58e24a44409739548bd9719cd6b5c810da7"
+    },
+    {
+      "path": "lib/presentation/viewmodels/llm_chat_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "a59d8c047dca3201931e930b0291e768f6c871bf24fad654bf36fe9a732b306c"
+    },
+    {
+      "path": "lib/presentation/viewmodels/pixiv_queue_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "8aee3da0523ddfd432828f6086b5e939d3a0125b2a155ad2811923afbf8e1743"
+    },
+    {
+      "path": "lib/presentation/viewmodels/pixiv_settings_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "828afa1e9e4138a8a373f3cb62d5b42cce680817876f49b9ab3888c0c98b004a"
+    },
+    {
+      "path": "lib/presentation/viewmodels/pixiv_upload_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "ddfa53e3ce528e7f088e94e8a5744269ef9dcc48c75294ee6930b23aeb4cd11c"
+    },
+    {
+      "path": "lib/presentation/viewmodels/preset_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "7770aa791e7c2e5f36c8daa9c092ee8e21117775b9258e6f1478288d9e7c8a36"
+    },
+    {
+      "path": "lib/presentation/viewmodels/prompt_memory_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "65d468ea005018656c98a47a18cb8698fa840ef07a6a20965164533cb2fec007"
+    },
+    {
+      "path": "lib/presentation/viewmodels/prompt_template_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "76e71e59040a4473fb52b1cd67edb9bbda8a1e5dc63217f08b25fa4723dcb39c"
+    },
+    {
+      "path": "lib/presentation/viewmodels/settings_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "2d4e4185f409cb47424c7a8076b690a50a392fd98f9ec4e0d36e9be983101a51"
+    },
+    {
+      "path": "lib/presentation/viewmodels/style_preset_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "a73ec079019b1204d5bc9008142428b3dab2f4c5f2753c8e68cfe8afbf6718e3"
+    },
+    {
+      "path": "lib/presentation/viewmodels/super_resolution_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "46cd1302a23d1d4dc4d482c6d866b6bf321131e98dc94409b9f24b59698dba88"
+    },
+    {
+      "path": "lib/presentation/viewmodels/vibe_encoding_viewmodel.dart",
+      "worktreeState": "clean",
+      "sha256": "4beba85523c38ee1a7496853bdb51957c9ecec82f8948165a324f80209eba13c"
+    },
+    {
+      "path": "lib/presentation/widgets/comic_canvas.dart",
+      "worktreeState": "clean",
+      "sha256": "2cc1690566492170c581e9bacd87ad2b57c068e4687c28fbdcb1ee9b8f56723a"
+    },
+    {
+      "path": "lib/presentation/widgets/floating_toast.dart",
+      "worktreeState": "modified",
+      "sha256": "103da4c60b305589634c11e99e6e8aee68d5bae08a5adba8eee716e69e6cbb39"
+    },
+    {
+      "path": "lib/presentation/widgets/fullscreen_image_preview.dart",
+      "worktreeState": "clean",
+      "sha256": "f972f22ce07768636968983c039fd684fced801e7121e4dcc383bd4f46f9dcda"
+    },
+    {
+      "path": "lib/presentation/widgets/generation_result_card.dart",
+      "worktreeState": "untracked",
+      "sha256": "3753f90414eca6b3ad836eea111d84a65bbf0c9282277ad14922fcb2243e40ff"
+    },
+    {
+      "path": "lib/presentation/widgets/img2img_crop_dialog.dart",
+      "worktreeState": "clean",
+      "sha256": "94e1452da8e37976d7d5e40a6aedb9cec95fce12e945e53d3b50ef6fb0e3c406"
+    },
+    {
+      "path": "lib/presentation/widgets/llm_chat/chat_drawer.dart",
+      "worktreeState": "modified",
+      "sha256": "247833737121c4db620395a5fb71120040bedd79ee8c5fc128baac86b656a61d"
+    },
+    {
+      "path": "lib/presentation/widgets/llm_chat/chat_input_bar.dart",
+      "worktreeState": "clean",
+      "sha256": "263d64d735636f5860ebc0f7a065da449ef5f4741d0096f199e2e9d1bcc5b1ac"
+    },
+    {
+      "path": "lib/presentation/widgets/llm_chat/chat_message_bubble.dart",
+      "worktreeState": "clean",
+      "sha256": "7a2c386ad81917c04a9a56b42fffef70491a3d9f3dfadce996e5debcc7c963a6"
+    },
+    {
+      "path": "lib/presentation/widgets/llm_chat/chat_sessions_panel.dart",
+      "worktreeState": "clean",
+      "sha256": "5be9f088786cefb5d9e9c7a20733e3b708ba9036da7b1d2db84d8ecc61da8c56"
+    },
+    {
+      "path": "lib/presentation/widgets/llm_chat/chat_settings_sheet.dart",
+      "worktreeState": "clean",
+      "sha256": "aa934fa83a3471a057569082ff3caa374a7ba343bb40a92e039502fce0d3fd81"
+    },
+    {
+      "path": "lib/presentation/widgets/llm_chat/prompt_apply_parser.dart",
+      "worktreeState": "clean",
+      "sha256": "c34e265e4611fee807c0849356494199b40d7a30b20f31868986ea992d3bd996"
+    },
+    {
+      "path": "lib/presentation/widgets/llm_chat/prompt_version_dialog.dart",
+      "worktreeState": "clean",
+      "sha256": "9baded6533803d6b92808904f3c7ff67c7b998c0677251ee21f7f27e21b04f0b"
+    },
+    {
+      "path": "lib/presentation/widgets/prompt_capsule_sheet.dart",
+      "worktreeState": "clean",
+      "sha256": "9895044ef249a11f1ffd83e44ac3d7f0c14c91401ab901654067e33ca0faf7af"
+    },
+    {
+      "path": "pubspec.yaml",
+      "worktreeState": "clean",
+      "sha256": "a0197752f95811dac0332a55c91afd94cd824b811fe081b4668df67cd90e9d42"
+    },
+    {
+      "path": "test/agent_loop_test.dart",
+      "worktreeState": "clean",
+      "sha256": "d5081ee59c707ff495d3411a6efd253451a7b3bf484cea3c9b40e221d96b8b17"
+    },
+    {
+      "path": "test/app_theme_test.dart",
+      "worktreeState": "clean",
+      "sha256": "e8609fe107a45718b0009295cb1fe8cf77305f44ee8af0b3c8ab9e1e43f016f4"
+    },
+    {
+      "path": "test/comic_panel_prompt_tools_test.dart",
+      "worktreeState": "clean",
+      "sha256": "aef05d1021d72f2470d29138ae45491ea72b710c8029764c76dd2bf8caaabe8a"
+    },
+    {
+      "path": "test/comic_project_model_test.dart",
+      "worktreeState": "clean",
+      "sha256": "a75e68e150a0df47acc3174bb805ecc767fd6d9e00cb44ca8508442a6af59c6c"
+    },
+    {
+      "path": "test/comic_storyboard_importer_test.dart",
+      "worktreeState": "clean",
+      "sha256": "c3d6fd9a2cb43250bbe1b8070dba06abf39774747ec180ca9e55cf048abdcfc6"
+    },
+    {
+      "path": "test/comic_task_builder_test.dart",
+      "worktreeState": "clean",
+      "sha256": "46d443f39370cb54b237dbec6139b30240523fb89d4640794755e290f839a5ff"
+    },
+    {
+      "path": "test/database_migration_test.dart",
+      "worktreeState": "clean",
+      "sha256": "4334a23ca40c02c64268ad4ca6bdfc123d990996b44dcabb9ca0b357c7a752c9"
+    },
+    {
+      "path": "test/database_vibe_recovery_test.dart",
+      "worktreeState": "clean",
+      "sha256": "ec8d4c4d92b03e0197e81cdbd336872d6ac8f88c63718bc62312ee48a9531bb4"
+    },
+    {
+      "path": "test/generation_queue_test.dart",
+      "worktreeState": "clean",
+      "sha256": "0620379319b437b6e5965869de5434ade5d692d510e9da143d0f491527b3ed54"
+    },
+    {
+      "path": "test/generation_repository_impl_test.dart",
+      "worktreeState": "clean",
+      "sha256": "6f7f76bc53930f361c3d76ce7bb3393ec5989158645ec84c16ddaeaaf1b0184b"
+    },
+    {
+      "path": "test/generation_task_model_test.dart",
+      "worktreeState": "clean",
+      "sha256": "a5ef5eee9cb1ea84934052c0ec2b24be1908b590e8040fed21451bc7290df5f5"
+    },
+    {
+      "path": "test/generation_viewmodel_test.dart",
+      "worktreeState": "clean",
+      "sha256": "b7e34bafe2a63a2cccb03264fb73587063bc2808bf92395a6038824fe3c73eeb"
+    },
+    {
+      "path": "test/image_utils_test.dart",
+      "worktreeState": "clean",
+      "sha256": "60566088f12df0cd206ba60c9438bdd55e2e0ae6568d9d3df40ad0afdb73d098"
+    },
+    {
+      "path": "test/img2img_crop_dialog_test.dart",
+      "worktreeState": "clean",
+      "sha256": "9cc9ad4a09c30cb1126f24e1ed04b71b37c89124418093f2f1edb7f7ff926900"
+    },
+    {
+      "path": "test/inpaint_rasterizer_test.dart",
+      "worktreeState": "clean",
+      "sha256": "0624a578388f6ae6e798789100d3e2131eb6fbe785a05e55e377a073eb328e01"
+    },
+    {
+      "path": "test/llm_interaction_test.dart",
+      "worktreeState": "clean",
+      "sha256": "e127cfe2f8d38de924c3e93c370bae5bfb4fcd049002665786d2869cd4a0f4ea"
+    },
+    {
+      "path": "test/mobile_creation_layout_test.dart",
+      "worktreeState": "untracked",
+      "sha256": "9aa2058162bb1b48183a075bbc6ff021fe09bbf778d76a8133e6925fdea78251"
+    },
+    {
+      "path": "test/novelai_api_service_contract_test.dart",
+      "worktreeState": "clean",
+      "sha256": "a27d539a362056ba132d0c11ab949680e46f61ff579ac073f75ae9d107014cc8"
+    },
+    {
+      "path": "test/presentation/pages/history_detail_page_test.dart",
+      "worktreeState": "untracked",
+      "sha256": "e5f818f57c6e1bc58258db7aadabc3fb1265f803280fec86bdbb5047cf9073aa"
+    },
+    {
+      "path": "test/prompt_apply_parser_test.dart",
+      "worktreeState": "clean",
+      "sha256": "6e397afede12dc2e9ce6f6747e114a85f17cd6a9da4ccda0535877dda42eccc8"
+    },
+    {
+      "path": "test/prompt_memory_repository_test.dart",
+      "worktreeState": "clean",
+      "sha256": "453d57af16fe15ed4ba29f96caea799148f44d694db7a4dc5541336c57896d75"
+    },
+    {
+      "path": "test/prompt_memory_viewmodel_test.dart",
+      "worktreeState": "clean",
+      "sha256": "b92afe870ce584755ced470520cc3928ac942661ad112aaff1885af5c2b514e5"
+    },
+    {
+      "path": "test/prompting_skill_loader_test.dart",
+      "worktreeState": "clean",
+      "sha256": "747060e321bfeaba068b67cdf14e8f4a18350bfec6bbdf0e838f935788268f19"
+    },
+    {
+      "path": "test/settings_local_datasource_test.dart",
+      "worktreeState": "clean",
+      "sha256": "aabe993e3bf7ceafd7f69b7877548cc8e488550db7b67365f493faad68343c8a"
+    },
+    {
+      "path": "test/support/frontend_generation_fake.dart",
+      "worktreeState": "untracked",
+      "sha256": "972fe02aa82b44171dcbcff8a8bfb7d543dfcc0a9d1234dbb41b68c9be6bdc86"
+    },
+    {
+      "path": "test/tiled_img2img_service_test.dart",
+      "worktreeState": "clean",
+      "sha256": "38b1c405e4c21ae1ed3df01627327b363f75f1bad718bca8db02f874833a31b4"
+    },
+    {
+      "path": "test/widget_test.dart",
+      "worktreeState": "modified",
+      "sha256": "7dfd7152e5837dc53fc81fb731c55bba1db4b9323eb6e8f35c3329a2d74c617f"
+    }
+  ]
+}
