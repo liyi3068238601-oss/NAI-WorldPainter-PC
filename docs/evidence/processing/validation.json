@@ -1,0 +1,185 @@
+{
+  "date": "2026-10-12",
+  "tests": {
+    "passed": 111,
+    "failed": 0,
+    "concurrency": 1
+  },
+  "analyzer": "no issues",
+  "builds": {
+    "web": "passed; existing Cupertino font-family warning",
+    "windows": "passed; 0 native warnings/errors"
+  },
+  "nativeProbes": {
+    "sqlite_unicode_paths_png_hash": "passed",
+    "credentials_write_read": "passed",
+    "bundledLocalSrModels": [
+      "realesrganAnime4x",
+      "realcuganConservative2x",
+      "realcuganConservative4x"
+    ]
+  },
+  "browser": {
+    "surface": "Codex built-in browser",
+    "url": "http://127.0.0.1:5080/",
+    "mockEndpoint": "http://127.0.0.1:5090",
+    "viewports": [
+      [
+        1440,
+        900
+      ],
+      [
+        1280,
+        720
+      ],
+      [
+        640,
+        480
+      ]
+    ],
+    "checks": [
+      "6 tiles -> 1536x1024 PNG",
+      "drag comparison",
+      "PNG export decoded/hash checked",
+      "result -> new source",
+      "Director lineart -> same-sized derived Gallery result",
+      "dark/light themes",
+      "compact drawer start button within viewport",
+      "Enhance defaults 1.5/.3/.1",
+      "Gallery full parameter refill",
+      "reload restored source/parameters/result without extra requests",
+      "no final app console errors",
+      "mode switch clears old result while Gallery preserves/full-refills it",
+      "temporary viewport reset"
+    ],
+    "realCredentialsInBrowser": false
+  },
+  "realApi": {
+    "status": "paused_by_user",
+    "budget": 50,
+    "observedAnlasSpent": 1,
+    "imageRequestsBeforePause": 6
+  },
+  "windowsReleaseArtifacts": [
+    {
+      "file": "worldpainter_pc.exe",
+      "sha256": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b",
+      "bytes": 152576
+    },
+    {
+      "file": "data/app.so",
+      "sha256": "3c88f6eacefdb1dd8218d4fd0d0d2b1f2b78f70d9115c5dbdc911207b9599e7b",
+      "bytes": 7897992
+    },
+    {
+      "file": "data/sr/install-manifest.json",
+      "sha256": "a4e369b8615c23e8052f268a4624676b1c9615573f386bfc1675294bf4682a5d",
+      "bytes": 6343
+    }
+  ],
+  "images": [
+    {
+      "file": "desktop-1280.jpg",
+      "format": "JPEG",
+      "width": 1280,
+      "height": 720,
+      "sha256": "742a7c26eab7ae3940a324cfe1c36696b5f90c3fcd48c1ef7503e26e7bc76316",
+      "bytes": 49470
+    },
+    {
+      "file": "desktop-compact.jpg",
+      "format": "JPEG",
+      "width": 640,
+      "height": 480,
+      "sha256": "a6059e0861c3138406f2d5aec4a1ae59cc630a6d10643d7bd1a095bab139a5d3",
+      "bytes": 22413
+    },
+    {
+      "file": "desktop-dark.jpg",
+      "format": "JPEG",
+      "width": 1440,
+      "height": 900,
+      "sha256": "dd64f8f077de2e67c5943242cf5b98a30ff651cef2dc61d4038d26d989820d1a",
+      "bytes": 70678
+    },
+    {
+      "file": "desktop-light.jpg",
+      "format": "JPEG",
+      "width": 1440,
+      "height": 900,
+      "sha256": "7d40580034bdaca9f5de6fb0f23c90538331ad9e687a55439e0392905c536000",
+      "bytes": 68928
+    },
+    {
+      "file": "mock-tiled.png",
+      "format": "PNG",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "96046bc5d601098b1cb565c4434175c6ac025e9546dafab8c916fcb5c53149a1",
+      "bytes": 158023
+    },
+    {
+      "file": "official-director.png",
+      "format": "PNG",
+      "width": 320,
+      "height": 320,
+      "sha256": "d7017c62475c26510e9d58d8e0989338ab9359435c3fda1c73d5f4e37463d73f",
+      "bytes": 30332
+    },
+    {
+      "file": "official-enhance.png",
+      "format": "PNG",
+      "width": 448,
+      "height": 448,
+      "sha256": "32aeb11c74e464cad5c6154e205342e71ce490986798c7f919e71c33f5346875",
+      "bytes": 165565
+    },
+    {
+      "file": "official-localSr.png",
+      "format": "PNG",
+      "width": 640,
+      "height": 640,
+      "sha256": "f21e00a66746d134e744cbb403acff703fe9380603a98b3e63e4085f150c89fa",
+      "bytes": 97873
+    },
+    {
+      "file": "official-source.png",
+      "format": "PNG",
+      "width": 320,
+      "height": 320,
+      "sha256": "2a56aba3d75f6e81b8d1755f5c617337cf8b80816739a8403860688d022ab241",
+      "bytes": 10175
+    },
+    {
+      "file": "official-tiled.png",
+      "format": "PNG",
+      "width": 512,
+      "height": 512,
+      "sha256": "db747d719c242e7dad565db9249bc4f8965629e7b7913bee0e51f156ed7d3a09",
+      "bytes": 237055
+    },
+    {
+      "file": "official-upscale.png",
+      "format": "PNG",
+      "width": 640,
+      "height": 640,
+      "sha256": "c4c91ee47fb2f6e480bd4fb8d326330c35851c6d29299588b0fb4b24c14917f9",
+      "bytes": 178482
+    },
+    {
+      "file": "recovered-tools.jpg",
+      "format": "JPEG",
+      "width": 1440,
+      "height": 900,
+      "sha256": "04732a16ba2bf483c8269addbdefc5fb2bfedca7e0883e01f43ab71e9900511c",
+      "bytes": 83837
+    }
+  ],
+  "limits": [
+    "Other remote Director actions/V5 Max/4x/gateways have mock coverage, not real coverage",
+    "Real completed tiled scenario used one tile; multi-tile final composition validated with mock",
+    "Synthetic fixtures test correctness, not production illustration quality",
+    "Intel-only GPU, clean-machine installation and native save-dialog manual interaction unverified",
+    "Mobile parity is still incomplete beyond this phase"
+  ]
+}

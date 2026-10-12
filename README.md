@@ -23,6 +23,7 @@
 - 唯一工作目录：`E:\NAI-WorldPainter\PC端`
 - [PC 端规划](docs/PC_PLAN.md)：目标、首版范围、交互、里程碑与验收。
 - [手机端功能对照](docs/MOBILE_PARITY.md)：按功能记录来源、PC 等价行为和验收标准。
+- [图片工具与后期审计](docs/IMAGE_TOOLS_REVIEW.md)：分块、Director、官方 Enhance/Upscale、本地超分的手机可达行为、协议和本轮 PC 进展。
 - [设计方向](docs/DESIGN_DIRECTION.md)：界面、布局、动画与流畅感优先参考 NovelAI Local Web，其次浪白；保留绘世主色和风格。
 - [实机交互调查](docs/REFERENCE_UI_REVIEW.md)：内置浏览器中的真实界面操作、模拟服务边界、截图与借鉴结论。
 - [技术路线](docs/ARCHITECTURE.md)：Flutter Windows 为当前路线；SQLite、凭据及 Release 构建已验证，其他原生平台能力继续逐项验收。

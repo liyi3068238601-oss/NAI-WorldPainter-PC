@@ -1,0 +1,22 @@
+[
+  {
+    "method": "POST",
+    "path": "/v1/images/generations",
+    "input_width": 1536,
+    "input_height": 1024,
+    "output_width": 1536,
+    "output_height": 1024,
+    "operation": "director-lineart",
+    "count": 1
+  },
+  {
+    "method": "POST",
+    "path": "/v1/images/generations",
+    "input_width": 640,
+    "input_height": 640,
+    "output_width": 1024,
+    "output_height": 1024,
+    "operation": "img2img",
+    "count": 6
+  }
+]

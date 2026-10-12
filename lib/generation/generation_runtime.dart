@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
 
 import '../media/image_asset_store.dart';
 import '../security/credential_vault.dart';
 import '../prototype/workbench_controller.dart';
 import 'generation_parameters.dart';
+import 'generation_http_client.dart';
 import 'novelai_generation_service.dart';
 import 'service_connection.dart';
 
@@ -12,7 +15,7 @@ class GenerationRuntime {
     required this.assets,
     required this.vault,
     http.Client Function()? clientFactory,
-  }) : clientFactory = clientFactory ?? http.Client.new;
+  }) : clientFactory = clientFactory ?? createGenerationHttpClient;
   final ImageAssetStore assets;
   final CredentialVault vault;
   final http.Client Function() clientFactory;
@@ -28,6 +31,45 @@ class GenerationRuntime {
     GenerationParameters parameters,
     ServiceConnection connection,
   ) async {
+    final epoch = _epoch;
+    final result = await generateBytes(parameters, connection);
+    if (epoch != _epoch) throw const FormatException('任务已取消');
+    final asset = await assets.save(result.imageBytes);
+    if (epoch != _epoch) throw const FormatException('任务已取消');
+    final effective = result.effectiveParameters;
+    return SceneResult(
+      id: 'image-${DateTime.now().microsecondsSinceEpoch}-${asset.id.substring(0, 12)}',
+      title: parameters.prompt.trim().isEmpty
+          ? '生成图片'
+          : parameters.prompt.trim().split('\n').first,
+      prompt: effective.prompt,
+      negative: effective.negativePrompt ?? '',
+      width: asset.width,
+      height: asset.height,
+      seed: effective.seed!,
+      variant: 0,
+      favorite: false,
+      isDemo: false,
+      model:
+          WorkbenchController.modelIds.entries
+              .where((entry) => entry.value == effective.model)
+              .firstOrNull
+              ?.key ??
+          effective.model,
+      provider: connection.label,
+      steps: effective.steps,
+      cfg: effective.scale,
+      assetRef: asset.assetRef,
+      parameters: effective,
+    );
+  }
+
+  /// Returns bytes without adding intermediate tiles to the managed gallery.
+  Future<GenerationResult> generateBytes(
+    GenerationParameters parameters,
+    ServiceConnection connection, {
+    Uint8List? sourceImageBytes,
+  }) async {
     final epoch = _epoch;
     final token = await connection.readSecret(vault);
     if (token == null || token.isEmpty) {
@@ -51,37 +93,13 @@ class GenerationRuntime {
           allowInsecureLoopbackForTesting: connection.uri.scheme == 'http',
         ),
         credential: GenerationCredential(token),
-        resolveImage: assets.read,
+        resolveImage: (id) =>
+            sourceImageBytes != null && id == parameters.img2imgSourceImageId
+            ? Future.value(sourceImageBytes)
+            : assets.read(id),
       );
       if (epoch != _epoch) throw const FormatException('任务已取消');
-      final asset = await assets.save(result.imageBytes);
-      if (epoch != _epoch) throw const FormatException('任务已取消');
-      final effective = result.effectiveParameters;
-      return SceneResult(
-        id: 'image-${DateTime.now().microsecondsSinceEpoch}-${asset.id.substring(0, 12)}',
-        title: parameters.prompt.trim().isEmpty
-            ? '生成图片'
-            : parameters.prompt.trim().split('\n').first,
-        prompt: effective.prompt,
-        negative: effective.negativePrompt ?? '',
-        width: asset.width,
-        height: asset.height,
-        seed: effective.seed!,
-        variant: 0,
-        favorite: false,
-        isDemo: false,
-        model:
-            WorkbenchController.modelIds.entries
-                .where((entry) => entry.value == effective.model)
-                .firstOrNull
-                ?.key ??
-            effective.model,
-        provider: connection.label,
-        steps: effective.steps,
-        cfg: effective.scale,
-        assetRef: asset.assetRef,
-        parameters: effective,
-      );
+      return result;
     } on GenerationServiceException catch (error) {
       throw FormatException(error.message);
     } finally {

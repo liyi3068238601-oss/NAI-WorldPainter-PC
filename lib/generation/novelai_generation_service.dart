@@ -11,6 +11,8 @@ import 'generation_parameters.dart';
 import 'network_address_lookup_stub.dart'
     if (dart.library.io) 'network_address_lookup_io.dart'
     as network_lookup;
+import '../processing/postprocess_image_preparer.dart';
+import '../processing/postprocess_parameters.dart';
 
 enum NovelAiProtocol { official, gateway7877, ikun }
 
@@ -52,6 +54,40 @@ class GenerationResult {
   const GenerationResult({
     required this.imageBytes,
     required this.effectiveParameters,
+  });
+}
+
+class PostprocessResult {
+  final Uint8List imageBytes;
+  final PostprocessParameters effectiveParameters;
+  final int inputWidth;
+  final int inputHeight;
+  final int outputWidth;
+  final int outputHeight;
+
+  const PostprocessResult({
+    required this.imageBytes,
+    required this.effectiveParameters,
+    required this.inputWidth,
+    required this.inputHeight,
+    required this.outputWidth,
+    required this.outputHeight,
+  });
+}
+
+class _ProcessedPostprocessImage {
+  final Uint8List imageBytes;
+  final int inputWidth;
+  final int inputHeight;
+  final int outputWidth;
+  final int outputHeight;
+
+  const _ProcessedPostprocessImage({
+    required this.imageBytes,
+    required this.inputWidth,
+    required this.inputHeight,
+    required this.outputWidth,
+    required this.outputHeight,
   });
 }
 
@@ -184,6 +220,121 @@ class NovelAiGenerationService {
       );
     } catch (_) {
       // Do not propagate library, filesystem, server-body, or resolver details.
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidResponse,
+      );
+    }
+  }
+
+  /// Runs an image post-process operation supported by the selected protocol.
+  ///
+  /// Official Enhance and Upscale use NovelAI's fixed image host. Director
+  /// Tools follow the selected protocol's own request schema on official,
+  /// 7877, and ikun routes. Local super-resolution belongs to the local
+  /// processing runtime and is rejected here before resolving a credential or
+  /// making a request.
+  Future<PostprocessResult> processPostprocess({
+    required PostprocessParameters parameters,
+    required GenerationProviderConfig provider,
+    required GenerationCredential credential,
+    required InputImageResolver resolveImage,
+  }) async {
+    try {
+      parameters.validate();
+    } on PostprocessValidationException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    } on FormatException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
+
+    if (parameters.operation == PostprocessOperation.localSr ||
+        (parameters.operation != PostprocessOperation.director &&
+            provider.protocol != NovelAiProtocol.official)) {
+      throw const GenerationServiceException(
+        GenerationFailureReason.unsupportedCombination,
+      );
+    }
+    if (parameters.operation == PostprocessOperation.director &&
+        provider.protocol != NovelAiProtocol.official &&
+        (parameters.model == null || parameters.model!.trim().isEmpty)) {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
+
+    final effectiveParameters =
+        parameters.operation == PostprocessOperation.enhance &&
+            parameters.seed == null
+        ? parameters.withSeed(
+            _seedGenerator?.call() ?? Random.secure().nextInt(0x100000000),
+          )
+        : parameters;
+    if (effectiveParameters.seed != null &&
+        (effectiveParameters.seed! < 0 ||
+            effectiveParameters.seed! > 0xffffffff)) {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
+
+    _validateCredential(credential);
+    final baseUri = _resolveBaseUri(provider);
+    final requestImages = _ResolvedImages(
+      resolveImage,
+      _looksLikeImage,
+      maxBytes: _maxInputImageBytes,
+      maxTotalBytes: _maxZipExpandedBytes,
+    );
+
+    try {
+      final processed = switch (parameters.operation) {
+        PostprocessOperation.enhance => await _processOfficialEnhance(
+          effectiveParameters,
+          credential,
+          baseUri,
+          requestImages,
+        ),
+        PostprocessOperation.upscale => await _processOfficialUpscale(
+          effectiveParameters,
+          credential,
+          baseUri,
+          requestImages,
+        ),
+        PostprocessOperation.director => await _processDirector(
+          effectiveParameters,
+          provider.protocol,
+          credential,
+          baseUri,
+          requestImages,
+          allowInsecureLoopbackForTesting:
+              provider.allowInsecureLoopbackForTesting,
+        ),
+        PostprocessOperation.localSr => throw const GenerationServiceException(
+          GenerationFailureReason.unsupportedCombination,
+        ),
+      };
+      return PostprocessResult(
+        imageBytes: processed.imageBytes,
+        effectiveParameters: effectiveParameters,
+        inputWidth: processed.inputWidth,
+        inputHeight: processed.inputHeight,
+        outputWidth: processed.outputWidth,
+        outputHeight: processed.outputHeight,
+      );
+    } on GenerationServiceException {
+      rethrow;
+    } on TimeoutException {
+      throw const GenerationServiceException(GenerationFailureReason.timeout);
+    } on http.ClientException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.networkFailure,
+      );
+    } catch (_) {
+      // Do not propagate image decoder, resolver, or server-body details.
       throw const GenerationServiceException(
         GenerationFailureReason.invalidResponse,
       );
@@ -830,6 +981,320 @@ class NovelAiGenerationService {
         timeout: _generationTimeout,
       ),
     );
+  }
+
+  Future<_ProcessedPostprocessImage> _processOfficialEnhance(
+    PostprocessParameters parameters,
+    GenerationCredential credential,
+    Uri baseUri,
+    _ResolvedImages images,
+  ) async {
+    final model = parameters.model!.trim();
+    if (!PostprocessParameters.officialEnhanceModels.contains(model)) {
+      throw const GenerationServiceException(
+        GenerationFailureReason.unsupportedCombination,
+      );
+    }
+
+    final source = await _resolvePostprocessSource(parameters, images);
+    final PreparedPostprocessImage prepared;
+    try {
+      prepared = await prepareEnhanceInput(
+        bytes: source,
+        sourceWidth: parameters.width,
+        sourceHeight: parameters.height,
+        scale: parameters.scale!,
+        upscaledEnhance: parameters.upscaledEnhance,
+      );
+    } on PostprocessImagePreparationException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.missingImage,
+      );
+    }
+
+    final prompt = parameters.prompt ?? '';
+    final negativePrompt = parameters.negativePrompt ?? '';
+    final requestParameters = <String, dynamic>{
+      'width': prepared.width,
+      'height': prepared.height,
+      'image': base64Encode(prepared.bytes),
+      'strength': parameters.strength,
+      'noise': parameters.noise,
+      'extra_noise_seed': parameters.seed,
+      'steps': parameters.steps,
+      'scale': parameters.guidance,
+      'sampler': 'k_euler_ancestral',
+      'n_samples': 1,
+      'negative_prompt': negativePrompt,
+      'qualityToggle': true,
+      'ucPreset': 1,
+    };
+    requestParameters['seed'] = parameters.seed;
+    if (parameters.upscaledEnhance) {
+      requestParameters['upscaled_enhance'] = true;
+    }
+    if (_isV4Plus(model)) {
+      requestParameters.addAll({
+        'use_coords': false,
+        'v4_prompt': {
+          'caption': {'base_caption': prompt, 'char_captions': []},
+          'use_coords': false,
+          'use_order': true,
+        },
+        'v4_negative_prompt': {
+          'caption': {'base_caption': negativePrompt, 'char_captions': []},
+          'use_coords': false,
+          'use_order': false,
+        },
+      });
+    }
+
+    final response = await _sendJson(
+      _endpoint(baseUri, '/ai/generate-image'),
+      credential,
+      {
+        'input': prompt,
+        'model': model,
+        'action': 'img2img',
+        'parameters': requestParameters,
+      },
+      accept: 'application/zip, application/json',
+      timeout: _generationTimeout,
+    );
+    final output = await _extractOfficialImage(response);
+    final dimensions = await _postprocessOutputDimensions(output);
+    if (!parameters.upscaledEnhance &&
+        (dimensions.$1 != prepared.width || dimensions.$2 != prepared.height)) {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidResponse,
+      );
+    }
+    return _ProcessedPostprocessImage(
+      imageBytes: output,
+      inputWidth: prepared.width,
+      inputHeight: prepared.height,
+      outputWidth: dimensions.$1,
+      outputHeight: dimensions.$2,
+    );
+  }
+
+  Future<_ProcessedPostprocessImage> _processOfficialUpscale(
+    PostprocessParameters parameters,
+    GenerationCredential credential,
+    Uri baseUri,
+    _ResolvedImages images,
+  ) async {
+    final source = await _resolvePostprocessSource(parameters, images);
+    final PreparedPostprocessImage firstInput;
+    try {
+      firstInput = await prepareUpscaleInput(
+        bytes: source,
+        sourceWidth: parameters.width,
+        sourceHeight: parameters.height,
+      );
+    } on PostprocessImagePreparationException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.missingImage,
+      );
+    }
+
+    try {
+      validateUpscaleOutputDimensions(
+        inputWidth: firstInput.width,
+        inputHeight: firstInput.height,
+        scale: parameters.scale!,
+      );
+    } on PostprocessImagePreparationException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
+
+    final passes = parameters.scale == 4 ? 2 : 1;
+    var passInput = firstInput.bytes;
+    var currentWidth = firstInput.width;
+    var currentHeight = firstInput.height;
+    for (var pass = 0; pass < passes; pass++) {
+      final response = await _sendJson(
+        _endpoint(baseUri, '/ai/upscale'),
+        credential,
+        {
+          'image': base64Encode(passInput),
+          'model': 'nai-diffusion-5-curated',
+          'declared_blur_sigma': 0,
+        },
+        accept: 'application/zip, image/png, application/json',
+        timeout: _generationTimeout,
+      );
+      passInput = await _extractOfficialImage(response);
+      final dimensions = await _postprocessOutputDimensions(passInput);
+      final expectedWidth = currentWidth * 2;
+      final expectedHeight = currentHeight * 2;
+      if (dimensions.$1 != expectedWidth || dimensions.$2 != expectedHeight) {
+        throw const GenerationServiceException(
+          GenerationFailureReason.invalidResponse,
+        );
+      }
+      currentWidth = dimensions.$1;
+      currentHeight = dimensions.$2;
+    }
+
+    return _ProcessedPostprocessImage(
+      imageBytes: passInput,
+      inputWidth: firstInput.width,
+      inputHeight: firstInput.height,
+      outputWidth: currentWidth,
+      outputHeight: currentHeight,
+    );
+  }
+
+  Future<_ProcessedPostprocessImage> _processDirector(
+    PostprocessParameters parameters,
+    NovelAiProtocol protocol,
+    GenerationCredential credential,
+    Uri baseUri,
+    _ResolvedImages images, {
+    required bool allowInsecureLoopbackForTesting,
+  }) async {
+    final source = await _resolvePostprocessSource(parameters, images);
+    try {
+      final dimensions = await decodePostprocessImageDimensions(source);
+      if (dimensions.$1 != parameters.width ||
+          dimensions.$2 != parameters.height) {
+        throw const GenerationServiceException(
+          GenerationFailureReason.missingImage,
+        );
+      }
+    } on PostprocessImagePreparationException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.missingImage,
+      );
+    }
+
+    final response = switch (protocol) {
+      NovelAiProtocol.official => await _sendJson(
+        _endpoint(baseUri, '/ai/augment-image'),
+        credential,
+        _officialDirectorPayload(parameters, source),
+        accept: 'application/zip, image/png, application/json',
+        timeout: _generationTimeout,
+      ),
+      NovelAiProtocol.gateway7877 => await _sendJson(
+        _endpoint(baseUri, '/v1/images/generations'),
+        credential,
+        _gatewayDirectorPayload(parameters, source, extraKey: 'extra'),
+        accept: 'application/json',
+        timeout: _generationTimeout,
+      ),
+      NovelAiProtocol.ikun => await _sendJson(
+        _endpoint(baseUri, '/v1/images/generations'),
+        credential,
+        _gatewayDirectorPayload(
+          parameters,
+          source,
+          extraKey: 'novelai_operation',
+        ),
+        accept: 'application/json',
+        timeout: _generationTimeout,
+      ),
+    };
+    final output = protocol == NovelAiProtocol.official
+        ? await _extractOfficialImage(response)
+        : await _extractGatewayImage(
+            response,
+            baseUri,
+            allowInsecureLoopbackForTesting: allowInsecureLoopbackForTesting,
+          );
+    final outputDimensions = await _postprocessOutputDimensions(output);
+    return _ProcessedPostprocessImage(
+      imageBytes: output,
+      inputWidth: parameters.width,
+      inputHeight: parameters.height,
+      outputWidth: outputDimensions.$1,
+      outputHeight: outputDimensions.$2,
+    );
+  }
+
+  Map<String, dynamic> _officialDirectorPayload(
+    PostprocessParameters parameters,
+    Uint8List source,
+  ) {
+    final tool = parameters.directorTool!;
+    final defry = parameters.defry ?? 0;
+    final payload = <String, dynamic>{
+      'image': base64Encode(source),
+      'width': parameters.width,
+      'height': parameters.height,
+      'req_type': _officialDirectorToolName(tool),
+      'defry': defry,
+    };
+    final prompt = parameters.prompt?.trim();
+    if (_directorToolUsesPrompt(tool) && prompt?.isNotEmpty == true) {
+      payload['prompt'] = tool == PostprocessDirectorTool.emotion
+          ? '$prompt;;$defry'
+          : prompt;
+    }
+    return payload;
+  }
+
+  Map<String, dynamic> _gatewayDirectorPayload(
+    PostprocessParameters parameters,
+    Uint8List source, {
+    required String extraKey,
+  }) {
+    final tool = parameters.directorTool!;
+    final payload = <String, dynamic>{
+      extraKey: _gatewayDirectorOperation(tool),
+      'image': base64Encode(source),
+      'width': parameters.width,
+      'height': parameters.height,
+      'model': parameters.model!.trim(),
+      'response_format': 'b64_json',
+    };
+    if (parameters.prompt != null) {
+      payload['prompt'] = parameters.prompt!.trim();
+    }
+    if (parameters.defry != null) payload['defry'] = parameters.defry;
+    return payload;
+  }
+
+  String _officialDirectorToolName(PostprocessDirectorTool tool) =>
+      switch (tool) {
+        PostprocessDirectorTool.declutter => 'declutter',
+        PostprocessDirectorTool.bgRemoval => 'bg-removal',
+        PostprocessDirectorTool.lineart => 'lineart',
+        PostprocessDirectorTool.sketch => 'sketch',
+        PostprocessDirectorTool.colorize => 'colorize',
+        PostprocessDirectorTool.emotion => 'emotion',
+      };
+
+  String _gatewayDirectorOperation(PostprocessDirectorTool tool) =>
+      switch (tool) {
+        PostprocessDirectorTool.declutter => 'director-declutter',
+        PostprocessDirectorTool.bgRemoval => 'director-bg-remover',
+        PostprocessDirectorTool.lineart => 'director-lineart',
+        PostprocessDirectorTool.sketch => 'director-sketch',
+        PostprocessDirectorTool.colorize => 'director-colorize',
+        PostprocessDirectorTool.emotion => 'director-emotion',
+      };
+
+  bool _directorToolUsesPrompt(PostprocessDirectorTool tool) =>
+      tool == PostprocessDirectorTool.colorize ||
+      tool == PostprocessDirectorTool.emotion;
+
+  Future<Uint8List> _resolvePostprocessSource(
+    PostprocessParameters parameters,
+    _ResolvedImages images,
+  ) => images.resolve(parameters.sourceAssetRef);
+
+  Future<(int, int)> _postprocessOutputDimensions(Uint8List image) async {
+    try {
+      return await decodePostprocessImageDimensions(image);
+    } on PostprocessImagePreparationException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidResponse,
+      );
+    }
   }
 
   Future<String> _encodeOfficialVibe(

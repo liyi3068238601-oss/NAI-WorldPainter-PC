@@ -34,6 +34,21 @@ SQLite 持久化依赖锁定于 `pubspec.lock`。Windows 使用 `sqflite_common_
 
 实现依据：[Flutter 响应式布局](https://docs.flutter.dev/ui/adaptive-responsive)、[Flutter Web 无障碍](https://docs.flutter.dev/ui/accessibility/web-accessibility)。浏览器预览与 Windows 使用同一套 Flutter 界面代码；前者的成功不替代原生平台验收。
 
+## Windows 本地超分运行时
+
+Windows 本地 SR 使用官方 ncnn Vulkan 便携发行包，不依赖 CUDA、PyTorch、Android .so 或外部 Python 环境。固定 Real-ESRGAN ncnn-vulkan v0.2.5.0 与 Real-CUGAN ncnn-vulkan 20220728，只安装动漫 x4 模型和保守型 2x/4x 模型。安装脚本在解包前验证固定归档长度和 SHA-256，并只提取指定可执行文件、运行库与模型；下载归档和生成运行时留在 .tmp/sr-runtime 忽略目录。
+
+| 运行时 | 上游代码 / 模型许可 | 许可副本 |
+| --- | --- | --- |
+| [Real-ESRGAN ncnn-vulkan v0.2.5.0](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/tag/v0.2.5.0) | 实现 MIT；上游动漫模型 BSD-3-Clause | [实现许可](../licenses/REAL_ESRGAN_NCNN_VULKAN_MIT.txt)、[模型许可](../licenses/REAL_ESRGAN_MODEL_BSD-3-CLAUSE.txt) |
+| [Real-CUGAN ncnn-vulkan 20220728](https://github.com/nihui/realcugan-ncnn-vulkan/releases/tag/20220728) | 实现与模型 MIT | [实现许可](../licenses/REAL_CUGAN_NCNN_VULKAN_MIT.txt)、[模型许可](../licenses/REAL_CUGAN_MODEL_MIT.txt) |
+| 上游打包的 ncnn、libwebp、stb、dirent | BSD-3-Clause / MIT / Public Domain，按上游声明 | licenses/NCNN_BSD-3-CLAUSE.txt、LIBWEBP_BSD-3-CLAUSE.txt、STB_MIT_OR_PUBLIC_DOMAIN.txt、DIRENT_MIT.txt |
+| Microsoft VCOMP140 OpenMP runtime | Real-ESRGAN / Real-CUGAN Windows ZIP 内未修改的 vcomp140.dll；随部署分发须遵守 [Visual Studio 2022 Redistribution](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution) 许可条件 | setup 脚本不提取 vcomp140d.dll 调试运行库；已核对 vcomp140.dll 的 Microsoft Authenticode 签名 |
+
+运行时归档 URL、归档 SHA-256、模型来源和手机端模型逐项比对记录在 [local-sr-runtime-manifest.json](evidence/local-sr-runtime-manifest.json)。GitHub release 未提供归档校验和；项目固定下载后核得的 SHA-256，并在独立安装脚本中校验。Real-CUGAN 归档哈希另与 Scoop 官方清单交叉核对。
+
+运行 PowerShell 命令 scripts/setup-super-resolution.ps1 可准备开发运行时。桌面集成可将运行时放入 data/sr；后续构建脚本是否捆绑由构建配置单独决定。
+
 ## 生成链路新增依赖
 
 依赖来自 pub.dev 官方包分发，固定版本和包归档 SHA-256 见 pubspec.lock；以下副本保留原字节。

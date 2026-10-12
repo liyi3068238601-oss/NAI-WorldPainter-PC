@@ -14,9 +14,16 @@ import '../editing/image_crop_dialog.dart';
 import '../editing/image_editing_session.dart';
 import '../editing/inpaint_renderer.dart';
 import '../editing/inpaint_workspace.dart';
+import '../media/image_asset_validation.dart';
+import '../platform/image_export.dart';
+import '../generation/service_connection.dart';
+import '../processing/postprocess_parameters.dart';
+import '../processing/tiled_img2img_layout.dart';
+import '../processing/image_comparison.dart';
 
 part 'generation_panels.dart';
 part 'editing_panels.dart';
+part 'image_tools_panel.dart';
 
 class Workbench extends StatefulWidget {
   const Workbench({
@@ -43,6 +50,8 @@ class _WorkbenchState extends State<Workbench> {
   final modelId = TextEditingController();
   final transform = TransformationController();
   final scaffold = GlobalKey<ScaffoldState>();
+  final toolInlineForm = GlobalKey<FormState>();
+  final toolDrawerForm = GlobalKey<FormState>();
   final Map<String, List<List<Offset>>> masks = {};
   final Map<String, List<List<Offset>>> redo = {};
   bool? expandedNav;
@@ -58,6 +67,10 @@ class _WorkbenchState extends State<Workbench> {
   ImageEditingSession? editing;
   int editingRefillRevision = 0;
   bool preparingImage = false;
+  void _setPage(int value) {
+    if (mounted) setState(() => page = value);
+  }
+
   void _setPreparing(bool value) {
     if (mounted) setState(() => preparingImage = value);
   }
@@ -75,6 +88,7 @@ class _WorkbenchState extends State<Workbench> {
   void initState() {
     super.initState();
     if (!c.wasRestored) c.applyResult(c.selected);
+    if (c.imageTools['active'] == true) page = 3;
     final editor = c.editor;
     character = editor['character'] as String? ?? '';
     position = editor['position'] as String? ?? 'C3';
@@ -135,6 +149,7 @@ class _WorkbenchState extends State<Workbench> {
       if (editing != null && editingRefillRevision != c.refillRevision) {
         editingRefillRevision = c.refillRevision;
         editing!.restore(c.imageEditing);
+        if (c.imageTools['active'] == true) page = 3;
       }
       _sync();
       setState(() {});
@@ -242,7 +257,7 @@ class _WorkbenchState extends State<Workbench> {
             drawer: tiny ? Drawer(child: _navigation(true)) : null,
             endDrawer: SizedBox(
               width: math.min(400, bounds.maxWidth),
-              child: Drawer(child: _parameters()),
+              child: Drawer(child: _parameters(drawer: true)),
             ),
             body: SafeArea(
               child: Row(
@@ -277,7 +292,11 @@ class _WorkbenchState extends State<Workbench> {
                               ? _settings()
                               : Row(
                                   children: [
-                                    Expanded(child: _canvasWorkspace()),
+                                    Expanded(
+                                      child: page == 3
+                                          ? _imageToolsWorkspace()
+                                          : _canvasWorkspace(),
+                                    ),
                                     if (inlinePanel)
                                       SizedBox(
                                         width: 380,
@@ -384,7 +403,7 @@ class _WorkbenchState extends State<Workbench> {
         child: Divider(color: colors.outlineVariant),
       ),
       const SizedBox(height: 12),
-      _navItem(Icons.tune_rounded, '图像工具', -1, wide),
+      _navItem(Icons.tune_rounded, '图像工具', 3, wide),
       _navItem(Icons.chat_bubble_outline_rounded, 'AI 助手', -1, wide),
       _navItem(Icons.view_quilt_outlined, '漫画创作', -1, wide),
       _navItem(Icons.publish_outlined, 'Pixiv 发布', -1, wide),
@@ -463,6 +482,9 @@ class _WorkbenchState extends State<Workbench> {
             borderRadius: BorderRadius.circular(10),
             onTap: enabled
                 ? () {
+                    if (c.imageTools.isNotEmpty || index == 3) {
+                      _updateTools({'active': index == 3});
+                    }
                     setState(() => page = index);
                     if (scaffold.currentState?.isDrawerOpen ?? false) {
                       Navigator.pop(context);
@@ -544,6 +566,8 @@ class _WorkbenchState extends State<Workbench> {
               ? Icons.grid_view_rounded
               : page == 2
               ? Icons.settings_outlined
+              : page == 3
+              ? Icons.auto_fix_high_outlined
               : Icons.brush_outlined,
           size: 15,
           color: colors.primary,
@@ -551,11 +575,18 @@ class _WorkbenchState extends State<Workbench> {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            ['创作工作台', '图库与素材', '偏好设置'][page],
+            ['创作工作台', '图库与素材', '偏好设置', '图像工具'][page],
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),
-        if (!tiny) _badge(c.liveGeneration ? c.provider : '演示模式 · 未连接服务'),
+        if (!tiny)
+          _badge(
+            page == 3
+                ? _toolProviderLabel
+                : c.liveGeneration
+                ? c.provider
+                : '演示模式 · 未连接服务',
+          ),
         if (c.hasStore)
           Tooltip(
             message: c.saveFailed ? c.saveErrorMessage : c.storageLabel,
@@ -579,10 +610,10 @@ class _WorkbenchState extends State<Workbench> {
           ),
         const SizedBox(width: 10),
         _icon(Icons.receipt_long_outlined, '查看任务', _taskDialog),
-        if (!inlinePanel && page == 0)
+        if (!inlinePanel && (page == 0 || page == 3))
           _icon(
             Icons.tune_rounded,
-            '打开生成设置',
+            page == 3 ? '打开图片工具参数' : '打开生成设置',
             () => scaffold.currentState?.openEndDrawer(),
           ),
         if (!tiny)
@@ -964,211 +995,221 @@ class _WorkbenchState extends State<Workbench> {
     ),
   );
 
-  Widget _parameters() => Material(
-    color: colors.surface,
-    borderRadius: BorderRadius.circular(16),
-    clipBehavior: Clip.antiAlias,
-    child: Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: colors.outlineVariant),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 12, 14),
-            child: Row(
-              children: [
-                Icon(Icons.tune_rounded, size: 17, color: colors.primary),
-                const SizedBox(width: 9),
-                const Expanded(
-                  child: Text(
-                    '生成设置',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                  ),
-                ),
-                _icon(Icons.restart_alt_rounded, '还原所选图片参数', () {
-                  c.applyResult(c.selected);
-                  _message('已还原所选图片的参数');
-                }),
-              ],
+  Widget _parameters({bool drawer = false}) => page == 3
+      ? _imageToolsParameters(drawer: drawer)
+      : Material(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: colors.outlineVariant),
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-          const Divider(),
-          Expanded(
-            child: _ScrollArea(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        _promptTab('正向提示词', false),
-                        const SizedBox(width: 12),
-                        _promptTab('负向', true),
-                        const Spacer(),
-                        _icon(
-                          Icons.open_in_full_rounded,
-                          '展开提示词编辑器',
-                          _promptDialog,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      key: ValueKey(negativeTab ? 'negative' : 'positive'),
-                      controller: negativeTab ? negative : positive,
-                      minLines: 5,
-                      maxLines: 7,
-                      style: const TextStyle(fontSize: 12, height: 1.8),
-                      decoration: InputDecoration(
-                        hintText: negativeTab ? '描述需要避免的内容…' : '描述你想看见的世界…',
-                        labelText: negativeTab ? '负向内容' : '画面描述',
-                        alignLabelWithHint: true,
-                      ),
-                      onChanged: negativeTab
-                          ? c.updateNegative
-                          : c.updatePrompt,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        _muted(
-                          '${(negativeTab ? c.negative : c.prompt).length} 字符',
-                          size: 10,
-                        ),
-                        const Spacer(),
-                        _icon(Icons.copy_outlined, '复制提示词', () {
-                          Clipboard.setData(
-                            ClipboardData(
-                              text: negativeTab ? c.negative : c.prompt,
-                            ),
-                          );
-                          _message('已复制提示词');
-                        }),
-                        _icon(Icons.backspace_outlined, '清空当前提示词', () {
-                          negativeTab
-                              ? c.updateNegative('')
-                              : c.updatePrompt('');
-                        }),
-                      ],
-                    ),
-                    if (!negativeTab)
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          _phrase('柔和光线', 'soft lighting'),
-                          _phrase('电影质感', 'cinematic composition'),
-                          _phrase('细节丰富', 'intricate details'),
-                        ],
-                      ),
-                    const SizedBox(height: 20),
-                    const Divider(),
-                    const SizedBox(height: 17),
-                    Row(
-                      children: [
-                        for (final name in ['基础', '角色', '参考'])
-                          Padding(
-                            padding: const EdgeInsets.only(right: 7),
-                            child: ChoiceChip(
-                              label: Text(
-                                name,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                              selected: group == name,
-                              showCheckmark: false,
-                              onSelected: (_) => setState(() => group = name),
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    AnimatedSize(
-                      duration: motion,
-                      alignment: Alignment.topCenter,
-                      child: group == '基础'
-                          ? _basicParameters()
-                          : group == '角色'
-                          ? (c.liveGeneration
-                                ? _liveCharacters()
-                                : _characterParameters())
-                          : (c.liveGeneration
-                                ? _liveReferences()
-                                : _referenceParameters()),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      size: 6,
-                      color: c.generating
-                          ? colors.primary
-                          : const Color(0xFF67B89A),
-                    ),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: Text(
-                        c.liveGeneration || c.generating
-                            ? c.status
-                            : '预览流程 · 不消耗额度',
-                        maxLines: 3,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: colors.onSurfaceVariant,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 12, 14),
+                  child: Row(
+                    children: [
+                      Icon(Icons.tune_rounded, size: 17, color: colors.primary),
+                      const SizedBox(width: 9),
+                      const Expanded(
+                        child: Text(
+                          '生成设置',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
+                      ),
+                      _icon(Icons.restart_alt_rounded, '还原所选图片参数', () {
+                        c.applyResult(c.selected);
+                        _message('已还原所选图片的参数');
+                      }),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Expanded(
+                  child: _ScrollArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              _promptTab('正向提示词', false),
+                              const SizedBox(width: 12),
+                              _promptTab('负向', true),
+                              const Spacer(),
+                              _icon(
+                                Icons.open_in_full_rounded,
+                                '展开提示词编辑器',
+                                _promptDialog,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            key: ValueKey(
+                              negativeTab ? 'negative' : 'positive',
+                            ),
+                            controller: negativeTab ? negative : positive,
+                            minLines: 5,
+                            maxLines: 7,
+                            style: const TextStyle(fontSize: 12, height: 1.8),
+                            decoration: InputDecoration(
+                              hintText: negativeTab
+                                  ? '描述需要避免的内容…'
+                                  : '描述你想看见的世界…',
+                              labelText: negativeTab ? '负向内容' : '画面描述',
+                              alignLabelWithHint: true,
+                            ),
+                            onChanged: negativeTab
+                                ? c.updateNegative
+                                : c.updatePrompt,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              _muted(
+                                '${(negativeTab ? c.negative : c.prompt).length} 字符',
+                                size: 10,
+                              ),
+                              const Spacer(),
+                              _icon(Icons.copy_outlined, '复制提示词', () {
+                                Clipboard.setData(
+                                  ClipboardData(
+                                    text: negativeTab ? c.negative : c.prompt,
+                                  ),
+                                );
+                                _message('已复制提示词');
+                              }),
+                              _icon(Icons.backspace_outlined, '清空当前提示词', () {
+                                negativeTab
+                                    ? c.updateNegative('')
+                                    : c.updatePrompt('');
+                              }),
+                            ],
+                          ),
+                          if (!negativeTab)
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                _phrase('柔和光线', 'soft lighting'),
+                                _phrase('电影质感', 'cinematic composition'),
+                                _phrase('细节丰富', 'intricate details'),
+                              ],
+                            ),
+                          const SizedBox(height: 20),
+                          const Divider(),
+                          const SizedBox(height: 17),
+                          Row(
+                            children: [
+                              for (final name in ['基础', '角色', '参考'])
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 7),
+                                  child: ChoiceChip(
+                                    label: Text(
+                                      name,
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                    selected: group == name,
+                                    showCheckmark: false,
+                                    onSelected: (_) =>
+                                        setState(() => group = name),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          AnimatedSize(
+                            duration: motion,
+                            alignment: Alignment.topCenter,
+                            child: group == '基础'
+                                ? _basicParameters()
+                                : group == '角色'
+                                ? (c.liveGeneration
+                                      ? _liveCharacters()
+                                      : _characterParameters())
+                                : (c.liveGeneration
+                                      ? _liveReferences()
+                                      : _referenceParameters()),
+                          ),
+                        ],
                       ),
                     ),
-                    _muted('Ctrl + Enter', size: 9),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 11),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    key: const Key('generate'),
-                    onPressed: preparingImage
-                        ? null
-                        : c.generating
-                        ? c.cancelGeneration
-                        : _submit,
-                    icon: Icon(
-                      c.generating
-                          ? Icons.stop_rounded
-                          : Icons.auto_awesome_rounded,
-                      size: 17,
-                    ),
-                    label: Text(
-                      preparingImage
-                          ? '正在准备图片…'
-                          : c.generating
-                          ? (c.liveGeneration ? '停止生成' : '取消预览任务')
-                          : (c.liveGeneration
-                                ? '生成 ${c.batchCount} 张图片'
-                                : '生成预览'),
-                    ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.circle,
+                            size: 6,
+                            color: c.generating
+                                ? colors.primary
+                                : const Color(0xFF67B89A),
+                          ),
+                          const SizedBox(width: 7),
+                          Expanded(
+                            child: Text(
+                              c.liveGeneration || c.generating
+                                  ? c.status
+                                  : '预览流程 · 不消耗额度',
+                              maxLines: 3,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: colors.onSurfaceVariant,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          _muted('Ctrl + Enter', size: 9),
+                        ],
+                      ),
+                      const SizedBox(height: 11),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          key: const Key('generate'),
+                          onPressed: preparingImage
+                              ? null
+                              : c.generating
+                              ? c.cancelGeneration
+                              : _submit,
+                          icon: Icon(
+                            c.generating
+                                ? Icons.stop_rounded
+                                : Icons.auto_awesome_rounded,
+                            size: 17,
+                          ),
+                          label: Text(
+                            preparingImage
+                                ? '正在准备图片…'
+                                : c.generating
+                                ? (c.liveGeneration ? '停止生成' : '取消预览任务')
+                                : (c.liveGeneration
+                                      ? '生成 ${c.batchCount} 张图片'
+                                      : '生成预览'),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    ),
-  );
+        );
 
   Widget _promptTab(String label, bool isNegative) => InkWell(
     onTap: () => setState(() => negativeTab = isNegative),
@@ -1222,7 +1263,7 @@ class _WorkbenchState extends State<Workbench> {
     String label,
     String current,
     List<String> items,
-    ValueChanged<String> change,
+    ValueChanged<String>? change,
   ) => DropdownButtonFormField<String>(
     key: ValueKey('$label$current'),
     initialValue: current,
@@ -1242,9 +1283,11 @@ class _WorkbenchState extends State<Workbench> {
           ),
         )
         .toList(),
-    onChanged: (v) {
-      if (v != null) change(v);
-    },
+    onChanged: change == null
+        ? null
+        : (v) {
+            if (v != null) change(v);
+          },
   );
 
   Widget _basicParameters() => Column(
@@ -1947,6 +1990,13 @@ class _WorkbenchState extends State<Workbench> {
           TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
+              await _useToolSource(result);
+            },
+            child: const Text('送入图片工具'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
               c.selectResult(result.id);
               c.updateAdvanced(
                 c.parameters.copyWith(
@@ -1991,7 +2041,9 @@ class _WorkbenchState extends State<Workbench> {
             c.applyResult(result);
             _select(result);
             Navigator.pop(dialogContext);
-            setState(() => page = 0);
+            setState(
+              () => page = result.editMetadata?['imageTools'] is Map ? 3 : 0,
+            );
             _message('已应用图片参数');
           },
           child: const Text('应用全部参数'),

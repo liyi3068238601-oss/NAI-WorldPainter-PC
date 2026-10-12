@@ -10,6 +10,7 @@ import '../generation/service_connection.dart';
 import '../media/image_asset_store.dart';
 import '../security/credential_vault.dart';
 import '../editing/inpaint_document.dart';
+import '../processing/postprocess_parameters.dart';
 
 typedef GenerateImage = Future<SceneResult> Function(
   GenerationParameters parameters,
@@ -18,6 +19,19 @@ typedef GenerateImage = Future<SceneResult> Function(
 
 typedef ProcessGenerationResult = Future<SceneResult> Function(
   SceneResult raw,
+  bool Function() isCurrent,
+);
+
+typedef ImageToolProgress = Future<void> Function(
+  String stage,
+  int done,
+  int total,
+);
+typedef ProcessImageTool = Future<SceneResult> Function(
+  Map<String, Object?> draft,
+  GenerationParameters parameters,
+  ServiceConnection connection,
+  ImageToolProgress onProgress,
   bool Function() isCurrent,
 );
 
@@ -161,6 +175,9 @@ class WorkbenchController extends ChangeNotifier {
     this.cancelRequest,
     this.assets,
     this.vault,
+    this.processImageTool,
+    this.localSrAvailable = false,
+    this.localSrInfo = '本地超分后端尚未配置',
   }) : wasRestored = restored != null,
        _generationDelay = generationDelay.isNegative
            ? Duration.zero
@@ -217,6 +234,9 @@ class WorkbenchController extends ChangeNotifier {
   final VoidCallback? cancelRequest;
   final ImageAssetStore? assets;
   final CredentialVault? vault;
+  final ProcessImageTool? processImageTool;
+  final bool localSrAvailable;
+  final String localSrInfo;
   bool get liveGeneration => generateImage != null;
   int _batchCount = 1;
   int get batchCount => _batchCount;
@@ -257,6 +277,11 @@ class WorkbenchController extends ChangeNotifier {
         'unsupported';
     return ServiceConnection(protocol: id, baseUrl: _connections[id] ?? '');
   }
+
+  ServiceConnection connectionFor(String protocol) => ServiceConnection(
+    protocol: protocol,
+    baseUrl: _connections[protocol] ?? '',
+  );
 
   void updateConnection(ServiceConnection value) => _update(() {
     _connections[value.protocol] = value.uri.toString();
@@ -320,6 +345,57 @@ class WorkbenchController extends ChangeNotifier {
   });
   WorkspaceStore? get _store => store;
   Map<String, Object?> _extra = {};
+  Map<String, Object?> get imageTools => Map<String, Object?>.from(
+    jsonDecode(jsonEncode(_extra['imageTools'] ?? {})) as Map,
+  );
+  Map<String, Object?> get imageToolJob => Map<String, Object?>.from(
+    jsonDecode(jsonEncode(_extra['imageToolJob'] ?? {})) as Map,
+  );
+  void updateImageTools(Map<String, Object?> value) => _update(() {
+    final next = Map<String, Object?>.from(value);
+    if (imageTools['mode'] != next['mode']) {
+      for (final key in const [
+        'resultAssetRef',
+        'resultId',
+        'resultWidth',
+        'resultHeight',
+      ]) {
+        next.remove(key);
+      }
+    }
+    _validateImageTools(next);
+    _extra['imageTools'] = jsonDecode(jsonEncode(next));
+  });
+
+  void setImageToolSource(ImageAsset asset, {String? parentId}) {
+    final draft = imageTools;
+    draft.addAll({
+      'version': 1,
+      'mode': draft['mode'] ?? 'tiled',
+      'active': true,
+      'sourceAssetRef': asset.assetRef,
+      'sourceWidth': asset.width,
+      'sourceHeight': asset.height,
+      'parentId': parentId,
+      'sourceRevision': DateTime.now().microsecondsSinceEpoch.toString(),
+      'strength': draft['strength'] ?? 0.3,
+    });
+    draft.remove('resultAssetRef');
+    draft.remove('resultId');
+    draft.remove('resultWidth');
+    draft.remove('resultHeight');
+    if (draft['postprocess'] is Map) {
+      draft['postprocess'] = {
+        ...Map<String, Object?>.from(draft['postprocess'] as Map),
+        'source_asset_ref': asset.assetRef,
+        'parent_id': parentId,
+        'width': asset.width,
+        'height': asset.height,
+      };
+    }
+    updateImageTools(draft);
+  }
+
   Map<String, Object?> get imageEditing => Map<String, Object?>.from(
     jsonDecode(jsonEncode(_extra['imageEditing'] ?? {})) as Map,
   );
@@ -497,6 +573,58 @@ class WorkbenchController extends ChangeNotifier {
     _revision = stored.revision;
     _validateEditor(_editor);
     _validateImageEditing(imageEditing);
+    _validateImageTools(imageTools);
+    if (imageToolJob['status'] == 'running') {
+      _extra['imageToolJob'] = {
+        ...imageToolJob,
+        'status': 'interrupted',
+        'stage': '上次任务已中断；未自动重新请求。源图与参数仍保留。',
+      };
+    }
+  }
+
+  static void _validateImageTools(Map<String, Object?> value) {
+    if (value.isEmpty) return;
+    if (value['version'] != 1 ||
+        !const [
+          'tiled',
+          'director',
+          'enhance',
+          'upscale',
+          'localSr',
+        ].contains(value['mode'])) {
+      throw const FormatException('无效图片工具草稿');
+    }
+    if (value['sourceAssetRef'] != null &&
+        (value['sourceAssetRef'] is! String ||
+            value['sourceWidth'] is! int ||
+            (value['sourceWidth'] as int) <= 0 ||
+            value['sourceHeight'] is! int ||
+            (value['sourceHeight'] as int) <= 0)) {
+      throw const FormatException('无效图片工具原图');
+    }
+    final strength = value['strength'];
+    if (strength != null &&
+        (strength is! num ||
+            !strength.isFinite ||
+            strength < 0 ||
+            strength > 1)) {
+      throw const FormatException('无效分块强度');
+    }
+    if (value['postprocess'] is Map) {
+      final parameters = PostprocessParameters.fromJson(
+        Map<String, dynamic>.from(value['postprocess'] as Map),
+      );
+      final modeOperation = value['mode'] == 'localSr'
+          ? 'local_sr'
+          : value['mode'];
+      if (parameters.toJson()['operation'] != modeOperation ||
+          parameters.sourceAssetRef != value['sourceAssetRef'] ||
+          parameters.width != value['sourceWidth'] ||
+          parameters.height != value['sourceHeight']) {
+        throw const FormatException('处理方式、参数与原图不一致。');
+      }
+    }
   }
 
   static void _validateImageEditing(Map<String, Object?> value) {
@@ -729,6 +857,7 @@ class WorkbenchController extends ChangeNotifier {
   /// With [promptOnly], only its positive prompt is copied.
   void applyResult(SceneResult result, {bool promptOnly = false}) {
     if (_disposed || _closing) return;
+    final previousProvider = _provider;
     if (!promptOnly) {
       final prompts = Map<String, Object?>.from(
         _extra['operationPrompts'] as Map? ?? {},
@@ -768,6 +897,36 @@ class WorkbenchController extends ChangeNotifier {
       final editing = result.editMetadata?['session'];
       if (editing is Map) {
         _extra['imageEditing'] = jsonDecode(jsonEncode(editing));
+      }
+      final tools = result.editMetadata?['imageTools'];
+      if (tools is Map) {
+        final draft = Map<String, Object?>.from(tools);
+        _validateImageTools(draft);
+        // Processing models and local backends belong to the tool settings.
+        // Restore the parent generation snapshot when returning to the canvas.
+        if (draft['mode'] != 'tiled' && result.parameters != null) {
+          final parent = result.parameters!;
+          _prompt = parent.prompt;
+          _negative = parent.negativePrompt ?? '';
+          _model =
+              modelIds.entries
+                  .where((entry) => entry.value == parent.model)
+                  .firstOrNull
+                  ?.key ??
+              parent.model;
+          _steps = parent.steps;
+          _cfg = parent.scale;
+          _seedText = draft['mode'] == 'enhance'
+              ? result.seed.toString()
+              : (parent.seed?.toString() ?? '');
+          final protocol = draft['generationProtocol'] as String?;
+          _provider = ServiceConnection.labels[protocol] ?? previousProvider;
+        }
+        _extra['imageTools'] = jsonDecode(
+          jsonEncode({...draft, 'active': true}),
+        );
+      } else if (imageTools.isNotEmpty) {
+        _extra['imageTools'] = {...imageTools, 'active': false};
       }
     }
     if (_results.any((item) => item.id == result.id)) {
@@ -851,6 +1010,13 @@ class WorkbenchController extends ChangeNotifier {
     _activeGeneration = null;
     _generating = false;
     _status = liveGeneration ? '已停止等待；服务端已接收的请求可能继续执行。' : '演示任务已取消';
+    if (imageToolJob['status'] == 'running') {
+      _extra['imageToolJob'] = {
+        ...imageToolJob,
+        'status': 'cancelled',
+        'stage': '任务已取消，原图与参数仍保留；不会自动重试。',
+      };
+    }
     if (cancellation != null && !cancellation.isCompleted) {
       cancellation.complete();
     }
@@ -907,6 +1073,128 @@ class WorkbenchController extends ChangeNotifier {
 
   bool _isCurrent(int token) =>
       !_disposed && !_closing && token == _generationToken;
+
+  Future<void> runImageTool() async {
+    if (_disposed || _closing || _generating) return;
+    if (processImageTool == null) {
+      _status = '当前预览未连接图片处理后端。';
+      notifyListeners();
+      return;
+    }
+    final draft = imageTools;
+    draft['generationProtocol'] = connection.protocol;
+    try {
+      _validateImageTools(draft);
+    } on FormatException catch (error) {
+      _status = error.message;
+      notifyListeners();
+      return;
+    }
+    if (draft['sourceAssetRef'] == null) {
+      _status = '请先导入图片或使用当前图库原图。';
+      notifyListeners();
+      return;
+    }
+    if (const ['tiled', 'enhance'].contains(draft['mode']) &&
+        _seedText.isNotEmpty &&
+        (int.tryParse(_seedText) == null ||
+            int.parse(_seedText) < 0 ||
+            int.parse(_seedText) > 4294967295)) {
+      _status = 'Seed 必须为 0–4294967295 的整数，或留空随机。';
+      notifyListeners();
+      return;
+    }
+    final submitted = parameters;
+    final mode = draft['mode'] as String;
+    final protocol = const ['enhance', 'upscale'].contains(mode)
+        ? 'official'
+        : draft['protocol'] as String? ?? connection.protocol;
+    final submittedConnection = connectionFor(protocol);
+    final token = ++_generationToken;
+    final jobId = 'processing-${DateTime.now().microsecondsSinceEpoch}';
+    final done = Completer<void>();
+    _settlingGenerations.add(done.future);
+    _activeGeneration = done.future;
+    _generating = true;
+    _extra['imageToolJob'] = {
+      'id': jobId,
+      'status': 'running',
+      'stage': '正在准备原图与参数',
+      'done': 0,
+      'total': 1,
+      'draft': draft,
+      'parameters': submitted.toJson(),
+      'protocol': protocol,
+    };
+    _status = '正在准备图片处理任务';
+    notifyListeners();
+    try {
+      await flush();
+      final result = await processImageTool!(
+        draft,
+        submitted,
+        submittedConnection,
+        (stage, completed, total) async {
+          if (!_isCurrent(token)) return;
+          _status = stage;
+          _extra['imageToolJob'] = {
+            ...imageToolJob,
+            'stage': stage,
+            'done': completed,
+            'total': total,
+          };
+          notifyListeners();
+          await flush();
+        },
+        () => _isCurrent(token),
+      );
+      if (!_isCurrent(token)) return;
+      _results.insert(0, result);
+      _selectedId = result.id;
+      if (imageTools['sourceRevision'] == draft['sourceRevision'] &&
+          imageTools['sourceAssetRef'] == draft['sourceAssetRef'] &&
+          imageTools['mode'] == draft['mode']) {
+        _extra['imageTools'] = {
+          ...imageTools,
+          'resultAssetRef': result.assetRef,
+          'resultId': result.id,
+          'resultWidth': result.width,
+          'resultHeight': result.height,
+        };
+      }
+      _extra['imageToolJob'] = {
+        ...imageToolJob,
+        'status': 'completed',
+        'stage': '结果与完整参数已保存到图库。',
+        'resultId': result.id,
+      };
+      _status = '图片处理完成，原图保留，派生结果已保存到图库。';
+      notifyListeners();
+      await flush();
+    } catch (error) {
+      if (_isCurrent(token)) {
+        _status = saveFailed
+            ? saveErrorMessage
+            : error is FormatException
+            ? error.message
+            : '图片处理失败，原图与草稿仍保留。';
+        _extra['imageToolJob'] = {
+          ...imageToolJob,
+          'status': 'failed',
+          'stage': _status,
+        };
+        notifyListeners();
+      }
+    } finally {
+      if (_isCurrent(token)) {
+        _generating = false;
+        _activeGeneration = null;
+      }
+      done.complete();
+      _settlingGenerations.remove(done.future);
+      if (!_disposed) notifyListeners();
+    }
+  }
 
   Future<void> _generateReal({
     ProcessGenerationResult? processResult,

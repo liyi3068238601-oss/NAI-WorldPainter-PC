@@ -1,0 +1,205 @@
+{
+  "budget": 50,
+  "consumed": 1,
+  "sqliteReopened": true,
+  "results": [
+    {
+      "operation": "tiled",
+      "passed": true,
+      "width": 512,
+      "height": 512,
+      "sha256": "db747d719c242e7dad565db9249bc4f8965629e7b7913bee0e51f156ed7d3a09",
+      "path": "docs/evidence/processing/official-tiled.png",
+      "postprocess": null,
+      "recordedModel": "nai-diffusion-4-5-full"
+    },
+    {
+      "operation": "enhance",
+      "passed": true,
+      "width": 448,
+      "height": 448,
+      "sha256": "32aeb11c74e464cad5c6154e205342e71ce490986798c7f919e71c33f5346875",
+      "path": "docs/evidence/processing/official-enhance.png",
+      "postprocess": {
+        "operation": "enhance",
+        "source_asset_ref": "sha256/2a/2a56aba3d75f6e81b8d1755f5c617337cf8b80816739a8403860688d022ab241.png",
+        "parent_id": null,
+        "width": 320,
+        "height": 320,
+        "model": "nai-diffusion-4-5-full",
+        "prompt": "scenery, no humans, moonlit mountain lake, blue sky, golden moon, clean landscape illustration",
+        "negative_prompt": "text, watermark, blurry, lowres",
+        "director_tool": null,
+        "defry": null,
+        "strength": 0.3,
+        "noise": 0.1,
+        "scale": 1.5,
+        "guidance": 5.0,
+        "steps": 28,
+        "seed": 20261012,
+        "upscaled_enhance": false
+      },
+      "recordedModel": "nai-diffusion-4-5-full"
+    },
+    {
+      "operation": "upscale",
+      "passed": true,
+      "width": 640,
+      "height": 640,
+      "sha256": "c4c91ee47fb2f6e480bd4fb8d326330c35851c6d29299588b0fb4b24c14917f9",
+      "path": "docs/evidence/processing/official-upscale.png",
+      "postprocess": {
+        "operation": "upscale",
+        "source_asset_ref": "sha256/2a/2a56aba3d75f6e81b8d1755f5c617337cf8b80816739a8403860688d022ab241.png",
+        "parent_id": null,
+        "width": 320,
+        "height": 320,
+        "model": null,
+        "prompt": null,
+        "negative_prompt": null,
+        "director_tool": null,
+        "defry": null,
+        "strength": null,
+        "noise": null,
+        "scale": 2.0,
+        "guidance": null,
+        "steps": null,
+        "seed": null,
+        "upscaled_enhance": false
+      },
+      "recordedModel": "nai-diffusion-5-curated"
+    },
+    {
+      "operation": "director",
+      "passed": true,
+      "width": 320,
+      "height": 320,
+      "sha256": "d7017c62475c26510e9d58d8e0989338ab9359435c3fda1c73d5f4e37463d73f",
+      "path": "docs/evidence/processing/official-director.png",
+      "postprocess": {
+        "operation": "director",
+        "source_asset_ref": "sha256/2a/2a56aba3d75f6e81b8d1755f5c617337cf8b80816739a8403860688d022ab241.png",
+        "parent_id": null,
+        "width": 320,
+        "height": 320,
+        "model": null,
+        "prompt": null,
+        "negative_prompt": null,
+        "director_tool": "lineart",
+        "defry": null,
+        "strength": null,
+        "noise": null,
+        "scale": null,
+        "guidance": null,
+        "steps": null,
+        "seed": null,
+        "upscaled_enhance": false
+      },
+      "recordedModel": "nai-diffusion-4-5-full"
+    },
+    {
+      "operation": "localSr",
+      "passed": true,
+      "width": 640,
+      "height": 640,
+      "sha256": "f21e00a66746d134e744cbb403acff703fe9380603a98b3e63e4085f150c89fa",
+      "path": "docs/evidence/processing/official-localSr.png",
+      "postprocess": {
+        "operation": "local_sr",
+        "source_asset_ref": "sha256/2a/2a56aba3d75f6e81b8d1755f5c617337cf8b80816739a8403860688d022ab241.png",
+        "parent_id": null,
+        "width": 320,
+        "height": 320,
+        "model": "realcuganConservative2x",
+        "prompt": null,
+        "negative_prompt": null,
+        "director_tool": null,
+        "defry": null,
+        "strength": null,
+        "noise": null,
+        "scale": 2.0,
+        "guidance": null,
+        "steps": null,
+        "seed": null,
+        "upscaled_enhance": false
+      },
+      "recordedModel": "realcuganConservative2x"
+    }
+  ],
+  "requests": [
+    {
+      "index": 1,
+      "endpoint": "/ai/generate-image",
+      "quotedAnlas": null,
+      "reservedUpperBound": 20,
+      "status": "returned",
+      "http": 200,
+      "observedAnlas": 0
+    },
+    {
+      "index": 2,
+      "endpoint": "/ai/generate-image",
+      "quotedAnlas": null,
+      "reservedUpperBound": 20,
+      "status": "uncertain",
+      "http": 200,
+      "balanceReconciled": true
+    },
+    {
+      "index": 3,
+      "endpoint": "/ai/generate-image",
+      "quotedAnlas": null,
+      "reservedUpperBound": 20,
+      "status": "returned",
+      "http": 200,
+      "observedAnlas": 0
+    },
+    {
+      "index": 4,
+      "endpoint": "/ai/generate-image",
+      "quotedAnlas": null,
+      "reservedUpperBound": 4,
+      "status": "returned",
+      "http": 200,
+      "observedAnlas": 0
+    },
+    {
+      "index": 5,
+      "endpoint": "/ai/upscale",
+      "quotedAnlas": null,
+      "reservedUpperBound": 1,
+      "status": "returned",
+      "http": 200,
+      "observedAnlas": 1
+    },
+    {
+      "index": 6,
+      "endpoint": "/ai/augment-image",
+      "quotedAnlas": null,
+      "reservedUpperBound": 0,
+      "status": "returned",
+      "http": 200,
+      "observedAnlas": 0
+    }
+  ],
+  "notTested": [
+    "bg_removal: above this test budget",
+    "other director tools: mock protocol tests only",
+    "gateways: mock only"
+  ],
+  "realApiStatus": "paused_by_user; no official requests after pause",
+  "source": {
+    "file": "official-source.png",
+    "width": 320,
+    "height": 320,
+    "sha256": "2a56aba3d75f6e81b8d1755f5c617337cf8b80816739a8403860688d022ab241",
+    "kind": "self-authored synthetic fixture"
+  },
+  "notes": [
+    "Initial two-tile trial stopped after HTTP 200 when the read-only balance check failed; that task was not retried.",
+    "A separate single-tile scenario with a different source size completed, then Enhance, 2x Upscale, lineart, and local CUGAN 2x completed.",
+    "Quote endpoint returned 404. The complete paid Studio generation formula was reserved before each generation, and actual balance differences were checked.",
+    "Subsequent Web decoder and UI fixes were validated with mocks after the user paused real API testing.",
+    "Recorded model is Gallery metadata; the official Director endpoint does not disclose or accept a model ID."
+  ]
+}

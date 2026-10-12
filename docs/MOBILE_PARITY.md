@@ -1,6 +1,6 @@
 # 手机端现有功能对照基线
 
-审计日期：2026-10-11。用途：记录手机端当前工作区能力、入口与接线状态，供 PC 全量移植验收跟踪。现行 `PC_PLAN.md` v0.2 已把手机端功能域纳入 M2–M6 全量移植，没有把漫画、Pixiv、本地超分或其他手机功能延期。`novelai_local_web` 是 PC 界面、布局、动画与交互流畅感的第一参考；它与浪白也可作为功能实现的代码参考，功能范围与优先级仍以本清单对应的手机端源码为基线。
+审计日期：2026-10-11；图片工具与分块源码于 2026-10-12 按手机端当前 HEAD 复核。用途：记录手机端能力、入口与接线状态，供 PC 全量移植验收跟踪。现行 `PC_PLAN.md` v0.4 将手机端功能域纳入 M2–M6 全量移植，没有把漫画、Pixiv、本地超分或其他手机功能延期。`novelai_local_web` 是 PC 界面、布局、动画与交互流畅感的第一参考；它与浪白也可作为功能实现的代码参考，功能范围与优先级仍以本清单对应的手机端源码为基线。
 
 ## 状态与审计边界
 
@@ -12,26 +12,22 @@
 - **预留/未实现**：仅有枚举、未注册工具或没有实现的概念；不算手机端现有完成能力，也不属于当前 parity 实现要求。
 - **PC 新增要求**：不属于手机端已有功能，单列在文末独立跟踪；不混入手机 parity 数量或验收通过率。
 - **PC 待实现**：尚未在 PC 应用实现或提供验收证据。`C/R/U` 与范围层级分别表达源码/可达状态和 PC 处置，互不替代。
-- 路径均相对于 `E:\NAI-WorldPainter\手机端`。功能以 `lib/` 当前源码为准；README、历史架构图和旧前端对接材料只用于发现漂移，不覆盖实际实现。
-- 移动端只读。本次没有执行付费请求，也没有运行手机端。图片、模型、密钥、Cookie、提示词正文均未复制到 PC；manifest 只记录源码路径、SHA-256 和 Git 状态。
+- 路径均相对于手机端仓库根。功能以 `lib/` 当前源码为准；README、历史架构图和旧前端对接材料只用于发现漂移，不覆盖实际实现。
+- 移动端只读。本轮图像工具/分块审计没有运行手机端、构建、测试或执行远端请求；未复制手机图片、模型或凭据。对应文件快照见 [`evidence/processing/source-manifest.json`](evidence/processing/source-manifest.json)，它只覆盖本轮列出的图像工具与分块源码、测试和 Android SR 二进制资产；其他功能行仍保留此前审计状态。
 
 ## 基线与工作区差异
 
 | 项 | 记录 |
 | --- | --- |
-| 手机端 Git HEAD | `bd530001a80a32aa1e1b39653275a59f7ec5fd18` |
-| 手机端版本（`pubspec.yaml`） | `1.2.3+212014` |
-| 工作区来源 | `local_working_tree`；以下清单同时检查已跟踪改动和未跟踪源码/测试 |
-| 已跟踪改动 | `lib/presentation/app_theme.dart`、`lib/presentation/pages/generate_page.dart`、`lib/presentation/pages/history_detail_page.dart`、`lib/presentation/pages/history_page.dart`、`lib/presentation/pages/home_page.dart`、`lib/presentation/pages/settings_page.dart`、`lib/presentation/widgets/floating_toast.dart`、`lib/presentation/widgets/llm_chat/chat_drawer.dart`、`test/widget_test.dart` |
-| 未跟踪改动 | `lib/presentation/navigation/app_destination.dart`、`lib/presentation/widgets/generation_result_card.dart`、`test/mobile_creation_layout_test.dart`、`test/presentation/pages/history_detail_page_test.dart`、`test/support/frontend_generation_fake.dart` |
-| 当前壳层（含未提交改动） | 「创作 / AI 助手 / 工具」三个常驻目的地；画廊由创作页入口打开；助手和工具页首次访问后保留在 IndexedStack。该入口结构是工作区状态，不属于上述 HEAD。 |
-| 文件级证据 | [`evidence/mobile-source-manifest.json`](evidence/mobile-source-manifest.json) 由脚本按当前本地工作区生成，列出受审 Dart、Android 原生源码/配置和测试文件的 SHA-256，并标注每项是否修改或未跟踪。 |
+| 本轮复核手机端 Git HEAD | `375a41844be53136f7d2350c2d6560f221a8c5a5` |
+| 本轮复核工作区 | 干净；快照只记录手机端已跟踪源码、测试、模型参数/权重和 arm64 原生库 |
+| 文件级证据 | [`evidence/processing/source-manifest.json`](evidence/processing/source-manifest.json) 记录本轮 44 个具体文件的新鲜 SHA-256；该快照不替代其他功能域既有审计记录。 |
 
 README 的徽标与系统要求仍写 `1.2.2+208011`，与当前 `pubspec.yaml` 不一致。README 也把旧版抽屉式助手、DuckDuckGo `web_search`、多个工具能力和上传数量写成现状；当前代码已换三目的地壳层，注册表没有 `web_search`，而 `PixivUploadPage` 的界面上限为 4 张。`bing_search_service.dart` 虽在 DI 中创建，但当前源码没有发现调用点。`read_prompting_reference_tool.dart` 有实现文件但未注册。漫画 Agent 的两个提示词工具只在漫画编辑器的专用 registry 子集中注册。不要将 README 宣称的入口或未连接代码记作已可达能力。
 
 ## 页面与入口覆盖
 
-本清单共有 110 个追踪 ID：27 个页面/组件入口条目（26 个 `presentation/pages` 页面与 `ChatDrawer`）及 83 个细项/差异条目。110 是追踪项总数，不是 110 个已完成或可达的手机功能。`inpaint_workspace_page.dart` 提供的是创作页内嵌工作区卡片。`PixivQueuePage` 有页面与 ViewModel，但当前没有任何路由/按钮引用它；其余已标 R 页面可从静态调用关系找到入口。`ChatDrawer` 是助手目的地及漫画助手使用的可复用界面组件，不是单独 Page 文件。
+本清单共有 110 个追踪 ID：27 个页面/组件入口条目（26 个 `presentation/pages` 页面与 `ChatDrawer`）及 83 个细项/差异条目。110 是追踪项总数，不是 110 个已完成或可达的手机功能。`inpaint_workspace_page.dart` 提供的是创作页内嵌工作区卡片。`PixivQueuePage` 有页面与 ViewModel，但当前没有任何路由/按钮引用；`ImageEnhancePage` 也只有页面定义而没有当前路由或页面构造调用。后者不等于本地超分能力不可达：Agent 注册的 `upscale_image` 工具仍可在用户确认后调用，范围记在 MP-IMG-05。其他标 R 页面可从静态调用关系找到入口。`ChatDrawer` 是助手目的地及漫画助手使用的可复用界面组件，不是单独 Page 文件。
 
 | ID | 页面源码 | 当前入口（静态） | 状态 | 范围层级 |
 | --- | --- | --- | --- |
@@ -52,7 +48,7 @@ README 的徽标与系统要求仍写 `1.2.2+208011`，与当前 `pubspec.yaml` 
 | MP-P15 | `lib/presentation/pages/artist_prompt_manager_page.dart` | 工具页「画师串管理」 | C/R/U  必迁：可达页面入口 | 必迁：页面入口当前可达 |
 | MP-P16 | `lib/presentation/pages/danbooru_tag_search_page.dart` | 工具页「Danbooru 查词」 | C/R/U  必迁：可达页面入口 | 必迁：页面入口当前可达 |
 | MP-P17 | `lib/presentation/pages/image_tag_page.dart` | 工具页「图片解析」 | C/R/U  必迁：可达页面入口 | 必迁：页面入口当前可达 |
-| MP-P18 | `lib/presentation/pages/image_enhance_page.dart` | 工具页「图像增强」 | C/R/U  必迁：可达页面入口 | 必迁：页面入口当前可达 |
+| MP-P18 | `lib/presentation/pages/image_enhance_page.dart` | 当前只有页面定义；`rg` 未发现页面构造/路由调用。`upscale_image` Agent 工具另有可达确认链，见 MP-IMG-05。 | C/不可达/U | 核对接线：该独立页面目前不可达；本地超分业务由 MP-IMG-05 必迁，不得因页面不可达缩掉 |
 | MP-P19 | `lib/presentation/pages/director_tools_page.dart` | 工具页「导演工具」 | C/R/U  必迁：可达页面入口 | 必迁：页面入口当前可达 |
 | MP-P20 | `lib/presentation/pages/pixiv_upload_page.dart` | 工具页「上传到 Pixiv」 | C/R/U  必迁：可达页面入口 | 必迁：页面入口当前可达 |
 | MP-P21 | `lib/presentation/pages/pixiv_queue_page.dart` | 当前未发现路由或页面入口（页面文件/VM 存在，入队后仍会由 service 自动处理） | C/不可达/U | 核对接线：页面与 VM 存在但无入口；PC 计划要求队列管理 |
@@ -63,7 +59,7 @@ README 的徽标与系统要求仍写 `1.2.2+208011`，与当前 `pubspec.yaml` 
 | MP-P26 | `lib/presentation/pages/theme_appearance_page.dart` | 工具页「主题与外观」 | C/R/U  必迁：可达页面入口 | 必迁：页面入口当前可达 |
 | MP-C01 | `lib/presentation/widgets/llm_chat/chat_drawer.dart` 及 `lib/presentation/widgets/llm_chat/*` | 壳层「AI 助手」；漫画编辑器另开限定工具会话 | C/R/U | 必迁：助手组件当前可达 |
 
-除 MP-P21 外，其余入口条目为必迁。`PromptTemplateViewModel`、`PresetViewModel` 和对应的实体、用例、仓库已注册，但当前没有 PromptTemplate/Preset 管理页面，也未发现当前表现层调用入口；按“核对接线”记录，不得误报成手机端当前可达页面或已完成能力。
+除 MP-P18、MP-P21 外，其余入口条目为可达页面/组件并属于必迁范围。`PromptTemplateViewModel`、`PresetViewModel` 和对应的实体、用例、仓库已注册，但当前没有 PromptTemplate/Preset 管理页面，也未发现当前表现层调用入口；按“核对接线”记录，不得误报成手机端当前可达页面或已完成能力。
 
 ## 功能与差异跟踪矩阵
 
@@ -85,7 +81,7 @@ README 的徽标与系统要求仍写 `1.2.2+208011`，与当前 `pubspec.yaml` 
 | MP-GEN-10 | GPT 图像服务有生成与编辑请求；支持多张输入参考（ViewModel 上限 16），单独尺寸/模型与图片结果下载。 | `lib/data/datasources/remote/gpt_api_service.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart`; `lib/presentation/pages/generate_page.dart` | C/R/U | 使用模拟服务覆盖文本生成、单图/多参考编辑、URL 与 base64 响应、下载落盘；密钥只发至所选 GPT 端点。 | 待实现 | 必迁：当前源码有可达行为 |
 | MP-GEN-11 | Nano Banana 有独立生成/编辑接口、图像参考与 1K/2K/4K 尺寸选择。 | `lib/data/datasources/remote/nano_banana_api_service.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart`; `lib/presentation/pages/generate_page.dart` | C/R/U | 以模拟响应覆盖文生图和图生图，验证尺寸、参考文件和错误分类均按 Nano 配置发送。 | 待实现 | 必迁：当前源码有可达行为 |
 | MP-GEN-12 | 普通图生图可导入图片、裁切/重新裁切、替换/移除并调 strength；请求作为新任务保存。 | `lib/presentation/widgets/img2img_crop_dialog.dart`; `lib/presentation/pages/generate_page.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart`; `lib/data/datasources/remote/novelai_api_service.dart` | C/R/U | 用横图、竖图和大图验证裁切尺寸与原图文件不被改写；新图保存后能追溯父图片/来源任务。 | 本轮实现；实测见 IMAGE_EDITING_REVIEW | 必迁：当前源码有可达行为 |
-| MP-GEN-13 | 分块高清图生图：大图切块、重叠拼接、进度与取消；服务上限/固定配置见 tiled 模型，避免宣称无边界。 | `lib/presentation/pages/generate_page.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart`; `lib/domain/entities/tiled_img2img.dart`; `lib/domain/services/tiled_img2img_service.dart`; `test/tiled_img2img_service_test.dart` | C/R/U | 在尺寸/像素/块数量限制边界验证块计划与重组；取消后保留原图，失败报告具体分块且不覆盖输入。 | 待实现 | 必迁：当前源码有可达行为 |
+| MP-GEN-13 | 分块高清图生图：单次运行以 1–16 个单图块请求得到 1 张合成图；640px 裁区、320px 步长、1024px 请求边、最大 4096 边/16MP/16 块、输出约 1.6×；有进度与取消。 | `lib/presentation/pages/generate_page.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart`; `lib/domain/entities/tiled_img2img.dart`; `lib/domain/services/tiled_img2img_service.dart`; `test/tiled_img2img_service_test.dart` | C/R/U | 每个 Tiled job 只产生一张合成 Gallery 图；逐块串行请求并验证尺寸/像素/块数边界和拼接、进度、取消。通用批量张数不作用于 Tiled，PC 隐藏该控件。 | 本轮已实现；总测试待验收 | 必迁：当前源码有可达行为 |
 | MP-GEN-14 | 局部重绘蒙版工作区：画笔/擦除、路径绘制（领域支持矩形笔迹；手机当前页无创建入口）、撤销/重做、遮罩预览、工作区缩放/平移/移动选区、导入图片、像素放大 2x/3x。 | `lib/presentation/pages/inpaint_workspace_page.dart`; `lib/domain/entities/inpaint_workspace.dart`; `lib/domain/services/inpaint_rasterizer.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart` | C/R/U | 分别验证遮罩绘制/反向擦除/边界与最终发送遮罩一致；撤销重做后 PNG 像素结果正确；大图坐标变换无偏移。 | 本轮实现可达交互；实测见 IMAGE_EDITING_REVIEW | 必迁：当前源码有可达行为 |
 | MP-GEN-15 | 局部重绘设置包括区域/全图、正负提示词、strength、忽略原图、色彩校正、分辨率与多张结果图层；可显隐、移除图层并保存合成派生图（kept/primary 候选实体无可达调用）。 | `lib/presentation/pages/inpaint_workspace_page.dart`; `lib/domain/services/inpaint_rasterizer.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart`; `lib/data/datasources/remote/official_novelai_api_service.dart`; `lib/data/datasources/remote/novelai_api_service.dart` | C/R/U | 用固定响应对照最终合成图、蒙版和图层显隐；派生图另存并保留父图；失败/取消不覆盖原图。 | 本轮实现图层与结果回填；实测见 IMAGE_EDITING_REVIEW | 必迁：当前源码有可达行为 |
 | MP-PROV-01 | 官方 NovelAI Persistent Token、当前仅一个全局官方 Token；没有多个官方账号档案/快捷切换。官方端点固定 HTTPS，验证 Token 并显示账户 tier/Anlas/V5 用量，选择官方模型。 | `lib/presentation/pages/api_config_page.dart`; `lib/data/datasources/local/official_novelai_token_store.dart`; `lib/data/datasources/remote/official_novelai_api_service.dart`; `lib/presentation/pages/settings_page.dart` | C/R/U；真实账户未验证 | 系统凭据库保存；测试必须确认凭据只发向官方域名；错误/额度未知清楚显示；官方账号更换 Token 时警示替换影响。 | 待实现 | 必迁：当前源码有可达行为 |
@@ -130,9 +126,9 @@ README 的徽标与系统要求仍写 `1.2.2+208011`，与当前 `pubspec.yaml` 
 | MP-IMG-01 | NAI metadata 解析 PNG text chunks 与 stealth LSB 回退，解析 v3/v4 多角色、提示词/负面词/Seed/steps/sampler/scale/CFG/尺寸等。 | `lib/data/datasources/local/nai_metadata_parser.dart`; `lib/core/utils/image_utils.dart`; `lib/domain/entities/image_tag_result.dart` | C/R/U；解析格式未在本次运行 | 使用已脱敏/公开 fixture 覆盖 tEXt/iTXt、stealth、缺损/非 NAI PNG 和多角色；导入只读取，不改原图。 | 待实现 | 必迁：当前源码有可达行为 |
 | MP-IMG-02 | WD-Tagger 图片分析可选预置模型；一般/角色阈值、候选标签勾选/全选/反选；展示类别/置信度并翻译中文。 | `lib/presentation/pages/image_tag_page.dart`; `lib/presentation/viewmodels/image_tag_viewmodel.dart`; `lib/data/datasources/remote/wd_tagger_api_service.dart`; `lib/domain/entities/image_tag_result.dart` | C/R/U；远端服务未调用 | 用模拟模型输出覆盖冷启动/重试/空候选/阈值边界；选择的 tag 可复制或导入当前创作词框。 | 待实现 | 必迁：当前源码有可达行为 |
 | MP-IMG-03 | 图片解析结果还含生成参数、多角色 prompt/negative 与 Vibe encoding；可选项整合后导入文生图或复制。 | `lib/presentation/pages/image_tag_page.dart`; `lib/domain/entities/image_tag_result.dart`; `lib/presentation/viewmodels/image_tag_viewmodel.dart` | C/R/U | 给含多角色/Vibe 元数据图片导入，准确还原结构、参考图和参数；不只导入扁平化 tag。 | 待实现 | 必迁：当前源码有可达行为 |
-| MP-IMG-04 | Director Tools 六类动作：去杂物、背景移除、线稿、草图、线稿上色、表情迁移；选择 7877/ikun/官方渠道、模型；上色/表情有 prompt 与 defry；可预览、保存结果。 | `lib/presentation/pages/director_tools_page.dart`; `lib/presentation/viewmodels/director_tools_viewmodel.dart`; `lib/domain/entities/director_tool.dart`; `lib/data/datasources/remote/novelai_api_service.dart`; `lib/data/datasources/remote/official_novelai_api_service.dart` | C/R/U；需网络/可能扣 Anlas，未执行 | 以各协议的脱敏 fixture 验证 operation 名、输入图/参数、输出图和错误；任何真实/可能计费请求先显示目标和渠道。 | 待实现 | 必迁：当前源码有可达行为 |
-| MP-IMG-05 | 本地超分 Real-ESRGAN anime 4x、RealCUGAN conservative 2x/4x；显示原图/结果拖拽比较、进度、取消、保存到相册。 | `lib/presentation/pages/image_enhance_page.dart`; `lib/presentation/viewmodels/super_resolution_viewmodel.dart`; `lib/domain/entities/sr_model.dart`; `lib/domain/usecases/upscale_image.dart`; `android/app/src/main/kotlin/com/naihuishi/nai_huishi/SuperResolutionPlugin.kt` | C/R/U；当前实现依赖 Android | 为 Windows 选取/处理/比较/保存图像；只在确定可合法分发模型和 Windows 推理后端后宣布本地超分可用。模拟器/适配层验收三模型倍率/取消/进度/大图限制。 | 待实现；平台移植 | 必迁：当前源码有可达行为 |
-| MP-IMG-06 | 官方在线 Enhance 与 Upscale；生成结果页可选择 Enhance 操作/参数与官方放大倍率，结果另存/可历史查看。 | `lib/presentation/pages/generate_page.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart`; `lib/data/datasources/remote/official_novelai_api_service.dart` | C/R/U；仅官方服务可用，未实际调用 | 请求前展示操作、图像、模型、倍率和已知费用；操作只以当前选中资产为输入，结果另存并关联父图。 | 待实现 | 必迁：当前源码有可达行为 |
+| MP-IMG-04 | Director Tools 六类动作：去杂物、背景移除、线稿、草图、线稿上色、表情迁移；7877/ikun/官方三渠道；仅上色/表情开放 prompt 与 Defry，默认 5、范围 0–5；结果可预览/保存。 | `lib/presentation/pages/settings_page.dart`; `lib/presentation/pages/director_tools_page.dart`; `lib/presentation/viewmodels/director_tools_viewmodel.dart`; `lib/domain/entities/director_tool.dart`; 两个 NovelAI API service | C/R/U；需网络/可能扣 Anlas，未执行 | 以各协议脱敏 fixture 验证 operation、源图、模型、参数与返回图；真实/可能计费请求须在发送前显示目标和渠道。 | 本轮三协议与六动作已接入；总测试待验收 | 必迁：当前源码有可达行为 |
+| MP-IMG-05 | `upscale_image` Agent 副作用工具已注册、需用户确认；提供 Real-ESRGAN anime 4×、RealCUGAN conservative 2×/4×。独立 `ImageEnhancePage` 有比较/进度/取消/保存界面，但当前没有路由，不算可达页面。Agent 输出临时路径。 | `lib/domain/agents/tools/upscale_image_tool.dart`; `lib/core/di/injection.dart`; `lib/domain/entities/sr_model.dart`; `lib/domain/usecases/upscale_image.dart`; `lib/data/datasources/super_resolution_channel.dart`; Android Kotlin plugin | C/R/U；SR 经 Agent 可达，增强页不可达；Android 后端 | Windows 后端保留 3 个 preset、进度、取消和本地保存；不复用 arm64 `.so`。检查模型配对/许可、32MP 尺寸限制与实图输出。 | Windows ncnn Vulkan 后端和三模型已接入；synthetic CLI 通过；总测试/桌面验收待填 | 必迁：本地超分经 Agent 可达；独立页面入口核对 |
+| MP-IMG-06 | 官方 Enhance 可从当次结果与 History 详情发起；Normal 默认 scale=1.5、strength=0.3、noise=0.1（strength 0.05–0.60，noise 0–0.50）；Max 设 `upscaled_enhance=true`、scale=1.0。官方 Upscale 为 2×/4×，4× 两次请求；输入大于 3MP 先缩小。 | `lib/presentation/pages/generate_page.dart`; `lib/presentation/pages/history_detail_page.dart`; `lib/presentation/pages/official_upscale_page.dart`; `lib/presentation/viewmodels/generation_viewmodel.dart`; 官方 API service | C/R/U；仅官方服务，未实际调用 | 请求前展示操作/源图/模型/倍率与费用；结果另存为新 Gallery 图并关联父图；不改原图。 | 官方协议与结果持久化已接入；总测试/真实费用验证待填 | 必迁：当前源码有可达行为 |
 | MP-PIX-01 | Pixiv 表单选图当前最多 4 张；标题、正文、最多 10 个标签；R18、允许编辑标签、上传前移除元数据；立即上传或加入队列。 | `lib/presentation/pages/pixiv_upload_page.dart`; `lib/presentation/viewmodels/pixiv_upload_viewmodel.dart`; `lib/domain/entities/pixiv_upload_task.dart` | C/R/U | 桌面多选文件、显示真实数量/限制；编辑标题正文标签和安全字段；立即发布与排队是明确分开的操作。不要按 README/Agent schema 把表单限制误记为 30 张。 | 待实现 | 必迁：当前源码有可达行为 |
 | MP-PIX-02 | 读取选中末张图片的 NAI 元数据；字典匹配自动标题、填充 caption，按设置采样/替换 tag 后写入 caption。 | `lib/presentation/viewmodels/pixiv_upload_viewmodel.dart`; `lib/data/datasources/local/nai_metadata_parser.dart`; `lib/data/datasources/local/pixiv_title_generator.dart`; `assets/pixiv/characters.json`; `assets/pixiv/surroundings.json` | C/R/U | 有 NAI 元数据时可选自动填充，再逐项审核/修改；非 NAI 图不能误填；保留用户手工内容。 | 待实现 | 必迁：当前源码有可达行为 |
 | MP-PIX-03 | 可用 Pixiv Cookie 与 CSRF 时按图推荐 tag；合并配置默认 tag、去重、限 10 条，可手工加删。 | `lib/presentation/pages/pixiv_upload_page.dart`; `lib/presentation/viewmodels/pixiv_upload_viewmodel.dart`; `lib/data/datasources/remote/pixiv_api_service.dart`; `lib/domain/usecases/suggest_pixiv_tags.dart` | C/R/U；未调用在线 Pixiv | 模拟成功/鉴权失效/空结果；推荐不覆盖未确认的手工标签，远端凭据不得进日志。 | 待实现 | 必迁：当前源码有可达行为 |
@@ -152,18 +148,18 @@ README 的徽标与系统要求仍写 `1.2.2+208011`，与当前 `pubspec.yaml` 
 | MP-DATA-01 | 本地 SQLite 存储生成历史、prompt memory、助手会话、预设/模板、画师串、vibe 编码及每日统计；设置另有 SharedPreferences/本地数据源；官方 Token 用安全存储。 | `lib/data/datasources/local/database_helper.dart`; `lib/data/datasources/local/llm_chat_local_datasource.dart`; `lib/data/datasources/local/settings_local_datasource.dart`; `lib/data/datasources/local/official_novelai_token_store.dart`; `lib/core/di/injection.dart` | C/R/U；迁移未在本次运行 | PC 持久化覆盖现有数据域，重启后可恢复并保留已纳管图片引用；凭据使用安全存储，日志/Git 不含凭据。全库备份/恢复不属于手机现有能力，见独立 PC 要求。 | 待实现 | 必迁：现有本地持久化；全库备份/恢复为独立 PC 要求 |
 | MP-DATA-02 | 当前可见导入/导出入口有限：漫画项目导入分镜/导出 PNG；画师串导出 JSON 到剪贴板。未发现全应用数据库备份/恢复、全设置导入/导出 UI。 | `lib/presentation/pages/comic_editor_page.dart`; `lib/core/utils/comic_storyboard_importer.dart`; `lib/presentation/pages/artist_prompt_manager_page.dart` | C/R/U | 移植已有三类可见工作流：导入分镜并导出逐格/整页 PNG；画师串 JSON 导出到剪贴板。不得把手机没有的全库备份或全设置导入/导出计作 parity。 | 待实现 | 必迁：仅移植现有导入/导出入口 |
 | MP-PLAT-01 | 当前 APP 为 Android Flutter；选图/相册保存依赖 Android 插件；Android 壳注册 Kotlin `MethodChannel`/`EventChannel` 原生超分。 | `pubspec.yaml`; `android/app/src/main/AndroidManifest.xml`; `android/app/src/main/kotlin/com/naihuishi/nai_huishi/MainActivity.kt`; `lib/data/datasources/super_resolution_channel.dart`; `lib/domain/usecases/save_image.dart` | C；Windows runner/构建未验证 | PC 用原生桌面文件打开/另存与窗口生命周期取代 Android 权限、相册及通知 UI；每条依赖提供 Windows 实现或清晰能力状态。 | 待实现 | 必迁：提供 Windows 桌面平台等价适配 |
-| MP-PLAT-02 | 超分 .so 和模型随 Android arm64-v8a APK 搭载；其 Kotlin/ncnn 命令行与模型路径不能直接在 Windows 执行。 | `android/app/src/main/kotlin/com/naihuishi/nai_huishi/SuperResolutionPlugin.kt`; `android/app/src/main/jniLibs/`; `android/app/src/main/assets/sr_models/`; `lib/data/datasources/super_resolution_channel.dart` | C；平台限定已从静态目录确认 | 先核 Windows 推理后端、依赖、模型来源/许可/完整 hash；未完成前 PC UI 显示不可用/待配置，不能假称已移植。 | 待实现；平台移植 | 必迁：本地超分能力需 Windows 后端 |
+| MP-PLAT-02 | 超分 `.so` 与模型随 Android arm64-v8a APK 搭载；Kotlin/ncnn 命令行和模型路径不能直接在 Windows 执行。手机 ESRGAN `.bin` 与官方权重一致但 `.param` 不同；两组 CUGAN param/bin 与上游资产一致。 | `android/app/src/main/kotlin/com/naihuishi/nai_huishi/SuperResolutionPlugin.kt`; `android/app/src/main/jniLibs/`; `android/app/src/main/assets/sr_models/`; `lib/data/datasources/super_resolution_channel.dart` | C；平台限定与模型指纹已确认 | Windows 使用经 hash 固定的 ncnn Vulkan 官方发行包及配套模型、许可证；不要混用手机 ESRGAN param/bin。 | 三个 Windows preset 已通过 NVIDIA Vulkan synthetic CLI；32MP 尺寸保护已接入；Intel 单卡选择及最终 bundle/桌面验证仍待确认 | 必迁：本地超分能力需 Windows 后端 |
 | MP-PLAT-03 | Android 前台服务与保持亮屏只服务于移动端后台生图。 | `lib/core/services/background_keepalive_service.dart`; `android/app/src/main/AndroidManifest.xml`; `pubspec.yaml` | C；PC 无对应机制 | 桌面按窗口关闭/最小化/关机确认、任务持久化和重启恢复实现等价或更强行为；不复制 Android 通知流程。 | 待实现 | 必迁：桌面任务生命周期等价行为 |
 
 ## 范围解释与独立 PC 要求
 
-1. 现行 `PC_PLAN.md` v0.2 已覆盖手机端全部功能域，实施顺序为全量移植验收前置，不再有“漫画、Pixiv、本地超分暂缓”的旧边界。此矩阵当前只盘点和标注范围，不以 PC 计划旧版措辞缩小它。
+1. 现行 `PC_PLAN.md` v0.4 已覆盖手机端全部功能域，实施顺序为全量移植验收前置，不再有“漫画、Pixiv、本地超分暂缓”的旧边界。此矩阵当前只盘点和标注范围，不以 PC 计划旧版措辞缩小它。
 2. 用户指定 `novelai_local_web` 为 PC 界面、布局、动画与交互流畅感的第一参考；`novelai_local_web` 与浪白也可作为功能实现的代码参考。代码借鉴仍须遵守来源/许可约束，且不能用参考项目的功能清单替换本矩阵；功能范围、参数、渠道和工具仍以手机当前工作区源码为基线。
 3. 当前有有限的账号/端点切换能力：GPT 与 Nano Banana 可分别保存多个端点并选活动端点/模型；NovelAI 官方只有一个全局 Token，兼容网关为固定的 7877/ikun 两槽；Pixiv 只有一套 Cookie/CSRF；LLM provider 可多配并绑定不同角色。PC 不应把这些概念混成一个全局账号。
 4. 手机缺陷无须照搬：Pixiv 队列目前不持久化、全局官方 Token 只有单槽、部分文档/工具描述与源码漂移。若 PC 计划增加队列恢复、防重发、完整数据库备份/恢复等数据保护能力，应按独立 PC 要求编号、实施和验收；不计入手机 parity 条目数或完成率。全库备份/恢复不是手机已有 UI 功能。
 5. README 说 Pixiv 上传最多 30 张、当前表单上限 4 张、Agent 工具 schema 最多 30 张是不同事实；当前行为按源码表单的 4 张和 Agent schema 单独记录。
-6. 本地超分、图片选择/另存、前台保活是 Android 实现路径，不是可在 Windows 直接复用的能力实现。移动端 Flutter 仓库没有 `windows/` runner；`sqflite_common_ffi` 只列在开发依赖，桌面持久化初始化/迁移未验证；Kotlin MethodChannel/JNI、Android 前台服务和相册写入需有 Windows 适配/后端。相关功能仍属必迁范围。
-7. 本次没有构建、测试或运行 PC/移动端，也没有发起 NovelAI、LLM、WD-Tagger、Pixiv 等远端请求。R 只代表源码中的静态入口链，U 表示运行未验证；后续仍需模拟服务/本地 fixture、桌面运行和人工视觉证据。
+6. 本地超分、图片选择/另存、前台保活是 Android 实现路径，不是可在 Windows 直接复用的能力实现。PC 本轮已接入独立 Windows ncnn Vulkan 后端；Kotlin MethodChannel/JNI、Android 前台服务和相册写入仍须分别适配。相关手机业务仍属必迁范围。
+7. 本轮对手机端仅做只读源码/哈希审计，没有运行手机端或发起远端请求。PC 本地 SR 有独立合成图片 CLI 证据；Flutter 全套 tests/build、交互/浏览器验收和官方费用验证待总验收，详见 [IMAGE_TOOLS_REVIEW.md](IMAGE_TOOLS_REVIEW.md)。R 只代表源码中的静态入口链，U 表示未验证。
 
 ### 与手机功能基线分开的 PC 新增/强化项
 
@@ -192,4 +188,8 @@ README 的徽标与系统要求仍写 `1.2.2+208011`，与当前 `pubspec.yaml` 
 
 ## 2026-10-12 图片编辑进展
 
-本轮实现普通图生图裁切/重新裁切与来源保存、局部重绘可达工作区、实际请求蒙版、结果透明图层及新图回填。裁切、蒙版、区域与结果层随草稿保存；完整参数回填恢复编辑来源。详见 [IMAGE_EDITING_REVIEW.md](IMAGE_EDITING_REVIEW.md)。分块高清 MP-GEN-13、Windows 原生超分与其他图片工具仍按独立条目推进。手机当前页没有 kept/primary 候选工作流或矩形蒙版创建入口，本轮不将这些静态定义误记为已达手机功能。
+本轮实现普通图生图裁切/重新裁切与来源保存、局部重绘可达工作区、实际请求蒙版、结果透明图层及新图回填。裁切、蒙版、区域与结果层随草稿保存；完整参数回填恢复编辑来源。详见 [IMAGE_EDITING_REVIEW.md](IMAGE_EDITING_REVIEW.md)。手机当前页没有 kept/primary 候选工作流或矩形蒙版创建入口，本轮不将这些静态定义误记为已达手机功能。
+
+## 2026-10-12 图片工具与后期进展
+
+PC 已接入 MP-GEN-13 单图块请求与单张合成结果、MP-IMG-04 Director 六动作/官方和 7877/ikun 协议、MP-IMG-06 官方 Enhance/Upscale、MP-IMG-05 三模型 Windows 本地超分及 PNG 另存。来源图保留，参数和任务持久化，派生结果进入 Gallery；进程重开时 running 任务标为 `interrupted`，不会自动重发可能计费的请求。Tiled 隐藏通用批量张数控件，因为每次处理已有 1–16 个 tile image requests 并合成一张结果。手机独立 `ImageEnhancePage` 当前无路由，但 Agent 的 `upscale_image` 仍可达，不能因此删掉本地超分迁移范围。详细字段、协议、模型来源和待验收项见 [IMAGE_TOOLS_REVIEW.md](IMAGE_TOOLS_REVIEW.md)。

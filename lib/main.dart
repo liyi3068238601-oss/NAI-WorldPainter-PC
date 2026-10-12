@@ -6,6 +6,7 @@ import 'platform/storage_probe.dart';
 import 'storage/platform_store.dart';
 import 'prototype/workbench_controller.dart';
 import 'generation/generation_runtime.dart';
+import 'processing/image_tools_runtime.dart';
 import 'media/image_asset_store.dart';
 import 'security/credential_vault.dart';
 import 'security/credential_vault_probe.dart';
@@ -41,13 +42,23 @@ class _WorkspaceBootstrapState extends State<WorkspaceBootstrap> {
       assets = await openImageAssetStore();
       final vault = createCredentialVault();
       final runtime = GenerationRuntime(assets: assets, vault: vault);
+      final tools = ImageToolsRuntime(
+        assets: assets,
+        vault: vault,
+        generation: runtime,
+      );
       return WorkbenchController(
         store: store,
         restored: await store.load(),
         assets: assets,
         vault: vault,
         generateImage: runtime.generate,
-        cancelRequest: runtime.cancel,
+        cancelRequest: tools.cancel,
+        processImageTool: tools.process,
+        localSrAvailable: tools.localSr.isAvailable,
+        localSrInfo:
+            tools.localSr.info.unavailableReason ??
+            'Windows 本地模型已就绪 · ${tools.localSr.info.availableModels.length} 个预设',
       );
     } catch (_) {
       await assets?.close();

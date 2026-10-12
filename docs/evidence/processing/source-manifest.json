@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-10-12T13:32:04Z",
+  "source_repository": "sibling mobile repository; paths below are relative to its root",
+  "mobile_head": "375a41844be53136f7d2350c2d6560f221a8c5a5",
+  "mobile_worktree_clean_at_capture": true,
+  "hash_method": "Fresh PowerShell Get-FileHash -Algorithm SHA256 reads from each listed file at capture time.",
+  "scope": "Tiled img2img and reachable image postprocessing audit sources, tests, Android SR model assets and arm64 native libraries.",
+  "limitations": [
+    "Read-only phone inspection; no phone source was changed, copied, built, or tested in this pass.",
+    "Hashes are a point-in-time snapshot and can become stale if the phone workspace changes concurrently."
+  ],
+  "files": [
+    {
+      "category": "tiled_source",
+      "path": "lib/domain/entities/tiled_img2img.dart",
+      "bytes": 1025,
+      "sha256": "4426CA1E1606FCE59C50D7B1BA85944675FFB5468C344F0BD0AE8E5B7118D734"
+    },
+    {
+      "category": "tiled_source",
+      "path": "lib/domain/services/tiled_img2img_service.dart",
+      "bytes": 8551,
+      "sha256": "13A65F3D5D210459522A48195229FEA7E995BC904E25AE1FFF696D88B0DCD85A"
+    },
+    {
+      "category": "tiled_source",
+      "path": "lib/presentation/pages/generate_page.dart",
+      "bytes": 157218,
+      "sha256": "C416926A168950902EC91CF2112FCB81814BD7340D23D4B33AFA7C22BFCC1D10"
+    },
+    {
+      "category": "tiled_source",
+      "path": "lib/presentation/viewmodels/generation_viewmodel.dart",
+      "bytes": 88308,
+      "sha256": "B3E8D34020C4AE502AD6760EF0792C150FA1495F326820FDF4BFA3E280674309"
+    },
+    {
+      "category": "tiled_test",
+      "path": "test/tiled_img2img_service_test.dart",
+      "bytes": 2235,
+      "sha256": "38B1C405E4C21AE1ED3DF01627327B363F75F1BAD718BCA8DB02F874833A31B4"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/presentation/app.dart",
+      "bytes": 1547,
+      "sha256": "4B98816188598D4CD71554F90A583E8C4C6C7FD6FF1B4BAAB677E186C5CCA6CB"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/presentation/pages/settings_page.dart",
+      "bytes": 14492,
+      "sha256": "830E9DB2FC9D94CC43DBCBE008E9B805348BDDEE7D39FA7F77C09926FFA457F7"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/presentation/pages/history_detail_page.dart",
+      "bytes": 40424,
+      "sha256": "34C1D95ECB0FAE365A90F4D3F81BF2EBFC1525C2DAF6C0CA5E5048BF7B866CC4"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/presentation/pages/image_enhance_page.dart",
+      "bytes": 17481,
+      "sha256": "5F61AEDA00058B890044DF2A6FB7B44757175BEF613E36954727FAF52EEA74AA"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/presentation/pages/director_tools_page.dart",
+      "bytes": 13021,
+      "sha256": "9C8ECB72700C18F60A26D415F76EB01F36C83B7BFCC0B248AA9F5E2BB53F44FC"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/presentation/viewmodels/director_tools_viewmodel.dart",
+      "bytes": 9484,
+      "sha256": "CF9E9A58BAA423431A614BBC00B3CE3F6A64B9A0013083A8A524EC6329684791"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/presentation/viewmodels/super_resolution_viewmodel.dart",
+      "bytes": 3625,
+      "sha256": "46CD1302A23D1D4DC4D482C6D866B6BF321131E98DC94409B9F24B59698DBA88"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/presentation/pages/official_upscale_page.dart",
+      "bytes": 10536,
+      "sha256": "58F075DF72841C290DF873B1701D62A99892F06F98E3A9C36E1E6EC4BA465B03"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/domain/entities/director_tool.dart",
+      "bytes": 1749,
+      "sha256": "68F638C0CF4C1EFAE9E57666B38C63598AC37D55E2540EDD719A2797E8373A77"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/domain/entities/sr_model.dart",
+      "bytes": 1819,
+      "sha256": "F73135FC3717BAFE83B5E275A338BAF44BF3656FBDEA10E855B5699F9D2B679E"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/domain/entities/generation_task.dart",
+      "bytes": 11403,
+      "sha256": "1DD7B07736CB010C375796455E0082D0560DC478E91EDB97CE95685331D4DEDC"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/domain/usecases/upscale_image.dart",
+      "bytes": 1339,
+      "sha256": "53F654F0D9BFB699506CE5B2F0F5FCA88107BE89E37F4E4541A4A646E2EB3012"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/domain/usecases/save_image.dart",
+      "bytes": 2144,
+      "sha256": "03C5417BB76DBC20AABFC43030A3510807C4E71FA23D817638857FED94E0662D"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/domain/agents/tools/upscale_image_tool.dart",
+      "bytes": 2762,
+      "sha256": "D22313A248AC7B0369CB20D64325BF54614164A992418E2B20FC00DA91FB93CE"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/core/di/injection.dart",
+      "bytes": 20136,
+      "sha256": "0DFF5CFA3E71F4F5CEF153BCA937B6F9BE9E4D269983EE27547D7D6F7A98A4E3"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/core/constants/api_constants.dart",
+      "bytes": 6311,
+      "sha256": "739BB231095A87674B134E7BA4E0EE5237268802380E4679BDBD853DC34979A1"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/core/utils/image_utils.dart",
+      "bytes": 14985,
+      "sha256": "DFE733CBD03F10AA9324A15042F36F357CC6B54A76DC3FC0BF211BBFAD25B0BC"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/data/datasources/remote/official_novelai_api_service.dart",
+      "bytes": 30068,
+      "sha256": "72F688D25BF4F9FC81142456DAD84AFDCB50224FB0FCA3CDDF8CB6010058277E"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/data/datasources/remote/novelai_api_service.dart",
+      "bytes": 49172,
+      "sha256": "1B1541FD9B61B166D7F572845A3EFD9B6DFE857C295D8DA2723AE7FCBC754A4F"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/data/datasources/super_resolution_channel.dart",
+      "bytes": 1448,
+      "sha256": "C1E5A67C2185A2D9444BA77F45E9C9D1C79534D9C846E8542ED3284FA30249D6"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "lib/data/repositories/super_resolution_repository_impl.dart",
+      "bytes": 1495,
+      "sha256": "F66541C32BB81E7DCCE526716E7C67052D5A6606160A67BCFB11AB62CFD9AB2B"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "android/app/src/main/kotlin/com/naihuishi/nai_huishi/MainActivity.kt",
+      "bytes": 379,
+      "sha256": "F6D18DC069084BC359BA69BE14D16893355259FDE5864858AF1539187901C263"
+    },
+    {
+      "category": "postprocess_source",
+      "path": "android/app/src/main/kotlin/com/naihuishi/nai_huishi/SuperResolutionPlugin.kt",
+      "bytes": 10164,
+      "sha256": "667A13FCC1CBE51F917CE468AB4F14F5A04EE3F03BADAD90D9DD1B6D3DA8A318"
+    },
+    {
+      "category": "tiled_and_image_tests",
+      "path": "test/generation_task_model_test.dart",
+      "bytes": 6252,
+      "sha256": "A5EF5EEE9CB1EA84934052C0EC2B24BE1908B590E8040FED21451BC7290DF5F5"
+    },
+    {
+      "category": "postprocess_test",
+      "path": "test/novelai_api_service_contract_test.dart",
+      "bytes": 30478,
+      "sha256": "E83FC10942D713E85DAC17C5E8B3C42C9857F5251D3D241A6B16775B5D5AFBD4"
+    },
+    {
+      "category": "postprocess_test",
+      "path": "test/presentation/pages/official_upscale_page_test.dart",
+      "bytes": 2474,
+      "sha256": "314BAFF2DC258E063364CB3E7705131AADA69353288C283DDA92B6E97C05F47A"
+    },
+    {
+      "category": "postprocess_test",
+      "path": "test/presentation/pages/history_detail_page_test.dart",
+      "bytes": 17837,
+      "sha256": "9113AF1247963F8BAF37AF329B5E083548412B798D9F9666ABF791EC2980E375"
+    },
+    {
+      "category": "phone_model_asset",
+      "path": "android/app/src/main/assets/sr_models/realesrgan-anime/x4.param",
+      "bytes": 30560,
+      "sha256": "D63C7E93C58EC5D0048CA1F0A995F40B2AF17C2816A2E0A3B7172046D98795EC"
+    },
+    {
+      "category": "phone_model_asset",
+      "path": "android/app/src/main/assets/sr_models/realesrgan-anime/x4.bin",
+      "bytes": 8943500,
+      "sha256": "FE01C269CFD10CDEF8E018AB66EBE750CF79C7AF4D1F9C16C737E1295229BACC"
+    },
+    {
+      "category": "phone_model_asset",
+      "path": "android/app/src/main/assets/sr_models/realcugan/up2x-conservative/up2x-conservative.param",
+      "bytes": 4818,
+      "sha256": "91EFAC7489BF249F092FAA3764E3A3D1D31EF290051E39F2AFD2138C98CCCE30"
+    },
+    {
+      "category": "phone_model_asset",
+      "path": "android/app/src/main/assets/sr_models/realcugan/up2x-conservative/up2x-conservative.bin",
+      "bytes": 2573648,
+      "sha256": "91C72C136E7FF8556323D4449C5CEEFF22D9829BF8463A01137CADB8D59B84A0"
+    },
+    {
+      "category": "phone_model_asset",
+      "path": "android/app/src/main/assets/sr_models/realcugan/up4x-conservative/up4x-conservative.param",
+      "bytes": 5078,
+      "sha256": "63E8F6A5A57ACB4B7678FD928612538AE7208C836223BECDB66FFB82BD2AAB9B"
+    },
+    {
+      "category": "phone_model_asset",
+      "path": "android/app/src/main/assets/sr_models/realcugan/up4x-conservative/up4x-conservative.bin",
+      "bytes": 2818348,
+      "sha256": "1FFDE324BF3444ADADE3E70FF4FF4EAC7A4BFBF4C01B5AAB4563A89E5CEC16DA"
+    },
+    {
+      "category": "android_arm64_native_library",
+      "path": "android/app/src/main/jniLibs/arm64-v8a/libc++_shared.so",
+      "bytes": 9290184,
+      "sha256": "0C52CFAB2DF0D957D8B346A2BDC5AE8D71FECA2591924D77E1CD724D5BF74352"
+    },
+    {
+      "category": "android_arm64_native_library",
+      "path": "android/app/src/main/jniLibs/arm64-v8a/libncnn.so",
+      "bytes": 9968704,
+      "sha256": "17F3C033EF4837262919E179F26C4EF439DBB4A452D595A12086CBDF953310FB"
+    },
+    {
+      "category": "android_arm64_native_library",
+      "path": "android/app/src/main/jniLibs/arm64-v8a/libomp.so",
+      "bytes": 1234864,
+      "sha256": "B0B507BB9E89360304272BA335D5FB2F6661F88842C2B3C749474CB7B8ACDA76"
+    },
+    {
+      "category": "android_arm64_native_library",
+      "path": "android/app/src/main/jniLibs/arm64-v8a/librealcugan.so",
+      "bytes": 6487712,
+      "sha256": "93F711422B1B9743F5B02CC38D46E585F9791CCF1B0BB44FC52FDAB350B11B9F"
+    },
+    {
+      "category": "android_arm64_native_library",
+      "path": "android/app/src/main/jniLibs/arm64-v8a/librealsr.so",
+      "bytes": 6340088,
+      "sha256": "BF1608A272D43A062F55370DEAD6578583FC651025733C4C5335DF45EFC88D94"
+    },
+    {
+      "category": "resize_boundary_source",
+      "path": "lib/presentation/pages/inpaint_workspace_page.dart",
+      "bytes": 93708,
+      "sha256": "4C6611027775AC0F1DB0AF8A8428D65BEE8245CE6438FA7F1708097F809CEFE1"
+    }
+  ]
+}

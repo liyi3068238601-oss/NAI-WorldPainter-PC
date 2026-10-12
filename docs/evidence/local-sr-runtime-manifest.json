@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-12",
+  "platform": "Windows x64",
+  "backend": {
+    "technology": "ncnn Vulkan command-line runtimes",
+    "runtime_root": "data/sr",
+    "development_runtime_override": "WORLDPAINTER_SR_RUNTIME",
+    "temporary_job_root": "%LOCALAPPDATA%/WorldPainter/PC/sr/jobs",
+    "max_input_bytes": 268435456,
+    "max_input_pixels": 33554432,
+    "max_output_pixels": 33554432,
+    "resolution_policy": "Reject oversized source or expected output before invoking an image decoder; do not silently resize."
+  },
+  "release_assets": [
+    {
+      "id": "realesrgan-ncnn-vulkan",
+      "version": "v0.2.5.0",
+      "url": "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip",
+      "archive": "realesrgan-ncnn-vulkan-20220424-windows.zip",
+      "size_bytes": 45474481,
+      "sha256": "ABC02804E17982A3BE33675E4D471E91EA374E65B70167ABC09E31ACB412802D",
+      "checksum_note": "GitHub release does not publish an archive checksum; this SHA-256 was measured from the official HTTPS release asset and is pinned by setup-super-resolution.ps1.",
+      "authenticode": "CLI executable is unsigned; vcomp140.dll has a valid Microsoft Authenticode signature.",
+      "selected_files": [
+        {
+          "path": "realesrgan-ncnn-vulkan.exe",
+          "size_bytes": 6161408,
+          "sha256": "07E49F7CBB4EDE01AE4DD4C399D3A7E5846E3D2085C3128EFF881E55CB7B1A0C"
+        },
+        {
+          "path": "vcomp140.dll",
+          "size_bytes": 182704,
+          "sha256": "8F72EF2E483465444B2059FC6744D6CB22CD8D8A27F6FA56BEFD2A42DCD0F78B",
+          "authenticode": "Valid: Microsoft Corporation"
+        },
+        {
+          "path": "models/realesrgan-x4plus-anime.param",
+          "size_bytes": 30290,
+          "sha256": "2B8FB6E0AE4D2D85704CA08C119A2F5EA40ADD4F2ECD512EB7F4CD44B6127ED4"
+        },
+        {
+          "path": "models/realesrgan-x4plus-anime.bin",
+          "size_bytes": 8943500,
+          "sha256": "FE01C269CFD10CDEF8E018AB66EBE750CF79C7AF4D1F9C16C737E1295229BACC"
+        }
+      ],
+      "license_files": [
+        "REAL_ESRGAN_NCNN_VULKAN_MIT.txt",
+        "REAL_ESRGAN_MODEL_BSD-3-CLAUSE.txt",
+        "NCNN_BSD-3-CLAUSE.txt",
+        "LIBWEBP_BSD-3-CLAUSE.txt",
+        "STB_MIT_OR_PUBLIC_DOMAIN.txt",
+        "DIRENT_MIT.txt"
+      ]
+    },
+    {
+      "id": "realcugan-ncnn-vulkan",
+      "version": "20220728",
+      "url": "https://github.com/nihui/realcugan-ncnn-vulkan/releases/download/20220728/realcugan-ncnn-vulkan-20220728-windows.zip",
+      "archive": "realcugan-ncnn-vulkan-20220728-windows.zip",
+      "size_bytes": 45977449,
+      "sha256": "C6E08D46C11704B1E3A1ADA9DDD591CB5005F52F132136C8633BA25DEF400E01",
+      "checksum_note": "GitHub release does not publish an archive checksum; this SHA-256 was measured from the official HTTPS release asset and cross-checked against the ScoopInstaller/Main manifest.",
+      "authenticode": "CLI executable is unsigned; vcomp140.dll has a valid Microsoft Authenticode signature.",
+      "selected_files": [
+        {
+          "path": "realcugan-ncnn-vulkan.exe",
+          "size_bytes": 6656512,
+          "sha256": "AF5A36B124C993C77D0E69E42F640CDC108060874ED060D34CEEF66D52C77A9D"
+        },
+        {
+          "path": "vcomp140.dll",
+          "size_bytes": 181680,
+          "sha256": "54FE6B087528B33C2969143D811EB62F1BD49071D37DE9DB0745FC079764D698",
+          "authenticode": "Valid: Microsoft Corporation"
+        },
+        {
+          "path": "models-se/up2x-conservative.param",
+          "size_bytes": 4818,
+          "sha256": "91EFAC7489BF249F092FAA3764E3A3D1D31EF290051E39F2AFD2138C98CCCE30"
+        },
+        {
+          "path": "models-se/up2x-conservative.bin",
+          "size_bytes": 2573648,
+          "sha256": "91C72C136E7FF8556323D4449C5CEEFF22D9829BF8463A01137CADB8D59B84A0"
+        },
+        {
+          "path": "models-se/up4x-conservative.param",
+          "size_bytes": 5078,
+          "sha256": "63E8F6A5A57ACB4B7678FD928612538AE7208C836223BECDB66FFB82BD2AAB9B"
+        },
+        {
+          "path": "models-se/up4x-conservative.bin",
+          "size_bytes": 2818348,
+          "sha256": "1FFDE324BF3444ADADE3E70FF4FF4EAC7A4BFBF4C01B5AAB4563A89E5CEC16DA"
+        }
+      ],
+      "license_files": [
+        "REAL_CUGAN_NCNN_VULKAN_MIT.txt",
+        "REAL_CUGAN_MODEL_MIT.txt",
+        "NCNN_BSD-3-CLAUSE.txt",
+        "LIBWEBP_BSD-3-CLAUSE.txt",
+        "STB_MIT_OR_PUBLIC_DOMAIN.txt",
+        "DIRENT_MIT.txt"
+      ]
+    }
+  ],
+  "phone_model_comparison": [
+    {
+      "preset": "realesrganAnime4x",
+      "phone_bin_matches_official_release": true,
+      "phone_param_matches_official_release": false,
+      "phone_param_sha256": "D63C7E93C58EC5D0048CA1F0A995F40B2AF17C2816A2E0A3B7172046D98795EC",
+      "official_param_sha256": "2B8FB6E0AE4D2D85704CA08C119A2F5EA40ADD4F2ECD512EB7F4CD44B6127ED4",
+      "decision": "Use the official Windows param/bin pair; do not mix the phone param with the matching weight file."
+    },
+    {
+      "preset": "realcuganConservative2x",
+      "phone_param_and_bin_match_official_release": true,
+      "decision": "The phone model pair is byte-identical to the official Windows archive; setup still extracts the official archive to preserve provenance."
+    },
+    {
+      "preset": "realcuganConservative4x",
+      "phone_param_and_bin_match_official_release": true,
+      "decision": "The phone model pair is byte-identical to the official Windows archive; setup still extracts the official archive to preserve provenance."
+    },
+    {
+      "phone_native_libraries": "Android arm64-v8a ELF libraries are not Windows PE executables and are not reused."
+    }
+  ],
+  "command_mapping": {
+    "realesrganAnime4x": [
+      "-n realesrgan-x4plus-anime",
+      "-s 4",
+      "-t 0",
+      "-f png",
+      "-j 2:1:2"
+    ],
+    "realcuganConservative2x": [
+      "-n -1",
+      "-s 2",
+      "-t 0",
+      "-c 0",
+      "-f png",
+      "-j 2:1:2"
+    ],
+    "realcuganConservative4x": [
+      "-n -1",
+      "-s 4",
+      "-t 0",
+      "-c 0",
+      "-f png",
+      "-j 2:1:2"
+    ]
+  },
+  "synthetic_cli_probe": {
+    "date": "2026-10-12",
+    "fixture": "64x64 generated RGBA checker PNG; no user image",
+    "status": "passed all three preset calls and PNG dimensions",
+    "default_selected_device": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+    "nvidia_driver": "616.92; Vulkan API 1.4.351",
+    "intel_vulkan_inventory": "Intel(R) Graphics is visible in vulkaninfo with driver 101.8424 and Vulkan API 1.4.333.",
+    "intel_probe_limit": "Passing -g 0 or -g 1 still reports the NVIDIA device in these release builds; -g 2 fails. An Intel-only CLI run was not confirmed.",
+    "outputs": [
+      {
+        "model": "realesrganAnime4x",
+        "size_bytes": 75076,
+        "dimensions": "256x256"
+      },
+      {
+        "model": "realcuganConservative2x",
+        "size_bytes": 26246,
+        "dimensions": "128x128"
+      },
+      {
+        "model": "realcuganConservative4x",
+        "size_bytes": 86510,
+        "dimensions": "256x256"
+      }
+    ],
+    "probe_script": "tool/probe_local_sr.mjs"
+  },
+  "license_file_sha256": {
+    "DIRENT_MIT.txt": "2F414F6C48E8C25FFB5D03CDDD6043B3B613187F758D0A6964CA2AD7ED749E50",
+    "LIBWEBP_BSD-3-CLAUSE.txt": "5AEC868F669E384A22372A4E8A1A6CD7D44C64CD451F960CA69CC170D1E13ACF",
+    "NCNN_BSD-3-CLAUSE.txt": "7C974BAC98848DF46BE1AF5BDAA3C3C9C01F6082A90F55CAEB7F60C6208AA255",
+    "REAL_CUGAN_MODEL_MIT.txt": "8CAD8CFDF94BAAF23519061AF913770E52476DDEC2A311E9510582E7BED13CBA",
+    "REAL_CUGAN_NCNN_VULKAN_MIT.txt": "57157B0FC6954DD1645DC674CC99BEBBAB4CB84C5B306B910989777E3D0D6FBD",
+    "REAL_ESRGAN_MODEL_BSD-3-CLAUSE.txt": "4A699EC4863D96A91FC265948A0C90033F7E8735D515524DCF3444736406E0C2",
+    "REAL_ESRGAN_NCNN_VULKAN_MIT.txt": "5ABB941454DE437B0E90D78DCB72E3688F74E14BCD4E24393273CB5CD0E9C937",
+    "STB_MIT_OR_PUBLIC_DOMAIN.txt": "BEBFE904B14301657E4E5D655C811D51FD31B97C455B9CC2D8600D6BAC6CFF63"
+  },
+  "operational_notes": [
+    "Both official CLI executables are unsigned; verify the pinned archive SHA-256 before extraction. Do not extract sample images/videos or the debug-only vcomp140d.dll.",
+    "The Vulkan backend uses the installed Intel, AMD, or NVIDIA Vulkan driver; compatibility and speed depend on driver support. Real-CUGAN's 2022 binary is older and needs a current-host probe.",
+    "Redistributing vcomp140.dll follows Microsoft's Visual Studio redistribution terms; the bundled vcomp140.dll is unmodified and Microsoft-signed."
+  ]
+}

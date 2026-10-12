@@ -19,6 +19,10 @@ extension _GenerationPanels on _WorkbenchState {
 
   Future<void> _submit() async {
     if (c.generating) return;
+    if (page == 3) {
+      await _submitImageTools();
+      return;
+    }
     if (scaffold.currentContext != null &&
         !Form.of(scaffold.currentContext!).validate()) {
       _message('请先修正标出的参数。');
@@ -66,7 +70,10 @@ extension _GenerationPanels on _WorkbenchState {
     ),
   );
 
-  Widget _advancedParameters() {
+  Widget _advancedParameters({
+    bool includeSize = true,
+    bool includeBatch = true,
+  }) {
     final p = c.parameters;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,39 +120,41 @@ extension _GenerationPanels on _WorkbenchState {
               c.updateAdvanced(c.parameters.copyWith(cfgRescale: v.toDouble())),
           max: 1,
         ),
-        Row(
-          children: [
-            Expanded(
-              child: _number(
-                '宽度 · 64 的倍数',
-                c.width,
-                (v) => c.setSize(v.toInt(), c.height),
-                min: 64,
-                max: 1920,
-                integer: true,
+        if (includeSize)
+          Row(
+            children: [
+              Expanded(
+                child: _number(
+                  '宽度 · 64 的倍数',
+                  c.width,
+                  (v) => c.setSize(v.toInt(), c.height),
+                  min: 64,
+                  max: 1920,
+                  integer: true,
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _number(
-                '高度 · 64 的倍数',
-                c.height,
-                (v) => c.setSize(c.width, v.toInt()),
-                min: 64,
-                max: 1920,
-                integer: true,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _number(
+                  '高度 · 64 的倍数',
+                  c.height,
+                  (v) => c.setSize(c.width, v.toInt()),
+                  min: 64,
+                  max: 1920,
+                  integer: true,
+                ),
               ),
-            ),
-          ],
-        ),
-        _number(
-          '批量张数 · 逐张提交',
-          c.batchCount,
-          (v) => c.updateBatch(v.toInt()),
-          min: 1,
-          max: 30,
-          integer: true,
-        ),
+            ],
+          ),
+        if (includeBatch)
+          _number(
+            '批量张数 · 逐张提交',
+            c.batchCount,
+            (v) => c.updateBatch(v.toInt()),
+            min: 1,
+            max: 30,
+            integer: true,
+          ),
         _muted('提交后修改只影响下一批。固定种子用于首张，其余图片使用随机种子。尺寸、采样器和参考组合会在提交前按渠道校验。'),
       ],
     );
