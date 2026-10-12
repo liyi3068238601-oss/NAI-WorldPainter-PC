@@ -1,0 +1,18 @@
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders/stretch_effect.frag
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/app.so
+[  +27 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“x64\Release\INSTALL\INSTALL.tlog\unsuccessfulbuild”。
+[        ]   正在对“x64\Release\INSTALL\INSTALL.tlog\INSTALL.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\INSTALL.vcxproj”(默认目标)的操作。
+[  +10 ms] 已成功生成。
+[        ]     0 个警告
+[        ]     0 个错误
+[        ] 已用时间 00:00:24.82
+[  +37 ms] Building Windows application... (completed in 25.6s)
+[   +3 ms] √ Built build\windows\x64\runner\Release\worldpainter_pc.exe
+[        ] "flutter windows" took 25,802ms.
+[  +20 ms] Running 1 shutdown hook
+[        ] Shutdown hooks complete
+[ +264 ms] exiting with code 0
+Windows Release executable: E:\NAI-WorldPainter\PC端\build\windows\x64\runner\Release\worldpainter_pc.exe (141312 bytes)
+Bundled font license SHA-256: 1C05C68C34F9708415AADA51F17E1B0092D2CEA709BF4A94CD38114F9E73D7D9

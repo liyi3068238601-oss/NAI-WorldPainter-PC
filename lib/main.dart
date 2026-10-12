@@ -5,11 +5,16 @@ import 'platform/desktop_lifecycle.dart';
 import 'platform/storage_probe.dart';
 import 'storage/platform_store.dart';
 import 'prototype/workbench_controller.dart';
+import 'generation/generation_runtime.dart';
+import 'media/image_asset_store.dart';
+import 'security/credential_vault.dart';
+import 'security/credential_vault_probe.dart';
 
 import 'prototype/workbench.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (await runWindowsCredentialProbe(args)) return;
   if (await runStorageProbe(args)) return;
   runApp(const WorkspaceBootstrap());
 }
@@ -31,9 +36,21 @@ class _WorkspaceBootstrapState extends State<WorkspaceBootstrap> {
 
   Future<WorkbenchController> _load() async {
     final store = await openWorkspaceStore();
+    ImageAssetStore? assets;
     try {
-      return WorkbenchController(store: store, restored: await store.load());
+      assets = await openImageAssetStore();
+      final vault = createCredentialVault();
+      final runtime = GenerationRuntime(assets: assets, vault: vault);
+      return WorkbenchController(
+        store: store,
+        restored: await store.load(),
+        assets: assets,
+        vault: vault,
+        generateImage: runtime.generate,
+        cancelRequest: runtime.cancel,
+      );
     } catch (_) {
+      await assets?.close();
       await store.close();
       rethrow;
     }

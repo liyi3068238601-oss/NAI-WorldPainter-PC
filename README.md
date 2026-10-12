@@ -2,14 +2,16 @@
 
 面向 Windows 的绘世创作客户端。**先完整移植手机端全部现有功能，再增加其他功能**，包括 NovelAI 官方与现有兼容网关、其他已接入生图服务、提示词助手、图库后期、漫画、本地超分和 Pixiv 工作流。
 
-当前状态：**Flutter 三栏原型已接入 SQLite 自动保存**。草稿、参数、图库记录、收藏、主题和编辑状态支持重开恢复；生成仍为模拟流程，真实服务尚未接入。这不是全量移植完成版或正式安装包。
+当前状态：**Flutter 三栏工作台已接入 NovelAI 生成链路、Windows 凭据保护和真实图片图库**。包含官方、7877、ikun 独立协议；草稿、完整 NovelAI 请求参数、原图与图库记录支持持久化。验证使用模拟服务，不代表真实账号兼容性已验收。这不是全量移植完成版或正式安装包。
 
+- [生成链路与凭据验证](docs/GENERATION_REVIEW.md)：本轮参数、凭据、图库、模拟接口与剩余边界。
 - [原型验收记录](docs/PROTOTYPE_REVIEW.md)：实际交互、截图、自动化检查与明确限制。
 - [持久化与 Windows 验证](docs/PERSISTENCE_REVIEW.md)：数据库重开、关闭前保存、中文路径与实际发布 exe 探针。
 - [手机端逐项迁移顺序](docs/MOBILE_MIGRATION_NEXT.md)：下一批实现及仍需适配的平台能力。
 - 开发环境：在 PC端 目录的 PowerShell 先设置 `$env:PUB_CACHE = Join-Path (Get-Location) '.tmp/pub-cache'`，再解析依赖或运行测试；避免缓存写到项目外。
 - 浏览器预览：在本目录执行 `pwsh -File scripts/preview.ps1 -Build`，然后在内置浏览器打开 `http://127.0.0.1:5080/`。已构建时可省略 `-Build`；端口被占用可传 `-Port 5081`。
 - Windows 构建：先运行 `flutter pub get`，再执行 `pwsh -File scripts/build-windows.ps1`（可传 `-FlutterPath`）；脚本解决当前 Flutter 工具链的中文构建路径问题。产物在 `build/windows/x64/runner/Release/worldpainter_pc.exe`，运行时保留完整 Release 目录，不能只复制 exe。
+- Windows 凭据验证：构建后执行 `pwsh -File scripts/probe-credentials.ps1`，使用合成凭据跨两个隐藏进程验证写入、读取和删除，不触碰真实账号。
 - Windows 存储验证：构建后执行 `pwsh -File scripts/probe-windows.ps1`，在本目录 `.tmp` 下启动两个隐藏的实际 exe 进程完成写入与重开校验。测试与构建串行运行，避免 SQLite DLL 占用。
 - 本地开发数据：构建脚本将默认数据目录固定为本仓库 `data/desktop`（Git 忽略）；可用 `WORLDPAINTER_DATA_DIR` 覆盖。浏览器预览使用当前站点的 IndexedDB，与 exe 相互独立；清理站点数据会删除预览记录，请固定使用 5080 端口。
 - Web SQLite 资产已锁定并纳入仓库；更新时执行 `pwsh -File scripts/setup-web-storage.ps1`，核对 [依赖与许可](docs/THIRD_PARTY.md) 后重新构建。
@@ -22,7 +24,7 @@
 - [手机端功能对照](docs/MOBILE_PARITY.md)：按功能记录来源、PC 等价行为和验收标准。
 - [设计方向](docs/DESIGN_DIRECTION.md)：界面、布局、动画与流畅感优先参考 NovelAI Local Web，其次浪白；保留绘世主色和风格。
 - [实机交互调查](docs/REFERENCE_UI_REVIEW.md)：内置浏览器中的真实界面操作、模拟服务边界、截图与借鉴结论。
-- [技术路线](docs/ARCHITECTURE.md)：Flutter Windows 为当前路线，Electron 为关键适配失败时的后备；平台验证待完成。
+- [技术路线](docs/ARCHITECTURE.md)：Flutter Windows 为当前路线；SQLite、凭据及 Release 构建已验证，其他原生平台能力继续逐项验收。
 - [调查与复用清单](docs/RESEARCH.md)：现有代码、官方资料、来源和复用边界。
 
 NovelAI Local Web 与浪白同时是功能实现代码参考：逐项评估成熟模块的复用/适配，不从零重复实现已有可靠方案。新增功能仍在全量移植验收后开展。

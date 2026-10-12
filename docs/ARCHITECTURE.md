@@ -59,7 +59,7 @@ Electron 候选目录：`src/main/` 负责桌面与应用服务，`src/preload/`
 
 候选 Electron 实现应开启 context isolation 与 renderer sandbox，关闭 renderer Node integration，采用受限 CSP、校验 IPC 来源与参数、限制导航和外链。凭据只通过受控服务使用，保存前走系统保护能力；普通设置与日志不存明文秘密。文件对话框选定的目录与资产 ID 是文件操作边界，不向渲染层暴露任意文件读写命令。参见 [Electron 安全文档](https://www.electronjs.org/docs/latest/tutorial/security)。
 
-SQLite 已采用锁定的 `sqflite_common_ffi 2.4.3` / `sqlite3 3.7.0`，Windows 在后台 isolate 执行数据库操作。Web 预览采用 `sqflite_common_ffi_web 1.2.0` 的 SharedWorker + IndexedDB，属于实验性预览实现，不作为正式 Windows 存储。保存使用事务和 revision CAS；失败保留内存状态并阻止正常关窗，过新或损坏数据库不自动重置。详见 [持久化验证](PERSISTENCE_REVIEW.md)。凭据库、完整资产仓库及其平台能力仍待验证；图片解析与缩略图等耗时工作移入 isolate 或独立任务。
+SQLite 已采用锁定的 `sqflite_common_ffi 2.4.3` / `sqlite3 3.7.0`，Windows 在后台 isolate 执行数据库操作。Web 预览采用 `sqflite_common_ffi_web 1.2.0` 的 SharedWorker + IndexedDB，属于实验性预览实现，不作为正式 Windows 存储。保存使用事务和 revision CAS；失败保留内存状态并阻止正常关窗，过新或损坏数据库不自动重置。详见 [持久化验证](PERSISTENCE_REVIEW.md)。本轮加入 `lib/generation` 独立协议、`lib/security` Windows Credential Manager 通道及 `lib/media` 图片仓库，结果字节先验证并原子落盘，再写图库索引。Web 凭据只在内存中保存；浏览器图片存入独立 assets.sqlite。详见 GENERATION_REVIEW.md。大图库缩略图队列和性能优化仍待验证。
 
 ## M1 的选择依据
 

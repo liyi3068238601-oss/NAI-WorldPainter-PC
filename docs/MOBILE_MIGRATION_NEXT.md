@@ -12,7 +12,7 @@
 | 历史记录与图像 | `lib/data/models/generation_task_model.dart:172-224` 的历史模型保存绝对 `image_path`；`lib/core/utils/image_utils.dart:13-20` 定义 `generated_images` 存储位置。`lib/data/repositories/history_repository_impl.dart:48-62,78-98` 最多保留 200 条，淘汰旧项会删对应图像；`clearHistory` 只清索引，不清图像文件。 | 历史数据库与文件系统存在生命周期关系。PC 需迁移为受管路径，并为导入、删除、清空、缺文件、部分失败及重启恢复定义一致行为；不要把绝对手机路径直接当作 PC 可用路径。 |
 | 另存图片 | `lib/domain/usecases/save_image.dart:57-64` 走系统相册保存，和应用历史文件分开。 | Windows 需要桌面文件另存行为；相册保存结果不能与图库历史索引混为同一份资产。 |
 
-当前 PC 的 [SQLite workspace store](../lib/storage/sqlite_workspace_store.dart) 是 schema 1 的新工作区快照原型，存有草稿、图库元数据、偏好、编辑器状态和 revision。它**不是手机 schema v22 的业务迁移，也不代表 v22 导入已经完成**；目前没有证据表明 PC 能发现、读取或迁移既有手机数据库。当前 `WorkbenchController` 仍使用模拟生成结果，不能据此宣称手机生图、历史图片或完整业务已移植。
+当前 PC 的 [SQLite workspace store](../lib/storage/sqlite_workspace_store.dart) 是 schema 1 的新工作区快照原型，存有草稿、图库元数据、偏好、编辑器状态和 revision。它**不是手机 schema v22 的业务迁移，也不代表 v22 导入已经完成**；目前没有证据表明 PC 能发现、读取或迁移既有手机数据库。本轮已接入真实生成 runtime、受管原图和参数快照，具体实现与验收见 [GENERATION_REVIEW.md](GENERATION_REVIEW.md)。这不代表既有手机历史库导入或完整业务已经移植。
 
 ## Windows 平台与许可风险
 
@@ -25,7 +25,7 @@
 
 ## 下一批实施顺序
 
-下一批先移植生成领域模型、完整参数与能力契约，验证 Windows 凭据保护，然后接入官方与现有网关的请求适配和模拟响应测试；同时建立受管图像仓库与元数据回填。其后按 M3–M6 迁移工具、助手、漫画和 Pixiv。下面列出这些批次涉及的基础设施难度，不表示把全部生图渠道推迟到最后。全部手机端功能最低标准不变。
+生成领域模型、NovelAI 参数与能力契约、Windows 凭据、官方及现有网关适配、受管原图和回填现已实现；本轮实测边界见 [GENERATION_REVIEW.md](GENERATION_REVIEW.md)。下一批继续补齐完整图像编辑工作流、其他手机生图渠道、v22 显式导入与图库生命周期，再按 M3–M6 迁移工具、助手、漫画和 Pixiv。下面列出这些批次涉及的基础设施难度，不表示把全部生图渠道推迟到最后。全部手机端功能最低标准不变。
 
 1. **基础持久化与迁移契约（较低）**：在 PC schema 上定义版本升级、快照原子性和字段映射；制作不含用户信息的 v22 fixture，验证从 v22 到 PC 的显式导入路径、重复导入策略、损坏/未知字段处理和回滚。先覆盖草稿、全部生成参数、Seed、角色、主题及必要设置的保存—关闭—重开。PC schema 1 与手机 v22 必须作为两个独立版本边界处理。
 2. **图库元数据与受管图像（中等）**：把历史记录和图像文件关联纳入同一生命周期设计；定义复制/校验、受管路径、元数据与派生图关系、缺失/重复文件处理。逐项验证单条删除、达到上限时淘汰、清空历史、另存副本及进程中断后的恢复，避免“索引已删但文件遗留”或“文件已删但历史仍可见”。

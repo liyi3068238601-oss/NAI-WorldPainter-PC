@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-12",
+  "testsPassed": 49,
+  "analyzer": "passed",
+  "windowsBuild": "passed",
+  "webBuild": "passed",
+  "windowsCredentialAcrossProcesses": "passed",
+  "windowsStorageAcrossProcesses": "passed",
+  "realPaidServicesTested": false,
+  "browserOrigin": "http://127.0.0.1:5080",
+  "mockEndpoint": "http://127.0.0.1:5090",
+  "browserChecks": [
+    "PNG response to persistent gallery",
+    "CFG Rescale refill 0.6 to 0.25",
+    "multi-character reorder survives reload",
+    "favorites filter",
+    "web key absent after reload",
+    "dark and light themes"
+  ],
+  "limitations": [
+    "Real upstream accounts not exercised",
+    "Native visible file picker not exercised",
+    "Full mobile parity and v22 import pending",
+    "Unindexed assets after interrupted publication may remain"
+  ],
+  "webMainSha256": "e0c80a0c500a5244f38d5ac79062a26ace5c7f3a81338f36e4ed6702ac9752d1"
+}

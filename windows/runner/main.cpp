@@ -25,7 +25,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
       GetCommandLineArguments();
   const bool storage_probe =
       std::find(command_line_arguments.begin(), command_line_arguments.end(),
-                "--storage-probe") != command_line_arguments.end();
+                "--storage-probe") != command_line_arguments.end() ||
+      std::find(command_line_arguments.begin(), command_line_arguments.end(),
+                "--credential-probe") != command_line_arguments.end();
 
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
 

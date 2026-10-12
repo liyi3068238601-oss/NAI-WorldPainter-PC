@@ -1,0 +1,77 @@
+[
+  {
+    "path": "data/app.so",
+    "bytes": 7308168,
+    "sha256": "66c30b8ba4d2f9a04d8e1fd64de2cbcf2e1a7b2e6ca64326ad5cf9b78634d715"
+  },
+  {
+    "path": "data/flutter_assets/AssetManifest.bin",
+    "bytes": 126,
+    "sha256": "946eb180d0f25849369569580a312f629e407edc485d7a26400ef01095b555bf"
+  },
+  {
+    "path": "data/flutter_assets/assets/fonts/NotoSansSC.ttf",
+    "bytes": 17772300,
+    "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da"
+  },
+  {
+    "path": "data/flutter_assets/assets/fonts/OFL.txt",
+    "bytes": 4388,
+    "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+  },
+  {
+    "path": "data/flutter_assets/FontManifest.json",
+    "bytes": 156,
+    "sha256": "482e1e0967280b9aca31d1c30e1450b5593e626ae4a0f67d1d15990cf542090a"
+  },
+  {
+    "path": "data/flutter_assets/fonts/MaterialIcons-Regular.otf",
+    "bytes": 8752,
+    "sha256": "4ca6159f2618815d3dcd85f7b25810c729a891408f0214e0b106907951c8e654"
+  },
+  {
+    "path": "data/flutter_assets/NativeAssetsManifest.json",
+    "bytes": 131,
+    "sha256": "4ac70f7d67abb2ffc105d2cabfdee68c9aa138d132107e5be4949c539f7ce379"
+  },
+  {
+    "path": "data/flutter_assets/NOTICES.Z",
+    "bytes": 100179,
+    "sha256": "e54aa001a8ffd4f2a643cf7036c5fba4705adf0d64114a53790eed3fb887aa68"
+  },
+  {
+    "path": "data/flutter_assets/shaders/ink_sparkle.frag",
+    "bytes": 21856,
+    "sha256": "1fe8436a743884cb65078fe8c7b38e18f5365f2a2961270916f426fd13c604af"
+  },
+  {
+    "path": "data/flutter_assets/shaders/stretch_effect.frag",
+    "bytes": 17616,
+    "sha256": "bc7599dbbbaab310efe41520574138d21fb18a88c8fe4495ed79315309336f6f"
+  },
+  {
+    "path": "data/icudtl.dat",
+    "bytes": 864880,
+    "sha256": "325a86063d26334c2eabe1743cea073b612540fbf3d8fc2ef0b5708e3763a8c7"
+  },
+  {
+    "path": "flutter_windows.dll",
+    "bytes": 21274112,
+    "sha256": "7b03815958c49d72385be497fbd0eb1bb2ae27d24989d6c9aee83eafbd93e9d3"
+  },
+  {
+    "path": "native_assets.json",
+    "bytes": 191,
+    "sha256": "4f7ddf1e885540122cf2a88ef463734baadf2d526d41ceeaf61a94432765665a"
+  },
+  {
+    "path": "sqlite3.dll",
+    "bytes": 1709056,
+    "sha256": "98b4be674137b85ec111a7a29223e87aa41c3e964d61f73602471ddd7b9c56ce"
+  },
+  {
+    "path": "worldpainter_pc.exe",
+    "bytes": 141312,
+    "sha256": "25f399d83d582628220848bc834ff1fe5d9018ed5ab07f18223c0ae03e6450eb"
+  }
+]

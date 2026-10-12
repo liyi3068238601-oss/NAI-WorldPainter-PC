@@ -1,9 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
 import '../storage/workspace_store.dart';
+import '../generation/generation_parameters.dart';
+import '../generation/service_connection.dart';
+import '../media/image_asset_store.dart';
+import '../security/credential_vault.dart';
+
+typedef GenerateImage = Future<SceneResult> Function(
+  GenerationParameters parameters,
+  ServiceConnection connection,
+);
 
 /// One immutable gallery record. Demo artwork is reproduced from its variant.
 @immutable
@@ -23,6 +33,8 @@ class SceneResult {
     this.provider = 'NovelAI 官方',
     this.steps = 28,
     this.cfg = 5.0,
+    this.assetRef,
+    this.parameters,
   }) : assert(variant >= 0 && variant <= 2);
 
   final String id;
@@ -39,6 +51,8 @@ class SceneResult {
   final String provider;
   final int steps;
   final double cfg;
+  final String? assetRef;
+  final GenerationParameters? parameters;
 
   Map<String, Object?> toJson() => {
     'id': id,
@@ -55,6 +69,8 @@ class SceneResult {
     'provider': provider,
     'steps': steps,
     'cfg': cfg,
+    if (assetRef != null) 'assetRef': assetRef,
+    if (parameters != null) 'parameters': parameters!.toJson(),
   };
 
   factory SceneResult.fromJson(Map<String, dynamic> data) {
@@ -73,6 +89,12 @@ class SceneResult {
       provider: data['provider'] as String,
       steps: data['steps'] as int,
       cfg: (data['cfg'] as num).toDouble(),
+      assetRef: data['assetRef'] as String?,
+      parameters: data['parameters'] == null
+          ? null
+          : GenerationParameters.fromJson(
+              Map<String, dynamic>.from(data['parameters'] as Map),
+            ),
     );
     if (result.id.isEmpty ||
         result.width <= 0 ||
@@ -100,6 +122,8 @@ class SceneResult {
     provider: provider,
     steps: steps,
     cfg: cfg,
+    assetRef: assetRef,
+    parameters: parameters,
   );
 }
 
@@ -111,10 +135,15 @@ class WorkbenchController extends ChangeNotifier {
     Duration generationDelay = const Duration(seconds: 3),
     this.store,
     StoredWorkspace? restored,
+    this.generateImage,
+    this.cancelRequest,
+    this.assets,
+    this.vault,
   }) : wasRestored = restored != null,
        _generationDelay = generationDelay.isNegative
            ? Duration.zero
            : generationDelay {
+    if (generateImage != null) _status = '请配置接入凭据；生成将使用当前渠道额度。';
     _results.addAll(const [
       SceneResult(
         id: 'demo-moonlit-ridge',
@@ -162,6 +191,94 @@ class WorkbenchController extends ChangeNotifier {
   }
 
   final WorkspaceStore? store;
+  final GenerateImage? generateImage;
+  final VoidCallback? cancelRequest;
+  final ImageAssetStore? assets;
+  final CredentialVault? vault;
+  bool get liveGeneration => generateImage != null;
+  int _batchCount = 1;
+  int get batchCount => _batchCount;
+  int _refillRevision = 0;
+  int get refillRevision => _refillRevision;
+  GenerationParameters _advanced = GenerationParameters(
+    model: 'nai-diffusion-4-5-full',
+    prompt: '',
+    width: 832,
+    height: 1216,
+  );
+  final Map<String, String> _connections = Map.of(ServiceConnection.defaults);
+  static const modelIds = {
+    'NAI Diffusion 4.5 Full': 'nai-diffusion-4-5-full',
+    'NAI Diffusion 4.5 Curated': 'nai-diffusion-4-5-curated',
+    'NAI Diffusion 5 Full': 'nai-diffusion-5-full',
+    'NAI Diffusion 5 Curated': 'nai-diffusion-5-curated',
+    'NAI Diffusion 4': 'nai-diffusion-4-full',
+    'NAI Diffusion 3': 'nai-diffusion-3',
+  };
+  GenerationParameters get parameters => _advanced.copyWith(
+    model: modelIds[_model] ?? _model,
+    prompt: _prompt,
+    negativePrompt: _negative,
+    width: _width,
+    height: _height,
+    steps: _steps,
+    scale: _cfg,
+    seed: int.tryParse(_seedText),
+    clearSeed: _seedText.isEmpty,
+  );
+  ServiceConnection get connection {
+    final id =
+        ServiceConnection.labels.entries
+            .where((e) => e.value == _provider)
+            .firstOrNull
+            ?.key ??
+        'unsupported';
+    return ServiceConnection(protocol: id, baseUrl: _connections[id] ?? '');
+  }
+
+  void updateConnection(ServiceConnection value) => _update(() {
+    _connections[value.protocol] = value.uri.toString();
+  });
+  void updateAdvanced(GenerationParameters value) =>
+      _update(() => _advanced = value);
+  void moveCharacter(int index, int delta) => _update(() {
+    final list = [..._advanced.characters];
+    final target = index + delta;
+    if (index < 0 ||
+        index >= list.length ||
+        target < 0 ||
+        target >= list.length) {
+      return;
+    }
+    final item = list.removeAt(index);
+    list.insert(target, item);
+    _advanced = _advanced.copyWith(characters: list);
+    _refillRevision++;
+  });
+  void updateBatch(int value) =>
+      _update(() => _batchCount = value.clamp(1, 30));
+  void addImported(ImageAsset asset) => _update(() {
+    final id = 'import-${asset.id}';
+    if (!_results.any((r) => r.id == id)) {
+      _results.insert(
+        0,
+        SceneResult(
+          id: id,
+          title: '导入图片',
+          prompt: '',
+          negative: '',
+          width: asset.width,
+          height: asset.height,
+          seed: 0,
+          variant: 0,
+          favorite: false,
+          isDemo: false,
+          assetRef: asset.assetRef,
+        ),
+      );
+    }
+    _selectedId = id;
+  });
   WorkspaceStore? get _store => store;
   Map<String, Object?> _extra = {};
   Map<String, Object?> _preferenceExtra = {};
@@ -218,6 +335,9 @@ class WorkbenchController extends ChangeNotifier {
       'steps': _steps,
       'cfg': _cfg,
       'seedText': _seedText,
+      'generation': parameters.toJson(),
+      'batchCount': _batchCount,
+      'connections': _connections,
     },
     'gallery': _results.map((item) => item.toJson()).toList(),
     'preferences': {
@@ -267,6 +387,32 @@ class WorkbenchController extends ChangeNotifier {
     _steps = draft['steps'] as int;
     _cfg = (draft['cfg'] as num).toDouble();
     _seedText = draft['seedText'] as String;
+    if (draft['generation'] is Map) {
+      _advanced = GenerationParameters.fromJson(
+        Map<String, dynamic>.from(draft['generation'] as Map),
+      );
+    } else if ((data['editor'] as Map)['character'] is String &&
+        ((data['editor'] as Map)['character'] as String).isNotEmpty) {
+      final old = data['editor'] as Map;
+      final pos = old['position'] as String;
+      _advanced = _advanced.copyWith(
+        characters: [
+          GenerationCharacter(
+            prompt: old['character'] as String,
+            enabled: old['characterEnabled'] as bool,
+            centerX: (pos.codeUnitAt(0) - 65 + .5) / 5,
+            centerY: (int.parse(pos[1]) - .5) / 5,
+          ),
+        ],
+      );
+    }
+    _batchCount = (draft['batchCount'] as int? ?? 1).clamp(1, 30);
+    if (draft['connections'] is Map) {
+      for (final id in ServiceConnection.labels.keys) {
+        final value = (draft['connections'] as Map)[id];
+        if (value is String) _connections[id] = value;
+      }
+    }
     _darkTheme = preferences['darkTheme'] as bool;
     _reduceMotion = preferences['reduceMotion'] as bool;
     _editor = Map<String, Object?>.from(data['editor'] as Map);
@@ -362,11 +508,15 @@ class WorkbenchController extends ChangeNotifier {
   }
 
   Future<void> closeStorage() async {
-    cancelGeneration();
+    final pendingGeneration = _activeGeneration;
     _closing = true;
+    cancelGeneration();
     try {
+      await Future.wait<void>([..._settlingGenerations, ?pendingGeneration])
+          .timeout(const Duration(seconds: 10));
       await flush();
       await _store?.close();
+      await assets?.close();
     } catch (_) {
       _closing = false;
       if (!_disposed) super.notifyListeners();
@@ -395,6 +545,7 @@ class WorkbenchController extends ChangeNotifier {
   int _demoSequence = 0;
   Completer<void>? _cancellation;
   Future<void>? _activeGeneration;
+  final Set<Future<void>> _settlingGenerations = {};
 
   String get prompt => _prompt;
   String get negative => _negative;
@@ -464,6 +615,7 @@ class WorkbenchController extends ChangeNotifier {
   /// With [promptOnly], only its positive prompt is copied.
   void applyResult(SceneResult result, {bool promptOnly = false}) {
     if (_disposed || _closing) return;
+    _refillRevision++;
     _prompt = result.prompt;
     if (!promptOnly) {
       _negative = result.negative;
@@ -474,6 +626,19 @@ class WorkbenchController extends ChangeNotifier {
       _provider = result.provider;
       _steps = result.steps;
       _cfg = result.cfg;
+      _advanced =
+          result.parameters ??
+          GenerationParameters(
+            model: modelIds[result.model] ?? result.model,
+            prompt: result.prompt,
+            width: result.width,
+            height: result.height,
+          );
+      if (result.parameters != null) {
+        _width = result.parameters!.width;
+        _height = result.parameters!.height;
+      }
+      if (!result.isDemo) _seedText = result.seed.toString();
     }
     if (_results.any((item) => item.id == result.id)) {
       _selectedId = result.id;
@@ -498,6 +663,7 @@ class WorkbenchController extends ChangeNotifier {
     if (_disposed || _closing || _generating) {
       return _activeGeneration ?? Future<void>.value();
     }
+    if (generateImage != null) return _generateReal();
 
     final snapshot = _GenerationSnapshot(
       prompt: _prompt,
@@ -537,11 +703,12 @@ class WorkbenchController extends ChangeNotifier {
   void cancelGeneration() {
     if (_disposed || !_generating) return;
     ++_generationToken;
+    cancelRequest?.call();
     final cancellation = _cancellation;
     _cancellation = null;
     _activeGeneration = null;
     _generating = false;
-    _status = '演示任务已取消';
+    _status = liveGeneration ? '已停止等待；服务端已接收的请求可能继续执行。' : '演示任务已取消';
     if (cancellation != null && !cancellation.isCompleted) {
       cancellation.complete();
     }
@@ -599,6 +766,61 @@ class WorkbenchController extends ChangeNotifier {
   bool _isCurrent(int token) =>
       !_disposed && !_closing && token == _generationToken;
 
+  Future<void> _generateReal() async {
+    final submitted = parameters;
+    if (_seedText.isNotEmpty &&
+        (int.tryParse(_seedText) == null ||
+            int.parse(_seedText) < 0 ||
+            int.parse(_seedText) > 4294967295)) {
+      _status = 'Seed 必须为 0–4294967295 的整数，或留空随机。';
+      notifyListeners();
+      return;
+    }
+    final submittedConnection = connection;
+    final count = _batchCount;
+    final token = ++_generationToken;
+    _generating = true;
+    final done = Completer<void>();
+    _settlingGenerations.add(done.future);
+    _activeGeneration = done.future;
+    try {
+      await flush();
+      for (var i = 0; i < count && _isCurrent(token); i++) {
+        _status = '正在生成 ${i + 1}/$count';
+        notifyListeners();
+        final randomSeed =
+            Random.secure().nextInt(65536) * 65536 +
+            Random.secure().nextInt(65536);
+        final frozen = submitted.copyWith(
+          seed: i == 0 ? submitted.seed ?? randomSeed : randomSeed,
+        );
+        final result = await generateImage!(frozen, submittedConnection);
+        if (!_isCurrent(token)) break;
+        _results.insert(0, result);
+        _selectedId = result.id;
+        notifyListeners();
+        await flush();
+      }
+      if (_isCurrent(token)) _status = '生成完成，图片与完整参数已保存到图库。';
+    } catch (error) {
+      if (_isCurrent(token)) {
+        _status = saveFailed
+            ? saveErrorMessage
+            : error is FormatException
+            ? error.message
+            : '生成失败，请检查接入配置、网络与当前模型支持的参数后重试。';
+      }
+    } finally {
+      if (_isCurrent(token)) {
+        _generating = false;
+        _activeGeneration = null;
+      }
+      if (!done.isCompleted) done.complete();
+      _settlingGenerations.remove(done.future);
+      if (!_disposed) notifyListeners();
+    }
+  }
+
   void _update(void Function() change) {
     if (_disposed || _closing) return;
     change();
@@ -620,6 +842,7 @@ class WorkbenchController extends ChangeNotifier {
   @override
   void dispose() {
     if (_disposed) return;
+    cancelRequest?.call();
     _disposed = true;
     ++_generationToken;
     _generating = false;

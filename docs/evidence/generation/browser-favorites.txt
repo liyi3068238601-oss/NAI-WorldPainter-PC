@@ -1,0 +1,25 @@
+- textbox "图库与素材 NovelAI 官方 绘 图库与素材 把每一次灵感，留在触手可及的地方。 搜索图库 3 件作品 · 本地工作区"
+- generic: 绘世
+- generic: WORLDPAINTER
+- generic: 创作空间
+- button "创作工作台 创作工作台"
+- button "图库与素材 图库与素材"
+- generic: 图像工具 · 后续移植 图像工具
+- generic: AI 助手 · 后续移植 AI 助手
+- generic: 漫画创作 · 后续移植 漫画创作
+- generic: Pixiv 发布 · 后续移植 Pixiv 发布
+- generic: 交互原型
+- generic: 先让创作体验自然发生。 工作台自动保存在此设备。
+- button "偏好设置 偏好设置"
+- generic: v0.1 · Prototype
+- button "切换浅色主题"
+- button "收展导航"
+- button "已保存"
+- group "本地原图 persistence demo, moonlit cedar forest, silver lake 832 × 1216":
+  - button "收藏 persistence demo, moonlit cedar forest, silver lake"
+- group "本地原图 persistence demo, moonlit cedar forest, silver lake 832 × 1216":
+  - button "收藏 persistence demo, moonlit cedar forest, silver lake"
+- group "示意图 演示草图 1 1216 × 832":
+  - button "收藏 演示草图 1"
+- button "查看任务"
+- checkbox "收藏" [checked] [active]

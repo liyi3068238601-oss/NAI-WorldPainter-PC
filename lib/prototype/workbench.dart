@@ -1,10 +1,18 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'scene_art.dart';
 import 'workbench_controller.dart';
+import '../generation/generation_parameters.dart';
+import '../platform/image_picker.dart';
+import 'connection_dialog.dart';
+import 'stored_image.dart';
+import 'parameter_number_field.dart';
+
+part 'generation_panels.dart';
 
 class Workbench extends StatefulWidget {
   const Workbench({
@@ -28,6 +36,7 @@ class _WorkbenchState extends State<Workbench> {
   final positive = TextEditingController();
   final negative = TextEditingController();
   final seed = TextEditingController();
+  final modelId = TextEditingController();
   final transform = TransformationController();
   final scaffold = GlobalKey<ScaffoldState>();
   final Map<String, List<List<Offset>>> masks = {};
@@ -86,6 +95,7 @@ class _WorkbenchState extends State<Workbench> {
       (positive, c.prompt),
       (negative, c.negative),
       (seed, c.seedText),
+      (modelId, c.parameters.model),
     ]) {
       if (entry.$1.text != entry.$2) {
         entry.$1.value = TextEditingValue(
@@ -109,6 +119,7 @@ class _WorkbenchState extends State<Workbench> {
     positive.dispose();
     negative.dispose();
     seed.dispose();
+    modelId.dispose();
     transform.dispose();
     super.dispose();
   }
@@ -180,87 +191,89 @@ class _WorkbenchState extends State<Workbench> {
   );
 
   @override
-  Widget build(BuildContext context) => CallbackShortcuts(
-    bindings: {
-      const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
-        c.generate();
+  Widget build(BuildContext context) => Form(
+    child: CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
+          _submit();
+        },
       },
-    },
-    child: LayoutBuilder(
-      builder: (context, bounds) {
-        final tiny = bounds.maxWidth < 700;
-        final inlinePanel = bounds.maxWidth >= 1060;
-        final navOpen = expandedNav ?? bounds.maxWidth >= 1360;
-        final navWidth = tiny
-            ? 0.0
-            : navOpen
-            ? 200.0
-            : 72.0;
-        return Scaffold(
-          key: scaffold,
-          drawer: tiny ? Drawer(child: _navigation(true)) : null,
-          endDrawer: SizedBox(
-            width: math.min(400, bounds.maxWidth),
-            child: Drawer(child: _parameters()),
-          ),
-          body: SafeArea(
-            child: Row(
-              children: [
-                if (!tiny)
-                  AnimatedContainer(
-                    duration: motion,
-                    curve: Curves.easeOutCubic,
-                    width: navWidth,
-                    clipBehavior: Clip.hardEdge,
-                    decoration: BoxDecoration(
-                      color: colors.surface.withValues(alpha: .55),
-                      border: Border(
-                        right: BorderSide(color: colors.outlineVariant),
-                      ),
-                    ),
-                    child: OverflowBox(
-                      alignment: Alignment.topLeft,
-                      minWidth: navWidth,
-                      maxWidth: navWidth,
-                      child: _navigation(navOpen),
-                    ),
-                  ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      _topBar(tiny, inlinePanel),
-                      Expanded(
-                        child: page == 1
-                            ? _gallery()
-                            : page == 2
-                            ? _settings()
-                            : Row(
-                                children: [
-                                  Expanded(child: _canvasWorkspace()),
-                                  if (inlinePanel)
-                                    SizedBox(
-                                      width: 380,
-                                      child: Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          0,
-                                          16,
-                                          16,
-                                          16,
-                                        ),
-                                        child: _parameters(),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+      child: LayoutBuilder(
+        builder: (context, bounds) {
+          final tiny = bounds.maxWidth < 700;
+          final inlinePanel = bounds.maxWidth >= 1060;
+          final navOpen = expandedNav ?? bounds.maxWidth >= 1360;
+          final navWidth = tiny
+              ? 0.0
+              : navOpen
+              ? 200.0
+              : 72.0;
+          return Scaffold(
+            key: scaffold,
+            drawer: tiny ? Drawer(child: _navigation(true)) : null,
+            endDrawer: SizedBox(
+              width: math.min(400, bounds.maxWidth),
+              child: Drawer(child: _parameters()),
             ),
-          ),
-        );
-      },
+            body: SafeArea(
+              child: Row(
+                children: [
+                  if (!tiny)
+                    AnimatedContainer(
+                      duration: motion,
+                      curve: Curves.easeOutCubic,
+                      width: navWidth,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        color: colors.surface.withValues(alpha: .55),
+                        border: Border(
+                          right: BorderSide(color: colors.outlineVariant),
+                        ),
+                      ),
+                      child: OverflowBox(
+                        alignment: Alignment.topLeft,
+                        minWidth: navWidth,
+                        maxWidth: navWidth,
+                        child: _navigation(navOpen),
+                      ),
+                    ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _topBar(tiny, inlinePanel),
+                        Expanded(
+                          child: page == 1
+                              ? _gallery()
+                              : page == 2
+                              ? _settings()
+                              : Row(
+                                  children: [
+                                    Expanded(child: _canvasWorkspace()),
+                                    if (inlinePanel)
+                                      SizedBox(
+                                        width: 380,
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                            0,
+                                            16,
+                                            16,
+                                            16,
+                                          ),
+                                          child: _parameters(),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     ),
   );
 
@@ -513,7 +526,7 @@ class _WorkbenchState extends State<Workbench> {
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),
-        if (!tiny) _badge('演示模式 · 未连接服务'),
+        if (!tiny) _badge(c.liveGeneration ? c.provider : '演示模式 · 未连接服务'),
         if (c.hasStore)
           Tooltip(
             message: c.saveFailed ? c.saveErrorMessage : c.storageLabel,
@@ -678,7 +691,8 @@ class _WorkbenchState extends State<Workbench> {
                                   ],
                                 ),
                                 child: Semantics(
-                                  label: '画布：${c.selected.title}，原创程序绘制示意图',
+                                  label:
+                                      '画布：${c.selected.title}，${c.selected.isDemo ? '原创程序绘制示意图' : '本地原图'}',
                                   image: true,
                                   child: GestureDetector(
                                     onPanEnd: inpaint
@@ -718,9 +732,7 @@ class _WorkbenchState extends State<Workbench> {
                                       fit: StackFit.expand,
                                       children: [
                                         RepaintBoundary(
-                                          child: SceneArt(
-                                            variant: c.selected.variant,
-                                          ),
+                                          child: _art(c.selected),
                                         ),
                                         if (inpaint)
                                           CustomPaint(
@@ -739,7 +751,9 @@ class _WorkbenchState extends State<Workbench> {
                           Positioned(
                             left: 12,
                             bottom: 10,
-                            child: _badge('示意图 · 非 AI 生成'),
+                            child: _badge(
+                              c.selected.isDemo ? '示意图 · 非 AI 生成' : '本地原图',
+                            ),
                           ),
                         ],
                       );
@@ -875,7 +889,7 @@ class _WorkbenchState extends State<Workbench> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: SceneArt(variant: r.variant),
+                        child: _art(r),
                       ),
                     ),
                   ),
@@ -1032,8 +1046,12 @@ class _WorkbenchState extends State<Workbench> {
                       child: group == '基础'
                           ? _basicParameters()
                           : group == '角色'
-                          ? _characterParameters()
-                          : _referenceParameters(),
+                          ? (c.liveGeneration
+                                ? _liveCharacters()
+                                : _characterParameters())
+                          : (c.liveGeneration
+                                ? _liveReferences()
+                                : _referenceParameters()),
                     ),
                   ],
                 ),
@@ -1057,7 +1075,10 @@ class _WorkbenchState extends State<Workbench> {
                     const SizedBox(width: 7),
                     Expanded(
                       child: Text(
-                        c.generating ? c.status : '预览流程 · 不消耗额度',
+                        c.liveGeneration || c.generating
+                            ? c.status
+                            : '预览流程 · 不消耗额度',
+                        maxLines: 3,
                         style: TextStyle(
                           fontSize: 10,
                           color: colors.onSurfaceVariant,
@@ -1073,16 +1094,20 @@ class _WorkbenchState extends State<Workbench> {
                   width: double.infinity,
                   child: FilledButton.icon(
                     key: const Key('generate'),
-                    onPressed: c.generating
-                        ? c.cancelGeneration
-                        : () => c.generate(),
+                    onPressed: c.generating ? c.cancelGeneration : _submit,
                     icon: Icon(
                       c.generating
                           ? Icons.stop_rounded
                           : Icons.auto_awesome_rounded,
                       size: 17,
                     ),
-                    label: Text(c.generating ? '取消预览任务' : '生成预览'),
+                    label: Text(
+                      c.generating
+                          ? (c.liveGeneration ? '停止生成' : '取消预览任务')
+                          : (c.liveGeneration
+                                ? '生成 ${c.batchCount} 张图片'
+                                : '生成预览'),
+                    ),
                   ),
                 ),
               ],
@@ -1178,12 +1203,22 @@ class _WorkbenchState extends State<Workbench> {
         '7877 网关',
         'ikun 网关',
       ], c.updateProvider),
+      if (c.vault != null)
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _connect,
+            icon: const Icon(Icons.key_rounded, size: 14),
+            label: const Text('接入设置'),
+          ),
+        ),
       const SizedBox(height: 16),
-      _dropdown('图像模型', c.model, [
-        'NAI Diffusion 4.5 Full',
-        'NAI Diffusion 4',
-        'NAI Diffusion 3',
-      ], c.updateModel),
+      _dropdown(
+        '图像模型',
+        c.model,
+        {...WorkbenchController.modelIds.keys, c.model}.toList(),
+        c.updateModel,
+      ),
       const SizedBox(height: 21),
       _label('画面尺寸'),
       Row(
@@ -1244,7 +1279,7 @@ class _WorkbenchState extends State<Workbench> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         style: const TextStyle(fontSize: 12),
         decoration: InputDecoration(
-          labelText: 'Seed · 演示参数',
+          labelText: 'Seed · 留空随机',
           suffixIcon: _icon(
             Icons.shuffle_rounded,
             '使用自动种子',
@@ -1259,11 +1294,7 @@ class _WorkbenchState extends State<Workbench> {
         shape: const Border(),
         collapsedShape: const Border(),
         title: const Text('高级参数', style: TextStyle(fontSize: 12)),
-        children: [
-          _dropdown('采样器预览', 'Euler', ['Euler'], (_) {}),
-          const SizedBox(height: 8),
-          _muted('更多参数将在功能移植阶段接入。'),
-        ],
+        children: [_advancedParameters()],
       ),
     ],
   );
@@ -1475,7 +1506,7 @@ class _WorkbenchState extends State<Workbench> {
             ],
           ),
           const SizedBox(height: 18),
-          _muted('${results.length} 件演示作品 · ${c.hasStore ? '本地工作区' : '当前会话'}'),
+          _muted('${results.length} 件作品 · ${c.hasStore ? '本地工作区' : '当前会话'}'),
           const SizedBox(height: 14),
           Expanded(
             child: results.isEmpty
@@ -1503,11 +1534,11 @@ class _WorkbenchState extends State<Workbench> {
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    SceneArt(variant: r.variant),
+                                    _art(r),
                                     Positioned(
                                       top: 8,
                                       left: 8,
-                                      child: _badge('示意图'),
+                                      child: _badge(r.isDemo ? '示意图' : '本地原图'),
                                     ),
                                     Positioned(
                                       top: 4,
@@ -1629,7 +1660,7 @@ class _WorkbenchState extends State<Workbench> {
                     ),
                     const SizedBox(height: 9),
                     _muted(
-                      '生成仍是模拟流程，图片为程序绘制的示意作品。\n${c.hasStore ? '草稿、参数、图库记录、收藏和编辑状态自动保存。浏览器预览与 Windows 的数据相互独立；清理站点数据会删除浏览器预览数据。' : '当前处于无数据库的会话预览。'}\n真实渠道和手机端其他功能将逐项迁移。',
+                      '支持 NovelAI 官方、7877 和 ikun；生成将调用所配置的服务。内置山水图为示意作品。\n${c.hasStore ? '草稿、参数、图库记录、收藏和编辑状态自动保存。浏览器预览与 Windows 的数据相互独立；清理站点数据会删除浏览器预览数据。' : '当前处于无数据库的会话预览。'}\n浏览器凭据仅在页面会话保留；Windows 凭据由系统保护。手机端其余功能继续逐项迁移。',
                       size: 12,
                     ),
                     const SizedBox(height: 14),
@@ -1811,7 +1842,7 @@ class _WorkbenchState extends State<Workbench> {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ),
-          _badge('演示素材'),
+          _badge(result.isDemo ? '演示素材' : '本地原图'),
         ],
       ),
       content: SizedBox(
@@ -1826,7 +1857,7 @@ class _WorkbenchState extends State<Workbench> {
                 width: double.infinity,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: SceneArt(variant: result.variant),
+                  child: _art(result),
                 ),
               ),
               const SizedBox(height: 18),
@@ -1885,7 +1916,10 @@ class _WorkbenchState extends State<Workbench> {
   Future<void> _taskDialog() => showDialog<void>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('预览任务', style: TextStyle(fontSize: 18)),
+      title: Text(
+        c.liveGeneration ? '生成任务' : '预览任务',
+        style: const TextStyle(fontSize: 18),
+      ),
       content: SizedBox(
         width: 360,
         child: ListenableBuilder(
@@ -1900,7 +1934,11 @@ class _WorkbenchState extends State<Workbench> {
               ],
               Text(c.status),
               const SizedBox(height: 12),
-              _muted('模拟任务不调用图像服务。提交后继续编辑，不会改变已提交的参数。'),
+              _muted(
+                c.liveGeneration
+                    ? '请求使用提交时冻结的参数。停止等待不保证服务端取消；请确认结果后再重试。'
+                    : '模拟任务不调用图像服务。提交后继续编辑，不会改变已提交的参数。',
+              ),
               if (c.generating)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),

@@ -33,3 +33,16 @@ SQLite 持久化依赖锁定于 `pubspec.lock`。Windows 使用 `sqflite_common_
 本轮参考 NovelAI Local Web 的三栏分工、独立参数滚动、固定生成区、大提示词编辑器与图库往返体验。没有复制其 AGPL 实现、浪白实现或手机端业务代码。后续引入业务代码仍需逐模块登记许可。
 
 实现依据：[Flutter 响应式布局](https://docs.flutter.dev/ui/adaptive-responsive)、[Flutter Web 无障碍](https://docs.flutter.dev/ui/accessibility/web-accessibility)。浏览器预览与 Windows 使用同一套 Flutter 界面代码；前者的成功不替代原生平台验收。
+
+## 生成链路新增依赖
+
+依赖来自 pub.dev 官方包分发，固定版本和包归档 SHA-256 见 pubspec.lock；以下副本保留原字节。
+
+| 包 | 固定版本 | 用途 / 许可 |
+| --- | --- | --- |
+| [archive](https://pub.dev/packages/archive/versions/4.5.1) | 4.5.1 | 官方 ZIP 响应；MIT，另保留 LICENSE-other 内第三方声明；licenses/dependencies/archive-4.5.1-LICENSE*.txt |
+| [posix](https://pub.dev/packages/posix/versions/6.5.2) | 6.5.2 | archive 间接依赖；MIT；licenses/dependencies/posix-6.5.2-LICENSE.txt |
+| [http](https://pub.dev/packages/http/versions/1.6.0) | 1.6.0 | 原生 / 浏览器请求；BSD-3-Clause；licenses/dependencies/http-1.6.0-LICENSE.txt |
+| [web](https://pub.dev/packages/web/versions/1.1.1) | 1.1.1 | 浏览器图片选择；BSD-3-Clause；licenses/dependencies/web-1.1.1-LICENSE.txt |
+
+生成协议按手机端行为、官方文档和参考项目调查独立实现，未整块移入手机端或 AGPL 项目代码。Windows 凭据使用微软系统 CredWriteW/CredReadW/CredDeleteW，不引入外部原生插件。脚本 mock-image-service.py 的测试图为本项目程序生成几何图，画面明确标注 LOCAL MOCK。

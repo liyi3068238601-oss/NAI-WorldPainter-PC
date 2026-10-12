@@ -7,10 +7,13 @@ environment:
   sdk: ^3.13.5
 
 dependencies:
+  archive: ^4.0.9
   crypto: ^3.0.7
   flutter:
     sdk: flutter
   path: ^1.9.1
+  http: ^1.6.0
+  web: ^1.1.1
   sqflite_common: ^2.5.13+1
   sqflite_common_ffi: 2.4.3
   sqflite_common_ffi_web: 1.2.0

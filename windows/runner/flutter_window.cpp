@@ -39,6 +39,9 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
+  auto* messenger = flutter_controller_->engine()->messenger();
+  credential_channel_ = std::make_unique<CredentialChannel>(messenger);
+  files_channel_ = std::make_unique<FilesChannel>(messenger, GetHandle());
 
   window_channel_ =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
@@ -78,6 +81,8 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  files_channel_.reset();
+  credential_channel_.reset();
   if (window_channel_) {
     window_channel_->SetMethodCallHandler(nullptr);
     window_channel_.reset();
