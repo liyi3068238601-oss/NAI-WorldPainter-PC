@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-12",
+  "purpose": "Read-only behavior audit; independently implemented PC editor",
+  "sourceHead": "a5a61a889d6d73264e32a0e9c2b606c3ae59e22d",
+  "files": [
+    {
+      "path": "../手机端/lib/presentation/widgets/img2img_crop_dialog.dart",
+      "sha256": "94e1452da8e37976d7d5e40a6aedb9cec95fce12e945e53d3b50ef6fb0e3c406"
+    },
+    {
+      "path": "../手机端/lib/presentation/pages/inpaint_workspace_page.dart",
+      "sha256": "9795ebaf46ea26933d6f34149caa74118309f0bde33c776bbe7e02ce0f2ecb53"
+    },
+    {
+      "path": "../手机端/lib/domain/entities/inpaint_workspace.dart",
+      "sha256": "9a7c7e9d4816be38834b40c6132dee0b48e92ff1ce25512988032baa1aa91ee7"
+    },
+    {
+      "path": "../手机端/lib/domain/services/inpaint_rasterizer.dart",
+      "sha256": "c6a38c05bc250b7f45936b662d00de38b1feb972bbc57d291ae6d78015fbc990"
+    },
+    {
+      "path": "../手机端/lib/core/utils/image_utils.dart",
+      "sha256": "dfe733cbd03f10aa9324a15042f36f357cc6b54a76dc3fc0bf211bbfad25b0bc"
+    }
+  ],
+  "referenceHead": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+  "flutterReferences": [
+    "https://api.flutter.dev/flutter/dart-ui/Canvas/drawImageRect.html",
+    "https://api.flutter.dev/flutter/dart-ui/ImageByteFormat.html",
+    "https://api.flutter.dev/flutter/dart-ui/PixelFormat.html"
+  ]
+}

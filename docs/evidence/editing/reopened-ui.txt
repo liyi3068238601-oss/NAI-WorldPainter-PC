@@ -1,0 +1,102 @@
+- group "浏览器预览存储（与 Windows 独立） 创作工作台 NovelAI 官方 绘 生成设置 请配置接入凭据；生成将使用当前渠道额度。 Ctrl + Enter":
+  - button "创作工作台"
+  - button "图库与素材"
+  - generic: 图像工具 · 后续移植
+  - generic: AI 助手 · 后续移植
+  - generic: 漫画创作 · 后续移植
+  - generic: Pixiv 发布 · 后续移植
+  - button "偏好设置"
+  - button "切换浅色主题"
+  - button "收展导航"
+  - generic: 图生图与局部重绘
+  - generic: 960×640 源图 · 输出 1024×1024
+  - generic "导入一张图片作为重绘原图":
+    - button "导入图片"
+  - generic "使用工作台当前图片作为原图":
+    - button "使用当前图片"
+  - button "平移画布（V） 平移画布":
+    - button "平移画布"
+  - button "移动输出区域相对原图的位置 移动原图":
+    - button "移动原图"
+  - button "拖动选区或边框调整输出区域（R） 区域选择":
+    - button "区域选择"
+  - button "画笔（B） 画笔":
+    - button "画笔"
+  - button "橡皮擦（E） 橡皮擦":
+    - button "橡皮擦"
+  - button "蒙版"
+  - button "图像"
+  - generic "当前为区域输出":
+    - button "全图"
+    - button "区域"
+  - button "撤销（Ctrl+Z）"
+  - button "重做（Ctrl+Y）" [disabled]
+  - generic "清空蒙版笔迹和导入蒙版":
+    - button "清空蒙版"
+  - button "重绘画布"
+  - button "选择图像笔迹颜色 画笔大小 48 源像素 笔迹不透明度 100% 笔迹颜色 红色":
+    - generic "48 px":
+      - slider: "1"
+    - generic "100%":
+      - slider: "1"
+    - button "圆形"
+    - button "方形"
+    - checkbox "蒙版可见" [checked]
+  - group "100% 蒙版预览 35% 蒙版扩展 0px 边缘羽化 8px":
+    - button "缩小画布"
+    - button "放大画布"
+    - button "适应画布"
+    - button "像素 2×"
+    - button "像素 3×"
+    - slider: "1"
+    - slider: "1"
+    - slider: "1"
+  - group "显示此结果图层 结果图层 local editing fixture, moon above mountains local editing fixture, moon above mountains":
+    - button "查看结果"
+    - button
+    - button
+    - button "当前结果"
+    - button
+    - button
+  - generic "将当前蒙版与所有可见结果图层合成为 PNG 并保存":
+    - button "保存当前可见合成图"
+  - generic "将选中的结果设为新的工作区原图":
+    - button "应用当前结果"
+  - button "2×像素放大"
+  - button "3×像素放大"
+  - button "查看任务"
+  - button "已保存"
+  - button "还原所选图片参数"
+  - button "正向提示词"
+  - button "负向"
+  - button "展开提示词编辑器"
+  - textbox "画面描述"
+  - generic: 43 字符
+  - button "复制提示词"
+  - button "清空当前提示词"
+  - checkbox "+ 柔和光线"
+  - checkbox "+ 电影质感"
+  - checkbox "+ 细节丰富"
+  - checkbox "基础" [checked]
+  - checkbox "角色"
+  - checkbox "参考"
+  - button "接入方式 NovelAI 官方"
+  - button "接入设置"
+  - button "图像模型 NAI Diffusion 4.5 Full"
+  - generic: 画面尺寸
+  - button "竖幅 832 × 1216 竖幅 832 × 1216"
+  - button "方形 1024 × 1024 方形 1024 × 1024"
+  - button "横幅 1216 × 832 横幅 1216 × 832"
+  - generic: 采样步数
+  - generic: "28"
+  - generic "28":
+    - slider: "1"
+  - generic: 提示词引导
+  - generic: CFG
+  - generic: "5.0"
+  - generic "5.0":
+    - slider: "1"
+  - textbox "Seed · 留空随机"
+  - button "使用自动种子"
+  - button "高级参数"
+  - button "生成 1 张图片"

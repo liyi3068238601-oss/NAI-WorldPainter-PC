@@ -1,0 +1,74 @@
+{
+  "completedAt": "2026-10-12T14:39:39.6901286+08:00",
+  "testCount": 76,
+  "tests": "PASS",
+  "staticAnalysis": "No issues found",
+  "windowsRelease": "PASS",
+  "webRelease": "PASS; existing Cupertino font-family warning, Material icons rendered",
+  "windowsStorageProbe": "PASS: separate write/read process, SQLite, Unicode path, PNG SHA256",
+  "browser": "Codex in-app browser; loopback fixture only",
+  "browserChecks": [
+    "reference image crop and re-crop cancel preserves source",
+    "img2img submitted successfully to loopback fixture",
+    "round continuous mask without holes",
+    "erase; undo; redo",
+    "region resize and move",
+    "gray request mask PNG captured: 1024x1024, white redraw, black preserve",
+    "candidate visibility; composite save; apply result as new source",
+    "gallery full parameter refill restores document and result layers",
+    "reopen preserves source, strokes, region, gallery and layers",
+    "own dark/light theme; 640x480 viewport and settings drawer",
+    "final reload uses public default official provider; mock stopped; fake credential removed; viewport reset",
+    "browser console: no warnings or errors"
+  ],
+  "realPaidServiceTested": false,
+  "sourceChecks": [
+    {
+      "path": "../手机端/lib/presentation/widgets/img2img_crop_dialog.dart",
+      "unchanged": true
+    },
+    {
+      "path": "../手机端/lib/presentation/pages/inpaint_workspace_page.dart",
+      "unchanged": true
+    },
+    {
+      "path": "../手机端/lib/domain/entities/inpaint_workspace.dart",
+      "unchanged": true
+    },
+    {
+      "path": "../手机端/lib/domain/services/inpaint_rasterizer.dart",
+      "unchanged": true
+    },
+    {
+      "path": "../手机端/lib/core/utils/image_utils.dart",
+      "unchanged": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "build/web/main.dart.js",
+      "sha256": "9ec702317fe540979b3d2dcdf71e5d0d01e9398466f6f6711ae6f2028553c167",
+      "byteLength": 3286128
+    },
+    {
+      "path": "build/windows/x64/runner/Release/worldpainter_pc.exe",
+      "sha256": "25f399d83d582628220848bc834ff1fe5d9018ed5ab07f18223c0ae03e6450eb",
+      "byteLength": 141312
+    },
+    {
+      "path": "build/windows/x64/runner/Release/data/app.so",
+      "sha256": "35c7f6c437543e0279dc8ec3bb3cef7bed2eaf3ad21389a9a5371df584117aea",
+      "byteLength": 7652232
+    },
+    {
+      "path": "build/windows/x64/runner/Release/flutter_windows.dll",
+      "sha256": "7b03815958c49d72385be497fbd0eb1bb2ae27d24989d6c9aee83eafbd93e9d3",
+      "byteLength": 21274112
+    },
+    {
+      "path": "build/windows/x64/runner/Release/sqlite3.dll",
+      "sha256": "98b4be674137b85ec111a7a29223e87aa41c3e964d61f73602471ddd7b9c56ce",
+      "byteLength": 1709056
+    }
+  ]
+}

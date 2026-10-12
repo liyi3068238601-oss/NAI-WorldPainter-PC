@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,8 +10,13 @@ import '../platform/image_picker.dart';
 import 'connection_dialog.dart';
 import 'stored_image.dart';
 import 'parameter_number_field.dart';
+import '../editing/image_crop_dialog.dart';
+import '../editing/image_editing_session.dart';
+import '../editing/inpaint_renderer.dart';
+import '../editing/inpaint_workspace.dart';
 
 part 'generation_panels.dart';
+part 'editing_panels.dart';
 
 class Workbench extends StatefulWidget {
   const Workbench({
@@ -51,6 +55,13 @@ class _WorkbenchState extends State<Workbench> {
   String position = 'C3';
   bool characterEnabled = true;
   double zoom = 1;
+  ImageEditingSession? editing;
+  int editingRefillRevision = 0;
+  bool preparingImage = false;
+  void _setPreparing(bool value) {
+    if (mounted) setState(() => preparingImage = value);
+  }
+
   ColorScheme get colors => Theme.of(context).colorScheme;
   Duration get motion => Duration(
     milliseconds: widget.reduceMotion || MediaQuery.disableAnimationsOf(context)
@@ -87,6 +98,19 @@ class _WorkbenchState extends State<Workbench> {
       }
     }
     _sync();
+    if (c.assets != null) {
+      editing = ImageEditingSession(
+        assets: c.assets!,
+        onPersist: c.updateImageEditing,
+        restored: c.imageEditing,
+      );
+      editingRefillRevision = c.refillRevision;
+      if (c.imageEditing.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _restoreLegacyEditingReferences(),
+        );
+      }
+    }
     c.addListener(_changed);
   }
 
@@ -108,6 +132,10 @@ class _WorkbenchState extends State<Workbench> {
 
   void _changed() {
     if (mounted) {
+      if (editing != null && editingRefillRevision != c.refillRevision) {
+        editingRefillRevision = c.refillRevision;
+        editing!.restore(c.imageEditing);
+      }
       _sync();
       setState(() {});
     }
@@ -121,6 +149,7 @@ class _WorkbenchState extends State<Workbench> {
     seed.dispose();
     modelId.dispose();
     transform.dispose();
+    editing?.dispose();
     super.dispose();
   }
 
@@ -578,7 +607,12 @@ class _WorkbenchState extends State<Workbench> {
     ),
   );
 
-  Widget _canvasWorkspace() => Padding(
+  Widget _canvasWorkspace() =>
+      c.liveGeneration && c.parameters.operation == GenerationOperation.inpaint
+      ? _inpaintWorkspace()
+      : _normalCanvasWorkspace();
+
+  Widget _normalCanvasWorkspace() => Padding(
     padding: const EdgeInsets.all(20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -903,7 +937,19 @@ class _WorkbenchState extends State<Workbench> {
   );
 
   Widget _modeButton(String label, IconData icon, bool mask) => TextButton.icon(
-    onPressed: () => setState(() => inpaint = mask),
+    onPressed: () async {
+      if (c.liveGeneration && mask) {
+        c.updateAdvanced(
+          c.parameters.copyWith(operation: GenerationOperation.inpaint),
+        );
+        if (editing?.document == null && c.selected.assetRef != null) {
+          await _useEditingSource();
+        }
+        if (mounted) setState(() => group = '参考');
+      } else {
+        setState(() => inpaint = mask);
+      }
+    },
     icon: Icon(icon, size: 14),
     label: Text(label, style: const TextStyle(fontSize: 11)),
     style: TextButton.styleFrom(
@@ -1094,7 +1140,11 @@ class _WorkbenchState extends State<Workbench> {
                   width: double.infinity,
                   child: FilledButton.icon(
                     key: const Key('generate'),
-                    onPressed: c.generating ? c.cancelGeneration : _submit,
+                    onPressed: preparingImage
+                        ? null
+                        : c.generating
+                        ? c.cancelGeneration
+                        : _submit,
                     icon: Icon(
                       c.generating
                           ? Icons.stop_rounded
@@ -1102,7 +1152,9 @@ class _WorkbenchState extends State<Workbench> {
                       size: 17,
                     ),
                     label: Text(
-                      c.generating
+                      preparingImage
+                          ? '正在准备图片…'
+                          : c.generating
                           ? (c.liveGeneration ? '停止生成' : '取消预览任务')
                           : (c.liveGeneration
                                 ? '生成 ${c.batchCount} 张图片'
@@ -1891,6 +1943,40 @@ class _WorkbenchState extends State<Workbench> {
           onPressed: () => Navigator.pop(dialogContext),
           child: const Text('关闭'),
         ),
+        if (c.liveGeneration && result.assetRef != null) ...[
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              c.selectResult(result.id);
+              c.updateAdvanced(
+                c.parameters.copyWith(
+                  operation: GenerationOperation.imageToImage,
+                ),
+              );
+              setState(() {
+                page = 0;
+                group = '参考';
+              });
+              await _useEditingSource(result: result);
+            },
+            child: const Text('用作图生图参考'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              c.selectResult(result.id);
+              c.updateAdvanced(
+                c.parameters.copyWith(operation: GenerationOperation.inpaint),
+              );
+              setState(() {
+                page = 0;
+                group = '参考';
+              });
+              await _useEditingSource(result: result);
+            },
+            child: const Text('继续局部重绘'),
+          ),
+        ],
         TextButton(
           onPressed: () {
             c.applyResult(result, promptOnly: true);

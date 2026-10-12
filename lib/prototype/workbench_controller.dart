@@ -9,10 +9,16 @@ import '../generation/generation_parameters.dart';
 import '../generation/service_connection.dart';
 import '../media/image_asset_store.dart';
 import '../security/credential_vault.dart';
+import '../editing/inpaint_document.dart';
 
 typedef GenerateImage = Future<SceneResult> Function(
   GenerationParameters parameters,
   ServiceConnection connection,
+);
+
+typedef ProcessGenerationResult = Future<SceneResult> Function(
+  SceneResult raw,
+  bool Function() isCurrent,
 );
 
 /// One immutable gallery record. Demo artwork is reproduced from its variant.
@@ -35,6 +41,7 @@ class SceneResult {
     this.cfg = 5.0,
     this.assetRef,
     this.parameters,
+    this.editMetadata,
   }) : assert(variant >= 0 && variant <= 2);
 
   final String id;
@@ -54,6 +61,9 @@ class SceneResult {
   final String? assetRef;
   final GenerationParameters? parameters;
 
+  /// Source, crop and editor snapshot for a derived image. Contains asset IDs only.
+  final Map<String, Object?>? editMetadata;
+
   Map<String, Object?> toJson() => {
     'id': id,
     'title': title,
@@ -71,6 +81,7 @@ class SceneResult {
     'cfg': cfg,
     if (assetRef != null) 'assetRef': assetRef,
     if (parameters != null) 'parameters': parameters!.toJson(),
+    if (editMetadata != null) 'editMetadata': editMetadata,
   };
 
   factory SceneResult.fromJson(Map<String, dynamic> data) {
@@ -95,6 +106,9 @@ class SceneResult {
           : GenerationParameters.fromJson(
               Map<String, dynamic>.from(data['parameters'] as Map),
             ),
+      editMetadata: data['editMetadata'] == null
+          ? null
+          : Map<String, Object?>.from(data['editMetadata'] as Map),
     );
     if (result.id.isEmpty ||
         result.width <= 0 ||
@@ -107,13 +121,20 @@ class SceneResult {
     return result;
   }
 
-  SceneResult copyWith({bool? favorite}) => SceneResult(
+  SceneResult copyWith({
+    bool? favorite,
+    String? assetRef,
+    String? title,
+    int? width,
+    int? height,
+    Map<String, Object?>? editMetadata,
+  }) => SceneResult(
     id: id,
-    title: title,
+    title: title ?? this.title,
     prompt: prompt,
     negative: negative,
-    width: width,
-    height: height,
+    width: width ?? this.width,
+    height: height ?? this.height,
     seed: seed,
     variant: variant,
     favorite: favorite ?? this.favorite,
@@ -122,8 +143,9 @@ class SceneResult {
     provider: provider,
     steps: steps,
     cfg: cfg,
-    assetRef: assetRef,
+    assetRef: assetRef ?? this.assetRef,
     parameters: parameters,
+    editMetadata: editMetadata ?? this.editMetadata,
   );
 }
 
@@ -239,8 +261,25 @@ class WorkbenchController extends ChangeNotifier {
   void updateConnection(ServiceConnection value) => _update(() {
     _connections[value.protocol] = value.uri.toString();
   });
-  void updateAdvanced(GenerationParameters value) =>
-      _update(() => _advanced = value);
+  void updateAdvanced(GenerationParameters value) => _update(() {
+    final previous = _advanced.operation == GenerationOperation.inpaint
+        ? 'inpaint'
+        : 'generation';
+    final next = value.operation == GenerationOperation.inpaint
+        ? 'inpaint'
+        : 'generation';
+    if (previous != next) {
+      final prompts = Map<String, Object?>.from(
+        _extra['operationPrompts'] as Map? ?? {},
+      );
+      prompts[previous] = {'prompt': _prompt, 'negative': _negative};
+      final saved = prompts[next] as Map?;
+      _prompt = saved?['prompt'] as String? ?? '';
+      _negative = saved?['negative'] as String? ?? '';
+      _extra['operationPrompts'] = prompts;
+    }
+    _advanced = value;
+  });
   void moveCharacter(int index, int delta) => _update(() {
     final list = [..._advanced.characters];
     final target = index + delta;
@@ -281,6 +320,29 @@ class WorkbenchController extends ChangeNotifier {
   });
   WorkspaceStore? get _store => store;
   Map<String, Object?> _extra = {};
+  Map<String, Object?> get imageEditing => Map<String, Object?>.from(
+    jsonDecode(jsonEncode(_extra['imageEditing'] ?? {})) as Map,
+  );
+  void updateImageEditing(Map<String, Object?> value) => _update(() {
+    _validateImageEditing(value);
+    _extra['imageEditing'] = jsonDecode(jsonEncode(value));
+  });
+  void addDerived(SceneResult result) => _update(() {
+    if (!_results.any((r) => r.id == result.id)) _results.insert(0, result);
+    _selectedId = result.id;
+  });
+  Future<T> prepareEditing<T>(Future<T> Function() action) async {
+    if (_disposed || _closing) throw const FormatException('工作区正在关闭');
+    final done = Completer<void>();
+    _settlingGenerations.add(done.future);
+    try {
+      return await action();
+    } finally {
+      done.complete();
+      _settlingGenerations.remove(done.future);
+    }
+  }
+
   Map<String, Object?> _preferenceExtra = {};
   final bool wasRestored;
   int _revision = 0;
@@ -434,6 +496,58 @@ class WorkbenchController extends ChangeNotifier {
       ..addAll(results);
     _revision = stored.revision;
     _validateEditor(_editor);
+    _validateImageEditing(imageEditing);
+  }
+
+  static void _validateImageEditing(Map<String, Object?> value) {
+    if (value.isEmpty) return;
+    if (value['version'] != 1) throw const FormatException('未知图片编辑工作区版本');
+    if (value['document'] is Map) {
+      InpaintDocument.fromJson(
+        Map<String, Object?>.from(value['document'] as Map),
+      );
+    }
+    for (final name in ['undo', 'redo']) {
+      for (final doc in value[name] as List? ?? const []) {
+        InpaintDocument.fromJson(Map<String, Object?>.from(doc as Map));
+      }
+    }
+    final crop = value['img2img'];
+    if (crop is Map) {
+      final rect = crop['crop'];
+      if (crop['originalAssetRef'] is! String ||
+          crop['preparedAssetRef'] is! String ||
+          rect is! List ||
+          rect.length != 4 ||
+          rect.any((v) => v is! num || !v.isFinite) ||
+          (rect[2] as num) <= 0 ||
+          (rect[3] as num) <= 0) {
+        throw const FormatException('无效裁切草稿');
+      }
+      for (final key in [
+        'originalWidth',
+        'originalHeight',
+        'targetWidth',
+        'targetHeight',
+      ]) {
+        if (crop[key] is! int || (crop[key] as int) <= 0) {
+          throw const FormatException('无效裁切尺寸');
+        }
+      }
+    }
+    for (final candidate in value['candidates'] as List? ?? const []) {
+      final data = candidate as Map;
+      SceneResult.fromJson(Map<String, dynamic>.from(data['raw'] as Map));
+      final rect = data['rect'] as List;
+      if (rect.length != 4 ||
+          rect.any((v) => v is! num || !v.isFinite) ||
+          (rect[2] as num) <= 0 ||
+          (rect[3] as num) <= 0 ||
+          data['compositeRef'] is! String ||
+          data['layerRef'] is! String) {
+        throw const FormatException('无效重绘结果图层');
+      }
+    }
   }
 
   static void _validateEditor(Map<String, Object?> editor) {
@@ -615,6 +729,18 @@ class WorkbenchController extends ChangeNotifier {
   /// With [promptOnly], only its positive prompt is copied.
   void applyResult(SceneResult result, {bool promptOnly = false}) {
     if (_disposed || _closing) return;
+    if (!promptOnly) {
+      final prompts = Map<String, Object?>.from(
+        _extra['operationPrompts'] as Map? ?? {},
+      );
+      prompts[_advanced.operation == GenerationOperation.inpaint
+          ? 'inpaint'
+          : 'generation'] = {
+        'prompt': _prompt,
+        'negative': _negative,
+      };
+      _extra['operationPrompts'] = prompts;
+    }
     _refillRevision++;
     _prompt = result.prompt;
     if (!promptOnly) {
@@ -639,6 +765,10 @@ class WorkbenchController extends ChangeNotifier {
         _height = result.parameters!.height;
       }
       if (!result.isDemo) _seedText = result.seed.toString();
+      final editing = result.editMetadata?['session'];
+      if (editing is Map) {
+        _extra['imageEditing'] = jsonDecode(jsonEncode(editing));
+      }
     }
     if (_results.any((item) => item.id == result.id)) {
       _selectedId = result.id;
@@ -659,11 +789,23 @@ class WorkbenchController extends ChangeNotifier {
   /// Adds one delayed demo record. The submitted values are captured before
   /// the first asynchronous wait, so edits made during the wait affect only
   /// the next submission.
-  Future<void> generate() {
+  Future<void> generate({
+    ProcessGenerationResult? processResult,
+    GenerationParameters? submitted,
+    ServiceConnection? submittedConnection,
+    int? count,
+  }) {
     if (_disposed || _closing || _generating) {
       return _activeGeneration ?? Future<void>.value();
     }
-    if (generateImage != null) return _generateReal();
+    if (generateImage != null) {
+      return _generateReal(
+        processResult: processResult,
+        submitted: submitted,
+        submittedConnection: submittedConnection,
+        count: count,
+      );
+    }
 
     final snapshot = _GenerationSnapshot(
       prompt: _prompt,
@@ -766,9 +908,16 @@ class WorkbenchController extends ChangeNotifier {
   bool _isCurrent(int token) =>
       !_disposed && !_closing && token == _generationToken;
 
-  Future<void> _generateReal() async {
-    final submitted = parameters;
-    if (_seedText.isNotEmpty &&
+  Future<void> _generateReal({
+    ProcessGenerationResult? processResult,
+    GenerationParameters? submitted,
+    ServiceConnection? submittedConnection,
+    int? count,
+  }) async {
+    final validateCurrentDraft = submitted == null;
+    submitted ??= parameters;
+    if (validateCurrentDraft &&
+        _seedText.isNotEmpty &&
         (int.tryParse(_seedText) == null ||
             int.parse(_seedText) < 0 ||
             int.parse(_seedText) > 4294967295)) {
@@ -776,8 +925,8 @@ class WorkbenchController extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    final submittedConnection = connection;
-    final count = _batchCount;
+    submittedConnection ??= connection;
+    count = (count ?? _batchCount).clamp(1, 30);
     final token = ++_generationToken;
     _generating = true;
     final done = Completer<void>();
@@ -794,7 +943,11 @@ class WorkbenchController extends ChangeNotifier {
         final frozen = submitted.copyWith(
           seed: i == 0 ? submitted.seed ?? randomSeed : randomSeed,
         );
-        final result = await generateImage!(frozen, submittedConnection);
+        var result = await generateImage!(frozen, submittedConnection);
+        if (!_isCurrent(token)) break;
+        if (processResult != null) {
+          result = await processResult(result, () => _isCurrent(token));
+        }
         if (!_isCurrent(token)) break;
         _results.insert(0, result);
         _selectedId = result.id;

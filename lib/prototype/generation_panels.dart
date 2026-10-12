@@ -24,61 +24,9 @@ extension _GenerationPanels on _WorkbenchState {
       _message('请先修正标出的参数。');
       return;
     }
-    if (c.liveGeneration &&
-        c.parameters.operation == GenerationOperation.inpaint &&
-        inpaint) {
-      if (c.selected.assetRef == null || strokes.isEmpty) {
-        _message('请选择真实原图并绘制蒙版，或在参考面板导入蒙版。');
-        return;
-      }
-      try {
-        final sourceRef = c.selected.assetRef;
-        final width = c.selected.width, height = c.selected.height;
-        final recorder = ui.PictureRecorder();
-        final canvas = Canvas(recorder)..drawColor(Colors.black, BlendMode.src);
-        final paint = Paint()
-          ..color = Colors.white
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = brush / 380 * width;
-        for (final stroke in strokes) {
-          if (stroke.isEmpty) continue;
-          final path = Path()
-            ..moveTo(stroke.first.dx * width, stroke.first.dy * height);
-          for (final point in stroke.skip(1)) {
-            path.lineTo(point.dx * width, point.dy * height);
-          }
-          if (stroke.length == 1) {
-            canvas.drawCircle(
-              Offset(stroke.first.dx * width, stroke.first.dy * height),
-              paint.strokeWidth / 2,
-              Paint()..color = Colors.white,
-            );
-          } else {
-            canvas.drawPath(path, paint);
-          }
-        }
-        final picture = recorder.endRecording();
-        final image = await picture.toImage(width, height);
-        final data = await image.toByteData(format: ui.ImageByteFormat.png);
-        image.dispose();
-        picture.dispose();
-        final mask = await c.assets!.save(data!.buffer.asUint8List());
-        if (!mounted || c.closing || c.selected.assetRef != sourceRef) {
-          if (mounted) _message('当前图片已改变，请确认蒙版后重新提交。');
-          return;
-        }
-        c.updateAdvanced(
-          c.parameters.copyWith(
-            sourceImageId: sourceRef,
-            maskImageId: mask.assetRef,
-          ),
-        );
-      } catch (_) {
-        if (mounted) _message('无法保存蒙版，请重试。');
-        return;
-      }
+    if (c.liveGeneration && editing != null) {
+      await _submitEditedGeneration();
+      return;
     }
     await c.generate();
     if (mounted && c.liveGeneration) _message(c.status);
@@ -426,51 +374,7 @@ extension _GenerationPanels on _WorkbenchState {
         ),
         const SizedBox(height: 12),
         if (p.operation != GenerationOperation.textToImage) ...[
-          if ((p.operation == GenerationOperation.inpaint
-                  ? p.sourceImageId
-                  : p.img2imgSourceImageId) !=
-              null)
-            _assetRow(
-              (p.operation == GenerationOperation.inpaint
-                  ? p.sourceImageId
-                  : p.img2imgSourceImageId)!,
-              '生成原图',
-              () => c.updateAdvanced(
-                p.copyWith(
-                  clearSourceImageId: true,
-                  clearImg2imgSourceImageId: true,
-                ),
-              ),
-            ),
-          Wrap(
-            spacing: 8,
-            children: [
-              OutlinedButton(
-                onPressed: () async {
-                  final ref = await _importImage(select: true);
-                  if (ref == null) return;
-                  c.updateAdvanced(
-                    c.parameters.copyWith(
-                      sourceImageId: ref,
-                      img2imgSourceImageId: ref,
-                    ),
-                  );
-                },
-                child: const Text('导入原图'),
-              ),
-              TextButton(
-                onPressed: c.selected.assetRef == null
-                    ? null
-                    : () => c.updateAdvanced(
-                        p.copyWith(
-                          sourceImageId: c.selected.assetRef,
-                          img2imgSourceImageId: c.selected.assetRef,
-                        ),
-                      ),
-                child: const Text('使用当前图片'),
-              ),
-            ],
-          ),
+          _editingSourceControls(),
           const SizedBox(height: 12),
           _number(
             '重绘强度',
@@ -488,22 +392,7 @@ extension _GenerationPanels on _WorkbenchState {
           ),
         ],
         if (p.operation == GenerationOperation.inpaint) ...[
-          if (p.maskImageId != null)
-            _assetRow(
-              p.maskImageId!,
-              '蒙版',
-              () => c.updateAdvanced(p.copyWith(clearMaskImageId: true)),
-            ),
-          OutlinedButton(
-            onPressed: () async {
-              final ref = await _importImage();
-              if (ref != null) {
-                c.updateAdvanced(c.parameters.copyWith(maskImageId: ref));
-              }
-            },
-            child: const Text('导入黑白蒙版'),
-          ),
-          _muted('白色区域重绘。也可在中央画布打开蒙版工具并绘制，提交时使用当前画布原图和笔迹。'),
+          _editingMaskControls(),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: const Text('不保留原图', style: TextStyle(fontSize: 12)),

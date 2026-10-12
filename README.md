@@ -4,6 +4,7 @@
 
 当前状态：**Flutter 三栏工作台已接入 NovelAI 生成链路、Windows 凭据保护和真实图片图库**。包含官方、7877、ikun 独立协议；草稿、完整 NovelAI 请求参数、原图与图库记录支持持久化。验证使用模拟服务，不代表真实账号兼容性已验收。这不是全量移植完成版或正式安装包。
 
+- [图生图与局部重绘](docs/IMAGE_EDITING_REVIEW.md)：裁切、蒙版绘制擦除、区域生成、结果图层、合成和回填。
 - [生成链路与凭据验证](docs/GENERATION_REVIEW.md)：本轮参数、凭据、图库、模拟接口与剩余边界。
 - [原型验收记录](docs/PROTOTYPE_REVIEW.md)：实际交互、截图、自动化检查与明确限制。
 - [持久化与 Windows 验证](docs/PERSISTENCE_REVIEW.md)：数据库重开、关闭前保存、中文路径与实际发布 exe 探针。
