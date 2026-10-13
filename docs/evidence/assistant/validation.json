@@ -1,0 +1,71 @@
+{
+  "timestamp_utc": "2026-10-13T15:07:30.831625+00:00",
+  "batch": "PC assistant and structured agent foundation",
+  "baseline_commit": "d0449f6b2de063af0d4d0fddccd85d7b25dba562",
+  "tests": {
+    "passed": 268,
+    "failed": 0,
+    "real_loopback_http": true,
+    "remote_services": false,
+    "paid_generation": false
+  },
+  "static_analysis": "passed; no issues",
+  "windows_release_build": "passed",
+  "web_release_build": "passed",
+  "web_build_warning": "CupertinoIcons font family notice retained in web-build.txt; Material icons visible in reviewed captures",
+  "windows_storage_probe": "passed: independent process write/read; Unicode path and PNG SHA-256",
+  "windows_credential_probe": "passed: synthetic credential write/read/delete",
+  "visual_qa": {
+    "renderer": "Flutter test renderer with bundled NotoSansSC and MaterialIcons",
+    "desktop_logical_size": [
+      1440,
+      900
+    ],
+    "compact_logical_size": [
+      640,
+      480
+    ],
+    "compact_device_pixel_ratio": 2,
+    "reviewed": [
+      "assistant-desktop.png",
+      "assistant-confirm.png",
+      "assistant-settings.png",
+      "assistant-compact.png",
+      "assistant-provider-compact.png"
+    ],
+    "findings": "No visible clipping/overflow; provider dialog content scrolls at compact size"
+  },
+  "native_assistant_manual_qa": {
+    "status": "not completed",
+    "details": "Isolated Windows workspace launched; Computer Use input guard prevented assistant navigation. Stopped interaction and closed only QA process. No assistant send/approval/reopen was claimed."
+  },
+  "manual_browser_qa": "not performed",
+  "new_image_generation_channels": false,
+  "scope": "First assistant/tool batch; M4 and complete mobile parity remain unfinished",
+  "logs": "Text copied with trailing line whitespace removed; Windows build log is explicitly a tail excerpt",
+  "source_sha256_working_tree_bytes": {
+    "lib/assistant/agent_contract.dart": "4bd974959634ccc5e0253f96435408f8570fd4fd3b89f6b36322ffe14d445279",
+    "lib/assistant/agent_engine.dart": "0c14e140dc4352af64bb6517c4306955cae85b6ffd02c03ec30605d2d65ec3ee",
+    "lib/assistant/assistant_controller.dart": "31601f376bc128fdf7399fb0ce32aa4b02b7bd0c00f940825b755cad3b15ff0b",
+    "lib/assistant/assistant_state.dart": "c8cde1b740c56484c9129c82c0cd977d86a4f32ece50a0dfbed44b0b55ed2eb7",
+    "lib/assistant/openai_agent_transport.dart": "35e04dd767f8ac4212816e4079a0753f162da9f94a2eecd43a484e6815ad50e0",
+    "lib/assistant/workspace_tools.dart": "8760ab06aa6ea3a6c1a1fec12660f041106ef5dbddb25cad07166d562c55fabc",
+    "lib/prototype/assistant_panel.dart": "a0e396f1d88d0d742ba3fdbbab1e88faf2681217c4db8b77bd66ef4ead754fcf",
+    "lib/prototype/workbench.dart": "0c1e12d41049f227722491e5c002161340ecb9bfd8bbb2965920355e43bff6af",
+    "lib/prototype/workbench_controller.dart": "ef7f6212ac199a1e3b0aa362b3731dcbb599bde1ee54de3f295c909f0b5ae328",
+    "pubspec.lock": "6dd96a56d578273168a1672372ff1cde1b8e650adfefeed437289f9568d87d49",
+    "scripts/assistant-qa-mock.py": "b87b9d60e91f7e67498e9c6c904444f92da297b85754bfcf8ee09ee2ff523174",
+    "test/assistant/agent_engine_test.dart": "ffe7fbb94d1163a19b10a8f6b9636ac225c3460af079cbfaf4bb8468ce146e4e",
+    "test/assistant/assistant_controller_test.dart": "4d9c283b0beaafdf1814f20a61fb3eb1487aaea4c92ef011becbb5d04139a03c",
+    "test/assistant/assistant_state_test.dart": "8fd25c67d2c5a46d6eb0ccc739f42893b813a48622e8bceeeb9f017e500dc904",
+    "test/assistant/loopback_agent_test.dart": "4563a43de7dc7da38536b8183f947c853344a02209d2748aaaaee76cf921cfe7",
+    "test/assistant/openai_agent_transport_test.dart": "22a3f5c5d91e3d24f2a21c7e65f20292bf278a11326fe1affd5fd89815ec5713",
+    "test/assistant/workspace_tools_test.dart": "1d66c010cba478a9d9337a657e4e3757acf63ab53977b550bd8bb7c8e37c29d7",
+    "test/assistant_ui_test.dart": "38daafd42fd1681c33278d0a4f12bb4794016232709fccb3b29fb9054c2f4deb"
+  },
+  "build_artifact_sha256": {
+    "build/windows/x64/runner/Release/worldpainter_pc.exe": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b",
+    "build/windows/x64/runner/Release/data/app.so": "59eb0c03390a24ec5b58414871a202f1ce00bb4fc32209c8c2357d1dc95236d5",
+    "build/web/main.dart.js": "585403fa0ff29e0f93017e8a71045dcb4ae9817ef83b3362eeb07715a770a6b7"
+  }
+}

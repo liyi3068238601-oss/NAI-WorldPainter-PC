@@ -11,6 +11,7 @@ import '../platform/image_picker.dart';
 import 'connection_dialog.dart';
 import 'stored_image.dart';
 import 'prompt_library_panel.dart';
+import 'assistant_panel.dart';
 import 'parameter_number_field.dart';
 import '../editing/image_crop_dialog.dart';
 import '../editing/image_editing_session.dart';
@@ -312,6 +313,8 @@ class _WorkbenchState extends State<Workbench> {
                                     controller: c,
                                     initialNegative: promptLibraryNegative,
                                   )
+                                : page == 5
+                                ? AssistantPanel(workbench: c)
                                 : Row(
                                     children: [
                                       Expanded(
@@ -428,7 +431,7 @@ class _WorkbenchState extends State<Workbench> {
       ),
       const SizedBox(height: 12),
       _navItem(Icons.tune_rounded, '图像工具', 3, wide),
-      _navItem(Icons.chat_bubble_outline_rounded, 'AI 助手', -1, wide),
+      _navItem(Icons.chat_bubble_outline_rounded, 'AI 助手', 5, wide),
       _navItem(Icons.view_quilt_outlined, '漫画创作', -1, wide),
       _navItem(Icons.publish_outlined, 'Pixiv 发布', -1, wide),
       const Spacer(),
@@ -599,7 +602,7 @@ class _WorkbenchState extends State<Workbench> {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            ['创作工作台', '图库与素材', '偏好设置', '图像工具', '提示词素材'][page],
+            ['创作工作台', '图库与素材', '偏好设置', '图像工具', '提示词素材', 'AI 助手'][page],
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),

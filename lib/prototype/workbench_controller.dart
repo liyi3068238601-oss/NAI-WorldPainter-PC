@@ -7,6 +7,11 @@ import '../prompts/prompt_insertion.dart';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:crypto/crypto.dart';
+
+import '../assistant/agent_contract.dart';
+import '../assistant/assistant_controller.dart';
+import '../assistant/assistant_state.dart';
 
 import '../storage/workspace_store.dart';
 import '../generation/generation_parameters.dart';
@@ -318,6 +323,7 @@ class WorkbenchController extends ChangeNotifier {
     this.localSrInfo = '本地超分后端尚未配置',
     VibeLibrary? vibeLibrary,
     PromptLibrary? promptLibrary,
+    AgentTransport? assistantTransport,
     this.encodeVibe,
   }) : wasRestored = restored != null,
        promptLibrary =
@@ -341,6 +347,15 @@ class WorkbenchController extends ChangeNotifier {
        _generationDelay = generationDelay.isNegative
            ? Duration.zero
            : generationDelay {
+    assistant = AssistantController(
+      workbench: this,
+      transport: assistantTransport,
+      state: restored != null && restored.data.containsKey('assistant')
+          ? AssistantState.fromJson(
+              Map<String, dynamic>.from(restored.data['assistant'] as Map),
+            )
+          : null,
+    );
     if (generateImage != null) _status = '请配置接入凭据；生成将使用当前渠道额度。';
     _results.addAll(const [
       SceneResult(
@@ -393,6 +408,7 @@ class WorkbenchController extends ChangeNotifier {
   final WorkspaceStore? store;
   final VibeLibrary vibeLibrary;
   final PromptLibrary promptLibrary;
+  late final AssistantController assistant;
   final EncodeVibe? encodeVibe;
   bool _encodingVibe = false;
   bool get encodingVibe => _encodingVibe;
@@ -726,6 +742,7 @@ class WorkbenchController extends ChangeNotifier {
     'demoSequence': _demoSequence,
     'vibeLibrary': vibeLibrary.toJson(),
     'promptLibrary': promptLibrary.toJson(),
+    'assistant': assistant.state.toJson(),
   };
 
   void _restore(StoredWorkspace stored) {
@@ -995,6 +1012,7 @@ class WorkbenchController extends ChangeNotifier {
     cancelGeneration();
     cancelVibeEncoding();
     try {
+      await assistant.settle().timeout(const Duration(seconds: 10));
       await Future.wait<void>([..._settlingGenerations, ?pendingGeneration])
           .timeout(const Duration(seconds: 10));
       await flush();
@@ -1120,6 +1138,7 @@ class WorkbenchController extends ChangeNotifier {
   bool get canMaintainAssets =>
       !_closing &&
       !_disposed &&
+      !assistant.busy &&
       !_generating &&
       !_maintenance &&
       _settlingGenerations.isEmpty;
@@ -1182,6 +1201,96 @@ class WorkbenchController extends ChangeNotifier {
     _prompt = appendPromptText(_prompt, positive);
     _negative = appendPromptText(_negative, negative);
   });
+
+  String get assistantDraftFingerprint => sha256
+      .convert(
+        utf8.encode(
+          jsonEncode({
+            'parameters': parameters.toJson(),
+            'provider': _provider,
+            'seed': _seedText,
+            'connections': _connections,
+            'operationPrompts': _extra['operationPrompts'],
+          }),
+        ),
+      )
+      .toString();
+
+  Map<String, dynamic> get assistantPromptSnapshot {
+    final inpaint = parameters.operation == GenerationOperation.inpaint;
+    final saved = _extra['operationPrompts'] as Map? ?? {};
+    final generation = saved['generation'] as Map? ?? {};
+    final painting = saved['inpaint'] as Map? ?? {};
+    return {
+      'positive': inpaint ? generation['prompt'] ?? '' : _prompt,
+      'negative': inpaint ? generation['negative'] ?? '' : _negative,
+      'inpaint_positive': inpaint ? _prompt : painting['prompt'] ?? '',
+      'inpaint_negative': inpaint ? _negative : painting['negative'] ?? '',
+      'is_inpainting_mode': inpaint,
+      'version': assistantDraftFingerprint,
+      'characters': [
+        for (var i = 0; i < parameters.characters.length; i++)
+          {'index': i + 1, ...parameters.characters[i].toJson()},
+      ],
+    };
+  }
+
+  String assistantPromptValue(String target) {
+    final inpaint = parameters.operation == GenerationOperation.inpaint;
+    if (const [
+      'positive',
+      'negative',
+      'inpaint_positive',
+      'inpaint_negative',
+    ].contains(target)) {
+      if (target.startsWith('inpaint_') != inpaint) {
+        throw const AgentException('目标词框与当前创作模式不一致；请切换模式后重新发送请求。');
+      }
+      return target.endsWith('negative') ? _negative : _prompt;
+    }
+    final match = RegExp(r'^character_([1-6])(_uc)?$').firstMatch(target);
+    if (match == null) throw const AgentException('提示词目标无效。');
+    final index = int.parse(match.group(1)!) - 1;
+    if (index >= parameters.characters.length) return '';
+    final character = parameters.characters[index];
+    return match.group(2) == null
+        ? character.prompt
+        : character.negativePrompt ?? '';
+  }
+
+  void applyAssistantPrompt(String target, String content) {
+    if (_closing || _disposed || _maintenance || _generating) {
+      throw const AgentException('当前工作区不允许写入草稿。');
+    }
+    assistantPromptValue(target);
+    _update(() {
+      final match = RegExp(r'^character_([1-6])(_uc)?$').firstMatch(target);
+      if (match == null) {
+        if (target.endsWith('negative')) {
+          _negative = content;
+        } else {
+          _prompt = content;
+        }
+      } else {
+        final index = int.parse(match.group(1)!) - 1;
+        final characters = [...parameters.characters];
+        while (characters.length <= index) {
+          characters.add(GenerationCharacter(prompt: ''));
+        }
+        characters[index] = match.group(2) == null
+            ? characters[index].copyWith(prompt: content)
+            : characters[index].copyWith(negativePrompt: content);
+        _advanced = _advanced.copyWith(characters: characters);
+      }
+    });
+  }
+
+  void applyAssistantCharacters(List<GenerationCharacter> characters) {
+    if (_closing || _disposed || _maintenance || _generating) {
+      throw const AgentException('当前工作区不允许修改角色。');
+    }
+    _update(() => _advanced = _advanced.copyWith(characters: characters));
+  }
 
   void updateNegative(String value) => _update(() => _negative = value);
 
@@ -1710,6 +1819,7 @@ class WorkbenchController extends ChangeNotifier {
   @override
   void dispose() {
     if (_disposed) return;
+    assistant.dispose();
     cancelRequest?.call();
     _disposed = true;
     ++_generationToken;

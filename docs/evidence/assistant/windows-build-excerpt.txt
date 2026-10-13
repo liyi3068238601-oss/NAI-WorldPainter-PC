@@ -1,0 +1,101 @@
+Final 100 lines of the full local build log (.tmp/assistant-windows-build.txt).
+[   +8 ms] ClCompile:
+[        ]   所有输出均为最新。
+[   +3 ms] Lib:
+[        ]   所有输出均为最新。
+[        ]   flutter_wrapper_plugin.vcxproj -> Z:\windows-build-source\build\windows\x64\flutter\Release\flutter_wrapper_plugin.lib
+[  +10 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“flutter_wrapper_plugin.dir\Release\flutter_.7596323D.tlog\unsuccessfulbuild”。
+[        ]   正在对“flutter_wrapper_plugin.dir\Release\flutter_.7596323D.tlog\flutter_wrapper_plugin.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\flutter\flutter_wrapper_plugin.vcxproj”(默认目标)的操作。
+[  +22 ms] 项目“Z:\windows-build-source\build\windows\x64\ALL_BUILD.vcxproj”(3)正在节点 1 上生成“Z:\windows-build-source\build\windows\x64\runner\worldpainter_pc.vcxproj”(7) (默认目标)。
+[        ] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[        ] InitializeBuildStatus:
+[        ]   正在创建“worldpainter_pc.dir\Release\worldpainter_pc.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“worldpainter_pc.dir\Release\worldpainter_pc.tlog\unsuccessfulbuild”执行 Touch 任务。
+[   +1 ms] CustomBuild:
+[        ]   所有输出均为最新。
+[  +16 ms] ClCompile:
+[        ]   所有输出均为最新。
+[   +5 ms] ResourceCompile:
+[        ]   所有输出均为最新。
+[  +22 ms] Link:
+[        ]   所有输出均为最新。
+[   +2 ms]   worldpainter_pc.vcxproj -> Z:\windows-build-source\build\windows\x64\runner\Release\worldpainter_pc.exe
+[   +9 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“worldpainter_pc.dir\Release\worldpainter_pc.tlog\unsuccessfulbuild”。
+[        ]   正在对“worldpainter_pc.dir\Release\worldpainter_pc.tlog\worldpainter_pc.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\runner\worldpainter_pc.vcxproj”(默认目标)的操作。
+[   +5 ms] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[   +1 ms] InitializeBuildStatus:
+[        ]   正在创建“x64\Release\ALL_BUILD\ALL_BUILD.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“x64\Release\ALL_BUILD\ALL_BUILD.tlog\unsuccessfulbuild”执行 Touch 任务。
+[   +1 ms] CustomBuild:
+[        ]   所有输出均为最新。
+[   +7 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“x64\Release\ALL_BUILD\ALL_BUILD.tlog\unsuccessfulbuild”。
+[        ]   正在对“x64\Release\ALL_BUILD\ALL_BUILD.tlog\ALL_BUILD.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\ALL_BUILD.vcxproj”(默认目标)的操作。
+[   +4 ms] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[   +1 ms] InitializeBuildStatus:
+[        ]   正在创建“x64\Release\INSTALL\INSTALL.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“x64\Release\INSTALL\INSTALL.tlog\unsuccessfulbuild”执行 Touch 任务。
+[  +63 ms] CustomBuild:
+[        ]   1>
+[  +21 ms] PostBuildEvent:
+[        ]   setlocal
+[        ]   "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DBUILD_TYPE=Release -P cmake_install.cmake
+[        ]   if %errorlevel% neq 0 goto :cmEnd
+[        ]   :cmEnd
+[        ]   endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+[        ]   :cmErrorLevel
+[        ]   exit /b %1
+[        ]   :cmDone
+[        ]   if %errorlevel% neq 0 goto :VCEnd
+[        ]   :VCEnd
+[ +356 ms]   -- Install configuration: "Release"
+[   +1 ms]   -- Up-to-date: Z:/windows-build-source/build/windows/x64/runner/Release/data/icudtl.dat
+[        ]   -- Up-to-date: Z:/windows-build-source/build/windows/x64/runner/Release/flutter_windows.dll
+[        ]   -- Up-to-date: Z:/windows-build-source/build/windows/x64/runner/Release
+[   +9 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/native_assets.json
+[   +1 ms]   -- Up-to-date: Z:/windows-build-source/build/windows/x64/runner/Release/sqlite3.dll
+[   +7 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets
+[        ]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/AssetManifest.bin
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/fonts
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/fonts/NotoSansSC.ttf
+[  +26 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/fonts/OFL.txt
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/prompts
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/prompts/capsules.json
+[   +3 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/FontManifest.json
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/fonts
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/fonts/MaterialIcons-Regular.otf
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/licenses
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/licenses/CAPSULES_MIT.txt
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/NativeAssetsManifest.json
+[   +2 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/NOTICES.Z
+[   +2 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders/ink_sparkle.frag
+[   +2 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders/stretch_effect.frag
+[   +2 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/app.so
+[  +30 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“x64\Release\INSTALL\INSTALL.tlog\unsuccessfulbuild”。
+[        ]   正在对“x64\Release\INSTALL\INSTALL.tlog\INSTALL.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\INSTALL.vcxproj”(默认目标)的操作。
+[   +7 ms] 已成功生成。
+[        ]     0 个警告
+[        ]     0 个错误
+[        ] 已用时间 00:00:25.18
+[  +40 ms] Building Windows application... (completed in 25.9s)
+[   +4 ms] √ Built build\windows\x64\runner\Release\worldpainter_pc.exe
+[        ] "flutter windows" took 26,050ms.
+[  +26 ms] Running 1 shutdown hook
+[        ] Shutdown hooks complete
+[ +266 ms] exiting with code 0
+Windows Release executable: E:\NAI-WorldPainter\PC端\build\windows\x64\runner\Release\worldpainter_pc.exe (152576 bytes)
+Bundled font license SHA-256: 1C05C68C34F9708415AADA51F17E1B0092D2CEA709BF4A94CD38114F9E73D7D9
+Bundled verified local SR runtimes under E:\NAI-WorldPainter\PC端\build\windows\x64\runner\Release\data\sr (downloads/staging excluded).
+Runtime install manifest SHA-256: A4E369B8615C23E8052F268A4624676B1C9615573F386BFC1675294BF4682A5D
