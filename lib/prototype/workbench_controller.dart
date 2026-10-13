@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+
+import '../prompts/prompt_library.dart';
+import '../prompts/prompt_insertion.dart';
+
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -313,8 +317,18 @@ class WorkbenchController extends ChangeNotifier {
     this.localSrAvailable = false,
     this.localSrInfo = '本地超分后端尚未配置',
     VibeLibrary? vibeLibrary,
+    PromptLibrary? promptLibrary,
     this.encodeVibe,
   }) : wasRestored = restored != null,
+       promptLibrary =
+           promptLibrary ??
+           (restored != null && restored.data.containsKey('promptLibrary')
+               ? PromptLibrary.fromJson(
+                   Map<String, dynamic>.from(
+                     restored.data['promptLibrary'] as Map,
+                   ),
+                 )
+               : PromptLibrary()),
        vibeLibrary =
            vibeLibrary ??
            (restored?.data['vibeLibrary'] is Map
@@ -373,10 +387,12 @@ class WorkbenchController extends ChangeNotifier {
       _lastSaved = jsonEncode(exportWorkspace());
     }
     this.vibeLibrary.onChanged = (_) => notifyListeners();
+    this.promptLibrary.onChanged = (_) => notifyListeners();
   }
 
   final WorkspaceStore? store;
   final VibeLibrary vibeLibrary;
+  final PromptLibrary promptLibrary;
   final EncodeVibe? encodeVibe;
   bool _encodingVibe = false;
   bool get encodingVibe => _encodingVibe;
@@ -709,6 +725,7 @@ class WorkbenchController extends ChangeNotifier {
     'selectedId': _selectedId ?? '',
     'demoSequence': _demoSequence,
     'vibeLibrary': vibeLibrary.toJson(),
+    'promptLibrary': promptLibrary.toJson(),
   };
 
   void _restore(StoredWorkspace stored) {
@@ -1160,6 +1177,11 @@ class WorkbenchController extends ChangeNotifier {
       });
 
   void updatePrompt(String value) => _update(() => _prompt = value);
+
+  void appendPrompts(String positive, String negative) => _update(() {
+    _prompt = appendPromptText(_prompt, positive);
+    _negative = appendPromptText(_negative, negative);
+  });
 
   void updateNegative(String value) => _update(() => _negative = value);
 

@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-13T21:51:56+08:00",
+  "baselineCommit": "a3d3aec168cca9d1ef565e71f22cba4a3968f91a",
+  "scope": "M4 offline prompt material library: custom styles, artist groups and weighted composition, MIT capsules",
+  "newGenerationChannels": 0,
+  "realRemoteBusinessRequests": 0,
+  "automated": {
+    "flutterTests": {
+      "status": "passed",
+      "passed": 211,
+      "failed": 0,
+      "command": "flutter test --no-pub --reporter expanded",
+      "log": "tests.txt"
+    },
+    "analysis": {
+      "status": "passed",
+      "command": "dart analyze lib test",
+      "log": "analyze.txt"
+    },
+    "windowsRelease": {
+      "status": "passed",
+      "command": "scripts/build-windows.ps1",
+      "log": "build-windows.txt"
+    },
+    "webRelease": {
+      "status": "passed",
+      "command": "flutter build web --release --no-pub",
+      "log": "build-web.txt",
+      "warning": "Expected CupertinoIcons font is absent; MaterialIcons used by this batch were visually checked."
+    },
+    "windowsStorageProbe": {
+      "status": "passed",
+      "log": "probe-windows.txt",
+      "reports": [
+        "probe-storage-write.json",
+        "probe-storage-read.json"
+      ],
+      "scope": "Separate hidden Release processes; SQLite reopen, Unicode path, PNG SHA-256"
+    },
+    "windowsCredentialProbe": {
+      "status": "passed",
+      "log": "probe-credentials.txt",
+      "scope": "Synthetic credential only; separate Release processes write/read/delete"
+    },
+    "promptSpecific": [
+      "SQLite library close/reopen",
+      "old workspace without promptLibrary",
+      "malformed library rejected",
+      "preview asset references protected",
+      "exact prompt append and 1.25 weights",
+      "artist group CRUD and export uniqueness",
+      "full corpus counts, canonical tags and bundled license"
+    ]
+  },
+  "corpus": {
+    "status": "passed",
+    "entries": 4121,
+    "categories": 14,
+    "subgroups": 112,
+    "negative": 119,
+    "positive": 4002,
+    "sourceDifferences": 0,
+    "licenseMatches": true,
+    "source": "capsule-source.json",
+    "comparison": "corpus-verification.json"
+  },
+  "widgetVisualReview": {
+    "status": "passed_within_scope",
+    "viewports": [
+      "1440x900 logical pixels, DPR 1",
+      "640x480 logical pixels, DPR 2"
+    ],
+    "screenshots": [
+      "styles-desktop.png",
+      "artists-desktop.png",
+      "capsules-compact.png"
+    ],
+    "scope": [
+      "style creation",
+      "artist/group creation",
+      "1.25 weighted artist append",
+      "negative capsule search and insertion",
+      "no observed layout overflow or bottom action occlusion"
+    ]
+  },
+  "nativeWindowsReview": {
+    "status": "passed_within_scope",
+    "executable": "build/windows/x64/runner/Release/worldpainter_pc.exe",
+    "isolatedDataDirectory": ".tmp/prompt-library-native-qa",
+    "data": "Synthetic initial draft and a test style named n; no user library or real credentials used.",
+    "checks": [
+      "Prompt material navigation",
+      "Save current positive/negative prompt as style",
+      "Standard keyboard event entry and save",
+      "Close then reopen in a new process and recover style",
+      "Load 4002 positive and 119 negative capsules",
+      "Select lowres and append only to negative draft",
+      "Reopen and confirm negative draft remains",
+      "Dark and light theme visual inspection"
+    ],
+    "screenshots": [
+      "native-style-saved.png",
+      "native-capsules.png",
+      "native-negative-applied.png",
+      "native-style-reopened.png",
+      "native-light.png",
+      "native-negative-reopened.png"
+    ],
+    "helperLimitations": [
+      "Text injection did not populate the Flutter text field; standard key events worked.",
+      "Accessibility element indices sometimes stale; screenshot-grounded coordinates used."
+    ],
+    "notCovered": [
+      "Full Chinese IME text entry",
+      "Native artist CRUD and export clipboard roundtrip",
+      "Native preview-image file picker",
+      "Full DPI and performance matrix",
+      "Browser runtime interaction"
+    ],
+    "testProcessesClosed": true
+  },
+  "limitations": [
+    "No licensed built-in mobile styles or artists copied; custom library only.",
+    "MIT capsule corpus has not been proven item-by-item identical to the mobile corpus.",
+    "Mobile v22 data import, LLM assistant, online tag query, WD-Tagger and full M4/M6 acceptance remain incomplete.",
+    "Artist temporary selections are panel state; library records and default weights persist.",
+    "Artist mobile-version-12 JSON export does not include all PC state and is not a PC library backup.",
+    "No real generation or paid-service compatibility test performed."
+  ],
+  "sourceHashes": "source-sha256.json",
+  "artifactHashes": [
+    {
+      "path": "build/windows/x64/runner/Release/worldpainter_pc.exe",
+      "bytes": 152576,
+      "sha256": "CA1A9C91F7CCD4CA4BB17793220A435F850E99F939AF58C640D8F1B8E0B86A8B"
+    },
+    {
+      "path": "build/windows/x64/runner/Release/data/app.so",
+      "bytes": 8405896,
+      "sha256": "29479733207D4CE7CE00683347CD6B74C260EDA681CA19E67DE3F9149BA89792"
+    },
+    {
+      "path": "build/windows/x64/runner/Release/data/flutter_assets/assets/prompts/capsules.json",
+      "bytes": 764276,
+      "sha256": "596C50EADDDB9F77080F875D1C7113DD53B995C338212D6F1B1458853419A886"
+    },
+    {
+      "path": "build/windows/x64/runner/Release/data/flutter_assets/licenses/CAPSULES_MIT.txt",
+      "bytes": 1085,
+      "sha256": "8CE853E17881D0CF63C5C63A073ED37F1AD079809ABED9D6B7553EABC4D7749D"
+    },
+    {
+      "path": "build/web/main.dart.js",
+      "bytes": 3565889,
+      "sha256": "3AFC1B8B85AB3B9E4C3517669BC9A686392C478CAD929A22F389D95A4442C647"
+    },
+    {
+      "path": "build/web/assets/assets/prompts/capsules.json",
+      "bytes": 764276,
+      "sha256": "596C50EADDDB9F77080F875D1C7113DD53B995C338212D6F1B1458853419A886"
+    },
+    {
+      "path": "build/web/assets/licenses/CAPSULES_MIT.txt",
+      "bytes": 1085,
+      "sha256": "8CE853E17881D0CF63C5C63A073ED37F1AD079809ABED9D6B7553EABC4D7749D"
+    }
+  ],
+  "delivery": "Executable requires the complete Release directory; no installer or public release created."
+}

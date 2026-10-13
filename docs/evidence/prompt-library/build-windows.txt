@@ -1,0 +1,378 @@
+Building Windows Release from Z:\windows-build-source
+Flutter: E:\NAI-WorldPainter\.tools\flutter\bin\flutter.bat
+Log: E:\NAI-WorldPainter\PC端\.tmp\windows-release-20261013-213825.log
+[ +534 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[        ] executing: [E:\NAI-WorldPainter\.tools\flutter/] git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[  +66 ms] Exit code 0 from: git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[        ] 2026-10-08 09:51:21 -0700
+[  +11 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +1 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +31 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[   +1 ms] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[  +66 ms] executing: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[  +64 ms] Exit code 0 from: C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe -format json -products * -utf8 -latest -version 16 -requires Microsoft.VisualStudio.Workload.NativeDesktop Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.VC.CMake.Project
+[        ] [
+             {
+               "instanceId": "4eec5611",
+               "installDate": "2026-01-20T13:59:23Z",
+               "installationName": "VisualStudio/17.14.26+36930.0",
+               "installationPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community",
+               "installationVersion": "17.14.36930.0",
+               "productId": "Microsoft.VisualStudio.Product.Community",
+               "productPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe",
+               "state": 4294967295,
+               "isComplete": true,
+               "isLaunchable": true,
+               "isPrerelease": false,
+               "isRebootRequired": false,
+               "displayName": "Visual Studio Community 2022",
+               "description": "功能强大的 IDE，供学生、开放源代码参与者和个人免费使用",
+               "channelId": "VisualStudio.17.Release",
+               "channelUri": "https://aka.ms/vs/17/release/channel",
+               "enginePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\resources\\app\\ServiceHub\\Services\\Microsoft.VisualStudio.Setup.Service",
+               "installChannelUri": "C:\\Users\\liyi\\AppData\\Local\\Temp\\BNZ.696f89f21c2caf05\\vs2022\\ChannelManifest.json",
+               "installedChannelId": "VisualStudio.17.Release",
+               "installedChannelUri": "https://aka.ms/vs/17/release/channel",
+               "layoutPath": "C:\\Users\\liyi\\AppData\\Local\\Temp\\BNZ.696f89f21c2caf05\\vs2022",
+               "releaseNotes": "https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes-v17.14#17.14.26",
+               "resolvedInstallationPath": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community",
+               "thirdPartyNotices": "https://go.microsoft.com/fwlink/?LinkId=661288",
+               "updateDate": "2026-02-12T15:48:38.0671474Z",
+               "catalog": {
+                 "buildBranch": "d17.14",
+                 "buildVersion": "17.14.36930.0",
+                 "id": "VisualStudio/17.14.26+36930.0",
+                 "localBuild": "build-lab",
+                 "manifestName": "VisualStudio",
+                 "manifestType": "installer",
+                 "productDisplayVersion": "17.14.26",
+                 "productLine": "Dev17",
+                 "productLineVersion": "2022",
+                 "productMilestone": "RTW",
+                 "productMilestoneIsPreRelease": "False",
+                 "productName": "Visual Studio",
+                 "productPatchVersion": "26",
+                 "productPreReleaseMilestoneSuffix": "1.0",
+                 "productSemanticVersion": "17.14.26+36930.0",
+                 "requiredEngineVersion": "3.14.2086.54749"
+               },
+               "properties": {
+                 "appLocalWPF": "false",
+                 "campaignId": "2030:d9a1ee8ee81e49fe89180132032a1d07",
+                 "channelManifestId": "VisualStudio.17.Release/17.14.26+36930.0",
+                 "nickname": "",
+                 "setupEngineFilePath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\setup.exe"
+               }
+             }
+           ]
+[  +11 ms] Building Windows application...
+[   +4 ms] executing: C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe -S Z:\windows-build-source\windows -B Z:\windows-build-source\build\windows\x64 -G Visual Studio 17 2022 -A x64 -DFLUTTER_TARGET_PLATFORM=windows-x64
+[  +82 ms] -- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
+[  +30 ms] -- Configuring done (0.0s)
+[ +393 ms] -- Generating done (0.4s)
+[  +21 ms] -- Build files have been written to: Z:/windows-build-source/build/windows/x64
+[  +19 ms] executing: C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe --build Z:\windows-build-source\build\windows\x64 --config Release --target INSTALL --verbose
+[  +89 ms] Change Dir: 'Z:/windows-build-source/build/windows/x64'
+[        ] Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" INSTALL.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+[  +94 ms] 适用于 .NET Framework MSBuild 版本 17.14.40+3e7442088
+[  +36 ms] 生成启动时间为 2026/10/13 21:38:28。
+[ +190 ms] 节点 1 上的项目“Z:\windows-build-source\build\windows\x64\INSTALL.vcxproj”(默认目标)。
+[        ] 项目“Z:\windows-build-source\build\windows\x64\INSTALL.vcxproj”(1)正在节点 1 上生成“Z:\windows-build-source\build\windows\x64\ZERO_CHECK.vcxproj”(2) (默认目标)。
+[        ] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[   +4 ms] InitializeBuildStatus:
+[        ]   正在创建“x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\unsuccessfulbuild”执行 Touch 任务。
+[  +16 ms] CustomBuild:
+[        ]   所有输出均为最新。
+[  +25 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\unsuccessfulbuild”。
+[        ]   正在对“x64\Release\ZERO_CHECK\ZERO_CHECK.tlog\ZERO_CHECK.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\ZERO_CHECK.vcxproj”(默认目标)的操作。
+[ +105 ms] 项目“Z:\windows-build-source\build\windows\x64\INSTALL.vcxproj”(1)正在节点 1 上生成“Z:\windows-build-source\build\windows\x64\ALL_BUILD.vcxproj”(3) (默认目标)。
+[        ] 项目“Z:\windows-build-source\build\windows\x64\ALL_BUILD.vcxproj”(3)正在节点 1 上生成“Z:\windows-build-source\build\windows\x64\flutter\flutter_wrapper_app.vcxproj”(4) (默认目标)。
+[        ] 项目“Z:\windows-build-source\build\windows\x64\flutter\flutter_wrapper_app.vcxproj”(4)正在节点 1 上生成“Z:\windows-build-source\build\windows\x64\flutter\flutter_assemble.vcxproj”(5) (默认目标)。
+[        ] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[   +1 ms] InitializeBuildStatus:
+[        ]   正在创建“x64\Release\flutter_assemble\flutter_assemble.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“x64\Release\flutter_assemble\flutter_assemble.tlog\unsuccessfulbuild”执行 Touch 任务。
+[  +10 ms] CustomBuild:
+[        ]   “‘Z:\windows-build-source\build\windows\x64\CMakeFiles\258c83cb5cde52f6ad369931d4df9937\flutter_assemble.rule’的生成依赖于由‘Z:\windows-build-source\build\windows\x64\CMakeFiles\af95feb7bc764d798a4c994e38006148\flutter_windows.dll.rule’的生成所产生的‘Z:\WINDOWS-BUILD-SOURCE\WINDOWS\FLUTTER\EPHEMERAL\FLUTTER_WINDOWS.DLL’。无法并行生成项。”
+[  +75 ms]   Generating Z:/windows-build-source/windows/flutter/ephemeral/flutter_windows.dll, Z:/windows-build-source/windows/flutter/ephemeral/flutter_export.h, Z:/windows-build-source/windows/flutter/ephemeral/flutter_windows.h, Z:/windows-build-source/windows/flutter/ephemeral/flutter_messenger.h, Z:/windows-build-source/windows/flutter/ephemeral/flutter_plugin_registrar.h, Z:/windows-build-source/windows/flutter/ephemeral/flutter_texture_registrar.h, Z:/windows-build-source/windows/flutter/ephemeral/cpp_client_wrapper/core_implementations.cc, Z:/windows-build-source/windows/flutter/ephemeral/cpp_client_wrapper/standard_codec.cc, Z:/windows-build-source/windows/flutter/ephemeral/cpp_client_wrapper/plugin_registrar.cc, Z:/windows-build-source/windows/flutter/ephemeral/cpp_client_wrapper/flutter_engine.cc, Z:/windows-build-source/windows/flutter/ephemeral/cpp_client_wrapper/flutter_view_controller.cc, _phony_
+[+1671 ms]   [ +500 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[        ]   [   +7 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +1 ms]   [   +2 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +45 ms]   [  +44 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[   +1 ms]   [   +1 ms] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ]   [        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[  +25 ms]   [  +25 ms] Initializing file store
+[  +18 ms]   [  +18 ms] Done initializing file store
+[ +138 ms]   [ +138 ms] Skipping target: build_hooks
+[        ]   [   +1 ms] Skipping target: gen_dart_plugin_registrant
+[+2388 ms]   [+2387 ms] Skipping target: unpack_windows
+[        ]   [        ] Skipping target: gen_localizations
+[ +818 ms]   [ +818 ms] kernel_snapshot_program: Starting due to {InvalidatedReasonKind.inputChanged: The following inputs have updated contents: Z:\windows-build-source\lib\prompts\prompt_library.dart,Z:\windows-build-source\lib\prompts\prompt_insertion.dart,Z:\windows-build-source\lib\prototype\prompt_library_panel.dart,Z:\windows-build-source\lib\prompts\prompt_capsules.dart}
+[  +43 ms]   [  +42 ms] E:\NAI-WorldPainter\.tools\flutter\bin\cache\dart-sdk\bin\dartaotruntime.exe E:\NAI-WorldPainter\.tools\flutter\bin\cache\dart-sdk\bin\snapshots\frontend_server_aot.dart.snapshot --sdk-root E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\engine\common\flutter_patched_sdk_product/ --target=flutter --no-print-incremental-dependencies -DWORLDPAINTER_DATA_DIR_BASE64=RTpcTkFJLVdvcmxkUGFpbnRlclxQQ+err1xkYXRhXGRlc2t0b3A= -DFLUTTER_BUILD_NAME=0.1.0 -DFLUTTER_BUILD_NUMBER=1 -DFLUTTER_VERSION=3.47.7 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=abaf9c5237 -DFLUTTER_ENGINE_REVISION=deb287481e -DFLUTTER_DART_VERSION=3.13.5 -Ddart.vm.profile=false -Ddart.vm.product=true --delete-tostring-package-uri=dart:ui --delete-tostring-package-uri=package:flutter --aot --tfa --target-os windows --packages Z:\windows-build-source\.dart_tool\package_config.json --output-dill Z:\windows-build-source\.dart_tool\flutter_build\2aa96efe47f70c19e522cd5f0b711203\app.dill --depfile Z:\windows-build-source\.dart_tool\flutter_build\2aa96efe47f70c19e522cd5f0b711203\kernel_snapshot_program.d --verbosity=error --recorded-uses=Z:\windows-build-source\.dart_tool\flutter_build\2aa96efe47f70c19e522cd5f0b711203\recorded_uses.json package:worldpainter_pc/main.dart
+[+13880 ms]   [+13881 ms] kernel_snapshot_program: Complete
+[ +452 ms]   [ +452 ms] Skipping target: link_hooks
+[  +62 ms]   [  +62 ms] Skipping target: install_code_assets
+[        ]   [        ] aot_elf_release: Starting due to {InvalidatedReasonKind.inputChanged: The following inputs have updated contents: E:\NAI-WorldPainter\PC绔痋.dart_tool\flutter_build\2aa96efe47f70c19e522cd5f0b711203\app.dill}
+[   +1 ms]   [   +1 ms] targetingApplePlatform = false
+[        ]   [        ] extractAppleDebugSymbols = true
+[        ]   [        ] targetingAndroidPlatform = false
+[        ]   [        ] Will strip AOT snapshot during build.
+[   +1 ms]   [   +1 ms] executing: E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\engine\windows-x64-release\gen_snapshot --deterministic --snapshot_kind=app-aot-elf --elf=Z:\windows-build-source\.dart_tool\flutter_build\2aa96efe47f70c19e522cd5f0b711203\app.so --strip Z:\windows-build-source\.dart_tool\flutter_build\2aa96efe47f70c19e522cd5f0b711203\app.dill
+[+13759 ms]   [+13758 ms] aot_elf_release: Complete
+[  +72 ms]   [  +73 ms] windows_aot_bundle: Starting due to {InvalidatedReasonKind.inputChanged: The following inputs have updated contents: E:\NAI-WorldPainter\PC绔痋.dart_tool\flutter_build\2aa96efe47f70c19e522cd5f0b711203\app.so}
+[   +9 ms]   [   +9 ms] windows_aot_bundle: Complete
+[ +219 ms]   [ +219 ms] release_bundle_windows-x64_assets: Starting due to {InvalidatedReasonKind.inputChanged: The following inputs have updated contents: Z:\windows-build-source\assets\prompts\capsules.json,Z:\windows-build-source\licenses\CAPSULES_MIT.txt}
+[ +112 ms]   [ +112 ms] impellerc command: [E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\engine\windows-x64\impellerc.exe, --sksl, --runtime-stage-gles, --runtime-stage-gles3, --runtime-stage-vulkan, --iplr, --sl=Z:\windows-build-source\build\flutter_assets\shaders/ink_sparkle.frag, --spirv=Z:\windows-build-source\build\flutter_assets\shaders/ink_sparkle.frag.spirv, --input=E:\NAI-WorldPainter\.tools\flutter\packages\flutter\lib\src\material\shaders\ink_sparkle.frag, --input-type=frag, --include=E:\NAI-WorldPainter\.tools\flutter\packages\flutter\lib\src\material\shaders, --include=E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\engine\windows-x64\shader_lib]
+[        ]   [   +1 ms] impellerc command: [E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\engine\windows-x64\impellerc.exe, --sksl, --runtime-stage-gles, --runtime-stage-gles3, --runtime-stage-vulkan, --iplr, --sl=Z:\windows-build-source\build\flutter_assets\shaders/stretch_effect.frag, --spirv=Z:\windows-build-source\build\flutter_assets\shaders/stretch_effect.frag.spirv, --input=E:\NAI-WorldPainter\.tools\flutter\packages\flutter\lib\src\widgets\shaders\stretch_effect.frag, --input-type=frag, --include=E:\NAI-WorldPainter\.tools\flutter\packages\flutter\lib\src\widgets\shaders, --include=E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\engine\windows-x64\shader_lib]
+[  +83 ms]   [  +82 ms] Running command: E:\NAI-WorldPainter\.tools\flutter\bin\cache\dart-sdk\bin\dart.exe E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\engine\windows-x64\const_finder.dart.snapshot --kernel-file Z:\windows-build-source\.dart_tool\flutter_build\2aa96efe47f70c19e522cd5f0b711203\app.dill --class-library-uri package:flutter/src/widgets/icon_data.dart --class-name IconData --annotation-class-name _StaticIconProvider --annotation-class-library-uri package:flutter/src/widgets/icon_data.dart
+[ +813 ms]   [ +813 ms] Expected to find fontFamily for constant IconData with codepoint: 128842, but found fontFamily: null. This usually means you are relying on the system font. Alternatively, font families in an IconData class can be provided in the assets section of your pubspec.yaml, or you are missing "uses-material-design: true".
+[   +1 ms]   [   +1 ms] Running font-subset: E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\engine\windows-x64\font-subset.exe Z:\windows-build-source\build\flutter_assets\fonts/MaterialIcons-Regular.otf E:\NAI-WorldPainter\.tools\flutter\bin\cache\artifacts\material_fonts\MaterialIcons-Regular.otf, using codepoints 57502 57501 57657 57496 57926 57704 58372 58370 57686 57706 57490 58646 57415 57675 58673 57531 984569 62110 984636 58462 57769 61186 61101 61783 61728 59020 58642 61782 59069 59070 61561 57689 62625 57787 58705 983518 58917 58727 58173 61152 62031 61453 57690 61097 61183 62959 63428 61157 983640 63023 62618 62165 62269 62318 61794 61343 63670 63669 61099 57912 58927 61279 62191 63288 63287 58068 983281 62775 63334 983649 983271 63509 983302 983090 61311 61109 57699 983516 62870 983875 63111 63114 63109 983415 62820 63047 57504 57495 61000 57527 61289 62441 62109 62872 58886 59011 984363 61748 983357
+[  +84 ms]   [  +84 ms] Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 13488 bytes (99.2% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+[   +1 ms]   [   +1 ms] release_bundle_windows-x64_assets: Complete
+[ +100 ms]   [ +100 ms] Persisting file store
+[   +7 ms]   [   +7 ms] Done persisting file store
+[  +13 ms]   [  +13 ms] build succeeded.
+[   +3 ms]   [   +3 ms] "flutter assemble" took 33,168ms.
+[  +31 ms]   [  +31 ms] Running 1 shutdown hook
+[        ]   [        ] Shutdown hooks complete
+[ +255 ms]   [ +255 ms] exiting with code 0
+[  +85 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“x64\Release\flutter_assemble\flutter_assemble.tlog\unsuccessfulbuild”。
+[        ]   正在对“x64\Release\flutter_assemble\flutter_assemble.tlog\flutter_assemble.lastbuildstate”执行 Touch 任务。
+[   +1 ms] 已完成生成项目“Z:\windows-build-source\build\windows\x64\flutter\flutter_assemble.vcxproj”(默认目标)的操作。
+[   +5 ms] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[   +1 ms] InitializeBuildStatus:
+[        ]   正在创建“flutter_wrapper_app.dir\Release\flutter_.5C418ED3.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“flutter_wrapper_app.dir\Release\flutter_.5C418ED3.tlog\unsuccessfulbuild”执行 Touch 任务。
+[   +2 ms] CustomBuild:
+[        ]   所有输出均为最新。
+[  +45 ms] ClCompile:
+[        ]   所有输出均为最新。
+[  +24 ms] Lib:
+[        ]   所有输出均为最新。
+[   +1 ms]   flutter_wrapper_app.vcxproj -> Z:\windows-build-source\build\windows\x64\flutter\Release\flutter_wrapper_app.lib
+[  +10 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“flutter_wrapper_app.dir\Release\flutter_.5C418ED3.tlog\unsuccessfulbuild”。
+[        ]   正在对“flutter_wrapper_app.dir\Release\flutter_.5C418ED3.tlog\flutter_wrapper_app.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\flutter\flutter_wrapper_app.vcxproj”(默认目标)的操作。
+[  +31 ms] 项目“Z:\windows-build-source\build\windows\x64\ALL_BUILD.vcxproj”(3)正在节点 1 上生成“Z:\windows-build-source\build\windows\x64\flutter\flutter_wrapper_plugin.vcxproj”(6) (默认目标)。
+[        ] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[   +3 ms] InitializeBuildStatus:
+[        ]   正在创建“flutter_wrapper_plugin.dir\Release\flutter_.7596323D.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“flutter_wrapper_plugin.dir\Release\flutter_.7596323D.tlog\unsuccessfulbuild”执行 Touch 任务。
+[   +4 ms] CustomBuild:
+[        ]   所有输出均为最新。
+[  +15 ms] ClCompile:
+[        ]   所有输出均为最新。
+[   +7 ms] Lib:
+[        ]   所有输出均为最新。
+[        ]   flutter_wrapper_plugin.vcxproj -> Z:\windows-build-source\build\windows\x64\flutter\Release\flutter_wrapper_plugin.lib
+[  +11 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“flutter_wrapper_plugin.dir\Release\flutter_.7596323D.tlog\unsuccessfulbuild”。
+[        ]   正在对“flutter_wrapper_plugin.dir\Release\flutter_.7596323D.tlog\flutter_wrapper_plugin.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\flutter\flutter_wrapper_plugin.vcxproj”(默认目标)的操作。
+[  +26 ms] 项目“Z:\windows-build-source\build\windows\x64\ALL_BUILD.vcxproj”(3)正在节点 1 上生成“Z:\windows-build-source\build\windows\x64\runner\worldpainter_pc.vcxproj”(7) (默认目标)。
+[        ] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[        ] InitializeBuildStatus:
+[        ]   正在创建“worldpainter_pc.dir\Release\worldpainter_pc.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“worldpainter_pc.dir\Release\worldpainter_pc.tlog\unsuccessfulbuild”执行 Touch 任务。
+[   +3 ms] CustomBuild:
+[        ]   所有输出均为最新。
+[  +17 ms] ClCompile:
+[   +1 ms]   所有输出均为最新。
+[   +5 ms] ResourceCompile:
+[        ]   所有输出均为最新。
+[  +29 ms] Link:
+[        ]   所有输出均为最新。
+[   +2 ms]   worldpainter_pc.vcxproj -> Z:\windows-build-source\build\windows\x64\runner\Release\worldpainter_pc.exe
+[  +10 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“worldpainter_pc.dir\Release\worldpainter_pc.tlog\unsuccessfulbuild”。
+[        ]   正在对“worldpainter_pc.dir\Release\worldpainter_pc.tlog\worldpainter_pc.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\runner\worldpainter_pc.vcxproj”(默认目标)的操作。
+[   +7 ms] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[   +1 ms] InitializeBuildStatus:
+[        ]   正在创建“x64\Release\ALL_BUILD\ALL_BUILD.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“x64\Release\ALL_BUILD\ALL_BUILD.tlog\unsuccessfulbuild”执行 Touch 任务。
+[   +2 ms] CustomBuild:
+[        ]   所有输出均为最新。
+[   +8 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“x64\Release\ALL_BUILD\ALL_BUILD.tlog\unsuccessfulbuild”。
+[        ]   正在对“x64\Release\ALL_BUILD\ALL_BUILD.tlog\ALL_BUILD.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\ALL_BUILD.vcxproj”(默认目标)的操作。
+[   +6 ms] PrepareForBuild:
+[        ]   已启用结构化输出。编译器诊断的格式设置将反映错误层次结构。有关详细信息，请参阅 https://aka.ms/cpp/structured-output。
+[   +2 ms] InitializeBuildStatus:
+[        ]   正在创建“x64\Release\INSTALL\INSTALL.tlog\unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+[        ]   正在对“x64\Release\INSTALL\INSTALL.tlog\unsuccessfulbuild”执行 Touch 任务。
+[  +53 ms] CustomBuild:
+[        ]   1>
+[  +25 ms] PostBuildEvent:
+[        ]   setlocal
+[        ]   "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DBUILD_TYPE=Release -P cmake_install.cmake
+[        ]   if %errorlevel% neq 0 goto :cmEnd
+[        ]   :cmEnd
+[        ]   endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+[        ]   :cmErrorLevel
+[        ]   exit /b %1
+[        ]   :cmDone
+[        ]   if %errorlevel% neq 0 goto :VCEnd
+[        ]   :VCEnd
+[  +62 ms]   -- Install configuration: "Release"
+[   +2 ms]   -- Up-to-date: Z:/windows-build-source/build/windows/x64/runner/Release/data/icudtl.dat
+[   +1 ms]   -- Up-to-date: Z:/windows-build-source/build/windows/x64/runner/Release/flutter_windows.dll
+[        ]   -- Up-to-date: Z:/windows-build-source/build/windows/x64/runner/Release
+[   +2 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/native_assets.json
+[   +1 ms]   -- Up-to-date: Z:/windows-build-source/build/windows/x64/runner/Release/sqlite3.dll
+[   +6 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/AssetManifest.bin
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/fonts
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/fonts/NotoSansSC.ttf
+[  +26 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/fonts/OFL.txt
+[   +2 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/prompts
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/assets/prompts/capsules.json
+[   +4 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/FontManifest.json
+[   +6 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/fonts
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/fonts/MaterialIcons-Regular.otf
+[   +3 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/licenses
+[   +2 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/licenses/CAPSULES_MIT.txt
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/NativeAssetsManifest.json
+[   +3 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/NOTICES.Z
+[   +2 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders/ink_sparkle.frag
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders/stretch_effect.frag
+[  +23 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/app.so
+[  +45 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“x64\Release\INSTALL\INSTALL.tlog\unsuccessfulbuild”。
+[        ]   正在对“x64\Release\INSTALL\INSTALL.tlog\INSTALL.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\INSTALL.vcxproj”(默认目标)的操作。
+[   +8 ms] 已成功生成。
+[        ]     0 个警告
+[        ]     0 个错误
+[        ] 已用时间 00:00:36.24
+[  +47 ms] Building Windows application... (completed in 37.1s)
+[   +3 ms] √ Built build\windows\x64\runner\Release\worldpainter_pc.exe
+[        ] "flutter windows" took 37,259ms.
+[  +30 ms] Running 1 shutdown hook
+[        ] Shutdown hooks complete
+[ +263 ms] exiting with code 0
+Windows Release executable: E:\NAI-WorldPainter\PC端\build\windows\x64\runner\Release\worldpainter_pc.exe (152576 bytes)
+Bundled font license SHA-256: 1C05C68C34F9708415AADA51F17E1B0092D2CEA709BF4A94CD38114F9E73D7D9
+Bundled verified local SR runtimes under E:\NAI-WorldPainter\PC端\build\windows\x64\runner\Release\data\sr (downloads/staging excluded).
+Runtime install manifest SHA-256: A4E369B8615C23E8052F268A4624676B1C9615573F386BFC1675294BF4682A5D

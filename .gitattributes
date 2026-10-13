@@ -16,3 +16,6 @@
 web/sqflite_sw.js text eol=lf
 web/sqlite3.wasm binary
 licenses/dependencies/*.txt -text
+licenses/CAPSULES_MIT.txt -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+assets/prompts/capsules.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/evidence/prompt-library/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

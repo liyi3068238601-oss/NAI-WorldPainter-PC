@@ -1,0 +1,34 @@
+[
+  {
+    "path": "lib/domain/entities/style_preset.dart",
+    "sha256": "27FF57C1D452299031C6241027331301E841874F2822AC33DFC43199D46BC357"
+  },
+  {
+    "path": "lib/domain/entities/artist_prompt.dart",
+    "sha256": "8033EB9F56D4377003CF409D46BC87EDEE01C513E4204C0D6F192619F9729DF9"
+  },
+  {
+    "path": "lib/presentation/pages/style_preset_page.dart",
+    "sha256": "069CBEFD456D8D454B5FEECC471D4B948194D9A3EDABBA6540805F9A3CAE1C11"
+  },
+  {
+    "path": "lib/presentation/pages/artist_prompt_manager_page.dart",
+    "sha256": "1A42DFF62F972FDEFCFFFC1146E1D864413A45E7F68D07BB1CBFEBED5D37C9E0"
+  },
+  {
+    "path": "lib/presentation/viewmodels/artist_prompt_viewmodel.dart",
+    "sha256": "4C864BC8996DD4BD7D1F2F8478AEED22AEADB9733C585379AA776C0E552C11FE"
+  },
+  {
+    "path": "lib/data/repositories/artist_prompt_repository_impl.dart",
+    "sha256": "07B122F828BD42EE7454BBDD4DF583C6986A338C7DA9A0A8C78B94E853F1178E"
+  },
+  {
+    "path": "lib/core/constants/prompt_capsule_data.dart",
+    "sha256": "6735E090E8248A68C1445F2D593C851D721537357AB2EC2973B2E96D9B7CBB17"
+  },
+  {
+    "path": "lib/core/constants/prompt_capsule_library.dart",
+    "sha256": "FBEFCA33A4B66789293E0005A6306664128A51F0646C83008725D9293782BE9A"
+  }
+]

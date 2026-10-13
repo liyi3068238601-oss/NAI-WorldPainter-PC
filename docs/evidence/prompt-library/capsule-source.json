@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "name": "NovelAI Studio",
+    "repository": "https://github.com/2786886095/novelai-image-desktop",
+    "commit": "2d609393c3902874afae5200c26165d86b76055f",
+    "commitDate": "2026-10-10",
+    "workingTreeClean": true,
+    "license": "MIT",
+    "copyright": "Copyright (c) 2026 Langbai",
+    "licenseFile": "LICENSE",
+    "licenseFileSha256": "8CE853E17881D0CF63C5C63A073ED37F1AD079809ABED9D6B7553EABC4D7749D"
+  },
+  "sourceFiles": [
+    {
+      "path": "src/capsule-data.ts",
+      "sha256": "F28D9D06CD23AB824A731352C93B8AE7A534836CE93C821FC89D302701A3999E",
+      "role": "Three independently authored expanded capsule batches and category merge helper. The file states that this library is MIT and is not derived from the GPL Danbooru CSV."
+    },
+    {
+      "path": "src/prompt-data.ts",
+      "sha256": "7E1A7ACFC8C5041676A413A3B9A39B0E48965861211B7D6978002ADE34DC98CE",
+      "role": "Curated base taxonomy merged with all three expanded batches into CAPSULE_TAXONOMY."
+    },
+    {
+      "path": "scripts/sync-mobile-capsules.mjs",
+      "sha256": "056FCD0718EE2B8CE6D66CD58FD09C43446F7619DB27C57033F4C5A7D4CD20A0",
+      "role": "Upstream generator that evaluates both TypeScript sources and serializes the complete merged taxonomy."
+    },
+    {
+      "path": "mobile/assets/capsule_taxonomy.json",
+      "sha256": "613D6B59ED1938D9607A270587DF343BE2A9998FF6EA300A4DBC327F77DF6068",
+      "role": "Generated source taxonomy flattened into the PC asset."
+    }
+  ],
+  "licenseNotice": {
+    "path": "licenses/CAPSULES_MIT.txt",
+    "sha256": "8CE853E17881D0CF63C5C63A073ED37F1AD079809ABED9D6B7553EABC4D7749D",
+    "preservedVerbatim": true
+  },
+  "asset": {
+    "path": "assets/prompts/capsules.json",
+    "sha256": "596C50EADDDB9F77080F875D1C7113DD53B995C338212D6F1B1458853419A886",
+    "format": "flat JSON list of PromptCapsule records",
+    "recordFields": ["id", "category", "subgroup", "en", "zh", "negative"],
+    "idRule": "category/subgroup/en",
+    "negativeRule": "true when category is 反向提示词; this matches the upstream mobile CapsuleCategory.isNegative rule",
+    "promptTextRule": "The runtime getter replaces underscores in en with spaces; the stored en value remains the canonical tag."
+  },
+  "contentCounts": {
+    "categories": 14,
+    "subgroups": 112,
+    "capsules": 4121,
+    "negativeCapsules": 119
+  }
+}

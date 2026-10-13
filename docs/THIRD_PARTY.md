@@ -8,6 +8,7 @@
 | Noto Sans SC 可变字体 | [Google Fonts 固定提交](https://github.com/google/fonts/tree/2894aab31764f10f29c421bdfd2340d3b382d384/ofl/notosanssc)，原文件 `NotoSansSC[wght].ttf`，本地只改文件名 | SIL OFL 1.1；未裁剪或修改字体内容，保留 `assets/fonts/OFL.txt`；完整本地字体支持中文输入，不请求网络字体 |
 | 绘世几何画笔图标 | `scripts/generate-icons.py` | 本项目新绘制；不是参考项目图标 |
 | 月下远山、晴岚山谷、落日海岸 | `lib/prototype/scene_art.dart` | 本项目原创程序示意画；不是 AI 生成结果或外部作品 |
+| 灵感胶囊词库 | [NovelAI Studio 固定提交](https://github.com/2786886095/novelai-image-desktop/tree/2d609393c3902874afae5200c26165d86b76055f) 的 `mobile/assets/capsule_taxonomy.json`，由 `src/prompt-data.ts` 与 `src/capsule-data.ts` 合并生成 | MIT，Copyright (c) 2026 Langbai；保留 `licenses/CAPSULES_MIT.txt` 并随 Windows/Web 资产打包。只转换为扁平 JSON，未引入 GPL Danbooru CSV。来源、转换及 SHA-256 见 [记录](evidence/prompt-library/capsule-source.json) |
 
 字体 SHA-256：`A3041811A78C361B1DE50F953C805E0244951C21C5BD412F7232EF0D899AF0DA`。
 OFL 文件 SHA-256：`1C05C68C34F9708415AADA51F17E1B0092D2CEA709BF4A94CD38114F9E73D7D9`。

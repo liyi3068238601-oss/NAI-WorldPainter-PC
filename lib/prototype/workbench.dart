@@ -10,6 +10,7 @@ import '../generation/generation_parameters.dart';
 import '../platform/image_picker.dart';
 import 'connection_dialog.dart';
 import 'stored_image.dart';
+import 'prompt_library_panel.dart';
 import 'parameter_number_field.dart';
 import '../editing/image_crop_dialog.dart';
 import '../editing/image_editing_session.dart';
@@ -72,6 +73,7 @@ class _WorkbenchState extends State<Workbench> {
   String query = '';
   int galleryLimit = 60;
   bool libraryBusy = false;
+  bool promptLibraryNegative = false;
   double brush = 22;
   String character = '';
   String position = 'C3';
@@ -305,6 +307,11 @@ class _WorkbenchState extends State<Workbench> {
                                 ? _libraryGallery()
                                 : page == 2
                                 ? _settings()
+                                : page == 4
+                                ? PromptLibraryPanel(
+                                    controller: c,
+                                    initialNegative: promptLibraryNegative,
+                                  )
                                 : Row(
                                     children: [
                                       Expanded(
@@ -413,6 +420,7 @@ class _WorkbenchState extends State<Workbench> {
         ),
       _navItem(Icons.auto_awesome_outlined, '创作工作台', 0, wide),
       _navItem(Icons.grid_view_rounded, '图库与素材', 1, wide),
+      _navItem(Icons.bookmarks_outlined, '提示词素材', 4, wide),
       const SizedBox(height: 12),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -591,7 +599,7 @@ class _WorkbenchState extends State<Workbench> {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            ['创作工作台', '图库与素材', '偏好设置', '图像工具'][page],
+            ['创作工作台', '图库与素材', '偏好设置', '图像工具', '提示词素材'][page],
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),
@@ -1060,6 +1068,16 @@ class _WorkbenchState extends State<Workbench> {
                               const SizedBox(width: 12),
                               _promptTab('负向', true),
                               const Spacer(),
+                              _icon(Icons.bookmarks_outlined, '打开提示词素材', () {
+                                if (scaffold.currentState?.isEndDrawerOpen ??
+                                    false) {
+                                  Navigator.pop(context);
+                                }
+                                setState(() {
+                                  promptLibraryNegative = negativeTab;
+                                  page = 4;
+                                });
+                              }),
                               _icon(
                                 Icons.open_in_full_rounded,
                                 '展开提示词编辑器',

@@ -27,6 +27,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/fonts/OFL.txt
+    - assets/prompts/capsules.json
+    - licenses/CAPSULES_MIT.txt
   fonts:
     - family: NotoSansSC
       fonts:
