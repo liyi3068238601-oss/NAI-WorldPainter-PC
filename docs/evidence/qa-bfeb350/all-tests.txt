@@ -1,0 +1,154 @@
+00:00 +0: loading E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart
+00:00 +0: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: control: generated parameter snapshot preserves fixed seed 0
+00:00 +1: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: control: generated parameter snapshot preserves fixed seed 123
+00:00 +2: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +3: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +4: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +5: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +6: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +7: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +8: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +9: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +10: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +11: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +12: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +13: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +14: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +15: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +16: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +17: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +18: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +19: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +20: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +21: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +22: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +23: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +24: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +25: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:00 +26: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:01 +27: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:01 +28: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:01 +29: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:01 +30: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+00:01 +31: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+QA composite: savedSeed=0, savedParameters={operation: inpaint, model: nai-diffusion-4-5-full, prompt: synthetic QA composite, negative_prompt: , width: 832, height: 1216, steps: 28, scale: 5.0, cfg_rescale: 0.25, sampler: k_euler_ancestral, noise_schedule: karras, seed: null, use_coords: true, characters: [], vibe_references: [], precise_references: [], source_image_id: sha256/e6/e63afa897ae8cac802a4cdac954ba7e8060fdf9f61870b9da4668c906e082007.png, mask_image_id: null, img2img_source_image_id: null, img2img_strength: null, inpaint_strength: 0.6, disabled_original_image: false, color_correct: true}, refillSeed=, refillOperation=GenerationOperation.inpaint, refillCfgRescale=0.25, generationCalls=0
+00:01 +32: E:/NAI-WorldPainter/PC端/test/generation_ui_test.dart: advanced numeric editor follows external refill and validates input
+00:02 +33: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +34: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +35: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +36: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +37: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +38: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +39: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +40: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +41: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +42: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +43: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +44: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +45: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +46: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +47: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +48: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +49: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +50: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +51: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +52: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +53: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+00:02 +54: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+QA composite: savedSeed=0, savedParameters={operation: inpaint, model: nai-diffusion-4-5-full, prompt: synthetic QA composite, negative_prompt: , width: 832, height: 1216, steps: 28, scale: 5.0, cfg_rescale: 0.25, sampler: k_euler_ancestral, noise_schedule: karras, seed: null, use_coords: true, characters: [], vibe_references: [], precise_references: [], source_image_id: sha256/e6/e63afa897ae8cac802a4cdac954ba7e8060fdf9f61870b9da4668c906e082007.png, mask_image_id: null, img2img_source_image_id: null, img2img_strength: null, inpaint_strength: 0.6, disabled_original_image: false, color_correct: true}, refillSeed=, refillOperation=GenerationOperation.inpaint, refillCfgRescale=0.25, generationCalls=0
+00:03 +55: E:/NAI-WorldPainter/PC端/test/generation_ui_test.dart: real generation UI has channel settings, editable advanced parameters and characters
+00:03 +56: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves advanced parameters
+00:03 +57: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves advanced parameters
+00:03 +58: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves advanced parameters
+00:03 +59: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves advanced parameters
+00:04 +60: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves advanced parameters
+00:04 +61: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves advanced parameters
+00:04 +62: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves advanced parameters
+QA composite: savedSeed=0, savedParameters={operation: inpaint, model: nai-diffusion-4-5-full, prompt: synthetic QA composite, negative_prompt: , width: 832, height: 1216, steps: 28, scale: 5.0, cfg_rescale: 0.25, sampler: k_euler_ancestral, noise_schedule: karras, seed: null, use_coords: true, characters: [], vibe_references: [], precise_references: [], source_image_id: sha256/e6/e63afa897ae8cac802a4cdac954ba7e8060fdf9f61870b9da4668c906e082007.png, mask_image_id: null, img2img_source_image_id: null, img2img_strength: null, inpaint_strength: 0.6, disabled_original_image: false, color_correct: true}, refillSeed=, refillOperation=GenerationOperation.inpaint, refillCfgRescale=0.25, generationCalls=0
+00:04 +63: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +64: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +65: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +66: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +67: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +68: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +69: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +70: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +71: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +72: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +73: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +74: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:04 +75: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: region handles move and resize the source-pixel output frame
+00:04 +76: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: region handles move and resize the source-pixel output frame
+00:04 +77: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: region handles move and resize the source-pixel output frame
+00:05 +78: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +79: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +80: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +81: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +82: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +83: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +84: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +85: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +86: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters fits desktop and compact viewports and keeps compact controls reachable
+00:05 +87: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +88: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +89: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +90: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +91: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +92: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +93: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +94: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +95: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +96: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +97: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +98: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +99: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +100: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +101: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +102: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +103: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +103: E:/NAI-WorldPainter/PC端/test/processing/tiled_nonstandard_response_regression_test.dart: NEW regression: accepted smaller returned tile preserves proportional sampling
+TILED_RESAMPLE_EVIDENCE accepted=512x512 requested=1024x1024 output=102x102 redAt100=25 expectedRed=25
+00:06 +104: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:06 +105: E:/NAI-WorldPainter/PC端/test/processing/tiled_img2img_test.dart: feathers overlapping generated tiles and keeps the source canvas size
+00:06 +106: E:/NAI-WorldPainter/PC端/test/processing/tiled_img2img_test.dart: TiledImg2ImgEngine runs tiles in order, reports progress and saves only the composite
+00:06 +107: E:/NAI-WorldPainter/PC端/test/processing/tiled_img2img_test.dart: TiledImg2ImgEngine cancellation after a tile response discards it before saving
+00:06 +108: E:/NAI-WorldPainter/PC端/test/processing/tiled_img2img_test.dart: TiledImg2ImgEngine does not retry a failed tile or save a partial result
+00:06 +109: E:/NAI-WorldPainter/PC端/test/processing/tiled_resampling_contract_test.dart: samples accepted square responses at their returned scale
+00:06 +110: E:/NAI-WorldPainter/PC端/test/processing/tiled_resampling_contract_test.dart: samples accepted square responses at their returned scale
+00:07 +111: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_export_regressions_test.dart: NEW regression: tiled Apply all parameters preserves the submitted base seed
+00:07 +112: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_export_regressions_test.dart: NEW regression: tiled Apply all parameters preserves the submitted base seed
+TILED_SEED_EVIDENCE submitted=123 firstResult=123 refill=123 secondResult=123 wireSeeds=[118203, 118203]
+00:07 +113: E:/NAI-WorldPainter/PC端/test/processing/tiled_resampling_contract_test.dart: keeps padded edge pixels and blends adjacent tile edges
+00:07 +114: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_export_regressions_test.dart: NEW regression: a supported JPEG Director result can be exported through PNG action
+JPEG_EXPORT_EVIDENCE requests=1 saved=sha256/e8/e855c9cf2682aeee1272cdbc2b92b946c378f3a77575911a9e9fb7eea688051a.jpg output=8x8 format=JPEG
+00:07 +115: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:07 +116: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:07 +117: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:07 +118: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:07 +119: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:07 +120: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:07 +121: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:07 +122: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:08 +123: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:08 +124: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:08 +125: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:08 +126: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: fixed seeds replay after refill and reopen
+00:08 +127: E:/NAI-WorldPainter/PC端/test/workbench_controller_test.dart: WorkbenchController prototype state cancellation in the final phase prevents commit and a later run can complete
+00:08 +128: E:/NAI-WorldPainter/PC端/test/workbench_controller_test.dart: WorkbenchController prototype state cancellation in the final phase prevents commit and a later run can complete
+00:08 +129: E:/NAI-WorldPainter/PC端/test/workbench_controller_test.dart: WorkbenchController prototype state cancellation in the final phase prevents commit and a later run can complete
+00:08 +130: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: random base stays blank and records actual tile seeds
+00:08 +131: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: random base stays blank and records actual tile seeds
+00:08 +132: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_replay_test.dart: random base stays blank and records actual tile seeds
+00:08 +133: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:08 +134: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:08 +135: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:08 +136: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:08 +137: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:08 +138: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:08 +139: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:09 +140: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions keeps the prompt draft when navigation collapses and expands
+00:09 +141: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions switches between dark and light themes
+00:10 +142: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions prompt editor cancellation discards edits and apply writes them back
+00:11 +143: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions narrow window exposes the generate button in the settings drawer
+00:11 +144: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions main navigation drawer fits a 640x480 high-DPI viewport
+00:11 +145: All tests passed!

@@ -78,6 +78,104 @@ class SceneResult {
   /// Source, crop and editor snapshot for a derived image. Contains asset IDs only.
   final Map<String, Object?>? editMetadata;
 
+  bool get isComposite => editMetadata?['operation'] == 'inpaintComposite';
+  bool get isTiled => editMetadata?['operation'] == 'tiled';
+  bool get hasEditingDraftSnapshot {
+    final session = editMetadata?['session'];
+    return editMetadata?['parameterScope'] == 'editingDraft' ||
+        (session is Map && session['generationParameters'] is Map);
+  }
+
+  /// Whole-task parameters, including historical records whose top-level
+  /// seed contains a candidate or first tile's actual seed.
+  GenerationParameters? get refillParameters {
+    final tiled = editMetadata?['tiledImg2Img'];
+    final session = editMetadata?['session'];
+    final snapshot = isTiled && tiled is Map
+        ? tiled['submittedParameters']
+        : isComposite && session is Map
+        ? session['generationParameters']
+        : null;
+    if (snapshot is Map) {
+      return GenerationParameters.fromJson(Map<String, dynamic>.from(snapshot));
+    }
+    // Old records stored the primary candidate even when it was hidden. Only
+    // trust candidate parameters when that candidate is the sole visible layer.
+    if (isComposite && !hasEditingDraftSnapshot) {
+      final candidates = session is Map ? session['candidates'] : null;
+      if (candidates is! List) return null;
+      final visible = candidates
+          .whereType<Map>()
+          .where((v) => v['visible'] != false)
+          .toList();
+      if (visible.length != 1) return null;
+      final raw = visible.single['raw'];
+      if (raw is! Map || raw['id'] != (session as Map)['primaryId']) {
+        return null;
+      }
+      final candidateParameters = raw['parameters'];
+      return candidateParameters is Map
+          ? GenerationParameters.fromJson(
+              Map<String, dynamic>.from(candidateParameters),
+            )
+          : parameters;
+    }
+    return parameters;
+  }
+
+  String? get refillNotice {
+    if (isComposite && refillParameters == null) {
+      return '旧合成记录未保存完整草稿；缺失的高级参数、请求尺寸和 Seed 未知，回填时保留当前值。';
+    }
+    if (isComposite && !hasEditingDraftSnapshot) {
+      return '旧合成记录的参数来自候选图，保存时的编辑草稿未知。';
+    }
+    if (isTiled && refillParameters == null) {
+      return '旧分块记录缺少基础 Seed，回填时保留当前 Seed。';
+    }
+    return null;
+  }
+
+  String get seedDescription {
+    if (isComposite || isTiled) {
+      final snapshot = refillParameters;
+      final value = snapshot == null ? '未知' : snapshot.seed?.toString() ?? '随机';
+      return isTiled
+          ? '基础 Seed：$value · 实际 Seed 按图块记录'
+          : '${snapshot != null && !hasEditingDraftSnapshot ? '候选' : '草稿'} Seed：$value · 合成图无单一实际 Seed';
+    }
+    if (const [
+      'director',
+      'upscale',
+      'localSr',
+    ].contains(editMetadata?['operation'])) {
+      final value = parameters == null
+          ? '未知'
+          : parameters!.seed?.toString() ?? '随机';
+      return '生成草稿 Seed：$value · 此处理无独立 Seed';
+    }
+    return isDemo ? 'Seed：演示图片' : '实际 Seed：$seed';
+  }
+
+  List<String> get generationSeedDetails {
+    final tiled = editMetadata?['tiledImg2Img'];
+    if (isTiled && tiled is Map && tiled['executions'] is List) {
+      return (tiled['executions'] as List).indexed.map((entry) {
+        final execution = entry.$2 as Map;
+        final effective = execution['effectiveParameters'] as Map?;
+        return '图块 ${entry.$1 + 1}：${effective?['seed'] ?? '未知'}';
+      }).toList();
+    }
+    final session = editMetadata?['session'];
+    if (isComposite && session is Map && session['candidates'] is List) {
+      return (session['candidates'] as List).indexed.map((entry) {
+        final candidate = entry.$2 as Map, raw = candidate['raw'] as Map;
+        return '图层 ${entry.$1 + 1}${candidate['visible'] == false ? '（隐藏）' : ''}：${raw['seed'] ?? '未知'}';
+      }).toList();
+    }
+    return const [];
+  }
+
   Map<String, Object?> toJson() => {
     'id': id,
     'title': title,
@@ -858,6 +956,10 @@ class WorkbenchController extends ChangeNotifier {
   void applyResult(SceneResult result, {bool promptOnly = false}) {
     if (_disposed || _closing) return;
     final previousProvider = _provider;
+    final previousParameters = parameters, previousSeed = _seedText;
+    final saved = result.refillParameters;
+    final editing = result.editMetadata?['session'];
+    final savedDocument = editing is Map ? editing['document'] : null;
     if (!promptOnly) {
       final prompts = Map<String, Object?>.from(
         _extra['operationPrompts'] as Map? ?? {},
@@ -882,19 +984,48 @@ class WorkbenchController extends ChangeNotifier {
       _steps = result.steps;
       _cfg = result.cfg;
       _advanced =
-          result.parameters ??
-          GenerationParameters(
-            model: modelIds[result.model] ?? result.model,
-            prompt: result.prompt,
-            width: result.width,
-            height: result.height,
-          );
-      if (result.parameters != null) {
-        _width = result.parameters!.width;
-        _height = result.parameters!.height;
+          saved ??
+          (result.isComposite
+              ? previousParameters.copyWith(
+                  operation: GenerationOperation.inpaint,
+                  model: modelIds[result.model] ?? result.model,
+                  prompt: result.prompt,
+                  negativePrompt: result.negative,
+                  steps: result.steps,
+                  scale: result.cfg,
+                  sourceImageId:
+                      (result.editMetadata?['parentAssetRef'] ??
+                              (savedDocument is Map
+                                  ? savedDocument['sourceAssetRef']
+                                  : null))
+                          as String?,
+                  clearMaskImageId: true,
+                )
+              : GenerationParameters(
+                  model: modelIds[result.model] ?? result.model,
+                  prompt: result.prompt,
+                  width: result.width,
+                  height: result.height,
+                ));
+      if (saved != null || result.isComposite) {
+        _width = _advanced.width;
+        _height = _advanced.height;
+        _prompt = _advanced.prompt;
+        _negative = _advanced.negativePrompt ?? '';
+        _model =
+            modelIds.entries
+                .where((entry) => entry.value == _advanced.model)
+                .firstOrNull
+                ?.key ??
+            _advanced.model;
+        _steps = _advanced.steps;
+        _cfg = _advanced.scale;
       }
-      if (!result.isDemo) _seedText = result.seed.toString();
-      final editing = result.editMetadata?['session'];
+      if (result.isComposite || result.isTiled) {
+        _seedText = saved == null ? previousSeed : saved.seed?.toString() ?? '';
+      } else if (!result.isDemo) {
+        _seedText = result.seed.toString();
+      }
       if (editing is Map) {
         _extra['imageEditing'] = jsonDecode(jsonEncode(editing));
       }
@@ -904,8 +1035,8 @@ class WorkbenchController extends ChangeNotifier {
         _validateImageTools(draft);
         // Processing models and local backends belong to the tool settings.
         // Restore the parent generation snapshot when returning to the canvas.
-        if (draft['mode'] != 'tiled' && result.parameters != null) {
-          final parent = result.parameters!;
+        if (draft['mode'] != 'tiled' && saved != null) {
+          final parent = saved;
           _prompt = parent.prompt;
           _negative = parent.negativePrompt ?? '';
           _model =

@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
 import '../media/image_asset_store.dart';
+import '../generation/generation_parameters.dart';
 import '../prototype/workbench_controller.dart';
 import 'inpaint_document.dart';
 import 'inpaint_renderer.dart';
@@ -350,9 +352,16 @@ class ImageEditingSession extends ChangeNotifier {
   Future<InpaintComposite> compose() async {
     final d = document;
     if (d == null) throw const FormatException('请先导入原图');
+    return _compose(d, List<EditCandidate>.of(_candidates));
+  }
+
+  Future<InpaintComposite> _compose(
+    InpaintDocument d,
+    List<EditCandidate> candidates,
+  ) async {
     final source = await assets.read(d.sourceAssetRef);
     final layers = <InpaintLayer>[];
-    for (final c in _candidates.where((c) => c.visible)) {
+    for (final c in candidates.where((c) => c.visible)) {
       layers.add(
         InpaintLayer(
           bytes: await assets.read(c.layerRef),
@@ -364,6 +373,59 @@ class ImageEditingSession extends ChangeNotifier {
       sourceBytes: source,
       document: d,
       layers: layers,
+    );
+  }
+
+  /// Saves the current editing draft, independently of any selected candidate.
+  /// A composite has no single actual generation seed: each candidate's raw
+  /// request remains in the frozen session as its own provenance.
+  Future<SceneResult> saveComposite(
+    GenerationParameters parameters, {
+    required String model,
+    required String provider,
+  }) async {
+    final d = document;
+    if (d == null) throw const FormatException('请先导入原图');
+    final candidates = List<EditCandidate>.of(_candidates);
+    final savedParameters = parameters.copyWith(
+      operation: GenerationOperation.inpaint,
+      sourceImageId: d.sourceAssetRef,
+      clearMaskImageId: true,
+    );
+    final state = Map<String, Object?>.from(
+      jsonDecode(jsonEncode(snapshot())) as Map,
+    );
+    state['generationParameters'] = savedParameters.toJson();
+    final composite = await _compose(d, candidates);
+    final asset = await assets.save(composite.bytes);
+    return SceneResult(
+      id: 'composite-${DateTime.now().microsecondsSinceEpoch}',
+      title: '重绘合成作品',
+      prompt: savedParameters.prompt,
+      negative: savedParameters.negativePrompt ?? '',
+      width: asset.width,
+      height: asset.height,
+      // Kept for schema-1 compatibility; metadata describes its draft role.
+      seed: savedParameters.seed ?? 0,
+      variant: 0,
+      favorite: false,
+      isDemo: false,
+      model: model,
+      provider: provider,
+      steps: savedParameters.steps,
+      cfg: savedParameters.scale,
+      assetRef: asset.assetRef,
+      parameters: savedParameters,
+      editMetadata: {
+        'operation': 'inpaintComposite',
+        'parameterScope': 'editingDraft',
+        'actualSeed': null,
+        'parentAssetRef': d.sourceAssetRef,
+        'parentResultId': state['parentResultId'],
+        'session': state,
+        'originX': composite.originX,
+        'originY': composite.originY,
+      },
     );
   }
 

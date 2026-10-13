@@ -1,0 +1,122 @@
+{
+  "date": "2026-10-13",
+  "baselineCommit": "bfeb35009d9ede7b5cd6549c887c8a686ebe18ef",
+  "report": {
+    "sha256": "78347245ab6d5410e9c03a86c1a93ebf0d217efd0051e64f08400c12b6b0c7b8",
+    "verifiedEntries": 22,
+    "mismatches": 0
+  },
+  "baselineRegressions": {
+    "total": 8,
+    "passed": 2,
+    "failed": 6
+  },
+  "finalTests": {
+    "total": 145,
+    "passed": 145,
+    "failed": 0,
+    "command": "flutter test --no-pub --reporter expanded",
+    "testAndBuildCommandsSerialized": true
+  },
+  "analyzer": "no issues",
+  "format": "99 files, 0 changes",
+  "logNormalization": "LF and trailing whitespace removed; original logs preserved in .tmp/qa-bfeb350",
+  "builds": {
+    "web": "passed; existing Cupertino font-family warning",
+    "windows": "passed; 0 native warnings/errors"
+  },
+  "nativeProbes": {
+    "sqliteUnicodePngAcrossProcesses": "passed",
+    "syntheticCredentialsAcrossProcesses": "passed",
+    "savePngChannelMock": "passed; native dialog not manually operated"
+  },
+  "browser": {
+    "surface": "Codex in-app browser",
+    "origin": "http://127.0.0.1:5080",
+    "mockOrigin": "http://127.0.0.1:5090",
+    "tiledTwoRounds": {
+      "source": [
+        321,
+        160
+      ],
+      "output": [
+        514,
+        256
+      ],
+      "baseSeed": 123,
+      "tileSeedsEachRound": [
+        118203,
+        118204
+      ],
+      "totalRequests": 4
+    },
+    "compositeReopened": {
+      "source": [
+        321,
+        160
+      ],
+      "output": [
+        321,
+        160
+      ],
+      "request": [
+        1024,
+        1024
+      ],
+      "seed": null,
+      "operation": "inpaint",
+      "cfgRescale": 0.25,
+      "candidates": 0,
+      "generationRequests": 0
+    },
+    "directorJpegToPng": {
+      "passed": true,
+      "source": [
+        321,
+        160
+      ],
+      "output": [
+        321,
+        160
+      ],
+      "totalRequests": 2
+    },
+    "viewports": [
+      [
+        1440,
+        900
+      ],
+      [
+        640,
+        480
+      ]
+    ],
+    "temporaryViewportReset": true,
+    "galleryRecordsBefore": 12,
+    "galleryRecordsAfter": 17
+  },
+  "realApiRequests": 0,
+  "anlasConsumed": 0,
+  "sourceHashes": {
+    "lib/editing/image_editing_session.dart": "632bdd04ec15b5d878a102195edbbd37f043821de7812b4090a7e9fbc45be1d2",
+    "lib/platform/image_export.dart": "d19e3ef796650773913164d01401eab11ecc86d865bc865b6800dd7ace2ec5d7",
+    "lib/processing/image_tools_runtime.dart": "2734e0f5152351704ed75d0f0daa3a8200128d98253bfe2e1512bdd3a754738b",
+    "lib/processing/tiled_img2img_rasterizer.dart": "3600bc992ff09b330517211cecc0ff6518f41fe68e6ecaec0e99804db651d25e",
+    "lib/prototype/editing_panels.dart": "38c121a1d4b14512d234e5a3aebc00ed0fcd58ec2027cbf2f335e56dcf9cb726",
+    "lib/prototype/workbench.dart": "8c2cf0bd540af27ba48f33d7b46a802b49853a0f0afd8b267791e58ae533bff5",
+    "lib/prototype/workbench_controller.dart": "f0e71e0bd02de4c416e782ca5d3900b9d436f145e21c71e61bb568840d0647b2",
+    "scripts/mock-image-service.py": "9f407b46670612e931b42d3f7e1cb0dd007df57fe7a44e4b7809fb14f4d906cc"
+  },
+  "sourceHashByteBasis": "Exact working-tree bytes at validation; Windows source line endings may vary on checkout",
+  "artifactHashes": {
+    "build/web/main.dart.js": "cc557239c209f5e0c43f0b66ce927165fcd70507724a2e0cfaad4a24ef7934ee",
+    "build/windows/x64/runner/Release/worldpainter_pc.exe": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b",
+    "build/windows/x64/runner/Release/data/app.so": "6d98cb3a00fb1cda04873688b4f730ba3fb0da99ed72a4c6e2a8ba3baf658307"
+  },
+  "limitations": [
+    "No paid API or image quality validation this turn",
+    "WebP export and nonstandard tile dimensions verified by automated tests",
+    "Full mobile parity not complete",
+    "Windows native save dialog not manually operated"
+  ]
+}

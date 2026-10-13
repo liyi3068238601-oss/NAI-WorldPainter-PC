@@ -119,9 +119,9 @@ class ImageToolsRuntime {
         output = result.asset;
         resultGeneration = result.record.submittedParameters;
         provenance['tiledImg2Img'] = result.record.toJson();
-        seed =
-            result.record.executions.firstOrNull?.effectiveParameters.seed ??
-            seed;
+        // The top-level seed describes the whole task's submitted base seed.
+        // Per-tile actual seeds live in executions, never in this refill field.
+        seed = resultGeneration.seed ?? 0;
         title = '分块高清图生图';
       } else {
         final parameters = PostprocessParameters.fromJson(

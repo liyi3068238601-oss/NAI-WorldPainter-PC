@@ -1966,6 +1966,31 @@ class _WorkbenchState extends State<Workbench> {
                 style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
               ),
               const SizedBox(height: 16),
+              Text(
+                result.seedDescription,
+                style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
+              ),
+              if (result.generationSeedDetails.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                SelectableText(
+                  result.generationSeedDetails.join('  ·  '),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              if (result.refillNotice != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  result.refillNotice!,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
               _label('正向提示词'),
               SelectableText(
                 result.prompt,
@@ -2044,7 +2069,7 @@ class _WorkbenchState extends State<Workbench> {
             setState(
               () => page = result.editMetadata?['imageTools'] is Map ? 3 : 0,
             );
-            _message('已应用图片参数');
+            _message(result.refillNotice ?? '已应用图片参数');
           },
           child: const Text('应用全部参数'),
         ),

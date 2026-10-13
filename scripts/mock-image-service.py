@@ -236,7 +236,7 @@ def _director_result(image, tool):
     return _stamp_local_mock(result, tool)
 
 
-def build_output(payload):
+def build_output(payload, *, director_format='PNG'):
     """Return PNG bytes and safe dimensions/operation metadata for a JSON body."""
     if not isinstance(payload, dict):
         raise MockRequestError(400, 'Expected a JSON object.')
@@ -264,7 +264,17 @@ def build_output(payload):
 
     output_size = result.size
     _validate_dimensions(*output_size, output=director_wire is None)
-    return _encode_png(result), source_size, output_size, operation
+    if director_wire is not None and director_format != 'PNG':
+        if director_format not in ('JPEG', 'WEBP'):
+            raise MockRequestError(400, 'Unsupported fixture image format.')
+        buffer = io.BytesIO()
+        result.convert('RGB').save(buffer, format=director_format)
+        data = buffer.getvalue()
+        if len(data) > MAX_OUTPUT_IMAGE_BYTES:
+            raise MockRequestError(413, 'Mock output exceeds the image-size limit.')
+    else:
+        data = _encode_png(result)
+    return data, source_size, output_size, operation
 
 
 class ProcessingReport:
@@ -377,7 +387,10 @@ class Handler(BaseHTTPRequestHandler):
                     payload = json.loads(body)
                 except (UnicodeDecodeError, json.JSONDecodeError):
                     raise MockRequestError(400, 'Invalid JSON request.') from None
-                png, source_size, output_size, operation = build_output(payload)
+                png, source_size, output_size, operation = build_output(
+                    payload,
+                    director_format=getattr(self.server, 'director_format', 'PNG'),
+                )
 
             response = json.dumps(
                 {'data': [{'b64_json': base64.b64encode(png).decode('ascii')}]},
@@ -402,6 +415,10 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=5090)
+    parser.add_argument('--director-format', choices=('PNG', 'JPEG', 'WEBP'), default='PNG',
+                        help='Synthetic Director response format for export regression testing.')
     args = parser.parse_args()
     REPORT.reset()
-    ThreadingHTTPServer(('127.0.0.1', args.port), Handler).serve_forever()
+    server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
+    server.director_format = args.director_format
+    server.serve_forever()

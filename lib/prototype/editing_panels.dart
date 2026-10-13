@@ -343,42 +343,15 @@ extension _EditingPanels on _WorkbenchState {
     if (_editingBusy) return;
     try {
       _setPreparing(true);
-      final d = editing!.document!, snapshot = editing!.snapshot();
-      final composite = await c.prepareEditing(() => editing!.compose());
-      final asset = await c.prepareEditing(
-        () => c.assets!.save(composite.bytes),
+      final parameters = c.parameters, model = c.model, provider = c.provider;
+      final result = await c.prepareEditing(
+        () => editing!.saveComposite(
+          parameters,
+          model: model,
+          provider: provider,
+        ),
       );
       if (!mounted || c.closing) return;
-      final raw = editing!.candidates
-          .where((v) => v.raw.id == editing!.primaryId)
-          .firstOrNull
-          ?.raw;
-      final result = SceneResult(
-        id: 'composite-${DateTime.now().microsecondsSinceEpoch}',
-        title: '重绘合成作品',
-        prompt: raw?.prompt ?? c.prompt,
-        negative: raw?.negative ?? c.negative,
-        width: asset.width,
-        height: asset.height,
-        seed: raw?.seed ?? int.tryParse(c.seedText) ?? 0,
-        variant: 0,
-        favorite: false,
-        isDemo: false,
-        model: raw?.model ?? c.model,
-        provider: raw?.provider ?? c.provider,
-        steps: raw?.steps ?? c.steps.round(),
-        cfg: raw?.cfg ?? c.cfg,
-        assetRef: asset.assetRef,
-        parameters: raw?.parameters,
-        editMetadata: {
-          'operation': 'inpaintComposite',
-          'parentAssetRef': d.sourceAssetRef,
-          'parentResultId': editing!.parentResultId,
-          'session': snapshot,
-          'originX': composite.originX,
-          'originY': composite.originY,
-        },
-      );
       c.addDerived(result);
       await c.flush();
       _message('可见图层已合成并保存到图库。');

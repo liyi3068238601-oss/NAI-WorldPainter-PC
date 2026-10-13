@@ -4,6 +4,26 @@ import 'package:worldpainter_pc/media/image_asset_store.dart';
 import 'package:worldpainter_pc/prototype/workbench_controller.dart';
 
 void main() {
+  test('non-generating tools never label inherited draft seed as actual', () {
+    for (final mode in ['director', 'upscale', 'localSr']) {
+      final result = SceneResult(
+        id: 'fixture-$mode',
+        title: mode,
+        prompt: '',
+        negative: '',
+        width: 64,
+        height: 64,
+        seed: 0,
+        variant: 0,
+        favorite: false,
+        isDemo: false,
+        parameters: _parentParameters().copyWith(clearSeed: true),
+        editMetadata: {'operation': mode},
+      );
+      expect(result.seedDescription, '生成草稿 Seed：随机 · 此处理无独立 Seed');
+    }
+  });
+
   test('local SR result refills the parent generation settings', () {
     final controller = WorkbenchController();
     addTearDown(controller.dispose);

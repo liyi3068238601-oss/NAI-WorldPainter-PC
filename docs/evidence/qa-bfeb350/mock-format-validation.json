@@ -1,0 +1,23 @@
+[
+  {
+    "format": "PNG",
+    "width": 321,
+    "height": 160,
+    "operation": "director-lineart",
+    "passed": true
+  },
+  {
+    "format": "JPEG",
+    "width": 321,
+    "height": 160,
+    "operation": "director-lineart",
+    "passed": true
+  },
+  {
+    "format": "WEBP",
+    "width": 321,
+    "height": 160,
+    "operation": "director-lineart",
+    "passed": true
+  }
+]

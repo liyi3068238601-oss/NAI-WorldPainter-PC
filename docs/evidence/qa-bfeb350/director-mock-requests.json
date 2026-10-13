@@ -1,0 +1,12 @@
+[
+  {
+    "method": "POST",
+    "path": "/v1/images/generations",
+    "input_width": 321,
+    "input_height": 160,
+    "output_width": 321,
+    "output_height": 160,
+    "operation": "director-declutter",
+    "count": 2
+  }
+]

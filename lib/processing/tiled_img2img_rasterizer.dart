@@ -85,8 +85,10 @@ class TiledImg2ImgRasterSession {
     }
 
     final generated = await _decodeRgba(imageBytes);
-    final scaleX = generated.width / tile.requestWidth;
-    final scaleY = generated.height / tile.requestHeight;
+    // Map output-crop coordinates into the returned image. Multiplication
+    // keeps smaller and larger accepted responses aligned to the request.
+    final responseScaleX = generated.width / tile.requestWidth;
+    final responseScaleY = generated.height / tile.requestHeight;
     final outputCropWidth = (tile.cropWidth * TiledImg2ImgConfig.outputScale)
         .round();
     final outputCropHeight = (tile.cropHeight * TiledImg2ImgConfig.outputScale)
@@ -97,12 +99,18 @@ class TiledImg2ImgRasterSession {
     for (var y = 0; y < outputCropHeight; y++) {
       final canvasY = outputCropY + y;
       if (canvasY >= plan.outputHeight) continue;
-      final localY = math.min(generated.height - 1, (y / scaleY).round());
+      final localY = math.min(
+        generated.height - 1,
+        (y * responseScaleY).round(),
+      );
       final edgeY = math.min(y, outputCropHeight - 1 - y);
       for (var x = 0; x < outputCropWidth; x++) {
         final canvasX = outputCropX + x;
         if (canvasX >= plan.outputWidth) continue;
-        final localX = math.min(generated.width - 1, (x / scaleX).round());
+        final localX = math.min(
+          generated.width - 1,
+          (x * responseScaleX).round(),
+        );
         final edgeX = math.min(x, outputCropWidth - 1 - x);
         final feather = math.min(
           1.0,
