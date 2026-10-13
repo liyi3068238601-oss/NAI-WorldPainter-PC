@@ -67,7 +67,8 @@ Future<ImageAssetStore> openImageAssetStore({
   }
 }
 
-class _SQLiteWebImageAssetStore extends SerializedImageAssetStore {
+class _SQLiteWebImageAssetStore extends SerializedImageAssetStore
+    implements ImageAssetMaintenance {
   _SQLiteWebImageAssetStore({
     required this._database,
     required this.maximumImageBytes,
@@ -137,6 +138,41 @@ class _SQLiteWebImageAssetStore extends SerializedImageAssetStore {
       _verifyRow(rows.single, assetRef, bytes);
       verifyStoredAsset(bytes, ref, maximumBytes: maximumImageBytes);
       return Uint8List.fromList(bytes);
+    });
+  }
+
+  @override
+  Future<List<String>> listAssets() => runSerialized(() async {
+    final rows = await _database.query(
+      _tableName,
+      columns: <String>['id', 'asset_ref', 'sha256'],
+    );
+    final assets = <String>{};
+    for (final row in rows) {
+      final assetRef = row['asset_ref'];
+      if (assetRef is! String) continue;
+      try {
+        final ref = parseImageAssetRef(assetRef);
+        if (row['id'] == ref.sha256 && row['sha256'] == ref.sha256) {
+          assets.add(ref.value);
+        }
+      } on ImageAssetValidationException {
+        // Invalid rows cannot authorize an asset read or removal.
+      }
+    }
+    final result = assets.toList()..sort();
+    return result;
+  });
+
+  @override
+  Future<void> removeAsset(String assetRef) async {
+    final ref = parseImageAssetRef(assetRef);
+    await runSerialized(() async {
+      await _database.delete(
+        _tableName,
+        where: 'asset_ref = ?',
+        whereArgs: <Object?>[ref.value],
+      );
     });
   }
 

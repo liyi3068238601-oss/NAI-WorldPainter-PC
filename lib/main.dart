@@ -12,6 +12,7 @@ import 'security/credential_vault.dart';
 import 'security/credential_vault_probe.dart';
 
 import 'prototype/workbench.dart';
+import 'references/vibe_library.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,17 @@ class _WorkspaceBootstrapState extends State<WorkspaceBootstrap> {
     try {
       assets = await openImageAssetStore();
       final vault = createCredentialVault();
-      final runtime = GenerationRuntime(assets: assets, vault: vault);
+      final restored = await store.load();
+      final library = restored?.data['vibeLibrary'] is Map
+          ? VibeLibrary.fromJson(
+              Map<String, dynamic>.from(restored!.data['vibeLibrary'] as Map),
+            )
+          : VibeLibrary();
+      final runtime = GenerationRuntime(
+        assets: assets,
+        vault: vault,
+        vibeLibrary: library,
+      );
       final tools = ImageToolsRuntime(
         assets: assets,
         vault: vault,
@@ -49,7 +60,9 @@ class _WorkspaceBootstrapState extends State<WorkspaceBootstrap> {
       );
       return WorkbenchController(
         store: store,
-        restored: await store.load(),
+        restored: restored,
+        vibeLibrary: library,
+        encodeVibe: runtime.encodeVibe,
         assets: assets,
         vault: vault,
         generateImage: runtime.generate,

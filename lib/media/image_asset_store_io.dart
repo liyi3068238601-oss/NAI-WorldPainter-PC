@@ -33,7 +33,8 @@ Future<ImageAssetStore> openImageAssetStore({
   );
 }
 
-class _FileImageAssetStore extends SerializedImageAssetStore {
+class _FileImageAssetStore extends SerializedImageAssetStore
+    implements ImageAssetMaintenance {
   _FileImageAssetStore({
     required this.assetDirectory,
     required this.canonicalAssetDirectory,
@@ -61,6 +62,15 @@ class _FileImageAssetStore extends SerializedImageAssetStore {
   Future<Uint8List> read(String assetRef) async {
     final ref = parseImageAssetRef(assetRef);
     return runSerialized(() => _readRef(ref));
+  }
+
+  @override
+  Future<List<String>> listAssets() => runSerialized(_listAssets);
+
+  @override
+  Future<void> removeAsset(String assetRef) async {
+    final ref = parseImageAssetRef(assetRef);
+    await runSerialized(() => _removeAsset(ref));
   }
 
   @override
@@ -134,6 +144,105 @@ class _FileImageAssetStore extends SerializedImageAssetStore {
     return _readFile(File(path), ref);
   }
 
+  Future<List<String>> _listAssets() async {
+    final rootType = await FileSystemEntity.type(
+      assetDirectory,
+      followLinks: false,
+    );
+    if (rootType == FileSystemEntityType.notFound) return <String>[];
+    if (rootType != FileSystemEntityType.directory) {
+      throw const ImageAssetIntegrityException(
+        'The managed image asset path is not a regular directory.',
+      );
+    }
+    final resolvedRoot = await Directory(assetDirectory).resolveSymbolicLinks();
+    if (!_isExpectedPath(resolvedRoot, canonicalAssetDirectory)) {
+      throw const ImageAssetIntegrityException(
+        'The managed image asset directory resolves outside its original path.',
+      );
+    }
+
+    final shaDirectory = p.join(assetDirectory, 'sha256');
+    final shaType = await FileSystemEntity.type(
+      shaDirectory,
+      followLinks: false,
+    );
+    if (shaType == FileSystemEntityType.notFound) return <String>[];
+    if (shaType != FileSystemEntityType.directory) {
+      throw const ImageAssetIntegrityException(
+        'The image asset namespace is not a regular directory.',
+      );
+    }
+    final resolvedShaDirectory = await Directory(shaDirectory)
+        .resolveSymbolicLinks();
+    if (!_isExpectedPath(
+      resolvedShaDirectory,
+      p.join(canonicalAssetDirectory, 'sha256'),
+    )) {
+      throw const ImageAssetIntegrityException(
+        'The image asset namespace resolves outside its managed directory.',
+      );
+    }
+
+    final assets = <String>{};
+    await for (final prefixEntity in Directory(
+      shaDirectory,
+    ).list(followLinks: false)) {
+      final prefix = p.basename(prefixEntity.path);
+      if (!RegExp(r'^[0-9a-f]{2}$').hasMatch(prefix) ||
+          await FileSystemEntity.type(prefixEntity.path, followLinks: false) !=
+              FileSystemEntityType.directory) {
+        continue;
+      }
+
+      final resolvedPrefix = await Directory(prefixEntity.path)
+          .resolveSymbolicLinks();
+      if (!_isExpectedPath(
+        resolvedPrefix,
+        p.join(canonicalAssetDirectory, 'sha256', prefix),
+      )) {
+        continue;
+      }
+
+      await for (final fileEntity in Directory(
+        prefixEntity.path,
+      ).list(followLinks: false)) {
+        if (await FileSystemEntity.type(fileEntity.path, followLinks: false) !=
+            FileSystemEntityType.file) {
+          continue;
+        }
+        final assetRef = 'sha256/$prefix/${p.basename(fileEntity.path)}';
+        try {
+          final ref = parseImageAssetRef(assetRef);
+          if (ref.sha256.substring(0, 2) == prefix) assets.add(ref.value);
+        } on ImageAssetValidationException {
+          // Ignore unrelated or malformed entries in the managed directory.
+        }
+      }
+    }
+    final result = assets.toList()..sort();
+    return result;
+  }
+
+  Future<void> _removeAsset(ImageAssetRef ref) async {
+    final path = await _assetPath(ref, createDirectories: false);
+    final type = await FileSystemEntity.type(path, followLinks: false);
+    if (type == FileSystemEntityType.notFound) return;
+    if (type != FileSystemEntityType.file) {
+      throw const ImageAssetIntegrityException(
+        'The image asset path is not a regular managed file.',
+      );
+    }
+    try {
+      await File(path).delete();
+    } on FileSystemException catch (error) {
+      throw ImageAssetStoreException(
+        'The image asset could not be removed from its managed directory.',
+        cause: error,
+      );
+    }
+  }
+
   Future<Uint8List> _readFile(File file, ImageAssetRef ref) async {
     final bytes = BytesBuilder(copy: false);
     var totalBytes = 0;
@@ -166,7 +275,9 @@ class _FileImageAssetStore extends SerializedImageAssetStore {
     required bool createDirectories,
   }) async {
     var currentDirectory = assetDirectory;
+    final managedSegments = <String>[];
     for (final segment in <String>['sha256', ref.sha256.substring(0, 2)]) {
+      managedSegments.add(segment);
       currentDirectory = p.join(currentDirectory, segment);
       final type = await FileSystemEntity.type(
         currentDirectory,
@@ -185,25 +296,26 @@ class _FileImageAssetStore extends SerializedImageAssetStore {
 
       final canonicalDirectory = await Directory(currentDirectory)
           .resolveSymbolicLinks();
-      if (!_isWithinManagedDirectory(canonicalDirectory)) {
+      if (!_isExpectedPath(
+        canonicalDirectory,
+        p.joinAll(<String>[canonicalAssetDirectory, ...managedSegments]),
+      )) {
         throw const ImageAssetIntegrityException(
-          'An image asset directory resolves outside its managed directory.',
+          'An image asset directory does not resolve to its managed path.',
         );
       }
     }
     return p.join(currentDirectory, '${ref.sha256}.${ref.extension}');
   }
 
-  bool _isWithinManagedDirectory(String path) {
+  bool _isExpectedPath(String path, String expected) {
     final normalizedPath = p.normalize(p.absolute(path));
-    final normalizedRoot = p.normalize(p.absolute(canonicalAssetDirectory));
+    final normalizedExpected = p.normalize(p.absolute(expected));
     if (Platform.isWindows) {
       final candidate = normalizedPath.toLowerCase();
-      final root = normalizedRoot.toLowerCase();
-      return candidate == root || p.isWithin(root, candidate);
+      return candidate == normalizedExpected.toLowerCase();
     }
-    return normalizedPath == normalizedRoot ||
-        p.isWithin(normalizedRoot, normalizedPath);
+    return normalizedPath == normalizedExpected;
   }
 
   Future<File> _createTemporaryFile(String directory, String digest) async {

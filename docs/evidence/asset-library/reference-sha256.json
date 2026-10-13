@@ -1,0 +1,73 @@
+[
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\domain\\entities\\vibe_encoding.dart",
+    "repository": "mobile",
+    "sha256": "e67a3952d48d897782424c4269d8dbae6417a4a7dd8813a8e41ce5623836c1d8",
+    "copied": false
+  },
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\data\\models\\vibe_encoding_model.dart",
+    "repository": "mobile",
+    "sha256": "2391feaad144a1018a44732f5afcd0c828dc08d1293c153f1e379db92f83a94b",
+    "copied": false
+  },
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\domain\\repositories\\vibe_encoding_repository.dart",
+    "repository": "mobile",
+    "sha256": "8340d5c6a8b0968ee575cf030ca027f5882b4a26ece3ca60b362b5a21350d957",
+    "copied": false
+  },
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\data\\repositories\\vibe_encoding_repository_impl.dart",
+    "repository": "mobile",
+    "sha256": "1e73d43a77c40c2bd83d62f81bef09272967398671ab1a0c91d96f4d6c75c743",
+    "copied": false
+  },
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\domain\\usecases\\manage_vibe_encodings.dart",
+    "repository": "mobile",
+    "sha256": "520f7e4ff6ad85b04888ddd01f9d70782e9d7e901423e948e8e27fa02d9354b9",
+    "copied": false
+  },
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\presentation\\viewmodels\\vibe_encoding_viewmodel.dart",
+    "repository": "mobile",
+    "sha256": "4beba85523c38ee1a7496853bdb51957c9ecec82f8948165a324f80209eba13c",
+    "copied": false
+  },
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\presentation\\pages\\vibe_encoding_library_page.dart",
+    "repository": "mobile",
+    "sha256": "c3535ded6f0d1013befea1c7f400140fad90333ed94c620bd99723878b7fdec9",
+    "copied": false
+  },
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\data\\datasources\\local\\nai_metadata_parser.dart",
+    "repository": "mobile",
+    "sha256": "6133fe42b7c4bd896e422e01a90e6ca774cd94ba949f6849275692df2f89210d",
+    "copied": false
+  },
+  {
+    "commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+    "path": "lib\\data\\repositories\\history_repository_impl.dart",
+    "repository": "mobile",
+    "sha256": "a2f0a653f1023640ce2186174a11774cea9fafbd934ee5db3d48d52eb6f69887",
+    "copied": false
+  },
+  {
+    "sha256": "32f862cff6c92f4f3833f75a38f2cb820ff77dbec77c745202a73922b8c0fb7e",
+    "repository": "YILING0013/novelai_local_web",
+    "copied": false,
+    "path": "nai_flask/api_utils/image_metadata.py",
+    "commit": "aa0fcbe477eae0a703ec47740785f9419d7d5cbe",
+    "license": "AGPL-3.0 - format behavior reference only"
+  }
+]

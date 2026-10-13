@@ -1,0 +1,3 @@
+00:00 +0: loading E:/NAI-WorldPainter/PC端/test/references/vibe_library_persistence_test.dart
+00:00 +0: controller persists the Vibe cache through a SQLite reopen
+00:00 +1: All tests passed!

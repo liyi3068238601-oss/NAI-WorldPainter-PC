@@ -17,6 +17,27 @@ abstract interface class ImageAssetStore {
   Future<void> close();
 }
 
+/// Optional lifecycle operations for stores that can enumerate and remove
+/// their own managed assets.
+///
+/// This is deliberately separate from [ImageAssetStore] so lightweight test
+/// stores and callers that only need save/read do not need to implement asset
+/// maintenance.
+abstract interface class ImageAssetMaintenance {
+  /// Lists valid opaque references owned by this store.
+  ///
+  /// Implementations must omit arbitrary files, malformed references, and
+  /// symbolic links. The returned values can be passed to [ImageAssetStore.read]
+  /// or [removeAsset].
+  Future<List<String>> listAssets();
+
+  /// Removes exactly the managed asset addressed by [assetRef].
+  ///
+  /// Missing assets are ignored. Invalid references and paths that are not
+  /// regular managed files are rejected.
+  Future<void> removeAsset(String assetRef);
+}
+
 class ImageAssetStoreException implements Exception {
   const ImageAssetStoreException(this.message, {this.cause});
 

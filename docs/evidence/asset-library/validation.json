@@ -1,0 +1,57 @@
+{
+  "analyze": "No issues found",
+  "artifacts": [
+    {
+      "bytes": 3511883,
+      "path": "build\\web\\main.dart.js",
+      "sha256": "9a4de025c0134e275de2118132c0af134d4ea6fa56f9f43b3838c5f4807da4fb"
+    },
+    {
+      "bytes": 152576,
+      "path": "build\\windows\\x64\\runner\\Release\\worldpainter_pc.exe",
+      "sha256": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b"
+    },
+    {
+      "bytes": 8274824,
+      "path": "build\\windows\\x64\\runner\\Release\\data\\app.so",
+      "sha256": "fc3412d3f337f18424c8aefe04b97dae57ffce4a59604e07f4c9f4c3f112e5f3"
+    }
+  ],
+  "webBuild": "PASS",
+  "browser": {
+    "reason": "Current tool host references missing browser/26.1007.21434/scripts/browser-service.mjs; installed browser/26.930.61225. Reinstalled and retried.",
+    "status": "BLOCKED"
+  },
+  "baseline": "b85b1146927799935270321e4c0a59b98e5b5cd7",
+  "anlasSpent": 0,
+  "windowsStorageProbe": "PASS: separate hidden write/read processes",
+  "windowsCredentialProbe": "PASS: synthetic credential only, removed",
+  "tests": {
+    "passed": 190,
+    "additional": "persistence-recheck.txt passes after relocating fixture under workspace",
+    "limitedAssertions": [
+      "Windows symlink creation denied; symlink branch skipped"
+    ],
+    "log": "tests-final.txt",
+    "failed": 0
+  },
+  "visualReview": {
+    "viewports": [
+      "1440x900 DPR1",
+      "640x480 DPR2"
+    ],
+    "type": "Flutter widget rendering",
+    "reviewed": true,
+    "browserInteraction": false
+  },
+  "remaining": [
+    "In-app browser interaction and animation QA",
+    "Windows visible dialogs and final installer",
+    "Large library performance",
+    "Cross-process concurrent maintenance",
+    "Full mobile feature parity"
+  ],
+  "realApiRequests": 0,
+  "date": "2026-10-13T21:02:31.9686213+08:00",
+  "windowsBuild": "PASS"
+}

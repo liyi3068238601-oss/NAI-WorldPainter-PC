@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,10 +21,16 @@ import '../generation/service_connection.dart';
 import '../processing/postprocess_parameters.dart';
 import '../processing/tiled_img2img_layout.dart';
 import '../processing/image_comparison.dart';
+import '../metadata/image_metadata_parser.dart';
+import '../media/image_asset_maintenance.dart';
+import 'metadata_selection_dialog.dart';
+import '../references/vibe_library.dart';
 
 part 'generation_panels.dart';
 part 'editing_panels.dart';
 part 'image_tools_panel.dart';
+part 'library_panels.dart';
+part 'vibe_library_panel.dart';
 
 class Workbench extends StatefulWidget {
   const Workbench({
@@ -43,6 +50,10 @@ class Workbench extends StatefulWidget {
 }
 
 class _WorkbenchState extends State<Workbench> {
+  void _refresh(VoidCallback action) {
+    if (mounted) setState(action);
+  }
+
   late final c = widget.controller;
   final positive = TextEditingController();
   final negative = TextEditingController();
@@ -59,6 +70,8 @@ class _WorkbenchState extends State<Workbench> {
   int page = 0;
   String group = '基础';
   String query = '';
+  int galleryLimit = 60;
+  bool libraryBusy = false;
   double brush = 22;
   String character = '';
   String position = 'C3';
@@ -235,92 +248,95 @@ class _WorkbenchState extends State<Workbench> {
   );
 
   @override
-  Widget build(BuildContext context) => Form(
-    child: CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
-          _submit();
+  Widget build(BuildContext context) => AbsorbPointer(
+    absorbing: c.maintainingAssets,
+    child: Form(
+      child: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
+            _submit();
+          },
         },
-      },
-      child: LayoutBuilder(
-        builder: (context, bounds) {
-          final tiny = bounds.maxWidth < 700;
-          final inlinePanel = bounds.maxWidth >= 1060;
-          final navOpen = expandedNav ?? bounds.maxWidth >= 1360;
-          final navWidth = tiny
-              ? 0.0
-              : navOpen
-              ? 200.0
-              : 72.0;
-          return Scaffold(
-            key: scaffold,
-            drawer: tiny ? Drawer(child: _navigation(true)) : null,
-            endDrawer: SizedBox(
-              width: math.min(400, bounds.maxWidth),
-              child: Drawer(child: _parameters(drawer: true)),
-            ),
-            body: SafeArea(
-              child: Row(
-                children: [
-                  if (!tiny)
-                    AnimatedContainer(
-                      duration: motion,
-                      curve: Curves.easeOutCubic,
-                      width: navWidth,
-                      clipBehavior: Clip.hardEdge,
-                      decoration: BoxDecoration(
-                        color: colors.surface.withValues(alpha: .55),
-                        border: Border(
-                          right: BorderSide(color: colors.outlineVariant),
-                        ),
-                      ),
-                      child: OverflowBox(
-                        alignment: Alignment.topLeft,
-                        minWidth: navWidth,
-                        maxWidth: navWidth,
-                        child: _navigation(navOpen),
-                      ),
-                    ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _topBar(tiny, inlinePanel),
-                        Expanded(
-                          child: page == 1
-                              ? _gallery()
-                              : page == 2
-                              ? _settings()
-                              : Row(
-                                  children: [
-                                    Expanded(
-                                      child: page == 3
-                                          ? _imageToolsWorkspace()
-                                          : _canvasWorkspace(),
-                                    ),
-                                    if (inlinePanel)
-                                      SizedBox(
-                                        width: 380,
-                                        child: Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                            0,
-                                            16,
-                                            16,
-                                            16,
-                                          ),
-                                          child: _parameters(),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+        child: LayoutBuilder(
+          builder: (context, bounds) {
+            final tiny = bounds.maxWidth < 700;
+            final inlinePanel = bounds.maxWidth >= 1060;
+            final navOpen = expandedNav ?? bounds.maxWidth >= 1360;
+            final navWidth = tiny
+                ? 0.0
+                : navOpen
+                ? 200.0
+                : 72.0;
+            return Scaffold(
+              key: scaffold,
+              drawer: tiny ? Drawer(child: _navigation(true)) : null,
+              endDrawer: SizedBox(
+                width: math.min(400, bounds.maxWidth),
+                child: Drawer(child: _parameters(drawer: true)),
               ),
-            ),
-          );
-        },
+              body: SafeArea(
+                child: Row(
+                  children: [
+                    if (!tiny)
+                      AnimatedContainer(
+                        duration: motion,
+                        curve: Curves.easeOutCubic,
+                        width: navWidth,
+                        clipBehavior: Clip.hardEdge,
+                        decoration: BoxDecoration(
+                          color: colors.surface.withValues(alpha: .55),
+                          border: Border(
+                            right: BorderSide(color: colors.outlineVariant),
+                          ),
+                        ),
+                        child: OverflowBox(
+                          alignment: Alignment.topLeft,
+                          minWidth: navWidth,
+                          maxWidth: navWidth,
+                          child: _navigation(navOpen),
+                        ),
+                      ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _topBar(tiny, inlinePanel),
+                          Expanded(
+                            child: page == 1
+                                ? _libraryGallery()
+                                : page == 2
+                                ? _settings()
+                                : Row(
+                                    children: [
+                                      Expanded(
+                                        child: page == 3
+                                            ? _imageToolsWorkspace()
+                                            : _canvasWorkspace(),
+                                      ),
+                                      if (inlinePanel)
+                                        SizedBox(
+                                          width: 380,
+                                          child: Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                              0,
+                                              16,
+                                              16,
+                                              16,
+                                            ),
+                                            child: _parameters(),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     ),
   );
@@ -1558,130 +1574,6 @@ class _WorkbenchState extends State<Workbench> {
     ],
   );
 
-  Widget _gallery() {
-    final results = c.results
-        .where(
-          (r) =>
-              (!favoritesOnly || r.favorite) &&
-              (r.title.contains(query) ||
-                  r.prompt.toLowerCase().contains(query.toLowerCase())),
-        )
-        .toList();
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '图库与素材',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 7),
-          _muted('把每一次灵感，留在触手可及的地方。'),
-          const SizedBox(height: 22),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  initialValue: query,
-                  onChanged: (v) => setState(() => query = v),
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search_rounded, size: 18),
-                    hintText: '搜索作品名称或提示词',
-                    labelText: '搜索图库',
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              FilterChip(
-                label: const Text('收藏', style: TextStyle(fontSize: 11)),
-                selected: favoritesOnly,
-                onSelected: (v) => setState(() => favoritesOnly = v),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          _muted('${results.length} 件作品 · ${c.hasStore ? '本地工作区' : '当前会话'}'),
-          const SizedBox(height: 14),
-          Expanded(
-            child: results.isEmpty
-                ? Center(child: _muted('没有匹配的作品，试试其他关键词。'))
-                : GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 270,
-                          childAspectRatio: .77,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
-                    itemCount: results.length,
-                    itemBuilder: (context, i) {
-                      final r = results[i];
-                      return Material(
-                        color: colors.surface,
-                        borderRadius: BorderRadius.circular(13),
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: () => _resultDialog(r),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    _art(r),
-                                    Positioned(
-                                      top: 8,
-                                      left: 8,
-                                      child: _badge(r.isDemo ? '示意图' : '本地原图'),
-                                    ),
-                                    Positioned(
-                                      top: 4,
-                                      right: 4,
-                                      child: IconButton(
-                                        tooltip: '收藏 ${r.title}',
-                                        onPressed: () => c.toggleFavorite(r.id),
-                                        icon: Icon(
-                                          r.favorite
-                                              ? Icons.favorite_rounded
-                                              : Icons.favorite_border_rounded,
-                                          color: Colors.white,
-                                          size: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(13),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        r.title,
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                    ),
-                                    _muted(
-                                      '${r.width} × ${r.height}',
-                                      size: 10,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _settings() => Align(
     alignment: Alignment.topCenter,
     child: ConstrainedBox(
@@ -1962,7 +1854,9 @@ class _WorkbenchState extends State<Workbench> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${result.provider}  ·  步数 ${result.steps}  ·  CFG ${result.cfg.toStringAsFixed(1)}',
+                result.isImported
+                    ? '本地导入 · 未记录的生成参数为未知'
+                    : '${result.provider}  ·  步数 ${result.steps}  ·  CFG ${result.cfg.toStringAsFixed(1)}',
                 style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
               ),
               const SizedBox(height: 16),
@@ -2002,11 +1896,51 @@ class _WorkbenchState extends State<Workbench> {
                 result.negative,
                 style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
               ),
+              if (result.refillParameters != null) ...[
+                const SizedBox(height: 14),
+                _label('高级参数'),
+                SelectableText(
+                  '采样器 ${result.refillParameters!.sampler} · 噪声 ${result.refillParameters!.noiseSchedule}\nCFG Rescale ${result.refillParameters!.cfgRescale} · 请求 ${result.refillParameters!.width} × ${result.refillParameters!.height}',
+                  style: const TextStyle(fontSize: 11),
+                ),
+                for (final role in result.refillParameters!.characters)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: SelectableText(
+                      '角色：${role.prompt}\n负向：${role.negativePrompt ?? ''}\n位置：${role.centerX ?? '自动'}, ${role.centerY ?? '自动'}',
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
       ),
       actions: [
+        if (result.assetRef != null && c.assets != null) ...[
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _inspectMetadata(result);
+            },
+            child: const Text('读取图片参数'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                final bytes = await c.assets!.read(result.assetRef!);
+                final saved = await exportImage(
+                  bytes,
+                  suggestedName: '绘世-${result.title}.png',
+                );
+                if (mounted && saved) _message('图片已另存 PNG');
+              } catch (_) {
+                if (mounted) _message('另存失败，原图与记录仍保留');
+              }
+            },
+            child: const Text('另存 PNG'),
+          ),
+        ],
         TextButton(
           onPressed: () => Navigator.pop(dialogContext),
           child: const Text('关闭'),
@@ -2063,6 +1997,11 @@ class _WorkbenchState extends State<Workbench> {
         ),
         FilledButton(
           onPressed: () {
+            if (result.isImported) {
+              Navigator.pop(dialogContext);
+              _chooseMetadata(result.importedMetadata ?? ImageMetadataResult());
+              return;
+            }
             c.applyResult(result);
             _select(result);
             Navigator.pop(dialogContext);

@@ -1,7 +1,9 @@
 part of 'workbench.dart';
 
 extension _GenerationPanels on _WorkbenchState {
-  Widget _art(SceneResult result) => result.assetRef != null && c.assets != null
+  Widget _art(SceneResult result) => result.id == 'empty-workspace'
+      ? Center(child: _muted('导入图片，或开始下一幅创作'))
+      : result.assetRef != null && c.assets != null
       ? StoredImage(store: c.assets!, assetRef: result.assetRef!)
       : SceneArt(variant: result.variant);
 
@@ -38,12 +40,14 @@ extension _GenerationPanels on _WorkbenchState {
 
   Future<String?> _importImage({bool select = false}) async {
     try {
-      final bytes = await pickImage();
-      if (bytes == null || c.assets == null) return null;
-      final asset = await c.assets!.save(bytes);
-      if (!mounted || c.closing) return null;
-      if (select) c.addImported(asset);
-      return asset.assetRef;
+      return await c.prepareEditing(() async {
+        final bytes = await pickImage();
+        if (bytes == null || c.assets == null || c.closing) return null;
+        final asset = await c.assets!.save(bytes);
+        if (!mounted || c.closing) return null;
+        if (select) c.addImported(asset);
+        return asset.assetRef;
+      });
     } catch (_) {
       if (mounted) _message('图片读取失败，请选择有效的 PNG、JPEG 或 WebP（不超过 30 MB）。');
       return null;
@@ -356,7 +360,9 @@ extension _GenerationPanels on _WorkbenchState {
         SizedBox(
           width: 52,
           height: 52,
-          child: StoredImage(store: c.assets!, assetRef: ref),
+          child: ref.isEmpty
+              ? Icon(Icons.auto_awesome, color: colors.primary)
+              : StoredImage(store: c.assets!, assetRef: ref),
         ),
         const SizedBox(width: 10),
         Expanded(child: Text(label, style: const TextStyle(fontSize: 11))),
@@ -418,44 +424,75 @@ extension _GenerationPanels on _WorkbenchState {
         ],
         const SizedBox(height: 18),
         _label('Vibe 风格参考'),
+        TextButton.icon(
+          onPressed: _openVibeLibrary,
+          icon: const Icon(Icons.collections_bookmark_outlined, size: 16),
+          label: const Text('打开 Vibe 编码库'),
+        ),
+        if (c.encodingVibe)
+          TextButton.icon(
+            onPressed: c.cancelVibeEncoding,
+            icon: const Icon(Icons.stop_circle_outlined, size: 16),
+            label: const Text('取消 Vibe 编码'),
+          ),
         for (var i = 0; i < p.vibeReferences.length; i++) ...[
           _assetRow(p.vibeReferences[i].assetId, 'Vibe ${i + 1}', () {
             final refs = [...c.parameters.vibeReferences]..removeAt(i);
             c.updateAdvanced(c.parameters.copyWith(vibeReferences: refs));
           }),
+          TextButton(
+            onPressed: c.encodingVibe || c.generating
+                ? null
+                : () => _saveVibeToLibrary(
+                    p.vibeReferences[i],
+                    referenceIndex: i,
+                  ),
+            child: Text(
+              p.vibeReferences[i].assetId.isEmpty ? '确认来源并保存编码' : '编码并保存到库',
+            ),
+          ),
           _number('Vibe ${i + 1} 强度', p.vibeReferences[i].strength, (v) {
             final refs = [...c.parameters.vibeReferences];
             refs[i] = refs[i].copyWith(strength: v.toDouble());
             c.updateAdvanced(c.parameters.copyWith(vibeReferences: refs));
           }, max: 1),
-          _number(
-            'Vibe ${i + 1} 信息提取',
-            p.vibeReferences[i].informationExtracted,
-            (v) {
-              final refs = [...c.parameters.vibeReferences];
-              refs[i] = refs[i].copyWith(
-                informationExtracted: v.toDouble(),
-                clearEncodedVibe: true,
-              );
-              c.updateAdvanced(c.parameters.copyWith(vibeReferences: refs));
-            },
-            max: 1,
-          ),
+          if (p.vibeReferences[i].assetId.isEmpty)
+            Text('信息提取：${p.vibeReferences[i].informationExtracted}（无源图，固定值）')
+          else
+            _number(
+              'Vibe ${i + 1} 信息提取',
+              p.vibeReferences[i].informationExtracted,
+              (v) {
+                final refs = [...c.parameters.vibeReferences];
+                if (refs[i].assetId.isEmpty) {
+                  _message('此编码没有源图，信息提取值不能重新计算。请重新选择原图编码。');
+                  return;
+                }
+                refs[i] = refs[i].copyWith(
+                  informationExtracted: v.toDouble(),
+                  clearEncodedVibe: true,
+                );
+                c.updateAdvanced(c.parameters.copyWith(vibeReferences: refs));
+              },
+              max: 1,
+            ),
         ],
         OutlinedButton.icon(
-          onPressed: () async {
-            final ref = await _importImage();
-            if (ref != null) {
-              c.updateAdvanced(
-                c.parameters.copyWith(
-                  vibeReferences: [
-                    ...c.parameters.vibeReferences,
-                    VibeReference(assetId: ref),
-                  ],
-                ),
-              );
-            }
-          },
+          onPressed: p.vibeReferences.length >= 4
+              ? null
+              : () async {
+                  final ref = await _importImage();
+                  if (ref != null) {
+                    c.updateAdvanced(
+                      c.parameters.copyWith(
+                        vibeReferences: [
+                          ...c.parameters.vibeReferences,
+                          VibeReference(assetId: ref),
+                        ],
+                      ),
+                    );
+                  }
+                },
           icon: const Icon(Icons.add, size: 16),
           label: const Text('添加 Vibe'),
         ),

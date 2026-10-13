@@ -11,6 +11,17 @@ import '../media/image_asset_store.dart';
 import '../security/credential_vault.dart';
 import '../editing/inpaint_document.dart';
 import '../processing/postprocess_parameters.dart';
+import '../metadata/image_metadata_parser.dart';
+import '../references/vibe_library.dart';
+
+typedef EncodeVibe = Future<VibeLibraryEntry> Function({
+  required String sourceAssetRef,
+  required String title,
+  required String model,
+  required ServiceConnection connection,
+  double informationExtracted,
+  double strength,
+});
 
 typedef GenerateImage = Future<SceneResult> Function(
   GenerationParameters parameters,
@@ -56,6 +67,7 @@ class SceneResult {
     this.assetRef,
     this.parameters,
     this.editMetadata,
+    this.createdAt,
   }) : assert(variant >= 0 && variant <= 2);
 
   final String id;
@@ -77,6 +89,21 @@ class SceneResult {
 
   /// Source, crop and editor snapshot for a derived image. Contains asset IDs only.
   final Map<String, Object?>? editMetadata;
+  final DateTime? createdAt;
+  bool get isImported =>
+      editMetadata?['operation'] == 'imported' || id.startsWith('import-');
+  ImageMetadataResult? get importedMetadata =>
+      isImported && editMetadata?['metadataFields'] is Map
+      ? ImageMetadataResult(
+          fields: Map<String, dynamic>.from(
+            editMetadata!['metadataFields'] as Map,
+          ),
+          warnings: const [],
+          format: 'PNG',
+          source: '图库记录',
+          recognized: true,
+        )
+      : null;
 
   bool get isComposite => editMetadata?['operation'] == 'inpaintComposite';
   bool get isTiled => editMetadata?['operation'] == 'tiled';
@@ -137,6 +164,9 @@ class SceneResult {
   }
 
   String get seedDescription {
+    if (isImported) {
+      return '原图 Seed：${(editMetadata?['metadataFields'] as Map?)?['seed'] ?? '未知'}';
+    }
     if (isComposite || isTiled) {
       final snapshot = refillParameters;
       final value = snapshot == null ? '未知' : snapshot.seed?.toString() ?? '随机';
@@ -194,6 +224,7 @@ class SceneResult {
     if (assetRef != null) 'assetRef': assetRef,
     if (parameters != null) 'parameters': parameters!.toJson(),
     if (editMetadata != null) 'editMetadata': editMetadata,
+    if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
   };
 
   factory SceneResult.fromJson(Map<String, dynamic> data) {
@@ -213,6 +244,9 @@ class SceneResult {
       steps: data['steps'] as int,
       cfg: (data['cfg'] as num).toDouble(),
       assetRef: data['assetRef'] as String?,
+      createdAt: data['createdAt'] is String
+          ? DateTime.tryParse(data['createdAt'])
+          : null,
       parameters: data['parameters'] == null
           ? null
           : GenerationParameters.fromJson(
@@ -240,6 +274,7 @@ class SceneResult {
     int? width,
     int? height,
     Map<String, Object?>? editMetadata,
+    DateTime? createdAt,
   }) => SceneResult(
     id: id,
     title: title ?? this.title,
@@ -258,6 +293,7 @@ class SceneResult {
     assetRef: assetRef ?? this.assetRef,
     parameters: parameters,
     editMetadata: editMetadata ?? this.editMetadata,
+    createdAt: createdAt ?? this.createdAt,
   );
 }
 
@@ -276,7 +312,18 @@ class WorkbenchController extends ChangeNotifier {
     this.processImageTool,
     this.localSrAvailable = false,
     this.localSrInfo = '本地超分后端尚未配置',
+    VibeLibrary? vibeLibrary,
+    this.encodeVibe,
   }) : wasRestored = restored != null,
+       vibeLibrary =
+           vibeLibrary ??
+           (restored?.data['vibeLibrary'] is Map
+               ? VibeLibrary.fromJson(
+                   Map<String, dynamic>.from(
+                     restored!.data['vibeLibrary'] as Map,
+                   ),
+                 )
+               : VibeLibrary()),
        _generationDelay = generationDelay.isNegative
            ? Duration.zero
            : generationDelay {
@@ -325,9 +372,52 @@ class WorkbenchController extends ChangeNotifier {
       _restore(restored);
       _lastSaved = jsonEncode(exportWorkspace());
     }
+    this.vibeLibrary.onChanged = (_) => notifyListeners();
   }
 
   final WorkspaceStore? store;
+  final VibeLibrary vibeLibrary;
+  final EncodeVibe? encodeVibe;
+  bool _encodingVibe = false;
+  bool get encodingVibe => _encodingVibe;
+  void cancelVibeEncoding() {
+    if (!_disposed && _encodingVibe) cancelRequest?.call();
+  }
+
+  Future<VibeLibraryEntry> saveVibeReference(
+    VibeReference reference,
+    String title,
+  ) async {
+    if (encodeVibe == null ||
+        generating ||
+        _encodingVibe ||
+        _closing ||
+        _maintenance) {
+      throw const FormatException('请等待任务完成后再编码');
+    }
+    final model = parameters.model;
+    final target = connection;
+    _encodingVibe = true;
+    notifyListeners();
+    try {
+      return await prepareEditing(() async {
+        final entry = await encodeVibe!(
+          sourceAssetRef: reference.assetId,
+          title: title,
+          model: model,
+          connection: target,
+          informationExtracted: reference.informationExtracted,
+          strength: reference.strength,
+        );
+        await flush();
+        return entry;
+      });
+    } finally {
+      _encodingVibe = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
   final GenerateImage? generateImage;
   final VoidCallback? cancelRequest;
   final ImageAssetStore? assets;
@@ -419,16 +509,21 @@ class WorkbenchController extends ChangeNotifier {
   });
   void updateBatch(int value) =>
       _update(() => _batchCount = value.clamp(1, 30));
-  void addImported(ImageAsset asset) => _update(() {
+  void addImported(
+    ImageAsset asset, {
+    ImageMetadataResult? metadata,
+    String title = '导入图片',
+  }) => _update(() {
     final id = 'import-${asset.id}';
-    if (!_results.any((r) => r.id == id)) {
+    final previousIndex = _results.indexWhere((r) => r.id == id);
+    if (previousIndex < 0) {
       _results.insert(
         0,
         SceneResult(
           id: id,
-          title: '导入图片',
-          prompt: '',
-          negative: '',
+          title: title,
+          prompt: metadata?.fields['prompt'] as String? ?? '',
+          negative: metadata?.fields['negative_prompt'] as String? ?? '',
           width: asset.width,
           height: asset.height,
           seed: 0,
@@ -436,8 +531,31 @@ class WorkbenchController extends ChangeNotifier {
           favorite: false,
           isDemo: false,
           assetRef: asset.assetRef,
+          createdAt: DateTime.now(),
+          model: metadata?.fields['model'] as String? ?? '未知模型',
+          provider: '本地导入',
+          editMetadata: {
+            'operation': 'imported',
+            'metadataFields': metadata?.fields ?? <String, Object?>{},
+          },
         ),
       );
+    } else if (metadata != null && metadata.fields.isNotEmpty) {
+      final previous = _results[previousIndex];
+      final data = previous.toJson();
+      data['prompt'] = metadata.fields['prompt'] ?? previous.prompt;
+      data['negative'] =
+          metadata.fields['negative_prompt'] ?? previous.negative;
+      data['model'] = metadata.fields['model'] ?? previous.model;
+      data['editMetadata'] = {
+        ...?previous.editMetadata,
+        'operation': 'imported',
+        'metadataFields': {
+          ...?previous.importedMetadata?.fields,
+          ...metadata.fields,
+        },
+      };
+      _results[previousIndex] = SceneResult.fromJson(data);
     }
     _selectedId = id;
   });
@@ -502,11 +620,17 @@ class WorkbenchController extends ChangeNotifier {
     _extra['imageEditing'] = jsonDecode(jsonEncode(value));
   });
   void addDerived(SceneResult result) => _update(() {
-    if (!_results.any((r) => r.id == result.id)) _results.insert(0, result);
+    if (!_results.any((r) => r.id == result.id)) {
+      _results.insert(
+        0,
+        result.copyWith(createdAt: result.createdAt ?? DateTime.now()),
+      );
+    }
     _selectedId = result.id;
   });
   Future<T> prepareEditing<T>(Future<T> Function() action) async {
     if (_disposed || _closing) throw const FormatException('工作区正在关闭');
+    if (_maintenance) throw const FormatException('正在整理图库，请稍后再试');
     final done = Completer<void>();
     _settlingGenerations.add(done.future);
     try {
@@ -582,8 +706,9 @@ class WorkbenchController extends ChangeNotifier {
       'reduceMotion': _reduceMotion,
     },
     'editor': _editor,
-    'selectedId': _selectedId,
+    'selectedId': _selectedId ?? '',
     'demoSequence': _demoSequence,
+    'vibeLibrary': vibeLibrary.toJson(),
   };
 
   void _restore(StoredWorkspace stored) {
@@ -610,8 +735,7 @@ class WorkbenchController extends ChangeNotifier {
               SceneResult.fromJson(Map<String, dynamic>.from(item as Map)),
         )
         .toList();
-    if (results.isEmpty ||
-        results.map((r) => r.id).toSet().length != results.length) {
+    if (results.map((r) => r.id).toSet().length != results.length) {
       throw const FormatException('Invalid gallery');
     }
     _prompt = draft['prompt'] as String;
@@ -662,7 +786,8 @@ class WorkbenchController extends ChangeNotifier {
         _cfg < 1 ||
         _cfg > 10 ||
         _demoSequence < 0 ||
-        !results.any((r) => r.id == _selectedId)) {
+        (results.isNotEmpty && !results.any((r) => r.id == _selectedId)) ||
+        (results.isEmpty && _selectedId != '')) {
       throw const FormatException('Invalid draft');
     }
     _results
@@ -851,6 +976,7 @@ class WorkbenchController extends ChangeNotifier {
     final pendingGeneration = _activeGeneration;
     _closing = true;
     cancelGeneration();
+    cancelVibeEncoding();
     try {
       await Future.wait<void>([..._settlingGenerations, ?pendingGeneration])
           .timeout(const Duration(seconds: 10));
@@ -901,11 +1027,137 @@ class WorkbenchController extends ChangeNotifier {
 
   SceneResult get selected => _results.firstWhere(
     (result) => result.id == _selectedId,
-    orElse: () => _results.first,
+    orElse: () => _results.isEmpty ? emptySelection : _results.first,
+  );
+  static const emptySelection = SceneResult(
+    id: 'empty-workspace',
+    title: '尚无作品',
+    prompt: '',
+    negative: '',
+    width: 832,
+    height: 1216,
+    seed: 0,
+    variant: 0,
+    favorite: false,
+    isDemo: true,
   );
 
   bool get generating => _generating;
   String get status => _status;
+
+  void applyMetadata(
+    ImageMetadataResult metadata, {
+    required Set<String> selectedFields,
+  }) {
+    _update(() {
+      final next = metadata.applyTo(parameters, selectedFields: selectedFields);
+      _advanced = next;
+      _prompt = next.prompt;
+      _negative = next.negativePrompt ?? '';
+      _width = next.width;
+      _height = next.height;
+      _steps = next.steps;
+      _cfg = next.scale;
+      _seedText = next.seed?.toString() ?? '';
+      _model =
+          modelIds.entries
+              .where((e) => e.value == next.model)
+              .firstOrNull
+              ?.key ??
+          next.model;
+      _refillRevision++;
+    });
+  }
+
+  Map<String, int> get dailySuccessCounts => {
+    for (final entry in (_extra['dailySuccessCounts'] as Map? ?? {}).entries)
+      if (entry.key is String && entry.value is int && entry.value >= 0)
+        entry.key as String: entry.value as int,
+  };
+  static String dayKey(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  void _recordSuccess() {
+    final counts = dailySuccessCounts;
+    final day = dayKey(DateTime.now());
+    counts[day] = (counts[day] ?? 0) + 1;
+    _extra['dailySuccessCounts'] = counts;
+  }
+
+  /// Removing records never deletes source bytes. Cleanup is a separate,
+  /// explicit operation and only considers committed, unreferenced assets.
+  Future<void> removeGalleryRecords(Set<String> ids) async {
+    if (_closing || _disposed || _maintenance) {
+      throw const FormatException('工作区暂时忙碌');
+    }
+    _update(() {
+      _results.removeWhere((r) => ids.contains(r.id));
+      if (!_results.any((r) => r.id == _selectedId)) {
+        _selectedId = _results.firstOrNull?.id ?? '';
+      }
+    });
+    await flush();
+  }
+
+  bool _maintenance = false;
+  bool get maintainingAssets => _maintenance;
+  bool get canMaintainAssets =>
+      !_closing &&
+      !_disposed &&
+      !_generating &&
+      !_maintenance &&
+      _settlingGenerations.isEmpty;
+
+  Future<T> maintainAssets<T>(Future<T> Function() action) async {
+    if (!canMaintainAssets) {
+      throw const FormatException('请等待当前生成、导入或图片处理完成后再整理图库');
+    }
+    _maintenance = true;
+    final done = Completer<void>();
+    _settlingGenerations.add(done.future);
+    notifyListeners();
+    try {
+      await flush();
+      return await action();
+    } finally {
+      _maintenance = false;
+      done.complete();
+      _settlingGenerations.remove(done.future);
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  Future<int> cleanUnusedAssets(Set<String> approvedRefs) =>
+      maintainAssets(() async {
+        if (assets is! ImageAssetMaintenance || !hasStore) {
+          throw const FormatException('当前存储不支持文件清理');
+        }
+        // Even an unchanged window must prove it still owns the current
+        // revision before it performs an irreversible file operation.
+        final checkpoint = jsonEncode(exportWorkspace());
+        try {
+          _revision = await _store!.save(
+            Map<String, Object?>.from(jsonDecode(checkpoint) as Map),
+            expectedRevision: _revision,
+          );
+          _lastSaved = checkpoint;
+        } catch (error) {
+          _pending = checkpoint;
+          _saveError = error;
+          rethrow;
+        }
+        var removed = 0;
+        final listed = (await (assets as ImageAssetMaintenance).listAssets())
+            .toSet();
+        for (final ref in approvedRefs) {
+          if (!listed.contains(ref)) continue;
+          if (collectImageAssetReferences(exportWorkspace()).contains(ref)) {
+            continue;
+          }
+          await (assets as ImageAssetMaintenance).removeAsset(ref);
+          removed++;
+        }
+        return removed;
+      });
 
   void updatePrompt(String value) => _update(() => _prompt = value);
 
@@ -955,6 +1207,18 @@ class WorkbenchController extends ChangeNotifier {
   /// With [promptOnly], only its positive prompt is copied.
   void applyResult(SceneResult result, {bool promptOnly = false}) {
     if (_disposed || _closing) return;
+    if (result.isImported) {
+      final metadata = result.importedMetadata;
+      if (metadata != null) {
+        applyMetadata(
+          metadata,
+          selectedFields: promptOnly
+              ? {'prompt'}
+              : metadata.fields.keys.toSet(),
+        );
+      }
+      return;
+    }
     final previousProvider = _provider;
     final previousParameters = parameters, previousSeed = _seedText;
     final saved = result.refillParameters;
@@ -1085,7 +1349,7 @@ class WorkbenchController extends ChangeNotifier {
     ServiceConnection? submittedConnection,
     int? count,
   }) {
-    if (_disposed || _closing || _generating) {
+    if (_disposed || _closing || _generating || _maintenance || _encodingVibe) {
       return _activeGeneration ?? Future<void>.value();
     }
     if (generateImage != null) {
@@ -1206,7 +1470,9 @@ class WorkbenchController extends ChangeNotifier {
       !_disposed && !_closing && token == _generationToken;
 
   Future<void> runImageTool() async {
-    if (_disposed || _closing || _generating) return;
+    if (_disposed || _closing || _generating || _maintenance || _encodingVibe) {
+      return;
+    }
     if (processImageTool == null) {
       _status = '当前预览未连接图片处理后端。';
       notifyListeners();
@@ -1280,7 +1546,11 @@ class WorkbenchController extends ChangeNotifier {
         () => _isCurrent(token),
       );
       if (!_isCurrent(token)) return;
-      _results.insert(0, result);
+      _results.insert(
+        0,
+        result.copyWith(createdAt: result.createdAt ?? DateTime.now()),
+      );
+      if (draft['mode'] == 'tiled') _recordSuccess();
       _selectedId = result.id;
       if (imageTools['sourceRevision'] == draft['sourceRevision'] &&
           imageTools['sourceAssetRef'] == draft['sourceAssetRef'] &&
@@ -1368,7 +1638,11 @@ class WorkbenchController extends ChangeNotifier {
           result = await processResult(result, () => _isCurrent(token));
         }
         if (!_isCurrent(token)) break;
-        _results.insert(0, result);
+        _results.insert(
+          0,
+          result.copyWith(createdAt: result.createdAt ?? DateTime.now()),
+        );
+        _recordSuccess();
         _selectedId = result.id;
         notifyListeners();
         await flush();
@@ -1394,7 +1668,7 @@ class WorkbenchController extends ChangeNotifier {
   }
 
   void _update(void Function() change) {
-    if (_disposed || _closing) return;
+    if (_disposed || _closing || _maintenance) return;
     change();
     notifyListeners();
   }

@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 import 'generation_parameters.dart';
+import '../references/vibe_encoding_scope.dart';
 import 'network_address_lookup_stub.dart'
     if (dart.library.io) 'network_address_lookup_io.dart'
     as network_lookup;
@@ -226,6 +227,100 @@ class NovelAiGenerationService {
     }
   }
 
+  /// Encodes a selected source image without generating an output image.
+  ///
+  /// The returned bytes are UTF-8 for the exact Vibe string accepted by the
+  /// selected protocol. For ikun, that value is the source image's base64
+  /// representation and no separate encode request is sent.
+  Future<Uint8List> encodeVibe({
+    required String sourceAssetId,
+    required String model,
+    required GenerationProviderConfig provider,
+    required GenerationCredential credential,
+    required InputImageResolver resolveImage,
+    double informationExtracted = 1.0,
+  }) async {
+    if (sourceAssetId.trim().isEmpty ||
+        model.trim().isEmpty ||
+        !_isFiniteInRange(informationExtracted, 0, 1)) {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
+    _validateCredential(credential);
+    final baseUri = _resolveBaseUri(provider);
+    final wireModel = modelForProtocol(model, provider.protocol);
+    validateVibeModel(wireModel, provider.protocol);
+    final images = _ResolvedImages(
+      resolveImage,
+      _looksLikeImage,
+      maxBytes: _maxInputImageBytes,
+      maxTotalBytes: _maxInputImageBytes,
+    );
+    try {
+      final source = await images.resolve(sourceAssetId);
+      final encoded = switch (provider.protocol) {
+        NovelAiProtocol.official => await _encodeOfficialVibeBytes(
+          source,
+          wireModel,
+          informationExtracted,
+          credential,
+          baseUri,
+        ),
+        NovelAiProtocol.gateway7877 => await _encodeGatewayVibeBytes(
+          source,
+          wireModel,
+          informationExtracted,
+          credential,
+          baseUri,
+        ),
+        NovelAiProtocol.ikun => base64Encode(source),
+      };
+      return Uint8List.fromList(utf8.encode(encoded));
+    } on GenerationServiceException {
+      rethrow;
+    } on TimeoutException {
+      throw const GenerationServiceException(GenerationFailureReason.timeout);
+    } on http.ClientException {
+      throw const GenerationServiceException(
+        GenerationFailureReason.networkFailure,
+      );
+    } catch (_) {
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidResponse,
+      );
+    }
+  }
+
+  /// Returns the exact model ID that this protocol will put in its request.
+  String modelForProtocol(String model, NovelAiProtocol protocol) =>
+      normalizeVibeModel(model, protocol.name);
+
+  void validateVibeModel(String model, NovelAiProtocol protocol) {
+    final wireModel = modelForProtocol(model, protocol);
+    if ((protocol == NovelAiProtocol.official ||
+            protocol == NovelAiProtocol.gateway7877) &&
+        _isV5(wireModel)) {
+      throw const GenerationServiceException(
+        GenerationFailureReason.unsupportedCombination,
+      );
+    }
+  }
+
+  /// Validates the request and fixes provider-specific model/default values
+  /// before runtime work such as Vibe encoding begins.
+  GenerationParameters validateAndNormalizeParameters(
+    GenerationParameters parameters,
+    GenerationProviderConfig provider,
+  ) {
+    _resolveBaseUri(provider);
+    return _effectiveParameters(parameters, provider.protocol);
+  }
+
+  /// Resolves the base endpoint actually used by this provider configuration.
+  Uri endpointForProtocol(GenerationProviderConfig provider) =>
+      _resolveBaseUri(provider);
+
   /// Runs an image post-process operation supported by the selected protocol.
   ///
   /// Official Enhance and Upscale use NovelAI's fixed image host. Director
@@ -387,9 +482,7 @@ class NovelAiGenerationService {
     GenerationParameters input,
     NovelAiProtocol protocol,
   ) {
-    final model = protocol == NovelAiProtocol.gateway7877
-        ? _normalize7877Model(input.model)
-        : input.model.trim();
+    final model = modelForProtocol(input.model, protocol);
     final isV5 = _isV5(model);
     final pixels = input.width * input.height;
     if (model.isEmpty ||
@@ -756,20 +849,6 @@ class NovelAiGenerationService {
     return normalized;
   }
 
-  String _normalize7877Model(String value) {
-    final trimmed = value.trim();
-    final normalized = trimmed.toLowerCase();
-    return switch (normalized) {
-      'nai-v4.5-full' || 'nai-v4-5-full' => 'nai-diffusion-4-5-full',
-      'nai-v4.5-curated' || 'nai-v4-5-curated' => 'nai-diffusion-4-5-curated',
-      'nai-v4-full' => 'nai-diffusion-4-full',
-      'nai-v4-curated' => 'nai-diffusion-4-curated',
-      'nai-v3' => 'nai-diffusion-3',
-      'nai-v3-furry' || 'nai-v3-furry-limit' => 'nai-diffusion-3-furry',
-      _ => trimmed,
-    };
-  }
-
   Future<Uint8List> _generateOfficial(
     GenerationParameters parameters,
     GenerationCredential credential,
@@ -883,15 +962,13 @@ class NovelAiGenerationService {
       final encoded = <String>[];
       for (final reference in parameters.vibeReferences) {
         encoded.add(
-          reference.encodedVibe?.isNotEmpty == true
-              ? reference.encodedVibe!
-              : await _encodeOfficialVibe(
-                  parameters,
-                  reference,
-                  credential,
-                  baseUri,
-                  images,
-                ),
+          await _encodeOfficialVibe(
+            parameters,
+            reference,
+            credential,
+            baseUri,
+            images,
+          ),
         );
       }
       requestParameters.addAll({
@@ -1304,14 +1381,66 @@ class NovelAiGenerationService {
     Uri baseUri,
     _ResolvedImages images,
   ) async {
+    final existing = reference.encodedVibe;
+    if (reference.assetId.trim().isEmpty) {
+      if (reference.hasCompatibleImportedEncoding(
+        model: parameters.model,
+        providerProtocol: NovelAiProtocol.official.name,
+        endpoint: baseUri,
+      )) {
+        return existing!;
+      }
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
     final source = await images.resolve(reference.assetId);
+    final sourceSha256 = sha256.convert(source).toString();
+    if (existing?.isNotEmpty == true) {
+      if (reference.hasCompatibleEncoding(
+        sourceAssetRef: reference.assetId,
+        sourceSha256: sourceSha256,
+        model: parameters.model,
+        providerProtocol: NovelAiProtocol.official.name,
+        endpoint: baseUri,
+      )) {
+        return existing!;
+      }
+      // Do not use an opaque value whose model, endpoint, source, or
+      // information-extraction setting cannot be verified.
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
+    return utf8.decode(
+      await encodeVibe(
+        sourceAssetId: reference.assetId,
+        model: parameters.model,
+        provider: GenerationProviderConfig(
+          protocol: NovelAiProtocol.official,
+          baseUri: baseUri,
+        ),
+        credential: credential,
+        resolveImage: images.resolve,
+        informationExtracted: reference.informationExtracted,
+      ),
+    );
+  }
+
+  Future<String> _encodeOfficialVibeBytes(
+    Uint8List source,
+    String model,
+    double informationExtracted,
+    GenerationCredential credential,
+    Uri baseUri,
+  ) async {
     final response = await _sendJson(
       _endpoint(baseUri, '/ai/encode-vibe'),
       credential,
       {
         'image': base64Encode(source),
-        'model': parameters.model,
-        'information_extracted': _clamp01(reference.informationExtracted),
+        'model': model,
+        'information_extracted': _clamp01(informationExtracted),
       },
       accept: 'application/binary',
       timeout: _encodingTimeout,
@@ -1484,11 +1613,38 @@ class NovelAiGenerationService {
       case GenerationOperation.textToImage:
         final referenceImages = <String>[];
         for (final reference in parameters.vibeReferences) {
-          referenceImages.add(
-            reference.encodedVibe?.isNotEmpty == true
-                ? reference.encodedVibe!
-                : base64Encode(await images.resolve(reference.assetId)),
-          );
+          final existing = reference.encodedVibe;
+          if (reference.assetId.trim().isEmpty) {
+            if (reference.hasCompatibleImportedEncoding(
+              model: parameters.model,
+              providerProtocol: NovelAiProtocol.ikun.name,
+              endpoint: baseUri,
+            )) {
+              referenceImages.add(existing!);
+              continue;
+            }
+            throw const GenerationServiceException(
+              GenerationFailureReason.invalidParameters,
+            );
+          }
+          final source = await images.resolve(reference.assetId);
+          final sourceSha256 = sha256.convert(source).toString();
+          if (existing?.isNotEmpty == true) {
+            if (!reference.hasCompatibleEncoding(
+              sourceAssetRef: reference.assetId,
+              sourceSha256: sourceSha256,
+              model: parameters.model,
+              providerProtocol: NovelAiProtocol.ikun.name,
+              endpoint: baseUri,
+            )) {
+              throw const GenerationServiceException(
+                GenerationFailureReason.invalidParameters,
+              );
+            }
+            referenceImages.add(existing!);
+          } else {
+            referenceImages.add(base64Encode(source));
+          }
         }
         payload = {
           'prompt': parameters.prompt,
@@ -1602,15 +1758,13 @@ class NovelAiGenerationService {
     final strengths = <double>[];
     final information = <double>[];
     for (final reference in parameters.vibeReferences) {
-      final encoded = reference.encodedVibe?.isNotEmpty == true
-          ? reference.encodedVibe!
-          : await _encodeGatewayVibe(
-              parameters,
-              reference,
-              credential,
-              baseUri,
-              images,
-            );
+      final encoded = await _encodeGatewayVibe(
+        parameters,
+        reference,
+        credential,
+        baseUri,
+        images,
+      );
       encodedImages.add(encoded);
       strengths.add(_clamp01(reference.strength));
       information.add(_clamp01(reference.informationExtracted));
@@ -1625,15 +1779,66 @@ class NovelAiGenerationService {
     Uri baseUri,
     _ResolvedImages images,
   ) async {
+    final existing = reference.encodedVibe;
+    if (reference.assetId.trim().isEmpty) {
+      if (reference.hasCompatibleImportedEncoding(
+        model: parameters.model,
+        providerProtocol: NovelAiProtocol.gateway7877.name,
+        endpoint: baseUri,
+      )) {
+        return existing!;
+      }
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
     final image = await images.resolve(reference.assetId);
+    final sourceSha256 = sha256.convert(image).toString();
+    if (existing?.isNotEmpty == true) {
+      if (reference.hasCompatibleEncoding(
+        sourceAssetRef: reference.assetId,
+        sourceSha256: sourceSha256,
+        model: parameters.model,
+        providerProtocol: NovelAiProtocol.gateway7877.name,
+        endpoint: baseUri,
+      )) {
+        return existing!;
+      }
+      throw const GenerationServiceException(
+        GenerationFailureReason.invalidParameters,
+      );
+    }
+    return utf8.decode(
+      await encodeVibe(
+        sourceAssetId: reference.assetId,
+        model: parameters.model,
+        provider: GenerationProviderConfig(
+          protocol: NovelAiProtocol.gateway7877,
+          baseUri: baseUri,
+          allowInsecureLoopbackForTesting: baseUri.scheme == 'http',
+        ),
+        credential: credential,
+        resolveImage: images.resolve,
+        informationExtracted: reference.informationExtracted,
+      ),
+    );
+  }
+
+  Future<String> _encodeGatewayVibeBytes(
+    Uint8List image,
+    String model,
+    double informationExtracted,
+    GenerationCredential credential,
+    Uri baseUri,
+  ) async {
     final response = await _sendJson(
       _endpoint(baseUri, '/v1/images/generations'),
       credential,
       {
-        'model': parameters.model,
+        'model': model,
         'extra': 'encode-vibe',
         'image': base64Encode(image),
-        'information_extracted': _clamp01(reference.informationExtracted),
+        'information_extracted': _clamp01(informationExtracted),
       },
       accept: 'application/json',
       timeout: _encodingTimeout,

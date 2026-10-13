@@ -1,3 +1,5 @@
+import '../references/vibe_encoding_scope.dart';
+
 /// The operation represented by a single image-generation request.
 enum GenerationOperation { textToImage, imageToImage, inpaint }
 
@@ -280,24 +282,76 @@ class VibeReference {
   final double informationExtracted;
   final String? encodedVibe;
 
+  /// Scope metadata is absent for legacy opaque values until the user confirms
+  /// which model and provider produced them.
+  final VibeEncodingScope? encodedVibeScope;
+
   const VibeReference({
     required this.assetId,
     this.strength = 0.3,
     this.informationExtracted = 1.0,
     this.encodedVibe,
+    this.encodedVibeScope,
   });
+
+  bool get hasUnverifiedEncodedVibe =>
+      encodedVibe?.isNotEmpty == true && encodedVibeScope == null;
+
+  bool get hasScopedEncodedVibe =>
+      encodedVibe?.isNotEmpty == true && encodedVibeScope != null;
+
+  bool hasCompatibleEncoding({
+    required String sourceAssetRef,
+    required String? sourceSha256,
+    required String model,
+    required String providerProtocol,
+    required Uri endpoint,
+  }) =>
+      encodedVibe?.isNotEmpty == true &&
+      encodedVibeScope?.matches(
+            sourceAssetRef: sourceAssetRef,
+            sourceSha256: sourceSha256,
+            model: model,
+            providerProtocol: providerProtocol,
+            endpoint: endpoint,
+            informationExtracted: informationExtracted,
+          ) ==
+          true;
+
+  bool hasCompatibleImportedEncoding({
+    required String model,
+    required String providerProtocol,
+    required Uri endpoint,
+  }) {
+    final scope = encodedVibeScope;
+    return encodedVibe?.isNotEmpty == true &&
+        scope != null &&
+        scope.sourceAssetRef.isEmpty &&
+        scope.sourceSha256 == null &&
+        scope.matchesProvider(
+          model: model,
+          providerProtocol: providerProtocol,
+          endpoint: endpoint,
+          informationExtracted: informationExtracted,
+        );
+  }
 
   VibeReference copyWith({
     String? assetId,
     double? strength,
     double? informationExtracted,
     String? encodedVibe,
+    VibeEncodingScope? encodedVibeScope,
     bool clearEncodedVibe = false,
   }) => VibeReference(
     assetId: assetId ?? this.assetId,
     strength: strength ?? this.strength,
     informationExtracted: informationExtracted ?? this.informationExtracted,
     encodedVibe: clearEncodedVibe ? null : (encodedVibe ?? this.encodedVibe),
+    encodedVibeScope: clearEncodedVibe
+        ? null
+        : (encodedVibeScope ??
+              (encodedVibe != null ? null : this.encodedVibeScope)),
   );
 
   Map<String, dynamic> toJson() => {
@@ -305,14 +359,22 @@ class VibeReference {
     'strength': strength,
     'information_extracted': informationExtracted,
     if (encodedVibe != null) 'encoded_vibe': encodedVibe,
+    if (encodedVibeScope != null)
+      'encoded_vibe_scope': encodedVibeScope!.toJson(),
   };
 
-  factory VibeReference.fromJson(Map<String, dynamic> json) => VibeReference(
-    assetId: _string(json['asset_id']) ?? '',
-    strength: _double(json['strength']) ?? 0.3,
-    informationExtracted: _double(json['information_extracted']) ?? 1.0,
-    encodedVibe: _string(json['encoded_vibe']),
-  );
+  factory VibeReference.fromJson(Map<String, dynamic> json) {
+    final scopeValue = json['encoded_vibe_scope'];
+    return VibeReference(
+      assetId: _string(json['asset_id']) ?? '',
+      strength: _double(json['strength']) ?? 0.3,
+      informationExtracted: _double(json['information_extracted']) ?? 1.0,
+      encodedVibe: _string(json['encoded_vibe']),
+      encodedVibeScope: scopeValue is Map
+          ? VibeEncodingScope.fromJson(Map<String, dynamic>.from(scopeValue))
+          : null,
+    );
+  }
 }
 
 /// A global precise reference image.
