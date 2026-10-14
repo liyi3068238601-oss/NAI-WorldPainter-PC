@@ -11,6 +11,9 @@ import 'agent_engine.dart';
 import 'assistant_state.dart';
 import 'openai_agent_transport.dart';
 import 'prompt_memory.dart';
+import 'prompt_application.dart';
+import 'prompt_proposal.dart';
+import 'prompting_knowledge.dart';
 import 'workspace_tools.dart';
 
 class AssistantInteraction {
@@ -25,6 +28,23 @@ class AssistantInteraction {
   final List<String> options;
   final bool question;
   final response = Completer<String?>();
+}
+
+class PromptProposalReview {
+  PromptProposalReview._({
+    required this.turn,
+    required this.proposal,
+    required Map<String, String> before,
+    required this.version,
+    required this.draftFingerprint,
+    required this.sessionId,
+    required this.response,
+  }) : before = Map.unmodifiable(before);
+  final AssistantTurn turn;
+  final PromptProposal proposal;
+  final Map<String, String> before;
+  final PromptingVersion version;
+  final String draftFingerprint, sessionId, response;
 }
 
 class AssistantController extends ChangeNotifier {
@@ -52,7 +72,8 @@ class AssistantController extends ChangeNotifier {
   Future<void>? _active;
   bool _disposed = false;
   bool attaching = false;
-  bool get busy => _token != null || attaching;
+  bool _applyingProposal = false;
+  bool get busy => _token != null || attaching || _applyingProposal;
   String? runningSessionId;
   String status = '配置对话模型后开始；工具执行过程会在这里显示。';
   AssistantInteraction? interaction;
@@ -60,6 +81,8 @@ class AssistantController extends ChangeNotifier {
   static String _id(String prefix) =>
       '$prefix-${DateTime.now().microsecondsSinceEpoch}-${_sequence++}';
   AssistantSession get session => state.activeSession ?? state.sessions.first;
+  PromptingVersion get promptingVersion =>
+      session.promptingVersion ?? state.promptingVersion;
 
   void changed() {
     if (_disposed) return;
@@ -78,7 +101,11 @@ class AssistantController extends ChangeNotifier {
     if (state.sessions.length >= AssistantState.maxSessions) {
       throw const AgentException('会话数量已达上限，请整理旧会话。');
     }
-    final next = AssistantSession(id: _id('chat'), title: '新会话');
+    final next = AssistantSession(
+      id: _id('chat'),
+      title: '新会话',
+      promptingVersion: state.promptingVersion,
+    );
     state.sessions.add(next);
     state.activeSessionId = next.id;
     changed();
@@ -262,6 +289,7 @@ class AssistantController extends ChangeNotifier {
   void updateSettings({
     required String systemPrompt,
     required int contextTurns,
+    PromptingVersion? promptingVersion,
   }) {
     _idle();
     if (systemPrompt.length > 12000 || contextTurns < 1 || contextTurns > 20) {
@@ -269,7 +297,128 @@ class AssistantController extends ChangeNotifier {
     }
     state.systemPrompt = systemPrompt;
     state.contextTurns = contextTurns;
+    if (promptingVersion != null) {
+      // Pin legacy sessions before changing the default for future sessions.
+      for (final saved in state.sessions) {
+        saved.promptingVersion ??= state.promptingVersion;
+      }
+      state.promptingVersion = promptingVersion;
+      session.promptingVersion = promptingVersion;
+    }
     changed();
+  }
+
+  String _proposalResponse(AssistantTurn turn) {
+    final last = turn.messages.lastOrNull;
+    return last?['role'] == 'assistant' &&
+            last?['content'] is String &&
+            (last?['tool_calls'] == null ||
+                (last?['tool_calls'] is List &&
+                    (last!['tool_calls'] as List).isEmpty))
+        ? last!['content'] as String
+        : '';
+  }
+
+  PromptProposal? proposalForTurn(AssistantTurn turn) {
+    if (turn.status != 'complete') return null;
+    final proposal = parsePromptProposal(_proposalResponse(turn));
+    if (proposal == null || !turn.proposalInpaint) return proposal;
+    final fields = <String, String>{};
+    for (final entry in proposal.fields.entries) {
+      final target = const {'positive', 'negative'}.contains(entry.key)
+          ? 'inpaint_${entry.key}'
+          : entry.key;
+      if (fields.containsKey(target)) throw const FormatException('提案包含重复目标。');
+      fields[target] = entry.value;
+    }
+    return PromptProposal(fields: fields, reason: proposal.reason);
+  }
+
+  void _checkProposal(AssistantTurn turn) {
+    _idle();
+    if (workbench.generating || workbench.encodingVibe) {
+      throw const AgentException('图像任务进行中，请完成后再审阅提案。');
+    }
+    if (!session.turns.contains(turn) || turn.status != 'complete') {
+      throw const AgentException('该提案不属于当前已完成会话。');
+    }
+    if (turn.promptApplication != null) {
+      throw const AgentException('此提案已应用，请查看应用记录。');
+    }
+    if (turn.promptingVersion == null ||
+        turn.proposalDraftFingerprint.isEmpty) {
+      throw const AgentException('旧回复没有草稿版本记录，请重新请求提案。');
+    }
+    if (turn.proposalDraftFingerprint != workbench.assistantDraftFingerprint) {
+      throw const AgentException('创作草稿已更新，未应用旧提案。请基于当前草稿重新请求。');
+    }
+  }
+
+  PromptProposalReview preparePromptProposal(AssistantTurn turn) {
+    _checkProposal(turn);
+    final proposal = proposalForTurn(turn);
+    if (proposal == null) throw const AgentException('回复中没有明确的提示词提案。');
+    return PromptProposalReview._(
+      turn: turn,
+      proposal: proposal,
+      version: turn.promptingVersion!,
+      sessionId: session.id,
+      response: _proposalResponse(turn),
+      draftFingerprint: workbench.assistantDraftFingerprint,
+      before: {
+        for (final target in proposal.fields.keys)
+          target: workbench.assistantPromptValue(target),
+      },
+    );
+  }
+
+  Future<void> applyPromptProposal(
+    PromptProposalReview review, {
+    required Set<String> targets,
+    required String reason,
+  }) async {
+    _checkProposal(review.turn);
+    if (review.sessionId != session.id ||
+        review.draftFingerprint != workbench.assistantDraftFingerprint ||
+        review.response != _proposalResponse(review.turn) ||
+        review.version != review.turn.promptingVersion) {
+      throw const AgentException('提案或草稿已变化，请重新审阅。');
+    }
+    if (targets.isEmpty ||
+        targets.any((t) => !review.proposal.fields.containsKey(t))) {
+      throw const AgentException('请选择提案中要应用的词框。');
+    }
+    if (reason.trim().isEmpty || reason.length > 1000) {
+      throw const AgentException('请填写 1–1000 字的变更原因。');
+    }
+    final before = {
+      for (final t in targets) t: workbench.assistantPromptValue(t),
+    };
+    final after = {for (final t in targets) t: review.proposal.fields[t]!};
+    final receipt = PromptApplication(
+      version: review.version,
+      reason: reason.trim(),
+      appliedAt: DateTime.now().toUtc().toIso8601String(),
+      before: before,
+      after: after,
+    );
+    _applyingProposal = true;
+    // Receipt and fields participate in the same workspace snapshot.
+    review.turn.promptApplication = receipt;
+    try {
+      workbench.applyAssistantPrompts(after);
+      changed();
+      await workbench.flush();
+      status = workbench.store == null
+          ? '已应用 ${targets.length} 个词框；当前为会话预览，记录仅在内存中保留。'
+          : '已应用 ${targets.length} 个词框，版本与变更原因已保存。';
+    } catch (_) {
+      status = '提案已留在当前工作区，请检查保存状态；未自动重试。';
+      throw const AgentException('提案已写入当前草稿，但尚未确认保存。请检查工作区保存状态，无需重新应用。');
+    } finally {
+      _applyingProposal = false;
+      changed();
+    }
   }
 
   /// Editing forks at the selected user turn. Earlier history stays intact.
@@ -284,9 +433,12 @@ class AssistantController extends ChangeNotifier {
     final next = AssistantSession(
       id: _id('chat'),
       title: '${source.title.take(80)} · 分支',
+      promptingVersion: promptingVersion,
       turns: source.turns
           .take(index)
-          .map((t) => AssistantTurn.fromJson(t.toJson()))
+          .map(
+            (t) => AssistantTurn.fromJson({...t.toJson(), 'id': _id('turn')}),
+          )
           .toList(),
       input: turn.userText,
       attachments: [...turn.attachments],
@@ -347,6 +499,12 @@ class AssistantController extends ChangeNotifier {
       attachments: diagnostic ? [] : [...target.attachments],
       providerLabel: '${provider.name} · ${provider.model}'.take(180),
       providerContext: provider.contextKey,
+      promptingVersion: promptingVersion,
+      proposalDraftFingerprint: diagnostic
+          ? ''
+          : workbench.assistantDraftFingerprint,
+      proposalInpaint:
+          workbench.assistantPromptSnapshot['is_inpainting_mode'] == true,
     );
     target.turns.add(turn);
     if (!diagnostic) {
@@ -395,7 +553,10 @@ class AssistantController extends ChangeNotifier {
         token,
       ),
     );
-    var tools = host.build();
+    var tools = [
+      ...host.build(),
+      ...buildPromptingTools(turn.promptingVersion!),
+    ];
     if (diagnostic) {
       final nonce = _id('probe');
       tools = [
@@ -420,7 +581,16 @@ class AssistantController extends ChangeNotifier {
       ];
     }
     final context = <Map<String, dynamic>>[
-      {'role': 'system', 'content': assistantSystemPrompt(state.systemPrompt)},
+      {
+        'role': 'system',
+        'content':
+            assistantSystemPrompt(state.systemPrompt) +
+            (diagnostic
+                ? ''
+                : '\n${promptingInstructions(turn.promptingVersion!)}\n'
+                      '只提供可审阅提案时可输出单一 JSON 代码块，字段 positive、negative、characters（最多6个对象，各含positive/negative）及reason。'
+                      '不包含未建议修改的字段。文本提案不会自动执行，须用户在界面确认。'),
+      },
     ];
     final history = target.turns
         .where((t) => !identical(t, turn) && t.status == 'complete')
@@ -553,6 +723,7 @@ class AssistantController extends ChangeNotifier {
       );
       token.check();
       turn.status = 'complete';
+      if (!diagnostic) turn.proposalDraftFingerprint = host.draftFingerprint;
       final count = turn.traces
           .where((t) => t['status'] == 'completed' && t['name'] != 'vision')
           .length;

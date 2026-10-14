@@ -1293,29 +1293,42 @@ class WorkbenchController extends ChangeNotifier {
         : character.negativePrompt ?? '';
   }
 
-  void applyAssistantPrompt(String target, String content) {
-    if (_closing || _disposed || _maintenance || _generating) {
+  void applyAssistantPrompt(String target, String content) =>
+      applyAssistantPrompts({target: content});
+
+  /// Validate every target before one synchronous draft mutation/notification.
+  void applyAssistantPrompts(Map<String, String> fields) {
+    if (_closing || _disposed || _maintenance || _generating || _encodingVibe) {
       throw const AgentException('当前工作区不允许写入草稿。');
     }
-    assistantPromptValue(target);
+    for (final entry in fields.entries) {
+      assistantPromptValue(entry.key);
+      if (entry.value.length > 32000) {
+        throw const AgentException('提示词超过 32000 字符。');
+      }
+    }
     _update(() {
-      final match = RegExp(r'^character_([1-6])(_uc)?$').firstMatch(target);
-      if (match == null) {
-        if (target.endsWith('negative')) {
-          _negative = content;
+      for (final entry in fields.entries) {
+        final target = entry.key;
+        final content = entry.value;
+        final match = RegExp(r'^character_([1-6])(_uc)?$').firstMatch(target);
+        if (match == null) {
+          if (target.endsWith('negative')) {
+            _negative = content;
+          } else {
+            _prompt = content;
+          }
         } else {
-          _prompt = content;
+          final index = int.parse(match.group(1)!) - 1;
+          final characters = [...parameters.characters];
+          while (characters.length <= index) {
+            characters.add(GenerationCharacter(prompt: ''));
+          }
+          characters[index] = match.group(2) == null
+              ? characters[index].copyWith(prompt: content)
+              : characters[index].copyWith(negativePrompt: content);
+          _advanced = _advanced.copyWith(characters: characters);
         }
-      } else {
-        final index = int.parse(match.group(1)!) - 1;
-        final characters = [...parameters.characters];
-        while (characters.length <= index) {
-          characters.add(GenerationCharacter(prompt: ''));
-        }
-        characters[index] = match.group(2) == null
-            ? characters[index].copyWith(prompt: content)
-            : characters[index].copyWith(negativePrompt: content);
-        _advanced = _advanced.copyWith(characters: characters);
       }
     });
   }

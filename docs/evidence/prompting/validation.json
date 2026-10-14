@@ -1,0 +1,68 @@
+{
+  "date_utc": "2026-10-14T06:51:50.970409+00:00",
+  "baseline_commit": "60a84d32341bca481dcf076b3b1f1e0553115c21",
+  "scope": "Versioned assistant knowledge, fixed reference tool, explicitly reviewed text proposals",
+  "flutter_tests": {
+    "passed": 357,
+    "failed": 0,
+    "command": "flutter test --no-pub --reporter expanded"
+  },
+  "dart_analyze": "No issues found",
+  "windows_release": "passed",
+  "web_release": "passed",
+  "windows_storage_probe": "passed",
+  "windows_credential_probe": "passed",
+  "native_ui": {
+    "cancel_unchanged": true,
+    "partial_apply": true,
+    "normal_close_reopen": true,
+    "receipt_expanded_after_reopen": true,
+    "live_model_request": false,
+    "new_keyboard_input_tested": false
+  },
+  "visual_review": {
+    "widget": [
+      "1440x900 proposal and receipt",
+      "420x820 compact read-only proposal"
+    ],
+    "native": "1427x893 Windows Release; preview, apply, reopened draft and expanded receipt"
+  },
+  "real_external_services_verified": false,
+  "image_generation_channels_added": false,
+  "limitations": [
+    "Official summaries do not reproduce mobile community skill corpus depth",
+    "Real model tool selection and paid generation not tested",
+    "Browser manual interaction not tested",
+    "Existing Web CupertinoIcons font family warning retained"
+  ],
+  "source_sha256_git_blob": {
+    ".gitattributes": "869e6e9f17b2dff13f10f1780a7249008001387e73d8535ce9e9e92be568a7e5",
+    "docs/ARCHITECTURE.md": "9b7693f587ad220dacb083ea2785c8dd98b12c61ba41c2ea9c2764fa4756a7f1",
+    "docs/MOBILE_MIGRATION_NEXT.md": "427b42809164ff91145b172a972bb535d62188b43587d8c411b6b0209700f611",
+    "docs/MOBILE_PARITY.md": "61574ce7361045b91e8bd92eb96632c4a0619397bea25804d874ad15f91aeeda",
+    "docs/PC_PLAN.md": "4d4b196b9567f686ceb86af303b661676d4ae1cf11a77f1b0365ba81488f3333",
+    "docs/PROMPTING_REVIEW.md": "3e6e61fdb0e671242da145bd974b86c739a76080caa3622f55e0fedaff0e3d0b",
+    "docs/PROMPTING_SOURCES.md": "dd48fe7fc340b8b1164d375784629637dc2be59c1de9e5a504be76eb1f970343",
+    "docs/RESEARCH.md": "cf82dd678147cfaab8317db305076736dd49fdf681fe9cea38169c829f8e99c0",
+    "lib/assistant/assistant_controller.dart": "b0c80650689034546708edf98359f97994f42894df7b05ed050bbc6a68822b79",
+    "lib/assistant/assistant_state.dart": "e1666214cac05ac259416d7fd00254f6712aaa74b4a186383669df3ce5fe166e",
+    "lib/assistant/prompt_application.dart": "cfd9227068def0b9ece85ab46cb0c90cddd745864ea5549102ea94a78dfe8c7d",
+    "lib/assistant/prompt_proposal.dart": "1cd433a60b483af7b3fb8752d72b20dc262cf43629117a23ed0ee2f0c1784b5d",
+    "lib/assistant/prompting_knowledge.dart": "34dac176c61872931e0918ee3803f9870798fe0dd9239a87c47328bb5d3bbcb5",
+    "lib/assistant/workspace_tools.dart": "9f782e9fe63b64895fc9ad00cbeae59f0edab7e16bf6d94aa9b0f53ebdc5f6a4",
+    "lib/prototype/assistant_panel.dart": "733526566889a15f635cfab43c4fa6ce0178187bc450c74793a8cb831603a7f7",
+    "lib/prototype/prompt_proposal_dialog.dart": "6b4c980693412c5042c0e62cb613410590186611d5dab55bf85f6a7d6dd25365",
+    "lib/prototype/workbench_controller.dart": "894b9b4b106e43e3141f3aa7437d4c7a74e6b36cc36bba5e245444108efec709",
+    "test/assistant/assistant_controller_test.dart": "7097fe48a1df14617ae14611241859e087f6c5f6ee40b2cb0f7f81b91ca15341",
+    "test/assistant/prompt_proposal_test.dart": "04874d41d8f8e1b76edfb43658358691c0864386e4bc1a0b55eb7b936bbe554c",
+    "test/assistant/prompting_integration_test.dart": "962442f6439f5baa940c6e6434440f049f087aa11ad10978ae0453f5debbb72a",
+    "test/assistant/prompting_knowledge_test.dart": "5e1decb3f754abf4f9b43ab83a60c02e6312a15f6e4a2e71d2f46c22a544f102",
+    "test/prompting_ui_test.dart": "01a577fa8b1b7b4576941cf51486c1c223772b35b499be46cbf7651c79f03fa2"
+  },
+  "build_sha256": {
+    "build/windows/x64/runner/Release/worldpainter_pc.exe": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b",
+    "build/windows/x64/runner/Release/data/app.so": "c5ce5950d696de99dad44c935cbabf5a4c49392fcebc37e488f54ca7323738d3",
+    "build/windows/x64/runner/Release/data/flutter_assets/fonts/MaterialIcons-Regular.otf": "d9865b671a09d683d13a863089d8825e0f61a37696ce5d7d448bc8023aa62453",
+    "build/web/main.dart.js": "ffeea0afc74a83e8d98a177f64fc0086e719642ed5e655f641e0e107864136f8"
+  }
+}

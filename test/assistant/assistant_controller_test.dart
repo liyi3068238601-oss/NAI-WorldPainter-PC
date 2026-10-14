@@ -417,7 +417,13 @@ void main() {
       final fork = assistant.session;
       expect(fork.id, isNot(source.id));
       expect(fork.turns, hasLength(1));
-      expect(fork.turns.single.id, previous.id);
+      expect(fork.turns.single.id, isNot(previous.id));
+      expect(fork.turns.single.userText, previous.userText);
+      expect(fork.turns.single.messages, previous.messages);
+      expect(
+        AssistantState.fromJson(assistant.state.toJson()).sessions,
+        hasLength(2),
+      );
       expect(identical(fork.turns.single, previous), isFalse);
       expect(fork.input, edited.userText);
       expect(fork.attachments, edited.attachments);

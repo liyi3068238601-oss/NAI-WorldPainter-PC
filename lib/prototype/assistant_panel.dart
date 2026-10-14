@@ -9,11 +9,15 @@ import '../assistant/agent_contract.dart';
 import '../assistant/assistant_controller.dart';
 import '../assistant/assistant_state.dart';
 import '../assistant/model_discovery.dart';
+import '../assistant/prompt_application.dart';
+import '../assistant/prompting_knowledge.dart';
+import '../assistant/prompt_proposal.dart';
 import '../security/credential_vault.dart';
 import '../platform/image_picker.dart';
 import 'assistant_memory_dialog.dart';
 import 'assistant_material_picker.dart';
 import 'assistant_model_picker.dart';
+import 'prompt_proposal_dialog.dart';
 import 'stored_image.dart';
 import 'workbench_controller.dart';
 
@@ -255,6 +259,18 @@ class _AssistantPanelState extends State<AssistantPanel> {
     await showDialog<void>(
       context: context,
       builder: (_) => _AssistantSettings(controller: a),
+    );
+  }
+
+  Future<void> _reviewPromptProposal(
+    AssistantTurn turn,
+    PromptProposal proposal,
+  ) async {
+    await showPromptProposalDialog(
+      context: context,
+      controller: a,
+      turn: turn,
+      proposal: proposal,
     );
   }
 
@@ -690,6 +706,16 @@ class _AssistantPanelState extends State<AssistantPanel> {
   );
   Widget _turn(AssistantTurn turn) {
     final colors = Theme.of(context).colorScheme;
+    PromptProposal? proposal;
+    String? proposalParseIssue;
+    if (turn.status == 'complete' && turn.promptApplication == null) {
+      try {
+        proposal = a.proposalForTurn(turn);
+      } on FormatException {
+        proposalParseIssue = '提示词提案格式无法解析，请查看助手回复。';
+      }
+    }
+    final application = turn.promptApplication;
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Column(
@@ -747,7 +773,7 @@ class _AssistantPanelState extends State<AssistantPanel> {
           ),
           const SizedBox(height: 12),
           Text(
-            '绘世小助手 · ${turn.providerLabel}',
+            '绘世小助手 · ${turn.providerLabel} · 提示词知识：${turn.promptingVersion?.label ?? '未记录'}',
             style: TextStyle(fontSize: 11, color: colors.onSurfaceVariant),
           ),
           const SizedBox(height: 6),
@@ -773,6 +799,26 @@ class _AssistantPanelState extends State<AssistantPanel> {
                 ],
               ),
             ),
+          if (proposalParseIssue != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                proposalParseIssue,
+                key: ValueKey('assistant-proposal-parse-issue-${turn.id}'),
+                style: TextStyle(color: colors.error, fontSize: 11),
+              ),
+            ),
+          if (proposal != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                key: ValueKey('assistant-proposal-${turn.id}'),
+                onPressed: () => _reviewPromptProposal(turn, proposal!),
+                icon: const Icon(Icons.difference_outlined, size: 18),
+                label: const Text('查看提示词提案'),
+              ),
+            ),
+          if (application != null) _promptApplication(turn, application),
           if (turn.liveText.isNotEmpty) SelectableText(turn.liveText),
           for (final trace in turn.traces) _trace(trace),
           if (turn.error.isNotEmpty)
@@ -790,6 +836,65 @@ class _AssistantPanelState extends State<AssistantPanel> {
       ),
     );
   }
+
+  Widget _promptApplication(AssistantTurn turn, PromptApplication application) {
+    final colors = Theme.of(context).colorScheme;
+    final targets = <String>{
+      ...application.before.keys,
+      ...application.after.keys,
+    };
+    final appliedAt = DateTime.tryParse(application.appliedAt);
+    final timestamp = appliedAt == null
+        ? application.appliedAt
+        : '${appliedAt.toLocal().year.toString().padLeft(4, '0')}-${appliedAt.toLocal().month.toString().padLeft(2, '0')}-${appliedAt.toLocal().day.toString().padLeft(2, '0')} ${appliedAt.toLocal().hour.toString().padLeft(2, '0')}:${appliedAt.toLocal().minute.toString().padLeft(2, '0')}';
+    return Card(
+      key: ValueKey('assistant-prompt-application-${turn.id}'),
+      margin: const EdgeInsets.only(top: 8),
+      child: ExpansionTile(
+        leading: Icon(Icons.task_alt, color: colors.primary, size: 19),
+        title: Text('已应用提案 · ${application.version.label}'),
+        subtitle: Text('$timestamp · ${application.reason}'),
+        children: [
+          for (final target in targets)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    promptProposalTargetLabel(target),
+                    style: TextStyle(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _applicationValue('修改前', application.before[target] ?? ''),
+                  const SizedBox(height: 6),
+                  _applicationValue('修改后', application.after[target] ?? ''),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _applicationValue(String title, String value) => Container(
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 11)),
+        const SizedBox(height: 4),
+        SelectableText(value.isEmpty ? '（空）' : value),
+      ],
+    ),
+  );
 
   Widget _trace(Map<String, dynamic> trace) {
     const labels = {
@@ -867,6 +972,7 @@ class _AssistantSettingsState extends State<_AssistantSettings> {
   late final a = widget.controller;
   late final system = TextEditingController(text: a.state.systemPrompt);
   late int turns = a.state.contextTurns;
+  late PromptingVersion promptingVersion = a.promptingVersion;
   String error = '';
   Future<void> _edit([AssistantProvider? old]) async {
     final provider = await showDialog<AssistantProvider>(
@@ -999,6 +1105,27 @@ class _AssistantSettingsState extends State<_AssistantSettings> {
               ),
             ),
             const SizedBox(height: 14),
+            DropdownButtonFormField<PromptingVersion>(
+              key: ValueKey(
+                'assistant-prompting-version-${promptingVersion.name}',
+              ),
+              initialValue: promptingVersion,
+              isExpanded: true,
+              decoration: const InputDecoration(labelText: '提示词知识模式'),
+              items: [
+                for (final version in PromptingVersion.values)
+                  DropdownMenuItem(value: version, child: Text(version.label)),
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => promptingVersion = value);
+              },
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              '只切换助手使用的提示词知识，不会改变生图模型。',
+              style: TextStyle(fontSize: 11),
+            ),
+            const SizedBox(height: 14),
             Text('上下文：最近 $turns 个完整轮次（含工具结果）'),
             Slider(
               value: turns.toDouble(),
@@ -1033,7 +1160,11 @@ class _AssistantSettingsState extends State<_AssistantSettings> {
       FilledButton(
         onPressed: () {
           try {
-            a.updateSettings(systemPrompt: system.text, contextTurns: turns);
+            a.updateSettings(
+              systemPrompt: system.text,
+              contextTurns: turns,
+              promptingVersion: promptingVersion,
+            );
             Navigator.pop(context);
           } on AgentException catch (e) {
             setState(() => error = e.message);

@@ -21,6 +21,7 @@ class WorkspaceAgentTools {
   final WorkbenchController workbench;
   final AgentQuestion? askUser;
   String _draft;
+  String get draftFingerprint => _draft;
   bool _hasRead = false;
   Future<List<PromptCapsule>>? _capsules;
 

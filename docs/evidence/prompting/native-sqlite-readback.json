@@ -1,0 +1,19 @@
+{
+  "isolated_synthetic_fixture": true,
+  "sqlite_integrity": "ok",
+  "revision": 2,
+  "turn_count": 1,
+  "turn_status": "complete",
+  "knowledge_version": "v5",
+  "selected_fields": [
+    "character_1",
+    "positive"
+  ],
+  "negative_unchanged": true,
+  "before_after_receipt_matches_draft": true,
+  "reason_preserved": true,
+  "prompt_sha256": "fba8932290981c1502e87b02714c6751e1c2aa4be5c7b4a92feb363f46833adb",
+  "application_time_utc": "2026-10-14T06:48:08.412102Z",
+  "tool_trace_origin": "Preseeded by automated scripted transport test; not a native live model call",
+  "normal_close_and_reopen_observed": true
+}

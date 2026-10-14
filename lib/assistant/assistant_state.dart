@@ -1,6 +1,8 @@
 import '../media/image_asset_validation.dart' show parseImageAssetRef;
 import 'agent_contract.dart';
 import 'prompt_memory.dart';
+import 'prompt_application.dart';
+import 'prompting_knowledge.dart';
 
 const int _assistantStateSchema = 1;
 
@@ -21,6 +23,10 @@ class AssistantTurn {
     this.providerLabel = '',
     this.providerContext = '',
     this.liveText = '',
+    this.promptingVersion,
+    this.proposalDraftFingerprint = '',
+    this.proposalInpaint = false,
+    this.promptApplication,
   }) : attachments = List<String>.of(attachments),
        messages = _copyAssistantMessages(messages),
        traces = _copyTraceMaps(traces) {
@@ -36,6 +42,10 @@ class AssistantTurn {
   String error;
   String providerLabel;
   String providerContext;
+  PromptingVersion? promptingVersion;
+  String proposalDraftFingerprint;
+  bool proposalInpaint;
+  PromptApplication? promptApplication;
 
   /// Streaming text that should not survive app restart.
   String liveText;
@@ -56,6 +66,10 @@ class AssistantTurn {
       'error': error,
       'providerLabel': providerLabel,
       'providerContext': providerContext,
+      'promptingVersion': promptingVersion?.name,
+      'proposalDraftFingerprint': proposalDraftFingerprint,
+      'proposalInpaint': proposalInpaint,
+      'promptApplication': promptApplication?.toJson(),
     };
   }
 
@@ -77,6 +91,18 @@ class AssistantTurn {
       }
 
       return AssistantTurn(
+        promptingVersion: _promptingVersion(json['promptingVersion']),
+        proposalDraftFingerprint: json.containsKey('proposalDraftFingerprint')
+            ? _readString(json, 'proposalDraftFingerprint', maxLength: 64)
+            : '',
+        proposalInpaint: json.containsKey('proposalInpaint')
+            ? json['proposalInpaint'] as bool
+            : false,
+        promptApplication: json['promptApplication'] == null
+            ? null
+            : PromptApplication.fromJson(
+                _asStringMap(json['promptApplication'], 'promptApplication'),
+              ),
         id: _readString(json, 'id', maxLength: _maxIdLength),
         userText: _readString(json, 'userText', maxLength: _maxTurnTextLength),
         attachments: _readStringList(
@@ -117,6 +143,16 @@ class AssistantTurn {
     _validateText(error, 'error', _maxErrorLength);
     _validateText(providerLabel, 'providerLabel', _maxLabelLength);
     _validateText(providerContext, 'providerContext', 64);
+    if (proposalDraftFingerprint.isNotEmpty &&
+        (promptingVersion == null ||
+            !RegExp(r'^[a-f0-9]{64}$').hasMatch(proposalDraftFingerprint))) {
+      throw const FormatException('Invalid proposal draft fingerprint.');
+    }
+    if (promptApplication != null &&
+        (promptApplication!.version != promptingVersion ||
+            proposalDraftFingerprint.isEmpty)) {
+      throw const FormatException('Invalid proposal application provenance.');
+    }
     if (!const {
       'running',
       'waiting',
@@ -146,6 +182,7 @@ class AssistantSession {
     required this.title,
     List<AssistantTurn> turns = const [],
     this.input = '',
+    this.promptingVersion,
     List<String> attachments = const [],
   }) : turns = List<AssistantTurn>.of(turns),
        attachments = List<String>.of(attachments) {
@@ -156,6 +193,7 @@ class AssistantSession {
   String title;
   List<AssistantTurn> turns;
   String input;
+  PromptingVersion? promptingVersion;
   List<String> attachments;
 
   static const int maxTurns = 2000;
@@ -168,6 +206,7 @@ class AssistantSession {
       'title': title,
       'turns': turns.map((turn) => turn.toJson()).toList(),
       'input': input,
+      'promptingVersion': promptingVersion?.name,
       'attachments': List<String>.of(attachments),
     };
   }
@@ -181,6 +220,7 @@ class AssistantSession {
         copy: _copyPlainMap,
       ).map(AssistantTurn.fromJson).toList();
       return AssistantSession(
+        promptingVersion: _promptingVersion(json['promptingVersion']),
         id: _readString(json, 'id', maxLength: _maxIdLength),
         title: _readString(json, 'title', maxLength: _maxTitleLength),
         turns: turns,
@@ -229,6 +269,7 @@ class AssistantState {
     String? visionProviderId,
     this.contextTurns = 8,
     this.systemPrompt = '',
+    this.promptingVersion = PromptingVersion.v45,
     PromptMemoryLibrary? memories,
     List<AssistantSession> sessions = const [],
     String? activeSessionId,
@@ -246,6 +287,7 @@ class AssistantState {
   String? visionProviderId;
   int contextTurns;
   String systemPrompt;
+  PromptingVersion promptingVersion;
   final PromptMemoryLibrary memories;
   List<AssistantSession> sessions;
   String? activeSessionId;
@@ -284,6 +326,7 @@ class AssistantState {
       'visionProviderId': visionProviderId,
       'contextTurns': contextTurns,
       'systemPrompt': systemPrompt,
+      'promptingVersion': promptingVersion.name,
       'memories': memories.toJson(),
       'sessions': sessions.map((session) => session.toJson()).toList(),
       'activeSessionId': activeSessionId,
@@ -312,6 +355,10 @@ class AssistantState {
       ).map(AssistantSession.fromJson).toList();
 
       return AssistantState(
+        promptingVersion: json.containsKey('promptingVersion')
+            ? _promptingVersion(json['promptingVersion']) ??
+                  (throw const FormatException('Missing prompting version.'))
+            : PromptingVersion.v45,
         providers: providers,
         mainProviderId: _readNullableId(json, 'mainProviderId'),
         visionProviderId: _readNullableId(json, 'visionProviderId'),
@@ -397,6 +444,14 @@ const int _maxSystemPromptLength = 500000;
 const int _maxJsonDepth = 64;
 const int _maxJsonNodes = 100000;
 const int _maxJsonStringLength = 2000000;
+
+PromptingVersion? _promptingVersion(Object? value) {
+  if (value == null) return null;
+  for (final version in PromptingVersion.values) {
+    if (value == version.name) return version;
+  }
+  throw const FormatException('Unsupported prompting version.');
+}
 
 AssistantProvider _providerFromJson(Map<String, dynamic> json) {
   try {

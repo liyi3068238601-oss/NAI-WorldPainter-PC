@@ -67,3 +67,7 @@
 ## 2026-10-14 标签服务协议补充
 
 手机现有 Danbooru 搜索实际连接第三方中文语义索引。对照 GitHub `SuzumiyaAkizuki/ComfyUI-DanbooruSearcher` commit `3522854610d9cb51193ffcdd5b9a3059d4a686be` 与 HF `SAkizuki/DanbooruSearch` commit `427a3c377821367f83a1f3c141c15fdfcb290bd2` 核对了 `/api/search` 请求/响应。前者未找到根许可证，后者 LICENSE 为 GPL v3；没有复制第三方代码、模型或词库。本批独立实现客户端，不宣称官方实时标签校验，也未验证服务当前在线性、匿名配额或 Key 政策。固定版本链接、行为差异和证据见 [标签搜索报告](TAG_SEARCH_REVIEW.md)。
+
+## 2026-10-14 提示词知识与应用调查
+
+只读复核手机版本选择、V5 动态参考工具与未接线的文本解析器，并比较浪白的提案预览/陈旧内容检查。手机技能包 GPLv3，未复制社区语料；PC 采用官方文档的独立摘要，记录模型页与文字页的单位冲突。固定参考版本、文件 SHA-256、许可边界和实际移植差异见 [来源记录](PROMPTING_SOURCES.md)，实现与验证见 [批次报告](PROMPTING_REVIEW.md)。
