@@ -1,0 +1,3 @@
+00:00 +0: loading E:/NAI-WorldPainter/PC端/test/assistant/upscale_agent_test.dart
+00:00 +0: opt-in Windows probe runs all local SR presets and reopens SQLite results
+00:03 +1: All tests passed!

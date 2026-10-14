@@ -1,0 +1,24 @@
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/NativeAssetsManifest.json
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/NOTICES.Z
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders/ink_sparkle.frag
+[   +1 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/flutter_assets/shaders/stretch_effect.frag
+[   +8 ms]   -- Installing: Z:/windows-build-source/build/windows/x64/runner/Release/data/app.so
+[  +25 ms] FinalizeBuildStatus:
+[        ]   正在删除文件“x64\Release\INSTALL\INSTALL.tlog\unsuccessfulbuild”。
+[        ]   正在对“x64\Release\INSTALL\INSTALL.tlog\INSTALL.lastbuildstate”执行 Touch 任务。
+[        ] 已完成生成项目“Z:\windows-build-source\build\windows\x64\INSTALL.vcxproj”(默认目标)的操作。
+[  +10 ms] 已成功生成。
+[        ]     0 个警告
+[        ]     0 个错误
+[        ] 已用时间 00:00:34.63
+[  +33 ms] Building Windows application... (completed in 35.8s)
+[   +2 ms] √ Built build\windows\x64\runner\Release\worldpainter_pc.exe
+[        ] "flutter windows" took 35,957ms.
+[  +33 ms] Running 1 shutdown hook
+[        ] Shutdown hooks complete
+[ +260 ms] exiting with code 0
+Windows Release executable: E:\NAI-WorldPainter\PC端\build\windows\x64\runner\Release\worldpainter_pc.exe (152576 bytes)
+Bundled font license SHA-256: 1C05C68C34F9708415AADA51F17E1B0092D2CEA709BF4A94CD38114F9E73D7D9
+Bundled verified local SR runtimes under E:\NAI-WorldPainter\PC端\build\windows\x64\runner\Release\data\sr (downloads/staging excluded).
+Runtime install manifest SHA-256: A4E369B8615C23E8052F268A4624676B1C9615573F386BFC1675294BF4682A5D

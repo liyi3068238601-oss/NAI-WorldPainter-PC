@@ -1,0 +1,11 @@
+{
+  "phone_head": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+  "phone_files": {
+    "lib/data/datasources/remote/wd_tagger_api_service.dart": "31f171467afce1c9a55fb5112818a30157d420da4f3d9db3a173ab2cb5a8cbb5",
+    "lib/presentation/viewmodels/llm_chat_viewmodel.dart": "a59d8c047dca3201931e930b0291e768f6c871bf24fad654bf36fe9a732b306c",
+    "lib/domain/agents/tools/upscale_image_tool.dart": "d22313a248ac7b0369cb20d64325bf54614164a992418e2b20fc00da91fb93ce"
+  },
+  "wd_space_revision": "fbd35b187d6e8cb8a00c529d52999f82d6b5193b",
+  "gradio_label_ref": "gradio@6.19.0",
+  "reuse": "Independent protocol implementation; existing PC SR runtime reused; no upstream code copied"
+}

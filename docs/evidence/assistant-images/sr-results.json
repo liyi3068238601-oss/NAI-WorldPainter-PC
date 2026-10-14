@@ -1,0 +1,37 @@
+{
+  "integrity": "ok",
+  "outputs": [
+    {
+      "id": "derived-1791968585987582-7eda8f5a3f01",
+      "model": "realcuganConservative4x",
+      "width": 256,
+      "height": 256,
+      "sha256": "7eda8f5a3f01060ffb647d147f9266a6b4d4c42a46aa80b6c4cd2c48706e05a0",
+      "parent_id": "import-7b463b896893d49ced71bfcd97d07d93debd26c214a6c95f815ffb931fc424c5"
+    },
+    {
+      "id": "derived-1791968584947692-ac5ba4444953",
+      "model": "realcuganConservative2x",
+      "width": 128,
+      "height": 128,
+      "sha256": "ac5ba4444953d6ca11557b7753d3fe083ef88f8f5b3b4fbea6e1ed3303f8e21a",
+      "parent_id": "import-7b463b896893d49ced71bfcd97d07d93debd26c214a6c95f815ffb931fc424c5"
+    },
+    {
+      "id": "derived-1791968583945477-dabeb1875510",
+      "model": "realesrganAnime4x",
+      "width": 256,
+      "height": 256,
+      "sha256": "dabeb1875510664d2001d9dfec43e27d824d7459365742e7bc464a5756fabba2",
+      "parent_id": "import-7b463b896893d49ced71bfcd97d07d93debd26c214a6c95f815ffb931fc424c5"
+    },
+    {
+      "id": "import-7b463b896893d49ced71bfcd97d07d93debd26c214a6c95f815ffb931fc424c5",
+      "model": "source",
+      "width": 64,
+      "height": 64,
+      "sha256": "7b463b896893d49ced71bfcd97d07d93debd26c214a6c95f815ffb931fc424c5",
+      "parent_id": null
+    }
+  ]
+}

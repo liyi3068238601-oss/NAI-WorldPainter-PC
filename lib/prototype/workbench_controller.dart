@@ -12,6 +12,7 @@ import 'package:crypto/crypto.dart';
 import '../assistant/agent_contract.dart';
 import '../assistant/assistant_controller.dart';
 import '../assistant/assistant_state.dart';
+import '../assistant/wd_tagger.dart';
 import '../tags/danbooru_client.dart';
 
 import '../storage/workspace_store.dart';
@@ -325,6 +326,7 @@ class WorkbenchController extends ChangeNotifier {
     VibeLibrary? vibeLibrary,
     PromptLibrary? promptLibrary,
     AgentTransport? assistantTransport,
+    WdTaggerClient? wdTaggerClient,
     DanbooruSearchClient? tagSearchClient,
     this.encodeVibe,
   }) : wasRestored = restored != null,
@@ -358,6 +360,7 @@ class WorkbenchController extends ChangeNotifier {
               Map<String, dynamic>.from(restored.data['assistant'] as Map),
             )
           : null,
+      wdTaggerClient: wdTaggerClient,
     );
     if (generateImage != null) _status = '请配置接入凭据；生成将使用当前渠道额度。';
     _results.addAll(const [
@@ -1649,27 +1652,126 @@ class WorkbenchController extends ChangeNotifier {
       !_disposed && !_closing && token == _generationToken;
 
   Future<void> runImageTool() async {
+    await _runImageTool();
+  }
+
+  /// Runs a user-confirmed Agent SR request against the exact managed Gallery
+  /// image shown in its confirmation preview. The active image-tool draft is
+  /// left untouched, while progress, cancellation and persistence still use
+  /// the ordinary image-processing job path.
+  Future<SceneResult?> runAssistantLocalSr({
+    required String sourceId,
+    required String sourceAssetRef,
+    required int sourceWidth,
+    required int sourceHeight,
+    required String model,
+    required AgentCancellation cancellation,
+  }) async {
+    cancellation.check();
+    if (_disposed || _closing) throw const AgentException('工作区正在关闭。');
+    if (_maintenance) throw const AgentException('图库正在维护，请稍后重试。');
+    if (_generating || _encodingVibe) {
+      throw const AgentException('当前有图像处理或编码任务正在运行，请等待完成。');
+    }
+    if (!localSrAvailable) {
+      throw AgentException(localSrInfo);
+    }
+    if (assets == null || processImageTool == null) {
+      throw const AgentException('当前工作区没有可用的受管图库或本地超分后端。');
+    }
+
+    final source = _results
+        .where(
+          (result) =>
+              result.id == sourceId &&
+              !result.isDemo &&
+              result.assetRef == sourceAssetRef &&
+              result.width == sourceWidth &&
+              result.height == sourceHeight,
+        )
+        .firstOrNull;
+    if (source == null) {
+      throw const AgentException('确认时的图库图片已变化或已移除；请重新读取图库并确认。');
+    }
+
+    final scale = switch (model) {
+      'realcuganConservative2x' => 2,
+      'realesrganAnime4x' || 'realcuganConservative4x' => 4,
+      _ => throw const AgentException('本地超分预设无效。'),
+    };
+    final postprocess = PostprocessParameters(
+      operation: PostprocessOperation.localSr,
+      sourceAssetRef: sourceAssetRef,
+      parentId: sourceId,
+      width: sourceWidth,
+      height: sourceHeight,
+      model: model,
+      scale: scale.toDouble(),
+    );
+    try {
+      postprocess.validate();
+    } on PostprocessValidationException {
+      throw const AgentException('本地超分预设与倍率不匹配。');
+    }
+
+    final taskDraft = <String, Object?>{
+      'version': 1,
+      'mode': 'localSr',
+      'active': true,
+      'sourceAssetRef': sourceAssetRef,
+      'sourceWidth': sourceWidth,
+      'sourceHeight': sourceHeight,
+      'parentId': sourceId,
+      'sourceRevision': 'assistant-${DateTime.now().microsecondsSinceEpoch}',
+      'postprocess': postprocess.toJson(),
+    };
+
+    var settled = false;
+    unawaited(
+      cancellation.whenCancelled.then((_) {
+        if (!settled) cancelGeneration();
+      }),
+    );
+    try {
+      cancellation.check();
+      return await _runImageTool(
+        submittedDraft: taskDraft,
+        updateActiveDraft: false,
+        validateLocalSrResult: true,
+      );
+    } finally {
+      settled = true;
+    }
+  }
+
+  Future<SceneResult?> _runImageTool({
+    Map<String, Object?>? submittedDraft,
+    bool updateActiveDraft = true,
+    bool validateLocalSrResult = false,
+  }) async {
     if (_disposed || _closing || _generating || _maintenance || _encodingVibe) {
-      return;
+      return null;
     }
     if (processImageTool == null) {
       _status = '当前预览未连接图片处理后端。';
       notifyListeners();
-      return;
+      return null;
     }
-    final draft = imageTools;
+    final draft = Map<String, Object?>.from(submittedDraft ?? imageTools);
+    // Preserve the existing canvas snapshot: this records the selected
+    // generation connection, independently of the processing connection below.
     draft['generationProtocol'] = connection.protocol;
     try {
       _validateImageTools(draft);
     } on FormatException catch (error) {
       _status = error.message;
       notifyListeners();
-      return;
+      return null;
     }
     if (draft['sourceAssetRef'] == null) {
       _status = '请先导入图片或使用当前图库原图。';
       notifyListeners();
-      return;
+      return null;
     }
     if (const ['tiled', 'enhance'].contains(draft['mode']) &&
         _seedText.isNotEmpty &&
@@ -1678,11 +1780,11 @@ class WorkbenchController extends ChangeNotifier {
             int.parse(_seedText) > 4294967295)) {
       _status = 'Seed 必须为 0–4294967295 的整数，或留空随机。';
       notifyListeners();
-      return;
+      return null;
     }
     final submitted = parameters;
     final mode = draft['mode'] as String;
-    final protocol = const ['enhance', 'upscale'].contains(mode)
+    final protocol = const ['enhance', 'upscale', 'localSr'].contains(mode)
         ? 'official'
         : draft['protocol'] as String? ?? connection.protocol;
     final submittedConnection = connectionFor(protocol);
@@ -1704,6 +1806,7 @@ class WorkbenchController extends ChangeNotifier {
     };
     _status = '正在准备图片处理任务';
     notifyListeners();
+    SceneResult? completedResult;
     try {
       await flush();
       final result = await processImageTool!(
@@ -1724,14 +1827,36 @@ class WorkbenchController extends ChangeNotifier {
         },
         () => _isCurrent(token),
       );
-      if (!_isCurrent(token)) return;
-      _results.insert(
-        0,
-        result.copyWith(createdAt: result.createdAt ?? DateTime.now()),
+      if (!_isCurrent(token)) return null;
+      if (validateLocalSrResult && mode == 'localSr') {
+        final postprocess = PostprocessParameters.fromJson(
+          Map<String, dynamic>.from(draft['postprocess']! as Map),
+        );
+        final scale = postprocess.scale!.toInt();
+        final expectedWidth = postprocess.width * scale;
+        final expectedHeight = postprocess.height * scale;
+        final metadata = result.editMetadata;
+        if (result.isDemo ||
+            result.assetRef == null ||
+            result.assetRef!.trim().isEmpty ||
+            result.width != expectedWidth ||
+            result.height != expectedHeight ||
+            result.model != postprocess.model ||
+            metadata?['operation'] != 'localSr' ||
+            metadata?['parentAssetRef'] != postprocess.sourceAssetRef ||
+            metadata?['parentResultId'] != draft['parentId']) {
+          throw const FormatException('本地超分未保存与已确认源图及预期尺寸匹配的真实派生图片。');
+        }
+      }
+      final storedResult = result.copyWith(
+        createdAt: result.createdAt ?? DateTime.now(),
       );
+      completedResult = storedResult;
+      _results.insert(0, storedResult);
       if (draft['mode'] == 'tiled') _recordSuccess();
       _selectedId = result.id;
-      if (imageTools['sourceRevision'] == draft['sourceRevision'] &&
+      if (updateActiveDraft &&
+          imageTools['sourceRevision'] == draft['sourceRevision'] &&
           imageTools['sourceAssetRef'] == draft['sourceAssetRef'] &&
           imageTools['mode'] == draft['mode']) {
         _extra['imageTools'] = {
@@ -1751,6 +1876,7 @@ class WorkbenchController extends ChangeNotifier {
       _status = '图片处理完成，原图保留，派生结果已保存到图库。';
       notifyListeners();
       await flush();
+      return completedResult;
     } catch (error) {
       if (_isCurrent(token)) {
         _status = saveFailed
@@ -1765,6 +1891,7 @@ class WorkbenchController extends ChangeNotifier {
         };
         notifyListeners();
       }
+      return null;
     } finally {
       if (_isCurrent(token)) {
         _generating = false;

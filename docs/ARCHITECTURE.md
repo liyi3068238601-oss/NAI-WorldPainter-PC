@@ -82,3 +82,5 @@ Vibe 编码库和缓存随 PC 工作区保存。兼容范围绑定模型、服�
 2026-10-14 标签增量：`lib/tags/danbooru_client.dart` 实现手机端使用的第三方中文语义索引协议，搜索页和 `search_danbooru` 共享客户端。每次请求独立 client、15 秒总超时、1 MiB 响应上限，不发送模型凭据、不自动重试或切换域名。来源和筛选设置保存在根节点 `tagSearch` schema 1，未知/损坏配置拒绝恢复。Agent 按轮次冻结来源与筛选，标签查询无需审批；写词仍复用现有草稿版本检查、差异确认与保存流程。详见 [标签搜索批次](TAG_SEARCH_REVIEW.md)。
 
 2026-10-14 提示词增量：知识版本保存在会话与默认设置，发送时冻结到 turn；固定主题参考与执行工具共用 AgentEngine 注册/分派。PromptProposal 严格解析最终文本而不执行工具 JSON；PromptProposalReview 绑定会话/回复/草稿 fingerprint，确认后统一校验所有目标，一次同步更新草稿与本地 PromptApplication 记录并提交 SQLite。旧快照缺版本/指纹时不能应用，取消/失败轮次不解析；会话分支分配新 turn ID。详见 [提示词批次](PROMPTING_REVIEW.md)。
+
+2026-10-14 附图增量：`assistant/wd_tagger.dart` 管理独立三阶段 HTTP 与严格完成事件，`image_analysis.dart` 在主模型请求前冻结配置、处理附图并保存数据观察。状态增加可选 WD schema 1，旧快照默认关闭。Agent 本地 SR 复用现有图片任务流程，以独立提交快照运行，不改活动图片工具草稿；工具返回经核对的派生身份。见 [本批报告](ASSISTANT_IMAGES_REVIEW.md)。

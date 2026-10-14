@@ -12,14 +12,16 @@ import '../assistant/model_discovery.dart';
 import '../assistant/prompt_application.dart';
 import '../assistant/prompting_knowledge.dart';
 import '../assistant/prompt_proposal.dart';
-import '../security/credential_vault.dart';
+import '../assistant/wd_tagger.dart';
 import '../platform/image_picker.dart';
-import 'assistant_memory_dialog.dart';
+import 'assistant_image_settings.dart';
 import 'assistant_material_picker.dart';
+import 'assistant_memory_dialog.dart';
 import 'assistant_model_picker.dart';
 import 'prompt_proposal_dialog.dart';
 import 'stored_image.dart';
 import 'workbench_controller.dart';
+import '../security/credential_vault.dart';
 
 class AssistantPanel extends StatefulWidget {
   const AssistantPanel({super.key, required this.workbench});
@@ -262,6 +264,19 @@ class _AssistantPanelState extends State<AssistantPanel> {
     );
   }
 
+  String _imageAnalysisStatus() {
+    final modes = <String>[];
+    final wdTagger = a.state.wdTagger;
+    if (wdTagger.enabled) {
+      modes.add(
+        'WD-Tagger（${WdTaggerSettings.models[wdTagger.model] ?? wdTagger.model}）',
+      );
+    }
+    final vision = a.state.visionProvider;
+    if (vision != null) modes.add('识图模型（${vision.name}）');
+    return modes.isEmpty ? '未配置' : modes.join(' + ');
+  }
+
   Future<void> _reviewPromptProposal(
     AssistantTurn turn,
     PromptProposal proposal,
@@ -437,8 +452,8 @@ class _AssistantPanelState extends State<AssistantPanel> {
                   const SizedBox(height: 8),
                   Text(
                     a.state.mainProvider == null
-                        ? '尚未配置对话模型 · 支持 OpenAI 兼容接口'
-                        : '${a.state.mainProvider!.name} · ${a.state.mainProvider!.model}   /   识图：${a.state.visionProvider?.name ?? '未绑定'}',
+                        ? '尚未配置对话模型 · 支持 OpenAI 兼容接口   /   附图分析：${_imageAnalysisStatus()}'
+                        : '${a.state.mainProvider!.name} · ${a.state.mainProvider!.model}   /   附图分析：${_imageAnalysisStatus()}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -611,7 +626,8 @@ class _AssistantPanelState extends State<AssistantPanel> {
                               : (v) => setState(() => requiredTool = v),
                         ),
                       IconButton(
-                        tooltip: '附加图片（发送至识图模型）',
+                        key: const ValueKey('assistant-attach-image'),
+                        tooltip: '附加图片（分析：${_imageAnalysisStatus()}）',
                         onPressed: a.busy || widget.workbench.assets == null
                             ? null
                             : _attach,
@@ -674,7 +690,7 @@ class _AssistantPanelState extends State<AssistantPanel> {
           ),
           const SizedBox(height: 10),
           const Text(
-            '小助手可以读取草稿、查找本地素材、整理角色词。\n实际修改先给你确认，执行过程始终可见。',
+            '小助手可以读取草稿、整理提示词、分析附图和调用本地超分。\n实际修改和超分先给你确认，执行过程始终可见。',
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -687,6 +703,7 @@ class _AssistantPanelState extends State<AssistantPanel> {
                 '读取当前草稿，指出可以改进的地方',
                 '先读取，再帮我优化并写入正向提示词',
                 '查找与月光有关的本地提示词素材',
+                '读取图库，选择一张图片向我确认本地超分',
               ])
                 ActionChip(
                   label: Text(text),
@@ -944,6 +961,14 @@ class _AssistantPanelState extends State<AssistantPanel> {
                     '结果：${trace['result']}',
                     style: const TextStyle(fontSize: 11),
                   ),
+                if (trace['error'] is String)
+                  SelectableText(
+                    '错误：${trace['error']}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
                 Text(
                   '${trace['durationMs'] ?? 0} ms',
                   style: const TextStyle(fontSize: 10),
@@ -980,6 +1005,11 @@ class _AssistantSettingsState extends State<_AssistantSettings> {
       builder: (_) => _ProviderEditor(controller: a, provider: old),
     );
     if (provider != null && mounted) setState(() {});
+  }
+
+  Future<void> _openWdTaggerSettings() async {
+    await showWdTaggerSettingsDialog(context, a);
+    if (mounted) setState(() {});
   }
 
   Future<void> _remove(AssistantProvider provider) async {
@@ -1103,6 +1133,20 @@ class _AssistantSettingsState extends State<_AssistantSettings> {
               onChanged: (id) => setState(
                 () => a.selectProvider(id == '' ? null : id, vision: true),
               ),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              key: const ValueKey('assistant-wd-tagger-settings'),
+              onPressed: _openWdTaggerSettings,
+              icon: const Icon(Icons.image_search_outlined),
+              label: const Text('WD-Tagger 图片识别设置'),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              a.state.wdTagger.enabled
+                  ? '已启用 · ${WdTaggerSettings.models[a.state.wdTagger.model] ?? a.state.wdTagger.model}'
+                  : '已关闭',
+              style: const TextStyle(fontSize: 11),
             ),
             const SizedBox(height: 14),
             DropdownButtonFormField<PromptingVersion>(

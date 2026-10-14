@@ -1,0 +1,62 @@
+{
+  "date_utc": "2026-10-14T09:04:15.950844+00:00",
+  "baseline_commit": "8a3469243ca0cd694b1415b2f548a37535f4dd9a",
+  "scope": "WD attachment preanalysis and confirmed local SR Agent tool",
+  "flutter_tests": {
+    "passed": 389,
+    "failed": 0,
+    "skipped_opt_in": 1
+  },
+  "local_sr_probe": {
+    "passed": true,
+    "presets": 3,
+    "sqlite_reopen": true,
+    "source_preserved": true
+  },
+  "dart_analyze": "No issues found",
+  "windows_release": "passed",
+  "web_release": "passed; existing Cupertino font warning",
+  "windows_storage_probe": "passed",
+  "windows_credential_probe": "passed",
+  "native_ui": {
+    "startup_and_fixture_restore": true,
+    "full_interaction": "not completed: repeated Windows automation user-input guard interruption",
+    "http_requests": 0,
+    "qa_processes_stopped": true
+  },
+  "visual_review": [
+    "1440x900 settings widget",
+    "360x560 scrollable settings widget",
+    "Windows 1427x893 startup only",
+    "three actual SR synthetic geometry outputs"
+  ],
+  "real_external_services_verified": false,
+  "image_generation_channels_added": false,
+  "limitations": [
+    "Actual LLM tool selection and public WD/Vision not tested",
+    "Independent image-tagging selection/translation page pending",
+    "Native send/approval/settings-save/reopen interaction not completed",
+    "SR geometry fixtures are not painting quality assessment or Intel-only validation"
+  ],
+  "source_sha256_git_blob": {
+    "lib/assistant/assistant_controller.dart": "cbdb5f7e6f831202dabff7b3706ce9ab5c9fde65ec05410eb29ab294a96b556d",
+    "lib/assistant/assistant_state.dart": "fd153e59f07cbe45f06fe84808cf0e5d026252c8fce63e635894d80dde05db72",
+    "lib/assistant/image_analysis.dart": "a586362b21513e4dd709513d9e1562a6db07f362033ece724570b832395a03d6",
+    "lib/assistant/wd_tagger.dart": "4b70e11991c990696fc75e54b9e3eb370e2e1d48bd16cd2154dd200d6640d378",
+    "lib/assistant/workspace_tools.dart": "43dd1832adc35e14dfc76b0fa89272551af29f9ef3853a79565cb70de6efef62",
+    "lib/prototype/assistant_image_settings.dart": "7d61ebf9c98dc8a30170293be6a3ce24f1b3c943c75c97109b9c58cb4f54e549",
+    "lib/prototype/assistant_panel.dart": "9b36cc615137437182653ea44348b1c55c78597de761172f3a544aa706bf830e",
+    "lib/prototype/workbench_controller.dart": "bb3360400b5148903a091a8f3bdc18e724456f1b5dab94648aeb91dfe67031ba",
+    "scripts/assistant-image-qa-mock.py": "73f359b1b0f09ab3db36d2a15cb43dd56feaf0e6815352087e9ac7d0566e1ac8",
+    "test/assistant/image_analysis_integration_test.dart": "35b92e7a685b8c6df4b183091abb1cf4443d29c68d5861cda742585d390206be",
+    "test/assistant/upscale_agent_test.dart": "cd7627d0c47c549c5fcb684cbdf0a92f02799bb3b37ec1fd7003bc4fb5c35955",
+    "test/assistant/wd_tagger_loopback_test.dart": "3ac75fd7c3aa99cf5292eac887ac9016a471c202ba302483eaf595bc29e2e4c1",
+    "test/assistant/wd_tagger_test.dart": "46300565c7399d0da6e9559dcffdcd6e5aabda08f394f23df2b968d33797f1cc",
+    "test/assistant_image_ui_test.dart": "41a2fa3f8a1ad0cbdb75dbfffff938351e0609524bf63f0cca97e5251ddb18fc"
+  },
+  "build_sha256": {
+    "build/windows/x64/runner/Release/worldpainter_pc.exe": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b",
+    "build/windows/x64/runner/Release/data/app.so": "3ed511626d8769363623f52bad9948d205903fac29e45b6c54aa2e4b3cf65d19",
+    "build/web/main.dart.js": "cd14888abe74056996c8eb744004103d8c5e23b561fd176312365c9a7d077f2d"
+  }
+}

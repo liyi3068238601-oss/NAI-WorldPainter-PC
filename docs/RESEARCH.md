@@ -71,3 +71,5 @@
 ## 2026-10-14 提示词知识与应用调查
 
 只读复核手机版本选择、V5 动态参考工具与未接线的文本解析器，并比较浪白的提案预览/陈旧内容检查。手机技能包 GPLv3，未复制社区语料；PC 采用官方文档的独立摘要，记录模型页与文字页的单位冲突。固定参考版本、文件 SHA-256、许可边界和实际移植差异见 [来源记录](PROMPTING_SOURCES.md)，实现与验证见 [批次报告](PROMPTING_REVIEW.md)。
+
+2026-10-14 附图/超分批次：核对手机 WD/Vision 与 `upscale_image` 调用链，对照 SmilingWolf 固定 Space 源码和 Gradio 6.19.0 Label 格式，独立实现受限客户端；复用 PC 已有本地 SR 后端。来源、移植差异与验证边界见 [本批报告](ASSISTANT_IMAGES_REVIEW.md)。

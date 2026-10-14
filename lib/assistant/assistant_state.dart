@@ -3,6 +3,7 @@ import 'agent_contract.dart';
 import 'prompt_memory.dart';
 import 'prompt_application.dart';
 import 'prompting_knowledge.dart';
+import 'wd_tagger.dart';
 
 const int _assistantStateSchema = 1;
 
@@ -270,6 +271,7 @@ class AssistantState {
     this.contextTurns = 8,
     this.systemPrompt = '',
     this.promptingVersion = PromptingVersion.v45,
+    this.wdTagger = const WdTaggerSettings(),
     PromptMemoryLibrary? memories,
     List<AssistantSession> sessions = const [],
     String? activeSessionId,
@@ -288,6 +290,7 @@ class AssistantState {
   int contextTurns;
   String systemPrompt;
   PromptingVersion promptingVersion;
+  WdTaggerSettings wdTagger;
   final PromptMemoryLibrary memories;
   List<AssistantSession> sessions;
   String? activeSessionId;
@@ -327,6 +330,7 @@ class AssistantState {
       'contextTurns': contextTurns,
       'systemPrompt': systemPrompt,
       'promptingVersion': promptingVersion.name,
+      'wdTagger': wdTagger.toJson(),
       'memories': memories.toJson(),
       'sessions': sessions.map((session) => session.toJson()).toList(),
       'activeSessionId': activeSessionId,
@@ -355,6 +359,11 @@ class AssistantState {
       ).map(AssistantSession.fromJson).toList();
 
       return AssistantState(
+        wdTagger: json.containsKey('wdTagger')
+            ? WdTaggerSettings.fromJson(
+                _asStringMap(json['wdTagger'], 'wdTagger'),
+              )
+            : const WdTaggerSettings(),
         promptingVersion: json.containsKey('promptingVersion')
             ? _promptingVersion(json['promptingVersion']) ??
                   (throw const FormatException('Missing prompting version.'))
@@ -398,6 +407,7 @@ class AssistantState {
       );
     }
     _validateText(systemPrompt, 'systemPrompt', _maxSystemPromptLength);
+    wdTagger.validate();
 
     final providerIds = <String>{};
     for (final provider in providers) {
