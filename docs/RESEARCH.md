@@ -64,3 +64,6 @@
 ## 2026-10-14 记忆批次调查
 
 只读调查手机同一 HEAD 的记忆实体、管理用例、SQLite repository、页面/ViewModel 与 get/save 工具。采用候选审核、替代历史和类型/来源语义，自行实现 PC 模型和交互；修正新条目进入过期清理的问题，并记录标签型内容规范化差异。未复制第三方业务代码、增加依赖或素材。Flutter 弹窗生命周期官方依据、文件指纹和实际验证见 [记忆批次](ASSISTANT_KNOWLEDGE_REVIEW.md)。
+## 2026-10-14 标签服务协议补充
+
+手机现有 Danbooru 搜索实际连接第三方中文语义索引。对照 GitHub `SuzumiyaAkizuki/ComfyUI-DanbooruSearcher` commit `3522854610d9cb51193ffcdd5b9a3059d4a686be` 与 HF `SAkizuki/DanbooruSearch` commit `427a3c377821367f83a1f3c141c15fdfcb290bd2` 核对了 `/api/search` 请求/响应。前者未找到根许可证，后者 LICENSE 为 GPL v3；没有复制第三方代码、模型或词库。本批独立实现客户端，不宣称官方实时标签校验，也未验证服务当前在线性、匿名配额或 Key 政策。固定版本链接、行为差异和证据见 [标签搜索报告](TAG_SEARCH_REVIEW.md)。

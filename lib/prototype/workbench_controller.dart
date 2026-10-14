@@ -12,6 +12,7 @@ import 'package:crypto/crypto.dart';
 import '../assistant/agent_contract.dart';
 import '../assistant/assistant_controller.dart';
 import '../assistant/assistant_state.dart';
+import '../tags/danbooru_client.dart';
 
 import '../storage/workspace_store.dart';
 import '../generation/generation_parameters.dart';
@@ -324,8 +325,10 @@ class WorkbenchController extends ChangeNotifier {
     VibeLibrary? vibeLibrary,
     PromptLibrary? promptLibrary,
     AgentTransport? assistantTransport,
+    DanbooruSearchClient? tagSearchClient,
     this.encodeVibe,
   }) : wasRestored = restored != null,
+       tagSearchClient = tagSearchClient ?? HttpDanbooruSearchClient(),
        promptLibrary =
            promptLibrary ??
            (restored != null && restored.data.containsKey('promptLibrary')
@@ -408,6 +411,28 @@ class WorkbenchController extends ChangeNotifier {
   final WorkspaceStore? store;
   final VibeLibrary vibeLibrary;
   final PromptLibrary promptLibrary;
+  final DanbooruSearchClient tagSearchClient;
+
+  String get tagSearchBaseUrl =>
+      (_extra['tagSearch'] as Map?)?['baseUrl'] as String? ??
+      defaultDanbooruBaseUrl;
+  bool get tagSearchShowNsfw =>
+      (_extra['tagSearch'] as Map?)?['showNsfw'] as bool? ?? true;
+
+  void configureTagSearch({required String baseUrl, required bool showNsfw}) {
+    if (_disposed || _closing || _maintenance || assistant.busy) {
+      throw const AgentException('请等待助手完成，并在工作区可编辑时修改标签搜索设置。');
+    }
+    final normalized = normalizeDanbooruBaseUrl(baseUrl);
+    _update(() {
+      _extra['tagSearch'] = {
+        'schema': 1,
+        'baseUrl': normalized,
+        'showNsfw': showNsfw,
+      };
+    });
+  }
+
   late final AssistantController assistant;
   final EncodeVibe? encodeVibe;
   bool _encodingVibe = false;
@@ -747,6 +772,16 @@ class WorkbenchController extends ChangeNotifier {
 
   void _restore(StoredWorkspace stored) {
     final data = stored.data;
+    if (data.containsKey('tagSearch')) {
+      final settings = data['tagSearch'];
+      if (settings is! Map ||
+          settings['schema'] != 1 ||
+          settings['baseUrl'] is! String ||
+          settings['showNsfw'] is! bool) {
+        throw const FormatException('无效的标签搜索设置');
+      }
+      normalizeDanbooruBaseUrl(settings['baseUrl'] as String);
+    }
     _extra = Map<String, Object?>.from(data)
       ..removeWhere(
         (key, _) => const [

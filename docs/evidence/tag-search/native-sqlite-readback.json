@@ -1,0 +1,48 @@
+{
+  "isolated_fixture": true,
+  "sqlite_integrity": "ok",
+  "prompt_suffix_preserved": true,
+  "prompt_sha256": "a1fe8907756e6ec922a86644f91769f283e3e28b3e517352aeb76a1d1559df71",
+  "turn_statuses": [
+    "complete",
+    "complete"
+  ],
+  "trace_sequences": [
+    [
+      {
+        "name": "read_current_prompts",
+        "status": "completed",
+        "callId": "qa-tag-71fcaa2d856a4db3b8454e2eb0aba843"
+      },
+      {
+        "name": "get_memories",
+        "status": "completed",
+        "callId": "qa-tag-c5327c212134493db49357beea5b706f"
+      },
+      {
+        "name": "search_danbooru",
+        "status": "completed",
+        "callId": "qa-tag-6affe4711bc142bcac75f725ee5c2a3a"
+      },
+      {
+        "name": "write_prompt",
+        "status": "completed",
+        "callId": "qa-tag-b4559697777a45db80e607e1d2b2a563"
+      }
+    ],
+    [
+      {
+        "name": "diagnostic_echo",
+        "status": "completed",
+        "callId": "qa-tag-258c48cf438d41daaf088765d7a86d84"
+      }
+    ]
+  ],
+  "accepted_memory_hit_count": 1,
+  "tagSearch": {
+    "baseUrl": "http://127.0.0.1:5119",
+    "schema": 1,
+    "showNsfw": false
+  },
+  "human_visual_reopen": "native-reopened-prompt.png and native-reopened-history.png; final resource rebuild also reopened"
+}

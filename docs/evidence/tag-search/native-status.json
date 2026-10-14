@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "listener": "127.0.0.1:5119",
+  "stats": {
+    "chat_requests": 7,
+    "tool_calls_emitted": 5,
+    "search_requests": 1,
+    "search_failures": 0,
+    "completed_flows": 2,
+    "stopped_flows": 0,
+    "last_status": "completed",
+    "last_source": "diagnostic_echo",
+    "last_returned_tags": []
+  }
+}

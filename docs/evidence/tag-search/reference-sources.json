@@ -1,0 +1,21 @@
+{
+  "mobile_head": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+  "mobile_reference_files_clean": true,
+  "mobile_sha256": {
+    "lib/data/datasources/remote/danbooru_api_service.dart": "8c7439b011006f44a67cff945baebbc3ac0e25aa7e56106b5269338d146c713d",
+    "lib/domain/entities/danbooru_tag.dart": "bb826056e3c626adfb4cd64c4521aeeea0795eea1614de19b41d9d7cb3715308",
+    "lib/domain/agents/tools/search_danbooru_tool.dart": "679c83b3ffae7c2c70ab6f94f01427d93ca78ee4984af8045ca5077d46e70c07",
+    "lib/presentation/pages/danbooru_tag_search_page.dart": "7d4638478c095f3b07420d2b0fd1567954e465e84553d292304e1db87e60375f"
+  },
+  "github_reference": {
+    "url": "https://github.com/SuzumiyaAkizuki/ComfyUI-DanbooruSearcher/tree/3522854610d9cb51193ffcdd5b9a3059d4a686be",
+    "license": "no root LICENSE found; no code copied"
+  },
+  "hf_deployment_reference": {
+    "url": "https://huggingface.co/spaces/SAkizuki/DanbooruSearch/tree/427a3c377821367f83a1f3c141c15fdfcb290bd2",
+    "license": "GPL-3.0; protocol reference only; no code copied",
+    "api_fastapi.py_sha256": "a5a76648a30c726468d8d20878521278feff3cb735e74959f563c5ba1a3cdb3c",
+    "route": "ui_nicegui.py mounts api_fastapi child /search under /api"
+  },
+  "new_external_assets_or_dependencies": false
+}

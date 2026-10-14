@@ -1,0 +1,6 @@
+Running hidden Windows storage probe phase 'write'.
+Running hidden Windows storage probe phase 'read'.
+Windows storage probe passed for SQLite persistence, Unicode paths, and PNG SHA-256.
+Database: E:\NAI-WorldPainter\PC端\.tmp\windows-storage-probe\绘世数据 20261014-105506-904\workspace.sqlite
+Image SHA-256: 529ec4b77f22e42761c0288a77a255bc158dc5986df445939e8e44de7c25c8b3
+Reports: E:\NAI-WorldPainter\PC端\.tmp\windows-storage-probe\reports\20261014-105506-904-write.json ; E:\NAI-WorldPainter\PC端\.tmp\windows-storage-probe\reports\20261014-105506-904-read.json

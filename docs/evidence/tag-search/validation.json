@@ -1,0 +1,97 @@
+{
+  "timestamp_utc": "2026-10-14T03:04:19.104687+00:00",
+  "batch": "PC Danbooru semantic tag search and confirmed Agent loop",
+  "baseline_commit": "245d8908a8c09c08a05da32b39e0f58367e2eede",
+  "tests": {
+    "passed": 324,
+    "failed": 0,
+    "added_from_baseline": 23,
+    "real_loopback_http_four_tool_chain": true,
+    "sqlite_reopen": true,
+    "remote_tag_or_model_requests": false,
+    "paid_generation": false
+  },
+  "static_analysis": "passed; no issues",
+  "windows_release_build": "passed",
+  "web_release_build": "passed",
+  "web_build_warning": "Existing CupertinoIcons font notice remains; no manual browser QA performed",
+  "windows_storage_probe": "passed; two-process SQLite, Unicode paths, PNG SHA256",
+  "windows_credential_probe": "passed; synthetic key write/read/delete only",
+  "visual_qa": {
+    "renderer": "Flutter test renderer plus actual Windows executable",
+    "widget_sizes": [
+      "1440x900 DPR1",
+      "640x480 DPR2"
+    ],
+    "reviewed_widget_captures": [
+      "assistant-tags-complete.png",
+      "assistant-tags-confirm.png",
+      "compact-640x480-dpr2-details.png",
+      "compact-640x480-dpr2.png",
+      "english-results.png",
+      "tag-details.png"
+    ],
+    "reviewed_native_captures": [
+      "native-complete.png",
+      "native-confirm.png",
+      "native-diagnostic.png",
+      "native-final-reopened.png",
+      "native-final-tags.png",
+      "native-reopened-history.png",
+      "native-reopened-prompt.png"
+    ]
+  },
+  "native_agent_qa": {
+    "synthetic_loopback_only": true,
+    "prepared_input_fixture": true,
+    "read_memory_tags_confirm_write": true,
+    "normal_close_and_reopen": true,
+    "nonce_tool_diagnostic": true,
+    "database_readback": "native-sqlite-readback.json",
+    "requests_receipt": "native-requests.jsonl",
+    "limitation": "Computer Use type_text did not populate the observed Flutter input after refocus/retry; extra native no-tool/failure/cancel typing scenarios not completed. Automated coverage passed."
+  },
+  "windows_icons": {
+    "stale_subset_detected_visually": true,
+    "fix": "build script --no-tree-shake-icons",
+    "final_font_bytes": 1645184,
+    "matches_sdk_original": true,
+    "exe_and_app_so_identical_to_native_flow_test": true,
+    "final_native_visual_reopen_verified": true
+  },
+  "new_image_generation_channels": false,
+  "remaining_gaps": [
+    "real model and external tag service validation",
+    "automatic tag calibration",
+    "version-specific prompting knowledge",
+    "WD-Tagger and remaining M4 tools",
+    "complete mobile parity"
+  ],
+  "logs": "Final successful commands; trailing whitespace trimmed. Windows log is final 70-line excerpt.",
+  "source_sha256_git_blob": {
+    "lib/assistant/agent_engine.dart": "4b79e05574aa75f77786299caa5a0706dfc63147e876687de1c122bd2fdbde92",
+    "lib/assistant/assistant_controller.dart": "4eedd4c95c4992a72ebed99e6d43c4f2361d3734820159440900913a279b915c",
+    "lib/assistant/openai_agent_transport.dart": "35e04dd767f8ac4212816e4079a0753f162da9f94a2eecd43a484e6815ad50e0",
+    "lib/assistant/tag_tools.dart": "698b60d32c03dc807cccbcfd6e2a4ff1e8f0337aaa1a86db45eeefca145598b8",
+    "lib/assistant/workspace_tools.dart": "d74cc906e12ef138e019a09df5c292d20c62ef4ba397e731bf21a394308c28f9",
+    "lib/prototype/tag_search_panel.dart": "cff32a1e5c04be696b0e927022e142973d181765b299f475890950f675f81baf",
+    "lib/prototype/workbench.dart": "479abdc001e8d7571899094f98c70c55f55958d28bb1766a6f99639be789de81",
+    "lib/prototype/workbench_controller.dart": "7dbf3d0dccdf322252cd58f81d7135cc1b8c48749a595160876088bebfb101ea",
+    "lib/tags/danbooru_client.dart": "bbefc4c66a574588b8ce7f3b8c593ff83152521e9e314c660a9cc9f0ef533f0b",
+    "pubspec.lock": "6dd96a56d578273168a1672372ff1cde1b8e650adfefeed437289f9568d87d49",
+    "scripts/build-windows.ps1": "39c700cf381072dc5e52b82037b886b9f3644c8047ee7983cd6d347e2b0be48e",
+    "scripts/tag-agent-qa-mock.py": "b469a13017bb09d857ab26c10c184b36f799f7e3ddf706672cafffed99acdb0b",
+    "test/assistant/tag_agent_integration_test.dart": "2f7074a54b6072100ec2690eae191233c5c1581ca987e01acfaba69edee4982e",
+    "test/assistant/tag_loopback_test.dart": "732e1f828d3a03dd13099906b7bac2a8f49ac9ed72746fc70f2b63aab795164f",
+    "test/support/tag_agent_fixture.dart": "2381678623a55ddd60ceea907c2ceb7681caf07ae17666adb344980221f36920",
+    "test/tag_agent_ui_test.dart": "45db25983243a37d34f1b1b6c1ebbdd3e6e58464ab2d3f255cfe23289aec6027",
+    "test/tag_search_ui_test.dart": "1dcd539293f1456b4da3cae1a5b508ba944823db4561c3fb6a47021738cd8a45",
+    "test/tags/danbooru_client_test.dart": "ede02e00138017dafcde8c2e2a456661d14d69be6e456a5b5286afa013a714a1"
+  },
+  "build_artifact_sha256": {
+    "build/windows/x64/runner/Release/worldpainter_pc.exe": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b",
+    "build/windows/x64/runner/Release/data/app.so": "a3579aad07cdfa1f9f971d6e9b73aa4abf6734b1504cd8d3bd0e0a79f2fc0600",
+    "build/windows/x64/runner/Release/data/flutter_assets/fonts/MaterialIcons-Regular.otf": "d9865b671a09d683d13a863089d8825e0f61a37696ce5d7d448bc8023aa62453",
+    "build/web/main.dart.js": "8b730584719e4456149665496d8f340ad01a95f523cafe3adde287854b6bb70c"
+  }
+}

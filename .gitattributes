@@ -21,3 +21,4 @@ assets/prompts/capsules.json -text whitespace=blank-at-eol,blank-at-eof,space-be
 docs/evidence/prompt-library/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/evidence/assistant/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/evidence/assistant-knowledge/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/evidence/tag-search/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

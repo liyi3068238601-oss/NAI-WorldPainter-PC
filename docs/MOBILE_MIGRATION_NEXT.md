@@ -47,3 +47,5 @@
 ## 2026-10-14 当前实施顺序
 
 记忆主体、候选审核、助手素材插入与模型列表已接入，详见 [记忆批次](ASSISTANT_KNOWLEDGE_REVIEW.md)。接下来继续 M4 的 Danbooru/标签、专用提示词技能、WD-Tagger 与其余 Agent 工具；GPT/Nano 生图渠道仍暂缓，未移出全量范围。
+
+标签搜索页和 `search_danbooru` 已在后续同日批次接入，详见 [标签批次](TAG_SEARCH_REVIEW.md)。下一批优先考虑 NAI v4.5/v5 专用提示词知识与可审阅提案，再迁移 WD-Tagger、已有本地超分的 Agent 调用；真实模型/标签服务验证需与模拟证据分别记录。
