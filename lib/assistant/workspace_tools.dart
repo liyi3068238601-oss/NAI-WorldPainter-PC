@@ -4,6 +4,7 @@ import '../processing/postprocess_parameters.dart';
 import '../prompts/prompt_capsules.dart';
 import '../prompts/prompt_insertion.dart';
 import '../prototype/workbench_controller.dart';
+import 'generation_plan.dart';
 import 'agent_contract.dart';
 import 'agent_engine.dart';
 import 'memory_tools.dart';
@@ -24,6 +25,7 @@ class WorkspaceAgentTools {
   String _draft;
   String get draftFingerprint => _draft;
   bool _hasRead = false;
+  bool _generationAttempted = false;
   Future<List<PromptCapsule>>? _capsules;
 
   void _check(AgentCancellation token) {
@@ -58,7 +60,55 @@ class WorkspaceAgentTools {
           execute: () async {
             _check(token);
             _hasRead = true;
-            return workbench.assistantPromptSnapshot;
+            final parameters = workbench.parameters;
+            final editing = workbench.assistantEditingInputs;
+            final document = editing['document'] is Map
+                ? Map<String, Object?>.from(editing['document'] as Map)
+                : const <String, Object?>{};
+            final crop = editing['img2img'] is Map
+                ? Map<String, Object?>.from(editing['img2img'] as Map)
+                : const <String, Object?>{};
+            final operation = switch (parameters.operation) {
+              GenerationOperation.textToImage => 'text_to_image',
+              GenerationOperation.imageToImage => 'image_to_image',
+              GenerationOperation.inpaint => 'inpaint',
+            };
+            final sourceRef =
+                parameters.operation == GenerationOperation.inpaint
+                ? document['sourceAssetRef'] as String? ??
+                      parameters.sourceImageId
+                : parameters.operation == GenerationOperation.imageToImage
+                ? crop['originalAssetRef'] as String? ??
+                      parameters.img2imgSourceImageId
+                : null;
+            final maskRef =
+                document['importedMaskAssetRef'] as String? ??
+                parameters.maskImageId;
+            final snapshot = Map<String, dynamic>.from(
+              workbench.assistantPromptSnapshot,
+            );
+            snapshot.addAll({
+              'operation': operation,
+              'source_image_ref': sourceRef,
+              'prepared_source_ref':
+                  parameters.operation == GenerationOperation.imageToImage
+                  ? crop['preparedAssetRef'] as String? ??
+                        parameters.img2imgSourceImageId
+                  : parameters.sourceImageId,
+              'mask_image_ref': maskRef,
+              'img2img_strength': parameters.img2imgStrength,
+              'inpaint_strength': parameters.inpaintStrength,
+              'editor_input_state': {
+                'inpaint_document_ready': document.isNotEmpty,
+                'mask_ready':
+                    maskRef != null ||
+                    (document['strokes'] is List &&
+                        (document['strokes']! as List).isNotEmpty),
+                'img2img_crop_ready': crop.isNotEmpty,
+                if (crop.isNotEmpty) 'img2img_crop': crop,
+              },
+            });
+            return snapshot;
           },
         );
       },
@@ -470,12 +520,12 @@ class WorkspaceAgentTools {
     if (workbench.liveGeneration)
       AgentTool(
         name: 'generate_image',
-        label: '使用当前渠道生成',
-        description: '使用当前已有生图渠道/模型/尺寸/Seed生成。可覆写正负提示词和本次张数，不修改草稿。必须用户确认；会消耗当前渠道额度。仅返回真实已完成入库的图片 ID。',
+        label: '使用当前工作流生成',
+        description: '使用当前工作台选定的文生图、图生图或局部重绘模式与当前输入生成。可临时覆写正负提示词和本次张数，不修改草稿；不接受任意路径或输入素材选择。必须用户确认；会消耗当前渠道额度。单次最多 2 张，只返回本次工作台回执中的真实结果 ID。',
         parameters: schema({
           'prompt': {'type': 'string', 'maxLength': 24000},
           'negative_prompt': {'type': 'string', 'maxLength': 24000},
-          'batch_count': {'type': 'integer', 'minimum': 1, 'maximum': 8},
+          'batch_count': {'type': 'integer', 'minimum': 1, 'maximum': 2},
         }),
         prepare: (args, token) async {
           _editable(token);
@@ -483,48 +533,93 @@ class WorkspaceAgentTools {
             prompt: args['prompt'] as String?,
             negativePrompt: args['negative_prompt'] as String?,
           );
-          if (parameters.operation != GenerationOperation.textToImage) {
-            throw const AgentException('本批助手生成只支持文生图；图生图与重绘请使用工作台确认输入图和蒙版。');
-          }
           final connection = workbench.connection;
           final count = args['batch_count'] as int? ?? 1;
-          final ids = workbench.results.map((r) => r.id).toSet();
+          if (count < 1 || count > 2) {
+            throw const AgentException('助手每次最多生成 2 张图片。');
+          }
+          if (_generationAttempted) {
+            throw const AgentException('本轮助手生成已经开始。为避免重复计费，请在下一条消息中手动重新发起。');
+          }
+          final plan = await AssistantGenerationPlan.prepare(
+            workbench: workbench,
+            parameters: parameters,
+            connection: connection,
+            cancellation: token,
+            checkDraft: () => _check(token),
+          );
+          try {
+            token.check();
+            _check(token);
+          } catch (_) {
+            plan.dispose();
+            rethrow;
+          }
+          final submitted = plan.parameters;
+          final submittedConnection = plan.connection;
+          final operationLabel = switch (submitted.operation) {
+            GenerationOperation.textToImage => '文生图',
+            GenerationOperation.imageToImage => '图生图',
+            GenerationOperation.inpaint => '局部重绘',
+          };
           return PreparedAgentTool(
             summary:
-                '${connection.label} · ${parameters.model} · $count 张（使用额度）',
+                '$operationLabel · ${submittedConnection.label} · ${submitted.model} · $count 张（使用额度）',
             confirm: true,
             preview: {
-              '渠道': connection.label,
-              '模型': parameters.model,
-              '尺寸': '${parameters.width} × ${parameters.height}',
+              ...plan.preview,
+              '操作': operationLabel,
+              '渠道': submittedConnection.label,
+              '模型': submitted.model,
+              '尺寸': '${submitted.width} × ${submitted.height}',
+              '图生图强度': submitted.img2imgStrength,
+              '重绘强度': submitted.inpaintStrength,
               '张数': count,
-              '正向': parameters.prompt,
-              '负向': parameters.negativePrompt ?? '',
-              'Seed': parameters.seed?.toString() ?? '随机',
+              '正向': submitted.prompt,
+              '负向': submitted.negativePrompt ?? '',
+              'Seed': submitted.seed?.toString() ?? '随机',
             },
+            dispose: plan.dispose,
             execute: () async {
               _editable(token);
+              if (_generationAttempted) {
+                throw const AgentException(
+                  '本轮助手生成已经开始。为避免重复计费，请在下一条消息中手动重新发起。',
+                );
+              }
+              _generationAttempted = true;
               var settled = false;
               token.whenCancelled.then((_) {
                 if (!settled) workbench.cancelGeneration();
               });
               try {
-                await workbench.generate(
-                  submitted: parameters,
-                  submittedConnection: connection,
+                final receipt = await workbench.generateForAssistant(
+                  submitted: submitted,
+                  submittedConnection: submittedConnection,
                   count: count,
+                  processResult: plan.processResult,
                 );
-                token.check();
-                final generated = workbench.results
-                    .where((r) => !ids.contains(r.id) && !r.isDemo)
-                    .toList();
+                final generated = receipt.results
+                    .where((result) => !result.isDemo && result.id.isNotEmpty)
+                    .toList(growable: false);
+                final postProcessingFailed =
+                    receipt.postProcessingFailed || plan.postProcessingFailed;
+                final complete = receipt.complete && !postProcessingFailed;
+                if (complete) _generationAttempted = false;
                 return {
-                  'ok': generated.length == count,
-                  'requested': count,
+                  'ok': complete,
+                  'requested': receipt.requested,
+                  'attempted': receipt.attempted,
                   'completed': generated.length,
-                  'image_ids': generated.map((r) => r.id).toList(),
-                  if (generated.length != count)
-                    'error': '部分或全部图片未完成；不要自动重试以避免重复计费。',
+                  'persisted': receipt.persisted,
+                  'cancelled': receipt.cancelled,
+                  'post_processing_failed': postProcessingFailed,
+                  'image_ids': generated.map((result) => result.id).toList(),
+                  if (!complete)
+                    'error':
+                        receipt.error ??
+                        plan.error ??
+                        '本次生成未完整完成；可能已计费，请在下一条消息中手动重试。',
                 };
               } finally {
                 settled = true;

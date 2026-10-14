@@ -18,11 +18,13 @@ class PreparedAgentTool {
     required this.execute,
     this.confirm = false,
     this.preview = const {},
+    this.dispose,
   });
   final String summary;
   final bool confirm;
   final Map<String, dynamic> preview;
   final Future<Map<String, dynamic>> Function() execute;
+  final void Function()? dispose;
 }
 
 class AgentTool {
@@ -165,6 +167,7 @@ class AgentEngine {
 
         emit('pending');
         Map<String, dynamic> result;
+        PreparedAgentTool? prepared;
         try {
           cancellation.check();
           if (failures >= maxFailures) {
@@ -186,7 +189,14 @@ class AgentEngine {
           }
           validateToolArguments(decoded, tool.parameters);
           final plan = await cancellation.bind(
-            tool.prepare(decoded, cancellation),
+            tool.prepare(decoded, cancellation).then((plan) {
+              if (cancellation.isCancelled) {
+                plan.dispose?.call();
+                cancellation.check();
+              }
+              prepared = plan;
+              return plan;
+            }),
           );
           cancellation.check();
           trace['summary'] = plan.summary;
@@ -248,6 +258,8 @@ class AgentEngine {
           result = {'ok': false, 'error': '工具执行失败。未确认成功；请检查输入或本地状态。'};
           trace['result'] = jsonEncode(result);
           emit('failed');
+        } finally {
+          prepared?.dispose?.call();
         }
         final message = <String, dynamic>{
           'role': 'tool',

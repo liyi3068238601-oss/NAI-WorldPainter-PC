@@ -1,0 +1,24 @@
+{
+  "preferences": {
+    "isolatedWorkspace": true,
+    "nativeNonEmptyKeyboardEntry": true,
+    "nativeSaveConfirmed": true,
+    "normalWindowClose": true,
+    "releaseReopened": true,
+    "restoredValues": { "v45StyleWords": "w", "v5StyleWords": "5" },
+    "realUserConfigurationChanged": false,
+    "screenshots": ["native-preferences-entered.jpg", "native-preferences-saved.jpg", "native-preferences-reopened.jpg"],
+    "longTextAndChineseImeAcceptance": false,
+    "inputObservation": "Computer Use type_text did not insert into Flutter; standard keys inserted non-empty fixture values successfully"
+  },
+  "imageOperationDialogSupplement": {
+    "status": "stopped_by_user_before_ui_acceptance",
+    "stopSignal": "Computer Use was stopped by the user with the physical Escape key",
+    "furtherComputerUseCallsAfterStop": 0,
+    "nativeDialogVerified": false,
+    "widgetAndRealApiConfirmationVerified": true,
+    "fixtureService": "loopback-only synthetic OpenAI tool calls; no forwarding or image response",
+    "paidImageRequestsDuringNativeQa": 0,
+    "qaApplication": "isolated build changes only compiled default data directory; production Release rebuilt to its normal default"
+  }
+}

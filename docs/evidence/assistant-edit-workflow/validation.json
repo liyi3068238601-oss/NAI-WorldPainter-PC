@@ -1,0 +1,107 @@
+{
+  "goalItems": [
+    "Agent image-to-image",
+    "complete assistant workflows and desktop preference restart",
+    "Agent inpainting with result layers/composite"
+  ],
+  "originalMobileResourcesChanged": false,
+  "newGenerationChannels": 0,
+  "agentMaximumImagesPerToolCall": 2,
+  "defaultTests": {
+    "passed": 460,
+    "skipped": 1,
+    "optionalSkip": "existing local SR opt-in probe"
+  },
+  "dartAnalyze": "no issues",
+  "windowsReleaseBuild": "passed; production data directory restored after isolated QA build",
+  "webReleaseBuild": "passed; existing CupertinoIcons font warning remains",
+  "actualOfficialPosts": 3,
+  "actualImagesPerRequest": [
+    1,
+    1,
+    1
+  ],
+  "observedNovelAiAnlasChange": 0,
+  "relayCostsMeasured": false,
+  "actualLlmPosts": 20,
+  "actualLlmHttp200": 20,
+  "phases": {
+    "tags": {
+      "statuses": [
+        "complete"
+      ],
+      "llmPosts": 5,
+      "newImages": 1,
+      "completedTools": [
+        "read_current_prompts",
+        "search_danbooru",
+        "write_prompt",
+        "generate_image"
+      ]
+    },
+    "img2img": {
+      "statuses": [
+        "complete"
+      ],
+      "llmPosts": 3,
+      "newImages": 1,
+      "completedTools": [
+        "read_current_prompts",
+        "generate_image"
+      ]
+    },
+    "inpaint": {
+      "statuses": [
+        "complete"
+      ],
+      "llmPosts": 3,
+      "newImages": 1,
+      "completedTools": [
+        "read_current_prompts",
+        "generate_image"
+      ]
+    },
+    "memory": {
+      "statuses": [
+        "complete",
+        "complete"
+      ],
+      "llmPosts": 4,
+      "newImages": 0,
+      "completedTools": [
+        "save_memory",
+        "get_memories",
+        "get_memories"
+      ]
+    },
+    "decline": {
+      "statuses": [
+        "failed"
+      ],
+      "llmPosts": 3,
+      "newImages": 0,
+      "completedTools": [
+        "read_current_prompts",
+        "search_danbooru"
+      ]
+    },
+    "cancel": {
+      "statuses": [
+        "cancelled"
+      ],
+      "llmPosts": 2,
+      "newImages": 0,
+      "completedTools": [
+        "read_current_prompts",
+        "read_prompting_reference"
+      ]
+    }
+  },
+  "nativePreferences": "entered/saved/normal-close/reopened/restored",
+  "nativeImageDialogSupplement": "stopped by user physical Escape before acceptance; no later Computer Use input",
+  "imageAssetWriteFailureLimitation": "cannot guarantee durable recovery of API bytes if asset storage itself fails; no automatic repeated generation",
+  "verificationLimits": [
+    "one saved relay model and official NAI4.5; no complete gateway/model matrix",
+    "image edit semantic quality is limited; captions do not prove each requested object appeared"
+  ]
+}

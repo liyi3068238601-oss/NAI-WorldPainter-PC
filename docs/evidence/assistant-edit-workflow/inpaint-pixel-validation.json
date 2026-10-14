@@ -1,0 +1,21 @@
+{
+  "imageSize": [
+    768,
+    768
+  ],
+  "transparentLayerPixels": 552636,
+  "nonTransparentLayerPixels": 37188,
+  "changedPixelsOutsideLayer": 0,
+  "changedPixelsInsideLayer": 36663,
+  "maskBoundingBox": [
+    360,
+    280,
+    560,
+    440
+  ],
+  "editorRenderedSourcePreservedExactlyOutsideLayer": true,
+  "originalSourcePngRemainsUnchanged": true,
+  "translucentPngSourceRoundTripDifferences": 42,
+  "roundTripDifferenceExplanation": "Flutter straight/premultiplied alpha conversion at alpha254 changes 42 RGB pixels by one level; compare the composite with the same editor rendering baseline",
+  "baselineSha256": "05c93692595f7ecab03da912225fb7f6113be6a79892969541635a008075d7fd"
+}

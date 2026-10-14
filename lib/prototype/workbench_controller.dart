@@ -46,6 +46,26 @@ typedef ProcessGenerationResult = Future<SceneResult> Function(
   bool Function() isCurrent,
 );
 
+/// Submission-scoped evidence. A received image may still need its index saved
+/// or its local composite repaired; neither condition warrants another POST.
+class GenerationReceipt {
+  GenerationReceipt({required this.requested});
+  final int requested;
+  int attempted = 0;
+  final List<SceneResult> _results = [];
+  List<SceneResult> get results => List.unmodifiable(_results);
+  bool cancelled = false;
+  bool persisted = true;
+  bool postProcessingFailed = false;
+  String? error;
+  bool get complete =>
+      results.length == requested &&
+      persisted &&
+      !cancelled &&
+      !postProcessingFailed &&
+      error == null;
+}
+
 typedef ImageToolProgress = Future<void> Function(
   String stage,
   int done,
@@ -690,6 +710,11 @@ class WorkbenchController extends ChangeNotifier {
     _validateImageEditing(value);
     _extra['imageEditing'] = jsonDecode(jsonEncode(value));
   });
+  void applyAssistantEditing(Map<String, Object?> value) => _update(() {
+    _validateImageEditing(value);
+    _extra['imageEditing'] = jsonDecode(jsonEncode(value));
+    _refillRevision++;
+  });
   void addDerived(SceneResult result) => _update(() {
     if (!_results.any((r) => r.id == result.id)) {
       _results.insert(
@@ -1261,10 +1286,27 @@ class WorkbenchController extends ChangeNotifier {
             'seed': _seedText,
             'connections': _connections,
             'operationPrompts': _extra['operationPrompts'],
+            'imageEditing': assistantEditingInputs,
           }),
         ),
       )
       .toString();
+
+  /// Candidate visibility/selection is output state. Source, strokes, masks
+  /// and crop are inputs and must invalidate an outstanding approval.
+  Map<String, Object?> get assistantEditingInputs {
+    final state = imageEditing;
+    return {
+      for (final key in const [
+        'version',
+        'sourceSessionId',
+        'document',
+        'parentResultId',
+        'img2img',
+      ])
+        if (state.containsKey(key)) key: state[key],
+    };
+  }
 
   Map<String, dynamic> get assistantPromptSnapshot {
     final inpaint = parameters.operation == GenerationOperation.inpaint;
@@ -1590,6 +1632,34 @@ class WorkbenchController extends ChangeNotifier {
     return activeGeneration.future;
   }
 
+  Future<GenerationReceipt> generateForAssistant({
+    required GenerationParameters submitted,
+    required ServiceConnection submittedConnection,
+    required int count,
+    ProcessGenerationResult? processResult,
+  }) async {
+    final receipt = GenerationReceipt(requested: count);
+    if (count < 1 ||
+        count > 2 ||
+        generateImage == null ||
+        _disposed ||
+        _closing ||
+        _generating ||
+        _maintenance ||
+        _encodingVibe) {
+      receipt.error = '当前无法提交生图任务；没有发送请求。';
+      return receipt;
+    }
+    await _generateReal(
+      submitted: submitted,
+      submittedConnection: submittedConnection,
+      count: count,
+      processResult: processResult,
+      receipt: receipt,
+    );
+    return receipt;
+  }
+
   void cancelGeneration() {
     if (_disposed || !_generating) return;
     ++_generationToken;
@@ -1893,6 +1963,8 @@ class WorkbenchController extends ChangeNotifier {
       if (_isCurrent(token)) {
         _status = saveFailed
             ? saveErrorMessage
+            : error is ImageAssetStoreException
+            ? '图像资产读写失败；图片尚未确认保存，请检查本地存储，勿直接重复生成。'
             : error is FormatException
             ? error.message
             : '图片处理失败，原图与草稿仍保留。';
@@ -1920,6 +1992,7 @@ class WorkbenchController extends ChangeNotifier {
     GenerationParameters? submitted,
     ServiceConnection? submittedConnection,
     int? count,
+    GenerationReceipt? receipt,
   }) async {
     final validateCurrentDraft = submitted == null;
     submitted ??= parameters;
@@ -1939,6 +2012,7 @@ class WorkbenchController extends ChangeNotifier {
     final done = Completer<void>();
     _settlingGenerations.add(done.future);
     _activeGeneration = done.future;
+    var processingFailed = false;
     try {
       await flush();
       for (var i = 0; i < count && _isCurrent(token); i++) {
@@ -1950,23 +2024,67 @@ class WorkbenchController extends ChangeNotifier {
         final frozen = submitted.copyWith(
           seed: i == 0 ? submitted.seed ?? randomSeed : randomSeed,
         );
+        if (receipt != null) receipt.attempted++;
         var result = await generateImage!(frozen, submittedConnection);
         if (!_isCurrent(token)) break;
+        final raw = result;
+        var postProcessingFailed = false;
         if (processResult != null) {
-          result = await processResult(result, () => _isCurrent(token));
+          try {
+            result = await processResult(result, () => _isCurrent(token));
+          } catch (_) {
+            result = raw;
+            // The paid response already exists. Keep it rather than report a
+            // generation failure that could cause an unnecessary paid retry.
+            postProcessingFailed = true;
+            processingFailed = true;
+            if (receipt != null) {
+              receipt.postProcessingFailed = true;
+              receipt.error = '图片已生成，原始结果已保留；本地合成失败，请修复合成，不要再次生图。';
+            }
+          }
         }
-        if (!_isCurrent(token)) break;
+        final cancelledAfterResponse = !_isCurrent(token);
+        if (_disposed) break;
+        if (cancelledAfterResponse) {
+          result = raw;
+          if (receipt != null) {
+            receipt.cancelled = true;
+            receipt.error = '已停止本地处理；此前已收到的原始图片已保留，无需再次生图。';
+          }
+        }
         _results.insert(
           0,
           result.copyWith(createdAt: result.createdAt ?? DateTime.now()),
         );
         _recordSuccess();
-        _selectedId = result.id;
+        if (!cancelledAfterResponse) _selectedId = result.id;
+        receipt?._results.add(result);
         notifyListeners();
         await flush();
+        if (postProcessingFailed || cancelledAfterResponse) {
+          if (_isCurrent(token)) {
+            _status = '图片已生成并保留原始结果；本地合成失败，未继续生成。';
+          } else if (!_generating) {
+            _status = '已停止本地处理；此前已收到的原始图片已保留。';
+          }
+          break;
+        }
       }
-      if (_isCurrent(token)) _status = '生成完成，图片与完整参数已保存到图库。';
+      if (_isCurrent(token) && !processingFailed) {
+        _status = '生成完成，图片与完整参数已保存到图库。';
+      }
     } catch (error) {
+      if (receipt != null) {
+        receipt.persisted = !saveFailed && error is! ImageAssetStoreException;
+        receipt.error = receipt.attempted == 0
+            ? '提交前保存失败；没有发送生图请求，请重试保存。'
+            : error is ImageAssetStoreException
+            ? '图像资产读写失败，图片尚未确认保存；请求可能已被接收，请勿自动重复生图。'
+            : saveFailed
+            ? '图片可能已生成，但本地保存失败；请重试保存，不要再次生图。'
+            : '请求没有确认完整成功；服务端可能已接收，请核对图库后由用户决定是否重试。';
+      }
       if (_isCurrent(token)) {
         _status = saveFailed
             ? saveErrorMessage
@@ -1975,6 +2093,10 @@ class WorkbenchController extends ChangeNotifier {
             : '生成失败，请检查接入配置、网络与当前模型支持的参数后重试。';
       }
     } finally {
+      if (receipt != null) {
+        receipt.cancelled = !_isCurrent(token);
+        receipt.persisted = receipt.persisted && !saveFailed;
+      }
       if (_isCurrent(token)) {
         _generating = false;
         _activeGeneration = null;

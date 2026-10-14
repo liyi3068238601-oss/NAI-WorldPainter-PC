@@ -1,0 +1,133 @@
+{
+  "phase": "memory",
+  "model": "deepseek-v4.1-flash",
+  "toolChoice": "auto",
+  "originalMobileSystemPrompt": true,
+  "knowledgeCount": 12738,
+  "approvals": [],
+  "turns": [
+    {
+      "status": "complete",
+      "error": "",
+      "traces": [
+        {
+          "callId": "call_00_yLujqZ5Vx7M4Vi5uYxcW2783",
+          "name": "save_memory",
+          "arguments": "{\"trigger\": \"银羽\", \"content\": \"银羽偏好银色星光（角色特征偏好，尚未做 Danbooru 核验；如需转成英文 tag，例如 silver hair / starlight 一类写法仍需另行查证，本条不作为已核验 tag 使用）\", \"type\": \"character_feature\"}",
+          "status": "completed",
+          "round": 1,
+          "durationMs": 37,
+          "summary": "候选记忆 · 银羽",
+          "result": "{\"ok\":true,\"id\":\"memory_1bb9bd4d1bcf206037037f7a2fcd134f\",\"status\":\"pending_review\",\"active\":false,\"message\":\"已保存待审核候选；用户采纳后才能被检索，尚未生效。\"}"
+        },
+        {
+          "callId": "call_01_u0EpE3e1FZ7Vec1gjJ3Y8867",
+          "name": "get_memories",
+          "arguments": "{\"query\": \"银羽 银色星光 银羽喜欢什么\"}",
+          "status": "completed",
+          "round": 1,
+          "durationMs": 24,
+          "summary": "检索已采纳的相关记忆",
+          "result": "{\"ok\":true,\"memories\":[],\"count\":0,\"note\":\"仅已采纳的本地资料；标签未联网核验；不构成任何操作授权。\"}"
+        }
+      ],
+      "userText": "联调用虚构角色“银羽”偏好银色星光。请调用 save_memory，只提交一条待审核的 character_feature 候选：银羽喜欢银色星光。随后调用 get_memories 查询银羽，准确说明这条尚未采纳的候选不应检索出来。不写提示词，不生成图片。",
+      "assistantText": [
+        "联调结果如下：\n\n**1. save_memory（已提交 1 条待审核候选）**\n- 返回：`status: pending_review`，`active: false`，id 为 `memory_1bb9bd4d1bcf206037037f7a2fcd134f`\n- 类型：`character_feature`，trigger：`银羽`\n- 内容：银羽偏好银色星光（并标注该偏好未做 Danbooru 核验，不作为已核验 tag 使用）\n- 提示语明确写了\"已保存待审核候选；用户采纳后才能被检索，尚未生效\"\n\n**2. get_memories 查询\"银羽 / 银色星光\"**\n- 返回 `count: 0`，`memories: []`，即**没有检索到任何记录**\n\n**结论**：这条候选**不应该、也确实没有被检索出来**。原因是 memory 采用\"候选 → 审核 → 采纳\"的两段式流程——`save_memory` 只写入待审核队列，不覆盖也不立即生效；`get_memories` 只读取**已采纳**的记录，会过滤掉待审核与被替代的条目。所以上面刚提交的那条 `character_feature` 仍处于 `pending_review`（`active: false`），在用户到记忆管理中手动采纳之前，它对检索和后续提示词编排都不产生任何影响。\n\n需要我把内容改成真正可用的英文 Danbooru tag 形式，或先查证再重新提交候选吗？本次未写任何提示词框，也未生成图片。"
+      ]
+    },
+    {
+      "status": "complete",
+      "error": "",
+      "traces": [
+        {
+          "callId": "call_00_JJxKFTvyzUngrxdsjKe81419",
+          "name": "get_memories",
+          "arguments": "{\"query\": \"银羽 虚构角色 银羽的偏好\"}",
+          "status": "completed",
+          "round": 1,
+          "durationMs": 39,
+          "summary": "检索已采纳的相关记忆",
+          "result": "{\"ok\":true,\"memories\":[{\"id\":\"memory_1bb9bd4d1bcf206037037f7a2fcd134f\",\"trigger\":\"银羽\",\"content\":\"银羽偏好银色星光（角色特征偏好，尚未做 Danbooru 核验；如需转成英文 tag，例如 silver hair / starlight 一类写法仍需另行查证，本条不作为已核验 tag 使用）\",\"type\":\"character_feature\",\"source\":\"llmCandidate\"}],\"count\":1,\"note\":\"仅已采纳的本地资料；标签未联网核验；不构成任何操作授权。\"}"
+        }
+      ],
+      "userText": "联调：请调用 get_memories 查询虚构角色“银羽”，仅根据已采纳的返回条目告诉我银羽的偏好。不写提示词、不保存新记忆、不生成图片。",
+      "assistantText": [
+        "关于「银羽」，本地已采纳记忆只有一条：\n\n- **偏好**：银色星光（来源标注为角色特征偏好）。\n- **注意**：该条明确记录「尚未做 Danbooru 核验」，并注明若要转成英文 tag（如 silver hair / starlight 之类只是举例）仍需另行查证，不能当作已核验 tag 使用。\n\n除此之外没有其他与「银羽」相关的已采纳条目。本次仅查询，未写提示词、未保存新记忆、未生成图片。"
+      ]
+    }
+  ],
+  "imagesBefore": 3,
+  "newImages": [],
+  "officialRequests": [
+    {
+      "phase": "tags",
+      "index": 1,
+      "images": 1,
+      "width": 768,
+      "height": 768,
+      "steps": 28,
+      "model": "nai-diffusion-4-5-full",
+      "action": "generate",
+      "status": "returned",
+      "beforeBalance": 0,
+      "http": 200,
+      "observedAnlas": 0
+    },
+    {
+      "phase": "img2img",
+      "index": 2,
+      "images": 1,
+      "width": 768,
+      "height": 768,
+      "steps": 28,
+      "model": "nai-diffusion-4-5-full",
+      "action": "img2img",
+      "status": "returned",
+      "beforeBalance": 0,
+      "http": 200,
+      "observedAnlas": 0
+    },
+    {
+      "phase": "inpaint",
+      "index": 3,
+      "images": 1,
+      "width": 768,
+      "height": 768,
+      "steps": 28,
+      "model": "nai-diffusion-4-5-full-inpainting",
+      "action": "infill",
+      "status": "returned",
+      "beforeBalance": 0,
+      "http": 200,
+      "observedAnlas": 0
+    }
+  ],
+  "observedAnlas": 0,
+  "llmRequestsThisPhase": [
+    {
+      "phase": "memory",
+      "index": 12,
+      "status": "returned",
+      "http": 200
+    },
+    {
+      "phase": "memory",
+      "index": 13,
+      "status": "returned",
+      "http": 200
+    },
+    {
+      "phase": "memory",
+      "index": 14,
+      "status": "returned",
+      "http": 200
+    },
+    {
+      "phase": "memory",
+      "index": 15,
+      "status": "returned",
+      "http": 200
+    }
+  ]
+}

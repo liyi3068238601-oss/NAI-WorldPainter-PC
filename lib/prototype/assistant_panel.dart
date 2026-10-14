@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -161,102 +162,217 @@ class _AssistantPanelState extends State<AssistantPanel> {
     final response = await showDialog<String>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(request.question ? '小助手需要你的选择' : '审核助手操作'),
-          content: SizedBox(
-            width: 600,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    request.title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  if (request.question) ...[
-                    for (final option in request.options)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: ChoiceChip(
-                          label: Text(option),
-                          selected: selected == option,
-                          onSelected: (_) =>
-                              setDialogState(() => selected = option),
-                        ),
-                      ),
-                    TextFormField(
-                      maxLength: 2000,
-                      decoration: const InputDecoration(labelText: '或输入你的回答'),
-                      onChanged: (value) => setDialogState(() => text = value),
+        builder: (context, setDialogState) {
+          final screen = MediaQuery.sizeOf(context);
+          final hasImage = _hasInteractionAsset(request.preview);
+          final contentWidth = math
+              .min(560.0, math.max(0.0, screen.width - 128))
+              .toDouble();
+          final contentHeight = math
+              .min(560.0, math.max(140.0, screen.height - 240))
+              .toDouble();
+          return AlertDialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 40,
+              vertical: 24,
+            ),
+            title: Text(
+              request.question
+                  ? '小助手需要你的选择'
+                  : hasImage
+                  ? '确认图像操作'
+                  : '审核助手操作',
+            ),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: contentWidth,
+                maxHeight: contentHeight,
+              ),
+              child: SingleChildScrollView(
+                key: const ValueKey('assistant-interaction-scroll'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      request.title,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                  ] else ...[
-                    if (request.preview['assetRef'] is String &&
-                        widget.workbench.assets != null)
-                      SizedBox(
-                        height: 180,
-                        child: StoredImage(
-                          store: widget.workbench.assets!,
-                          assetRef: request.preview['assetRef'] as String,
+                    const SizedBox(height: 16),
+                    if (request.question) ...[
+                      for (final option in request.options)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: ChoiceChip(
+                            label: Text(option),
+                            selected: selected == option,
+                            onSelected: (_) =>
+                                setDialogState(() => selected = option),
+                          ),
                         ),
-                      ),
-                    for (final entry in request.preview.entries.where(
-                      (e) => e.key != 'assetRef',
-                    ))
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              entry.key,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            SelectableText(
-                              entry.value is String
-                                  ? entry.value as String
-                                  : const JsonEncoder.withIndent('  ')
-                                        .convert(entry.value),
-                            ),
-                          ],
+                      TextFormField(
+                        maxLength: 2000,
+                        decoration: const InputDecoration(
+                          labelText: '或输入你的回答',
                         ),
+                        onChanged: (value) =>
+                            setDialogState(() => text = value),
                       ),
+                    ] else ...[
+                      ..._interactionPreview(request.preview),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'reject'),
-              child: Text(request.question ? '停止本轮' : '拒绝'),
-            ),
-            FilledButton(
-              key: const ValueKey('assistant-approve'),
-              onPressed:
-                  request.question && text.trim().isEmpty && selected == null
-                  ? null
-                  : () => Navigator.pop(
-                      context,
-                      request.question
-                          ? (text.trim().isNotEmpty ? text.trim() : selected)
-                          : 'approve',
-                    ),
-              child: Text(request.question ? '回答并继续' : '确认执行'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'reject'),
+                child: Text(request.question ? '停止本轮' : '拒绝'),
+              ),
+              FilledButton(
+                key: const ValueKey('assistant-approve'),
+                onPressed:
+                    request.question &&
+                        text.trim().isEmpty &&
+                        selected == null
+                    ? null
+                    : () => Navigator.pop(
+                        context,
+                        request.question
+                            ? (text.trim().isNotEmpty
+                                  ? text.trim()
+                                  : selected)
+                            : 'approve',
+                      ),
+                child: Text(request.question ? '回答并继续' : '确认执行'),
+              ),
+            ],
+          );
+        },
       ),
     );
     if (identical(a.interaction, request)) {
       a.answer(response == 'reject' ? null : response);
     }
   }
+
+  bool _hasInteractionAsset(Map<String, dynamic> preview) =>
+      const ['assetRef', 'maskAssetRef', 'originalAssetRef'].any(
+        (key) => _interactionAssetRef(preview[key]) != null,
+      );
+
+  List<Widget> _interactionPreview(Map<String, dynamic> preview) {
+    final primaryAssetRef = _interactionAssetRef(preview['assetRef']);
+    final originalAssetRef = _interactionAssetRef(preview['originalAssetRef']);
+    final maskAssetRef = _interactionAssetRef(preview['maskAssetRef']);
+    final sourceCaption = preview['sourceCaption']?.toString().trim();
+    final details = preview.entries.where(
+      (entry) =>
+          !const {
+            'assetRef',
+            'maskAssetRef',
+            'originalAssetRef',
+            'sourceCaption',
+          }.contains(entry.key),
+    );
+
+    return [
+      if (sourceCaption != null && sourceCaption.isNotEmpty)
+        _interactionDetail('源图标签', sourceCaption),
+      if (primaryAssetRef != null)
+        _interactionImagePreview(
+          key: const ValueKey('assistant-preview-submitted-image'),
+          label: '本次输入图像',
+          assetRef: primaryAssetRef,
+        ),
+      if (originalAssetRef != null && originalAssetRef != primaryAssetRef)
+        _interactionImagePreview(
+          key: const ValueKey('assistant-preview-original-image'),
+          label: '原始底图',
+          assetRef: originalAssetRef,
+        ),
+      if (maskAssetRef != null)
+        _interactionImagePreview(
+          key: const ValueKey('assistant-preview-mask-image'),
+          label: '黑白蒙版',
+          assetRef: maskAssetRef,
+        ),
+      for (final entry in details)
+        _interactionDetail(entry.key, _interactionValue(entry.value)),
+    ];
+  }
+
+  String? _interactionAssetRef(Object? value) =>
+      value is String && value.trim().isNotEmpty ? value : null;
+
+  String _interactionValue(Object? value) => value is String
+      ? value
+      : const JsonEncoder.withIndent('  ').convert(value);
+
+  Widget _interactionDetail(String label, String value) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 5),
+        SelectableText(value.isEmpty ? '（空）' : value),
+      ],
+    ),
+  );
+
+  Widget _interactionImagePreview({
+    required Key key,
+    required String label,
+    required String assetRef,
+  }) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 7),
+            Container(
+              height: 176,
+              width: double.infinity,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+              child: widget.workbench.assets == null
+                  ? const Center(
+                      child: Tooltip(
+                        message: '当前工作区无法读取这张图片。',
+                        child: Icon(Icons.broken_image_outlined),
+                      ),
+                    )
+                  : StoredImage(
+                      key: key,
+                      store: widget.workbench.assets!,
+                      assetRef: assetRef,
+                    ),
+            ),
+          ],
+        ),
+      );
 
   Future<void> _settings() async {
     await showDialog<void>(
