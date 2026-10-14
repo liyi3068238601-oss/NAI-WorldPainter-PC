@@ -26,10 +26,10 @@ class AssistantProvider {
         uri.userInfo.isNotEmpty ||
         uri.hasQuery ||
         uri.hasFragment ||
-        !(uri.scheme == 'https' ||
-            (uri.scheme == 'http' &&
-                const ['localhost', '127.0.0.1', '::1'].contains(uri.host)))) {
-      throw const AgentException('服务地址须为 HTTPS；本地服务可使用回环 HTTP。');
+        !(uri.scheme == 'https' || uri.scheme == 'http')) {
+      throw const AgentException(
+        '服务地址须为有效的 HTTP 或 HTTPS 地址，不能包含用户名、密码、查询参数或片段。',
+      );
     }
     var path = uri.path.replaceAll(RegExp(r'/+$'), '');
     if (path.endsWith('/chat/completions')) {

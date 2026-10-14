@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:worldpainter_pc/assistant/agent_contract.dart';
+import 'package:worldpainter_pc/assistant/assistant_state.dart';
 import 'package:worldpainter_pc/assistant/openai_agent_transport.dart';
 import 'package:worldpainter_pc/security/credential_vault.dart';
 
@@ -823,6 +824,227 @@ void main() {
       expect(captured.method, 'GET');
       expect(captured.url, Uri.https('assistant.example', '/v1/models'));
       expect(models, ['model-a', 'model-b']);
+    });
+
+    test(
+      'persists a non-loopback HTTP provider and uses its models and chat URLs',
+      () async {
+        final vault = _MemoryVault();
+        final provider = _provider(
+          id: 'remote-http',
+          baseUrl: 'http://models.example:8123/tenant/v1/chat/completions',
+        );
+        await provider.saveSecret(vault, 'remote-http-secret');
+        final state = AssistantState(
+          providers: [provider],
+          mainProviderId: provider.id,
+        );
+
+        final serialized = jsonEncode(state.toJson());
+        expect(serialized, isNot(contains('remote-http-secret')));
+        final restored = AssistantState.fromJson(
+          jsonDecode(serialized) as Map<String, dynamic>,
+        );
+        final restoredProvider = restored.mainProvider!;
+        expect(
+          restoredProvider.baseUrl,
+          'http://models.example:8123/tenant/v1',
+        );
+        expect(
+          restoredProvider.apiRoot,
+          Uri.parse('http://models.example:8123/tenant/v1'),
+        );
+        expect(restoredProvider.credentialKey, provider.credentialKey);
+
+        final requests = <http.Request>[];
+        final transport = OpenAiAgentTransport(
+          vault: vault,
+          clientFactory: () => MockClient((request) async {
+            requests.add(request);
+            if (request.method == 'GET') {
+              return http.Response(
+                jsonEncode({
+                  'data': [
+                    {'id': 'remote-model'},
+                  ],
+                }),
+                200,
+              );
+            }
+            return http.Response(
+              jsonEncode({
+                'choices': [
+                  {
+                    'index': 0,
+                    'message': {'role': 'assistant', 'content': 'done'},
+                    'finish_reason': 'stop',
+                  },
+                ],
+              }),
+              200,
+            );
+          }),
+        );
+
+        expect(
+          await transport.listModels(restoredProvider, AgentCancellation()),
+          ['remote-model'],
+        );
+        final reply = await transport.complete(
+          provider: restoredProvider,
+          messages: const [
+            {'role': 'user', 'content': 'hello'},
+          ],
+          tools: const [],
+          toolChoice: 'auto',
+          cancellation: AgentCancellation(),
+        );
+
+        expect(reply.content, 'done');
+        expect(requests.map((request) => request.method), ['GET', 'POST']);
+        expect(requests.map((request) => request.url), [
+          Uri.parse('http://models.example:8123/tenant/v1/models'),
+          Uri.parse('http://models.example:8123/tenant/v1/chat/completions'),
+        ]);
+        expect(
+          requests.map((request) => request.headers['authorization']),
+          everyElement('Bearer remote-http-secret'),
+        );
+      },
+    );
+
+    test(
+      'scopes credentials independently by scheme, host, and port',
+      () async {
+        final vault = _MemoryVault();
+        final providers = [
+          _provider(id: 'same-id', baseUrl: 'http://shared.example:8123/v1'),
+          _provider(id: 'same-id', baseUrl: 'https://shared.example:8123/v1'),
+          _provider(id: 'same-id', baseUrl: 'http://shared.example:8124/v1'),
+          _provider(id: 'same-id', baseUrl: 'http://other.example:8123/v1'),
+        ];
+        const secrets = [
+          'http-key',
+          'https-key',
+          'other-port-key',
+          'other-host-key',
+        ];
+        for (var index = 0; index < providers.length; index++) {
+          await providers[index].saveSecret(vault, secrets[index]);
+        }
+
+        final requests = <http.Request>[];
+        final transport = OpenAiAgentTransport(
+          vault: vault,
+          clientFactory: () => MockClient((request) async {
+            requests.add(request);
+            return http.Response(
+              jsonEncode({
+                'choices': [
+                  {
+                    'index': 0,
+                    'message': {'role': 'assistant', 'content': 'ok'},
+                    'finish_reason': 'stop',
+                  },
+                ],
+              }),
+              200,
+            );
+          }),
+        );
+
+        for (final provider in providers) {
+          await transport.complete(
+            provider: provider,
+            messages: const [
+              {'role': 'user', 'content': 'hello'},
+            ],
+            tools: const [],
+            toolChoice: 'auto',
+            cancellation: AgentCancellation(),
+          );
+        }
+
+        expect(
+          providers.map((provider) => provider.credentialKey).toSet(),
+          hasLength(4),
+        );
+        expect(requests.map((request) => request.url), [
+          Uri.parse('http://shared.example:8123/v1/chat/completions'),
+          Uri.parse('https://shared.example:8123/v1/chat/completions'),
+          Uri.parse('http://shared.example:8124/v1/chat/completions'),
+          Uri.parse('http://other.example:8123/v1/chat/completions'),
+        ]);
+        expect(
+          requests.map((request) => request.headers['authorization']),
+          secrets.map((secret) => 'Bearer $secret'),
+        );
+        expect(
+          vault.readKeys,
+          providers.map((provider) => provider.credentialKey),
+        );
+      },
+    );
+
+    test('disables redirects for model and chat requests', () async {
+      final requests = <http.Request>[];
+      final transport = OpenAiAgentTransport(
+        vault: _MemoryVault(),
+        clientFactory: () => MockClient((request) async {
+          requests.add(request);
+          return http.Response(
+            'redirect body',
+            302,
+            headers: {'location': 'https://redirect.example/steal-key'},
+          );
+        }),
+      );
+      final provider = _provider(
+        baseUrl: 'http://remote.example:8123/v1',
+        requireKey: false,
+      );
+
+      final modelsError = await _captureAgentException(
+        transport.listModels(provider, AgentCancellation()),
+      );
+      final chatError = await _captureAgentException(
+        transport.complete(
+          provider: provider,
+          messages: const [
+            {'role': 'user', 'content': 'hello'},
+          ],
+          tools: const [],
+          toolChoice: 'auto',
+          cancellation: AgentCancellation(),
+        ),
+      );
+
+      expect(modelsError.message, contains('重定向'));
+      expect(chatError.message, contains('重定向'));
+      expect(requests.map((request) => request.method), ['GET', 'POST']);
+      expect(requests, everyElement(isA<http.Request>()));
+      expect(
+        requests.map((request) => request.followRedirects),
+        everyElement(isFalse),
+      );
+      expect(requests.map((request) => request.maxRedirects), everyElement(0));
+    });
+
+    test('rejects non-HTTP schemes and unsafe URL components', () {
+      for (final baseUrl in [
+        'ftp://models.example/v1',
+        'file:///models',
+        'http:///v1',
+        'https://user:password@models.example/v1',
+        'http://models.example/v1?api_key=secret',
+        'https://models.example/v1#fragment',
+      ]) {
+        expect(
+          () => _provider(baseUrl: baseUrl).validate(),
+          throwsA(isA<AgentException>()),
+          reason: 'must reject $baseUrl',
+        );
+      }
     });
   });
 }

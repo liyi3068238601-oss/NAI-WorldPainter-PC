@@ -1,0 +1,35 @@
+{
+  "mode": "direct production generation using prior real DeepSeek tool-written draft",
+  "reason": "DeepSeek saved credential changed during test; no substituted model or fake tool response",
+  "elapsedMs": 7881,
+  "status": "生成完成，图片与完整参数已保存到图库。",
+  "outputs": [
+    {
+      "id": "image-1791969881195348-d791d0041348",
+      "file": "image-d791d0041348.png",
+      "width": 768,
+      "height": 768,
+      "model": "NAI Diffusion 4.5 Full",
+      "seed": 20261014,
+      "prompt": "scenery, no humans, mountain lake, lakeside, morning, red cabin, wooden cabin, pine trees, forest, water reflection, golden sunlight, sunbeam, anime background",
+      "negative": "text, watermark, blurry, lowres",
+      "sha256": "d791d0041348d3fccf7154b87386c25c80fa15611fd72ba45d3720a79790b3ca"
+    }
+  ],
+  "officialRequests": [
+    {
+      "index": 1,
+      "images": 1,
+      "width": 768,
+      "height": 768,
+      "steps": 28,
+      "model": "nai-diffusion-4-5-full",
+      "expectedAnlas": 0,
+      "pricingBasis": "freshly verified active Opus; single 4.5 image under 1 MP and at most 28 steps; no references",
+      "status": "returned",
+      "http": 200,
+      "observedAnlas": 0
+    }
+  ],
+  "observedAnlas": 0
+}

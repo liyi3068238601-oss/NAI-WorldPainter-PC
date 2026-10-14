@@ -1,0 +1,85 @@
+{
+  "phase": "diagnostic",
+  "elapsedMs": 7409,
+  "providerModel": "deepseek-v4.1-flash",
+  "providerKind": "user-configured DeepSeek connection from WorldPainter",
+  "transport": "production OpenAiAgentTransport using saved WorldPainter endpoint directly; audit/count wrapper only; request and response unchanged",
+  "automaticToolChoice": false,
+  "status": "complete",
+  "error": "",
+  "userText": "测试本连接的结构化工具调用与结果回传。",
+  "promptBefore": "scenery, no humans, mountain lake, lakeside, red cabin, wooden cabin, pine trees, forest, water reflection, night, clear sky, full moon, moonlit night, blue moonlight, {warm light}, glowing window, lit window, anime background",
+  "promptAfter": "scenery, no humans, mountain lake, lakeside, red cabin, wooden cabin, pine trees, forest, water reflection, night, clear sky, full moon, moonlit night, blue moonlight, {warm light}, glowing window, lit window, anime background",
+  "negativeAfter": "text, watermark, blurry, lowres",
+  "approvals": [],
+  "traces": [
+    {
+      "callId": "call_00_aAlOFTUNL6vwCKvlhn7k7568",
+      "name": "diagnostic_echo",
+      "arguments": "{\"value\": \"probe-1791970413464806-1\"}",
+      "status": "completed",
+      "round": 1,
+      "durationMs": 17,
+      "summary": "结构化调用与结果回传",
+      "result": "{\"ok\":true,\"value\":\"probe-1791970413464806-1\",\"received\":true}"
+    }
+  ],
+  "assistantText": [
+    "连通性测试完成，链路正常。\n\n**调用内容**\n- 工具：`diagnostic_echo`\n- 参数：`value = \"probe-1791970413464806-1\"`（该工具只接受此枚举值）\n\n**回传结果（原文）**\n```json\n{\"ok\":true,\"value\":\"probe-1791970413464806-1\",\"received\":true}\n```\n\n**结论**\n- 结构化工具调用可用：请求已发出并进入工具层。\n- 结果回传可用：`ok: true`，`received: true`，回显值与传入值逐字一致，说明参数在经过接口后没有被截断或改写。\n- 这只是链路探针，**不会**读写草稿、不会触发生成、也不消耗生成额度。本轮未执行任何绘图或词框操作。\n\n需要的话，下一步我可以做几项互不混淆的检查：读取当前草稿版本号（验证读工具）、或读取素材/图库列表（验证本地资源工具）。这类只读操作随时可做；涉及写入或计费生成的，我会先向你确认。"
+  ],
+  "imagesBefore": 2,
+  "imagesAfter": 2,
+  "officialRequests": [
+    {
+      "index": 1,
+      "images": 1,
+      "width": 768,
+      "height": 768,
+      "steps": 28,
+      "model": "nai-diffusion-4-5-full",
+      "expectedAnlas": 0,
+      "pricingBasis": "freshly verified active Opus; single 4.5 image under 1 MP and at most 28 steps; no references",
+      "status": "returned",
+      "http": 200,
+      "observedAnlas": 0
+    },
+    {
+      "index": 2,
+      "images": 1,
+      "width": 768,
+      "height": 768,
+      "steps": 28,
+      "model": "nai-diffusion-4-5-full",
+      "expectedAnlas": 0,
+      "pricingBasis": "freshly verified active Opus; single 4.5 image under 1 MP and at most 28 steps; no references",
+      "status": "returned",
+      "http": 200,
+      "observedAnlas": 0
+    }
+  ],
+  "observedAnlas": 0,
+  "outputs": [
+    {
+      "id": "image-1791970378234256-8e16cfa164db",
+      "file": "image-8e16cfa164db.png",
+      "width": 768,
+      "height": 768,
+      "model": "NAI Diffusion 4.5 Full",
+      "seed": 20261014,
+      "prompt": "scenery, no humans, mountain lake, lakeside, red cabin, wooden cabin, pine trees, forest, water reflection, night, clear sky, full moon, moonlit night, blue moonlight, {warm light}, glowing window, lit window, anime background",
+      "negative": "text, watermark, blurry, lowres",
+      "sha256": "8e16cfa164db4859a98dc34f451b491b2578936d42c99361fcedd1c8f83e2c2c"
+    },
+    {
+      "id": "image-1791969881195348-d791d0041348",
+      "file": "image-d791d0041348.png",
+      "width": 768,
+      "height": 768,
+      "model": "NAI Diffusion 4.5 Full",
+      "seed": 20261014,
+      "prompt": "scenery, no humans, mountain lake, lakeside, morning, red cabin, wooden cabin, pine trees, forest, water reflection, golden sunlight, sunbeam, anime background",
+      "negative": "text, watermark, blurry, lowres",
+      "sha256": "d791d0041348d3fccf7154b87386c25c80fa15611fd72ba45d3720a79790b3ca"
+    }
+  ]
+}

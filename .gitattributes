@@ -24,3 +24,5 @@ docs/evidence/assistant-knowledge/* -text whitespace=blank-at-eol,blank-at-eof,s
 docs/evidence/tag-search/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/evidence/prompting/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/evidence/assistant-images/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+docs/evidence/assistant-live/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

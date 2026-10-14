@@ -1315,7 +1315,8 @@ class _ProviderEditorState extends State<_ProviderEditor> {
               controller: url,
               decoration: const InputDecoration(
                 labelText: 'OpenAI 兼容 API 地址',
-                helperText: '可填根地址、/v1 或完整 /chat/completions 地址。',
+                helperText: '支持 HTTP / HTTPS，可填根地址、/v1 或完整 /chat/completions 地址。HTTP 不加密传输。',
+                helperMaxLines: 3,
               ),
             ),
             const SizedBox(height: 14),

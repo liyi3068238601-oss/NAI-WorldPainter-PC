@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-14",
+  "baseCommit": "f9e70b06f620253caf592a2ddd6dfb5858d5572d",
+  "sourceHashBasis": "Git staged blob bytes",
+  "sourceSha256": {
+    "lib/assistant/agent_contract.dart": "dad4751761a0f57459a6acaf792bd0a05d7565871132ec11d92a99f62879420a",
+    "lib/prototype/assistant_panel.dart": "d8a95b223c4ef942bb956e4d76d8fa576517e67df3b13001d857609854924c38",
+    "test/assistant/openai_agent_transport_test.dart": "89aea6a1f4592abe6015f0d0c068dd51cca5f94c564b1afd76e43807f32e1ff4"
+  },
+  "implementation": {
+    "assistantRemoteHttpAllowed": true,
+    "urlCredentialAndQueryRejected": true,
+    "redirectsDisabled": true,
+    "credentialScopePreserved": true
+  },
+  "checks": {
+    "flutterTestsPassed": 393,
+    "flutterTestsSkipped": 1,
+    "httpTransportTestsPassed": 20,
+    "dartAnalyze": "pass",
+    "windowsRelease": "pass",
+    "webRelease": "pass",
+    "webExistingWarning": "CupertinoIcons font reference"
+  },
+  "realService": {
+    "model": "deepseek-v4.1-flash",
+    "provider": "user configured HTTP relay",
+    "llmPosts": 13,
+    "llmHttp200": 12,
+    "llmHttp503": 1,
+    "automaticToolSelection": true,
+    "nativeHttpWorkflow": true,
+    "forcedToolDiagnostic": true,
+    "deniedWritePreservedDraft": true,
+    "sqliteReopen": true,
+    "novelaiModel": "nai-diffusion-4-5-full",
+    "novelaiPosts": 2,
+    "imagesPerPost": [
+      1,
+      1
+    ],
+    "returnedImages": 2,
+    "dimensions": [
+      768,
+      768
+    ],
+    "novelaiObservedAnlas": 0,
+    "deepseekBilling": "not measured",
+    "firstImage": "direct production runtime from real model-authored draft",
+    "secondImage": "real Agent generation tool"
+  },
+  "visualReview": {
+    "viewed": [
+      "image-d791d0041348.png",
+      "image-8e16cfa164db.png"
+    ],
+    "morningToNightSemantics": "pass",
+    "sceneGeometryIdentity": "not expected for separate text-to-image runs",
+    "issue": "night cabin shoreline ambiguity"
+  },
+  "runtimeSha256": {
+    "build/windows/x64/runner/Release/worldpainter_pc.exe": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b",
+    "build/windows/x64/runner/Release/data/app.so": "6499609341c19d8961c3631c2e3883c01b885ae1e9d21f592ebc67fce9a70212",
+    "build/web/main.dart.js": "7222c870ce907b4a4a6541621d816f0f3c0b4a8a0b41cffdfd716bd363fc097c"
+  },
+  "notValidated": [
+    "full native chat/confirmation clicks",
+    "other LLM models",
+    "vision and public WD",
+    "strict image identity preservation",
+    "intermediary backend model identity"
+  ],
+  "dataHandling": "isolated test workspace, memory-only credentials, generated synthetic scene, no user gallery or private prompts exported"
+}

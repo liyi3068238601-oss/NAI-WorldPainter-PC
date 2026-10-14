@@ -1,0 +1,22 @@
+{
+  "phase": "resume_initial",
+  "elapsedMs": 197,
+  "providerModel": "deepseek-v4.1-flash",
+  "providerKind": "user-approved saved HTTP relay",
+  "transport": "production OpenAiAgentTransport with test-only URL routing client; body and SSE unchanged",
+  "automaticToolChoice": true,
+  "status": "failed",
+  "error": "助手服务暂时不可用（HTTP 503）。",
+  "userText": "上一轮未发出生图请求，测试层的免费额度识别已修复。请按当前已经写好的清晨山湖木屋提示词，只生成 1 张图片，使用当前尺寸、种子和负面词。不要改词或增加张数。",
+  "promptBefore": "scenery, no humans, mountain lake, lakeside, morning, red cabin, wooden cabin, pine trees, forest, water reflection, golden sunlight, sunbeam, anime background",
+  "promptAfter": "scenery, no humans, mountain lake, lakeside, morning, red cabin, wooden cabin, pine trees, forest, water reflection, golden sunlight, sunbeam, anime background",
+  "negativeAfter": "text, watermark, blurry, lowres",
+  "approvals": [],
+  "traces": [],
+  "assistantText": [],
+  "imagesBefore": 0,
+  "imagesAfter": 0,
+  "officialRequests": [],
+  "observedAnlas": 0,
+  "outputs": []
+}

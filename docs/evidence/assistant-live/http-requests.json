@@ -1,0 +1,145 @@
+[
+  {
+    "index": 1,
+    "phase": "initial",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 2,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 2,
+    "phase": "initial",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 4,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 3,
+    "phase": "initial",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 6,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 4,
+    "phase": "initial",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 8,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 5,
+    "phase": "resume_initial",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 10,
+    "status": "response",
+    "http": 503
+  },
+  {
+    "index": 6,
+    "phase": "refine",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 10,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 7,
+    "phase": "refine",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 12,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 8,
+    "phase": "refine",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 14,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 9,
+    "phase": "refine",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 16,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 10,
+    "phase": "decline",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 18,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 11,
+    "phase": "decline",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 13,
+    "messages": 20,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 12,
+    "phase": "diagnostic",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "required",
+    "tools": 1,
+    "messages": 18,
+    "status": "response",
+    "http": 200
+  },
+  {
+    "index": 13,
+    "phase": "diagnostic",
+    "model": "deepseek-v4.1-flash",
+    "stream": true,
+    "toolChoice": "auto",
+    "tools": 1,
+    "messages": 20,
+    "status": "response",
+    "http": 200
+  }
+]
