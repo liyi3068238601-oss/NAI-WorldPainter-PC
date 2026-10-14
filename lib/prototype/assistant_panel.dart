@@ -8,7 +8,12 @@ import 'package:flutter/services.dart';
 import '../assistant/agent_contract.dart';
 import '../assistant/assistant_controller.dart';
 import '../assistant/assistant_state.dart';
+import '../assistant/model_discovery.dart';
+import '../security/credential_vault.dart';
 import '../platform/image_picker.dart';
+import 'assistant_memory_dialog.dart';
+import 'assistant_material_picker.dart';
+import 'assistant_model_picker.dart';
 import 'stored_image.dart';
 import 'workbench_controller.dart';
 
@@ -78,6 +83,22 @@ class _AssistantPanelState extends State<AssistantPanel> {
   Future<void> _attach() => _act(() async {
     final bytes = await pickImage();
     if (bytes != null) await a.attachImage(bytes);
+  });
+  Future<void> _material() => _act(() async {
+    final targetId = a.session.id;
+    final text = await pickAssistantMaterial(
+      context,
+      widget.workbench.promptLibrary,
+    );
+    if (text == null || a.busy || a.session.id != targetId) return;
+    final combined = [
+      a.session.input,
+      text,
+    ].where((part) => part.trim().isNotEmpty).join('\n\n');
+    if (combined.length > 24000) {
+      throw const AgentException('插入后超过 24000 字符，请缩短聊天草稿。');
+    }
+    a.updateInput(combined);
   });
   Future<bool> _confirm(String text) async =>
       await showDialog<bool>(
@@ -363,6 +384,31 @@ class _AssistantPanelState extends State<AssistantPanel> {
                         label: const Text('模型与偏好'),
                       ),
                       OutlinedButton.icon(
+                        key: const ValueKey('assistant-memories'),
+                        onPressed: a.busy
+                            ? null
+                            : () => showAssistantMemories(context, a),
+                        icon: const Icon(Icons.psychology_outlined, size: 17),
+                        label: Text(
+                          '记忆${a.state.memories.entries.where((entry) => !entry.isRetrievable && entry.supersededBy == null).isEmpty ? '' : ' · 待审核'}',
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        tooltip: '会话操作',
+                        enabled: !a.busy,
+                        onSelected: (_) => _act(() async {
+                          if (await _confirm('清空全部会话和聊天草稿？记忆、收藏及图片文件保留。')) {
+                            a.clearSessions();
+                          }
+                        }),
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(
+                            value: 'clear',
+                            child: Text('清空全部会话'),
+                          ),
+                        ],
+                      ),
+                      OutlinedButton.icon(
                         key: const ValueKey('assistant-diagnostic'),
                         onPressed: a.busy || a.state.mainProvider == null
                             ? null
@@ -554,6 +600,12 @@ class _AssistantPanelState extends State<AssistantPanel> {
                             ? null
                             : _attach,
                         icon: const Icon(Icons.add_photo_alternate_outlined),
+                      ),
+                      IconButton(
+                        key: const ValueKey('assistant-material'),
+                        tooltip: '插入本地提示词素材',
+                        onPressed: a.busy ? null : _material,
+                        icon: const Icon(Icons.bookmarks_outlined),
                       ),
                       if (a.busy)
                         FilledButton.tonalIcon(
@@ -1012,6 +1064,29 @@ class _ProviderEditorState extends State<_ProviderEditor> {
   late bool keyRequired = widget.provider?.requireKey ?? true;
   bool saving = false;
   String error = '';
+  Future<void> _pickModel() async {
+    final provider = AssistantProvider(
+      id: widget.provider?.id ?? 'unsaved-model-discovery',
+      name: name.text.trim().isEmpty ? '未保存连接' : name.text.trim(),
+      baseUrl: url.text.trim(),
+      model: 'discovery',
+      requireKey: keyRequired,
+    );
+    final keyDraft = secret.text;
+    final useStoredKey = widget.provider != null;
+    final selected = await pickAssistantModel(
+      context,
+      loadModels: (token) => discoverAssistantModels(
+        provider: provider,
+        vault: widget.controller.workbench.vault ?? createCredentialVault(),
+        cancellation: token,
+        draftSecret: keyDraft,
+        useStoredKey: useStoredKey,
+      ),
+    );
+    if (selected != null && mounted) model.text = selected;
+  }
+
   @override
   void dispose() {
     name.dispose();
@@ -1077,6 +1152,15 @@ class _ProviderEditorState extends State<_ProviderEditor> {
                 helperText: '使用服务提供的精确模型 ID；Agent 需要支持工具调用。',
               ),
             ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const ValueKey('assistant-fetch-models'),
+                onPressed: saving ? null : _pickModel,
+                icon: const Icon(Icons.list_alt_outlined),
+                label: const Text('读取此连接的模型列表'),
+              ),
+            ),
             TextField(
               controller: secret,
               obscureText: true,
@@ -1085,7 +1169,7 @@ class _ProviderEditorState extends State<_ProviderEditor> {
               decoration: InputDecoration(
                 labelText: 'API Key',
                 helperText: widget.provider == null
-                    ? '只写入系统凭据库。'
+                    ? '保存时写入系统凭据库；读取模型列表会使用当前地址与 Key。'
                     : '留空保留同一连接和地址的现有凭据；改地址须重新填写。',
               ),
             ),

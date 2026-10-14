@@ -10,6 +10,7 @@ import 'agent_contract.dart';
 import 'agent_engine.dart';
 import 'assistant_state.dart';
 import 'openai_agent_transport.dart';
+import 'prompt_memory.dart';
 import 'workspace_tools.dart';
 
 class AssistantInteraction {
@@ -115,6 +116,59 @@ class AssistantController extends ChangeNotifier {
     _idle();
     state.sessions.clear();
     newSession();
+  }
+
+  Future<MemoryEntry> saveMemory({
+    String? id,
+    required String trigger,
+    required String content,
+    required MemoryKind kind,
+    MemorySource source = MemorySource.manual,
+    MemoryResolution? resolution,
+    int? expectedRevision,
+  }) async {
+    _idle();
+    final result = state.memories.save(
+      id: id,
+      trigger: trigger,
+      content: content,
+      kind: kind,
+      source: source,
+      resolution: resolution,
+      expectedRevision: expectedRevision,
+    );
+    changed();
+    await workbench.flush();
+    return result;
+  }
+
+  Future<MemoryEntry> approveMemory(
+    String id, {
+    String? trigger,
+    String? content,
+    MemoryKind? kind,
+    MemoryResolution? resolution,
+    int? expectedRevision,
+  }) async {
+    _idle();
+    final result = state.memories.approve(
+      id,
+      trigger: trigger,
+      content: content,
+      kind: kind,
+      resolution: resolution,
+      expectedRevision: expectedRevision,
+    );
+    changed();
+    await workbench.flush();
+    return result;
+  }
+
+  Future<void> deleteMemories(Set<String> ids, {int? expectedRevision}) async {
+    _idle();
+    state.memories.delete(ids, expectedRevision: expectedRevision);
+    changed();
+    await workbench.flush();
   }
 
   void updateInput(String input) {

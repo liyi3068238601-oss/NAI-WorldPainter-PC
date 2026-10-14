@@ -1,5 +1,6 @@
 import '../media/image_asset_validation.dart' show parseImageAssetRef;
 import 'agent_contract.dart';
+import 'prompt_memory.dart';
 
 const int _assistantStateSchema = 1;
 
@@ -228,9 +229,11 @@ class AssistantState {
     String? visionProviderId,
     this.contextTurns = 8,
     this.systemPrompt = '',
+    PromptMemoryLibrary? memories,
     List<AssistantSession> sessions = const [],
     String? activeSessionId,
-  }) : providers = List<AssistantProvider>.of(providers),
+  }) : memories = memories ?? PromptMemoryLibrary(),
+       providers = List<AssistantProvider>.of(providers),
        mainProviderId = _emptyToNull(mainProviderId),
        visionProviderId = _emptyToNull(visionProviderId),
        sessions = List<AssistantSession>.of(sessions),
@@ -243,6 +246,7 @@ class AssistantState {
   String? visionProviderId;
   int contextTurns;
   String systemPrompt;
+  final PromptMemoryLibrary memories;
   List<AssistantSession> sessions;
   String? activeSessionId;
 
@@ -280,6 +284,7 @@ class AssistantState {
       'visionProviderId': visionProviderId,
       'contextTurns': contextTurns,
       'systemPrompt': systemPrompt,
+      'memories': memories.toJson(),
       'sessions': sessions.map((session) => session.toJson()).toList(),
       'activeSessionId': activeSessionId,
     };
@@ -316,6 +321,11 @@ class AssistantState {
           'systemPrompt',
           maxLength: _maxSystemPromptLength,
         ),
+        memories: json.containsKey('memories')
+            ? PromptMemoryLibrary.fromJson(
+                _asStringMap(json['memories'], 'memories'),
+              )
+            : PromptMemoryLibrary(),
         sessions: sessions,
         activeSessionId: _readNullableId(json, 'activeSessionId'),
       );

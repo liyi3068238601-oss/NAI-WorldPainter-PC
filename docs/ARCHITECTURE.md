@@ -76,3 +76,5 @@ Vibe 编码库和缓存随 PC 工作区保存。兼容范围绑定模型、服�
 ## 助手领域
 
 `lib/assistant` 将公开配置/会话状态、HTTP 协议、工具循环和工作台工具分开。工具 schema 与分派共用注册表；流式参数只在完整响应结束后进入执行层。工作台实例持有 AssistantController，状态作为 `assistant` 节点参加原有 SQLite CAS 保存与递归图片引用审计，Key 不写入该节点。关闭窗口先取消助手并等待资产准备/保存；恢复时保留收据，将未完成轮次标为中断。只有完整轮次进入后续上下文，避免回放无结果的工具调用。具体限额、协议字段回放、审批与验证边界见 [助手报告](ASSISTANT_REVIEW.md)。
+
+2026-10-14 增量：`PromptMemoryLibrary` 在助手节点内保存独立 schema/revision；`memory_tools.dart` 只允许有界检索已采纳记录和提交待审核候选。用户审核/冲突处理由控制器提交，未审核记录不会进入模型检索结果。历史关系、选中删除预览、旧快照兼容和新建记忆的清理保护见 [记忆批次](ASSISTANT_KNOWLEDGE_REVIEW.md)。`model_discovery.dart` 用只读凭据视图处理未保存的连接草稿，不提前写入 Key。

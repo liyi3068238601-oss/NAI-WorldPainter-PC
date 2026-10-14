@@ -1,0 +1,20 @@
+{
+  "phone_commit": "01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab",
+  "scope": "read-only behavior reference; no source copied; root license remains unresolved",
+  "sha256_working_tree_bytes": {
+    "lib/domain/entities/prompt_memory.dart": "50bb91a60c1e1e3a6c321af92f296aacb3ef3ba11abbd3acf92c1c9fcc3ca318",
+    "lib/domain/usecases/manage_prompt_memories.dart": "27e158a02a89263433b14618aadf317498caee6a313090f66435b3e848e3d0c3",
+    "lib/data/repositories/prompt_memory_repository_impl.dart": "e0c944df3e5fa68d1694a7c30c34206b80abd15f97e0bab763b21e5ac3c07ff6",
+    "lib/presentation/viewmodels/prompt_memory_viewmodel.dart": "65d468ea005018656c98a47a18cb8698fa840ef07a6a20965164533cb2fec007",
+    "lib/presentation/pages/prompt_memory_page.dart": "8e1c5c204e35bee740d421c8cba2c647d4fbce64a01898547039d8088d559fff",
+    "lib/domain/agents/tools/get_memories_tool.dart": "801f0ceeced92dfe4dcd98080b57e95768a07bc50e5691154af11d29bcdd77a2",
+    "lib/domain/agents/tools/save_memory_tool.dart": "d411d258f912dabc6539896077c422675c2a8201b27ae17af682e1dacbdb317b"
+  },
+  "local_changes_in_reference_files": false,
+  "framework": "Flutter 3.47.7 / Dart 3.13.5; no dependencies changed",
+  "official_documentation": [
+    "https://api.flutter.dev/flutter/material/showDialog.html",
+    "https://api.flutter.dev/flutter/material/Dialog-class.html",
+    "https://api.flutter.dev/flutter/widgets/State/mounted.html"
+  ]
+}

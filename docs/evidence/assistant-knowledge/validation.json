@@ -1,0 +1,89 @@
+{
+  "timestamp_utc": "2026-10-14T02:23:13.493555+00:00",
+  "batch": "PC assistant memory, material insertion and model selection",
+  "baseline_commit": "412d7add3ba38e835e6ef248a899b18d13a1df4f",
+  "tests": {
+    "passed": 301,
+    "failed": 0,
+    "added_from_baseline": 33,
+    "remote_services": false,
+    "paid_generation": false,
+    "memory_sqlite_reopen": true,
+    "memory_structured_tool_loop": true,
+    "existing_loopback_http_regression": true
+  },
+  "static_analysis": "passed; no issues",
+  "windows_release_build": "passed",
+  "web_release_build": "passed",
+  "web_build_warning": "Existing CupertinoIcons font family notice remains in web-build.txt; no missing Material icons seen in reviewed captures",
+  "windows_storage_probe": "passed: independent process write/read; generic SQLite, Unicode path, PNG SHA-256; memory-specific reopen covered by SQLite integration test",
+  "windows_credential_probe": "passed: synthetic credential write/read/delete across processes",
+  "visual_qa": {
+    "renderer": "Flutter test renderer with bundled NotoSansSC and MaterialIcons",
+    "desktop_logical_size": [
+      1440,
+      900
+    ],
+    "compact_logical_size": [
+      640,
+      480
+    ],
+    "compact_device_pixel_ratio": 2,
+    "reviewed": [
+      "compact-memory-conflict.png",
+      "compact-memory-editor.png",
+      "compact-memory-list.png",
+      "desktop-conflict.png",
+      "desktop-delete-history-preview.png",
+      "desktop-search.png",
+      "desktop-stale-delete-preview.png",
+      "desktop-stale-list.png",
+      "material-compact.png",
+      "material-desktop.png"
+    ],
+    "findings": "No layout overflow exceptions; dialogs keep actions visible, long content and compact lists scroll. Reviewer inspected every saved capture."
+  },
+  "native_assistant_manual_qa": "not performed in this batch",
+  "manual_browser_qa": "not performed",
+  "new_image_generation_channels": false,
+  "known_gaps": [
+    "mobile tag normalization for memory text",
+    "real model service validation",
+    "remaining M4 tools and complete mobile parity"
+  ],
+  "logs": "Text copied with trailing whitespace removed; Windows build log is an explicit final 70-line excerpt",
+  "source_sha256_git_blob": {
+    "lib/assistant/agent_contract.dart": "4bd974959634ccc5e0253f96435408f8570fd4fd3b89f6b36322ffe14d445279",
+    "lib/assistant/agent_engine.dart": "4b79e05574aa75f77786299caa5a0706dfc63147e876687de1c122bd2fdbde92",
+    "lib/assistant/assistant_controller.dart": "4eedd4c95c4992a72ebed99e6d43c4f2361d3734820159440900913a279b915c",
+    "lib/assistant/assistant_state.dart": "a158d0258ee460d4e7d4fe5c6396bd51a9e8ce1f50dc6e63b9ff31cdd356adf9",
+    "lib/assistant/memory_tools.dart": "829352427ca6bfa90a351ab5566e4467518b70b2293a87dd281d2c0a979a0668",
+    "lib/assistant/model_discovery.dart": "dd0d10535a747e2433742b2a92a5cf45d822bafa0c395df280e47d4931feb66b",
+    "lib/assistant/openai_agent_transport.dart": "35e04dd767f8ac4212816e4079a0753f162da9f94a2eecd43a484e6815ad50e0",
+    "lib/assistant/prompt_memory.dart": "0a1d3e61abb83d673bfde9dac219e98013058efe7819cb0eca37fa07618d0f7f",
+    "lib/assistant/workspace_tools.dart": "a6f9306950e1b760ad79c75f45a7ff682c5abee052b6b5cd22e5be7d7e41e8e9",
+    "lib/prototype/assistant_material_picker.dart": "61fd4cf172b5019c4d1057d4cffb5120f18acf043a8111f4ca31a5308b3e2895",
+    "lib/prototype/assistant_memory_dialog.dart": "85c74938bbc6656e8c576ff57eed1c459677949718b001ea4bea0be18fa6e5f2",
+    "lib/prototype/assistant_model_picker.dart": "9690afeb35105c3e574edb730b642b4f1126bf9eef8ea4d620fe824a2304cb30",
+    "lib/prototype/assistant_panel.dart": "88209a518dbc8a0b7d1086841205fca8acb2b3ac14bba421799b135c52ca0c93",
+    "test/assistant/agent_engine_test.dart": "ffe7fbb94d1163a19b10a8f6b9636ac225c3460af079cbfaf4bb8468ce146e4e",
+    "test/assistant/assistant_controller_test.dart": "4d9c283b0beaafdf1814f20a61fb3eb1487aaea4c92ef011becbb5d04139a03c",
+    "test/assistant/assistant_state_test.dart": "8fd25c67d2c5a46d6eb0ccc739f42893b813a48622e8bceeeb9f017e500dc904",
+    "test/assistant/loopback_agent_test.dart": "4563a43de7dc7da38536b8183f947c853344a02209d2748aaaaee76cf921cfe7",
+    "test/assistant/memory_integration_test.dart": "3e0e81fc2e4f8a915a9d550d1c3ec4972d7744e40101049af58fd340f053b7e3",
+    "test/assistant/model_discovery_test.dart": "6930caa44f03cada190e6a1d36c5cbf3a499bde9ab2de5e2da2a6db060935e0c",
+    "test/assistant/openai_agent_transport_test.dart": "22a3f5c5d91e3d24f2a21c7e65f20292bf278a11326fe1affd5fd89815ec5713",
+    "test/assistant/prompt_memory_test.dart": "81a5cc15bfd508659337872313cd6929eab2292356e4aa2221ca7e0cc175f28e",
+    "test/assistant/workspace_tools_test.dart": "1d66c010cba478a9d9337a657e4e3757acf63ab53977b550bd8bb7c8e37c29d7",
+    "test/assistant_knowledge_ui_test.dart": "5df422359b20fb562999a271b61a6215792a697e1d2d2678b2d87244fcdc6046",
+    "test/assistant_material_ui_test.dart": "8d90f5ac8b8eebc85f44393c0cba0611fe070dbe5a8fd5c916e96cfd6f6a97c9",
+    "test/assistant_model_picker_test.dart": "dbd568c0a260b8611a7fb1f66fc119ac92700f12ff10d87d84a0515e6adc0b06",
+    "test/assistant_ui_test.dart": "38daafd42fd1681c33278d0a4f12bb4794016232709fccb3b29fb9054c2f4deb",
+    "pubspec.lock": "6dd96a56d578273168a1672372ff1cde1b8e650adfefeed437289f9568d87d49"
+  },
+  "build_artifact_sha256": {
+    "build/windows/x64/runner/Release/worldpainter_pc.exe": "ca1a9c91f7ccd4ca4bb17793220a435f850e99f939af58c640d8f1b8e0b86a8b",
+    "build/windows/x64/runner/Release/data/app.so": "a3da1c831ee7acc2469559801e57d96f479d671494d1a129e6e9b630422f1418",
+    "build/web/main.dart.js": "091b38d2296a55813fc2b9f20ff952570b2198f830cc091b2a16afb6c8ffc783"
+  }
+}

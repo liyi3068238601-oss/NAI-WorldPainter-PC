@@ -2,6 +2,16 @@ import 'dart:convert';
 
 import 'agent_contract.dart';
 
+Map<String, dynamic> schema(
+  Map<String, dynamic> properties, {
+  List<String> required = const [],
+}) => {
+  'type': 'object',
+  'properties': properties,
+  'required': required,
+  'additionalProperties': false,
+};
+
 class PreparedAgentTool {
   const PreparedAgentTool({
     required this.summary,

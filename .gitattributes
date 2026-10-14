@@ -20,3 +20,4 @@ licenses/CAPSULES_MIT.txt -text whitespace=blank-at-eol,blank-at-eof,space-befor
 assets/prompts/capsules.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/evidence/prompt-library/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/evidence/assistant/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/evidence/assistant-knowledge/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

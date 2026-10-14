@@ -54,3 +54,7 @@ Windows 存储探针通过两个隐藏进程验证数据库/中文路径/PNG SHA
 Flutter 渲染截图已人工查看：1440×900 桌面、修改确认、模型设置，以及 640×480、DPR 2 紧凑界面。字段、操作与滚动区域可见，未发现溢出；这些是自动化渲染图，不冒充 Windows 实机截图。Web 构建仍报告 Cupertino 字体引用提示，构建成功且本批 Material 图标截图正常；未把该提示隐藏。
 
 证据及 SHA-256 索引见 [validation.json](evidence/assistant/validation.json) 和 [SHA256SUMS.txt](evidence/assistant/SHA256SUMS.txt)。可复跑 `flutter test --no-pub`、`dart analyze lib test`、既有构建/探针脚本。`scripts/assistant-qa-mock.py` 提供仅监听 127.0.0.1:5099 的合成服务；`--prepare` 用 UI 测试生成的 fixture 建立独立 `.tmp/assistant-native-qa`，拒绝覆盖已有 QA 库。它没有任何转发远端功能。
+
+## 后续增量
+
+2026-10-14 的记忆管理/候选审核、助手素材插入、模型列表及全部会话清空已在 [记忆批次](ASSISTANT_KNOWLEDGE_REVIEW.md) 接入；本文前述“待迁移”与 268 项测试保留为 2026-10-13 的历史记录，当前状态以最新报告为准。

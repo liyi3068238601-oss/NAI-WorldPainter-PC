@@ -1,0 +1,322 @@
+00:00 +0: loading E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart
+00:00 +0: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract requires a first tool and then returns the exact result by call ID
+00:00 +1: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract rejects a required first action when the provider returns prose
+00:00 +2: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract does not execute a tool from prose when the turn is ordinary chat
+00:00 +3: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract returns malformed JSON as a tool error so the model can correct it
+00:00 +4: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract rejects duplicate call IDs before executing any call
+00:00 +5: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract does not mark a required action successful if every tool attempt fails
+00:00 +6: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract stops after three consecutive tool failures
+00:00 +7: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract stops at sixteen provider rounds and preserves completed tool calls
+00:00 +8: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract denied or unavailable confirmation never executes a mutating tool
+00:00 +9: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract cancelling a pending approval records that the operation did not run
+00:00 +10: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract cancelling an active operation records that its effect may be uncertain
+00:00 +11: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract ask_user must be a single call, not batched with a dependent action
+00:00 +12: E:/NAI-WorldPainter/PC端/test/assistant/agent_engine_test.dart: AgentEngine provider/tool contract an ask_user cancellation aborts instead of continuing to model prose
+00:00 +13: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: (setUpAll)
+00:00 +13: E:/NAI-WorldPainter/PC端/test/assistant/assistant_state_test.dart: AssistantState persistence round-trips Chinese prompts, weighted text, and tool wire messages
+00:00 +14: E:/NAI-WorldPainter/PC端/test/assistant/assistant_state_test.dart: AssistantState persistence round-trips Chinese prompts, weighted text, and tool wire messages
+00:00 +15: E:/NAI-WorldPainter/PC端/test/assistant/assistant_state_test.dart: AssistantState persistence round-trips Chinese prompts, weighted text, and tool wire messages
+00:00 +16: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: AssistantController persists SQLite state and interrupts in-flight work after reopen
+00:00 +17: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: AssistantController persists SQLite state and interrupts in-flight work after reopen
+00:00 +18: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: AssistantController persists SQLite state and interrupts in-flight work after reopen
+00:00 +19: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: AssistantController persists SQLite state and interrupts in-flight work after reopen
+00:00 +20: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: AssistantController persists SQLite state and interrupts in-flight work after reopen
+00:00 +21: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: AssistantController persists SQLite state and interrupts in-flight work after reopen
+00:00 +22: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: AssistantController persists SQLite state and interrupts in-flight work after reopen
+00:00 +23: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +24: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +25: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +26: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +27: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +28: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +29: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +30: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +31: E:/NAI-WorldPainter/PC端/test/assistant/loopback_agent_test.dart: real IO transport completes a confirmed workspace tool loopback
+00:00 +32: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: AssistantController rejecting a write_prompt confirmation leaves the prompt unchanged
+00:00 +33: E:/NAI-WorldPainter/PC端/test/assistant/assistant_controller_test.dart: (tearDownAll)
+00:00 +33: E:/NAI-WorldPainter/PC端/test/assistant/memory_integration_test.dart: (setUpAll)
+00:00 +33: E:/NAI-WorldPainter/PC端/test/assistant/memory_integration_test.dart: older assistant snapshot defaults memories; malformed memory stays an error
+00:00 +34: E:/NAI-WorldPainter/PC端/test/assistant/memory_integration_test.dart: agent proposal is not retrievable until a user explicitly approves it
+00:00 +35: E:/NAI-WorldPainter/PC端/test/assistant/model_discovery_test.dart: draft key is only used for this GET and cannot overwrite saved credentials
+00:00 +36: E:/NAI-WorldPainter/PC端/test/assistant/model_discovery_test.dart: draft key is only used for this GET and cannot overwrite saved credentials
+00:00 +37: E:/NAI-WorldPainter/PC端/test/assistant/memory_integration_test.dart: memory conflicts, pending state and hits survive real SQLite reopen
+00:00 +38: E:/NAI-WorldPainter/PC端/test/assistant/memory_integration_test.dart: memory conflicts, pending state and hits survive real SQLite reopen
+00:00 +39: E:/NAI-WorldPainter/PC端/test/assistant/memory_integration_test.dart: memory conflicts, pending state and hits survive real SQLite reopen
+00:00 +40: E:/NAI-WorldPainter/PC端/test/assistant/memory_integration_test.dart: (tearDownAll)
+00:00 +40: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport sends a non-streaming completion with required tools unchanged
+00:00 +41: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport replays reasoning_content unchanged in the next request
+00:00 +42: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport accumulates SSE text, reasoning, tools, and a usage-only trailer
+00:00 +43: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport omits tool_choice when no tools were supplied
+00:00 +44: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport rejects empty, malformed, and unknown JSON responses explicitly
+00:00 +45: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary starts empty and exposes immutable entries
+00:00 +46: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport caps JSON response bodies at 1 MB
+00:00 +47: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport caps JSON response bodies at 1 MB
+00:00 +48: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary replace keeps the old entry as non-retrievable history
+00:00 +49: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport caps SSE response bodies at 1 MB before returning a reply
+00:00 +50: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport caps SSE response bodies at 1 MB before returning a reply
+00:00 +51: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary merge preserves both texts and supersedes the source entry
+00:00 +52: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport does not retry without tools after an HTTP error and sanitizes details
+00:00 +53: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport does not retry without tools after an HTTP error and sanitizes details
+00:00 +54: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport does not retry without tools after an HTTP error and sanitizes details
+00:00 +55: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport does not retry without tools after an HTTP error and sanitizes details
+00:00 +56: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary editing a pending entry does not bypass approval
+00:00 +57: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport maps unauthorized and rate limited statuses without exposing response bodies
+00:00 +58: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport maps unauthorized and rate limited statuses without exposing response bodies
+00:00 +59: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary retrieve skips oversized entries intact and records hits only for returns
+00:00 +60: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport requires a complete finish marker before returning streamed tool calls
+00:00 +61: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary retrieve matches a CJK trigger embedded in a natural-language query
+00:00 +62: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport unsupported finish reasons never return tool calls
+00:00 +63: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport unsupported finish reasons never return tool calls
+00:00 +64: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport unsupported finish reasons never return tool calls
+00:00 +65: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary deleting a replacement target removes superseded ancestors only
+00:00 +66: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport rejects a reasoning-only answer as empty
+00:00 +67: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary round-trips schema 1 and rejects malformed serialized state
+00:00 +68: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport cancellation closes the active client and ignores its late response
+00:00 +69: E:/NAI-WorldPainter/PC端/test/assistant/prompt_memory_test.dart: PromptMemoryLibrary failed merge and stale revisions leave the library unchanged
+00:00 +70: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport timeout closes the client without retrying
+00:00 +71: E:/NAI-WorldPainter/PC端/test/assistant/openai_agent_transport_test.dart: OpenAiAgentTransport timeout closes the client without retrying
+00:01 +72: E:/NAI-WorldPainter/PC端/test/assistant/workspace_tools_test.dart: WorkspaceAgentTools reads the current draft before applying an approved prompt edit
+00:01 +73: E:/NAI-WorldPainter/PC端/test/assistant/workspace_tools_test.dart: WorkspaceAgentTools reads the current draft before applying an approved prompt edit
+00:01 +74: E:/NAI-WorldPainter/PC端/test/assistant/workspace_tools_test.dart: WorkspaceAgentTools reads the current draft before applying an approved prompt edit
+00:01 +75: E:/NAI-WorldPainter/PC端/test/assistant/workspace_tools_test.dart: WorkspaceAgentTools rejects a write that was not preceded by a prompt read
+00:01 +76: E:/NAI-WorldPainter/PC端/test/assistant/workspace_tools_test.dart: WorkspaceAgentTools does not overwrite a draft changed outside the current assistant turn
+00:01 +77: E:/NAI-WorldPainter/PC端/test/assistant/workspace_tools_test.dart: WorkspaceAgentTools rejects prompt targets from a different active generation mode
+00:01 +78: E:/NAI-WorldPainter/PC端/test/assistant/workspace_tools_test.dart: WorkspaceAgentTools ask_user with no answer cancels the turn instead of accepting a guess
+00:01 +79: E:/NAI-WorldPainter/PC端/test/assistant/workspace_tools_test.dart: WorkspaceAgentTools uses a frozen current-channel generation snapshot for a bounded batch
+00:01 +80: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: (setUpAll)
+00:01 +80: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:01 +81: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:01 +82: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +83: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +84: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +85: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +86: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +87: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +88: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +89: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +90: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +91: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +92: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +93: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +94: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +95: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +96: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +97: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +98: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +99: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +100: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +101: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +102: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +103: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +104: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +105: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +106: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +107: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +108: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +109: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +110: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +111: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +112: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +113: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +114: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:02 +115: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +116: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +117: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +118: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +119: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +120: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +121: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +122: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +123: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +124: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +125: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +126: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +127: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +128: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +129: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +130: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +131: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +132: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +133: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +134: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +135: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:03 +136: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +137: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +138: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +139: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +140: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +141: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +142: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +143: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +144: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +145: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +146: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +147: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +148: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +149: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +150: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:04 +150: E:/NAI-WorldPainter/PC端/test/media/image_asset_maintenance_test.dart: does not list, read, or remove a symbolic link as an asset
+Symlink assertions skipped: Cannot create link to target 'E:\NAI-WorldPainter\PC端\.tmp\image-asset-maintenance-tests\worldpainter-assets-b95481f\external.png'
+00:04 +151: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +152: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +153: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +154: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +155: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +156: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +157: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +158: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +159: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +160: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +161: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +161: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves random seed
+QA composite: savedSeed=0, savedParameters={operation: inpaint, model: nai-diffusion-4-5-full, prompt: synthetic QA composite, negative_prompt: , width: 832, height: 1216, steps: 28, scale: 5.0, cfg_rescale: 0.25, sampler: k_euler_ancestral, noise_schedule: karras, seed: null, use_coords: true, characters: [], vibe_references: [], precise_references: [], source_image_id: sha256/e6/e63afa897ae8cac802a4cdac954ba7e8060fdf9f61870b9da4668c906e082007.png, mask_image_id: null, img2img_source_image_id: null, img2img_strength: null, inpaint_strength: 0.6, disabled_original_image: false, color_correct: true}, refillSeed=, refillOperation=GenerationOperation.inpaint, refillCfgRescale=0.25, generationCalls=0
+00:05 +162: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +163: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +164: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +165: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +166: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +167: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +168: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +169: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +170: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +171: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +172: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +173: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +174: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +175: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +176: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +177: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +178: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +179: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +180: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +181: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +182: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +183: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: desktop memory management edits and replaces a pending candidate safely
+00:05 +184: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats desktop
+00:05 +185: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats desktop
+00:05 +186: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats desktop
+00:06 +187: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats desktop
+00:06 +188: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats desktop
+00:06 +189: E:/NAI-WorldPainter/PC端/test/inpaint_workspace_test.dart: paint, erase, and undo keep source-pixel strokes in the session
+00:06 +190: E:/NAI-WorldPainter/PC端/test/generation_ui_test.dart: real generation UI has channel settings, editable advanced parameters and characters
+00:06 +191: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +192: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +193: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +194: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +194: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves operation
+QA composite: savedSeed=0, savedParameters={operation: inpaint, model: nai-diffusion-4-5-full, prompt: synthetic QA composite, negative_prompt: , width: 832, height: 1216, steps: 28, scale: 5.0, cfg_rescale: 0.25, sampler: k_euler_ancestral, noise_schedule: karras, seed: null, use_coords: true, characters: [], vibe_references: [], precise_references: [], source_image_id: sha256/e6/e63afa897ae8cac802a4cdac954ba7e8060fdf9f61870b9da4668c906e082007.png, mask_image_id: null, img2img_source_image_id: null, img2img_strength: null, inpaint_strength: 0.6, disabled_original_image: false, color_correct: true}, refillSeed=, refillOperation=GenerationOperation.inpaint, refillCfgRescale=0.25, generationCalls=0
+00:07 +195: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +196: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +197: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +198: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +199: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +200: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +201: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +202: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +203: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +204: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +205: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +206: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +207: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +208: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +209: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +210: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +211: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +212: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +213: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +214: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +214: E:/NAI-WorldPainter/PC端/test/processing/tiled_nonstandard_response_regression_test.dart: NEW regression: accepted smaller returned tile preserves proportional sampling
+TILED_RESAMPLE_EVIDENCE accepted=512x512 requested=1024x1024 output=102x102 redAt100=25 expectedRed=25
+00:07 +215: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +216: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +217: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:07 +218: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +219: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +220: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +221: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +222: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +223: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +223: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_export_regressions_test.dart: NEW regression: tiled Apply all parameters preserves the submitted base seed
+TILED_SEED_EVIDENCE submitted=123 firstResult=123 refill=123 secondResult=123 wireSeeds=[118203, 118203]
+00:08 +224: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +224: E:/NAI-WorldPainter/PC端/test/processing/tiled_seed_export_regressions_test.dart: NEW regression: a supported JPEG Director result can be exported through PNG action
+JPEG_EXPORT_EVIDENCE requests=1 saved=sha256/e8/e855c9cf2682aeee1272cdbc2b92b946c378f3a77575911a9e9fb7eea688051a.jpg output=8x8 format=JPEG
+00:08 +225: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +226: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +227: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: gallery navigation, confirmed clear, and viewport screenshots
+00:08 +228: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +229: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +230: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +231: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +232: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +233: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +234: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +235: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +235: E:/NAI-WorldPainter/PC端/test/composite_refill_regression_test.dart: ungenerated composite full refill preserves advanced parameters
+QA composite: savedSeed=0, savedParameters={operation: inpaint, model: nai-diffusion-4-5-full, prompt: synthetic QA composite, negative_prompt: , width: 832, height: 1216, steps: 28, scale: 5.0, cfg_rescale: 0.25, sampler: k_euler_ancestral, noise_schedule: karras, seed: null, use_coords: true, characters: [], vibe_references: [], precise_references: [], source_image_id: sha256/e6/e63afa897ae8cac802a4cdac954ba7e8060fdf9f61870b9da4668c906e082007.png, mask_image_id: null, img2img_source_image_id: null, img2img_strength: null, inpaint_strength: 0.6, disabled_original_image: false, color_correct: true}, refillSeed=, refillOperation=GenerationOperation.inpaint, refillCfgRescale=0.25, generationCalls=0
+00:08 +236: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +237: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +238: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +239: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +240: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +241: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +242: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +243: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +244: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:08 +245: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:09 +246: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:09 +247: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:09 +248: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:09 +249: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:09 +250: E:/NAI-WorldPainter/PC端/test/assistant_material_ui_test.dart: assistant material insertion and clear chats compact
+00:09 +251: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: compact high DPI memory editor and long conflict content stay scrollable
+00:09 +252: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: compact high DPI memory editor and long conflict content stay scrollable
+00:09 +253: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: compact high DPI memory editor and long conflict content stay scrollable
+00:09 +254: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: compact high DPI memory editor and long conflict content stay scrollable
+00:09 +255: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: compact high DPI memory editor and long conflict content stay scrollable
+00:09 +256: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: compact high DPI memory editor and long conflict content stay scrollable
+00:09 +257: E:/NAI-WorldPainter/PC端/test/assistant_knowledge_ui_test.dart: compact high DPI memory editor and long conflict content stay scrollable
+00:09 +258: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:09 +259: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:09 +260: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:09 +261: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:09 +262: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:09 +263: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:09 +264: E:/NAI-WorldPainter/PC端/test/processing/image_tools_layout_test.dart: image tools layout and default parameters Director and Enhance defaults serialize and validate on submit
+00:09 +265: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +266: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +267: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +268: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +269: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +270: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +271: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +272: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +273: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +274: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +275: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +276: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +277: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +278: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +279: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +280: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +281: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +282: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +283: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +284: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +285: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:10 +286: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:11 +287: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:11 +288: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:11 +289: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:11 +290: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:11 +291: E:/NAI-WorldPainter/PC端/test/library_ui_test.dart: Vibe library applies, renames, and deletes a named fixture
+00:11 +292: E:/NAI-WorldPainter/PC端/test/prompt_library_ui_test.dart: desktop creates style, edits groups and composes artists
+00:11 +293: E:/NAI-WorldPainter/PC端/test/prompt_library_ui_test.dart: desktop creates style, edits groups and composes artists
+00:11 +294: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions lays out at desktop, compact, and high-DPI logical sizes
+00:11 +295: E:/NAI-WorldPainter/PC端/test/prompt_library_ui_test.dart: capsules route negative selection correctly and fit compact high DPI
+00:12 +296: E:/NAI-WorldPainter/PC端/test/prompt_library_ui_test.dart: capsules route negative selection correctly and fit compact high DPI
+00:13 +297: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions switches between dark and light themes
+00:13 +298: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions prompt editor cancellation discards edits and apply writes them back
+00:13 +299: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions narrow window exposes the generate button in the settings drawer
+00:14 +300: E:/NAI-WorldPainter/PC端/test/workbench_layout_test.dart: WorldPainterApp workbench layout and interactions main navigation drawer fits a 640x480 high-DPI viewport
+00:14 +301: All tests passed!
