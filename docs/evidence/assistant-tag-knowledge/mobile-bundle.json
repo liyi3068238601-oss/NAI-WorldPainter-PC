@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "entryCount": 12738,
+  "loadElapsedMs": 353,
+  "matchElapsedMs": 151,
+  "matchedCount": 5,
+  "systemPromptSha256": "644fef0d802ee47aa61893054e59520181cdc087feda0bcc197ba29cb7e36c77",
+  "skillSha256": "c2461185579f280f4db68266dd9bee4f83604e48233074a095c95bee3455c360",
+  "knowledgeSha256": "fe8788cb82dd8a6ef7ebf5bd11b39d7fa7b1dec4f912835d5bf525bb7d9ac66c",
+  "v5SkillIncludedWithoutContentChanges": true,
+  "wholeLibraryPersistedToSqlite": false
+}

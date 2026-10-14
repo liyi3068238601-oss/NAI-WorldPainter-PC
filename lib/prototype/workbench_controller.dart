@@ -12,8 +12,10 @@ import 'package:crypto/crypto.dart';
 import '../assistant/agent_contract.dart';
 import '../assistant/assistant_controller.dart';
 import '../assistant/assistant_state.dart';
+import '../assistant/assistant_mobile_resources.dart';
 import '../assistant/wd_tagger.dart';
 import '../tags/danbooru_client.dart';
+import '../tags/image_tag_review.dart';
 
 import '../storage/workspace_store.dart';
 import '../generation/generation_parameters.dart';
@@ -326,6 +328,7 @@ class WorkbenchController extends ChangeNotifier {
     VibeLibrary? vibeLibrary,
     PromptLibrary? promptLibrary,
     AgentTransport? assistantTransport,
+    AssistantMobileResources? mobileResources,
     WdTaggerClient? wdTaggerClient,
     DanbooruSearchClient? tagSearchClient,
     this.encodeVibe,
@@ -355,6 +358,7 @@ class WorkbenchController extends ChangeNotifier {
     assistant = AssistantController(
       workbench: this,
       transport: assistantTransport,
+      mobileResources: mobileResources,
       state: restored != null && restored.data.containsKey('assistant')
           ? AssistantState.fromJson(
               Map<String, dynamic>.from(restored.data['assistant'] as Map),
@@ -675,6 +679,13 @@ class WorkbenchController extends ChangeNotifier {
   Map<String, Object?> get imageEditing => Map<String, Object?>.from(
     jsonDecode(jsonEncode(_extra['imageEditing'] ?? {})) as Map,
   );
+  Map<String, Object?> get imageTagReview => Map<String, Object?>.from(
+    jsonDecode(jsonEncode(_extra['imageTagReview'] ?? {})) as Map,
+  );
+  void updateImageTagReview(Map<String, Object?> value) => _update(() {
+    ImageTagReviewState.fromJson(value);
+    _extra['imageTagReview'] = jsonDecode(jsonEncode(value));
+  });
   void updateImageEditing(Map<String, Object?> value) => _update(() {
     _validateImageEditing(value);
     _extra['imageEditing'] = jsonDecode(jsonEncode(value));
@@ -869,6 +880,7 @@ class WorkbenchController extends ChangeNotifier {
     _validateEditor(_editor);
     _validateImageEditing(imageEditing);
     _validateImageTools(imageTools);
+    ImageTagReviewState.fromJson(imageTagReview);
     if (imageToolJob['status'] == 'running') {
       _extra['imageToolJob'] = {
         ...imageToolJob,

@@ -1,0 +1,41 @@
+{
+  "service": "public WD-Tagger Space",
+  "input": "prior test-generated scenery",
+  "originalSha256": "d791d0041348d3fccf7154b87386c25c80fa15611fd72ba45d3720a79790b3ca",
+  "uploadSha256": "05c93692595f7ecab03da912225fb7f6113be6a79892969541635a008075d7fd",
+  "credentialsSent": false,
+  "model": "SmilingWolf/wd-swinv2-tagger-v3",
+  "automaticRetries": 0,
+  "passed": true,
+  "elapsedMs": 4417,
+  "result": {
+    "caption": "no humans, scenery, outdoors, tree, nature, forest, house, day, sky, sunlight, water, mountain, light rays, cloud, lake, blue sky, reflection, landscape",
+    "generalTags": {
+      "no humans": 0.9608685970306396,
+      "scenery": 0.9468546509742737,
+      "outdoors": 0.9280726313591003,
+      "tree": 0.9086017608642578,
+      "nature": 0.8528876900672913,
+      "forest": 0.7897429466247559,
+      "house": 0.7615572214126587,
+      "day": 0.7511280179023743,
+      "sky": 0.7472630739212036,
+      "sunlight": 0.7224297523498535,
+      "water": 0.7017459273338318,
+      "mountain": 0.6370989680290222,
+      "light rays": 0.5233643054962158,
+      "cloud": 0.48392727971076965,
+      "lake": 0.4276675581932068,
+      "blue sky": 0.378764808177948,
+      "reflection": 0.3751199543476105,
+      "landscape": 0.36604464054107666
+    },
+    "characterTags": {},
+    "ratingTags": {
+      "general": 0.9897646903991699,
+      "sensitive": 0.009240537881851196,
+      "questionable": 0.0009156465530395508,
+      "explicit": 0.00019627809524536133
+    }
+  }
+}

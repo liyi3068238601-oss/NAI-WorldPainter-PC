@@ -472,7 +472,10 @@ class _Transport implements AgentTransport {
     }
     if (reference) {
       expect(messages.last['role'], 'tool');
-      expect(messages.last['content'], contains('https://docs.novelai.net/'));
+      final result = jsonDecode(messages.last['content'] as String) as Map;
+      expect(result['reference'], 'ideation');
+      expect(result['content'], isA<String>());
+      expect((result['content'] as String).trim(), isNotEmpty);
     }
     return const AgentReply(content: _proposal);
   }

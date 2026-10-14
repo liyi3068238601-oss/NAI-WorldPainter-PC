@@ -1,0 +1,77 @@
+[
+  {
+    "path": "agent-auto-live.json",
+    "bytes": 471,
+    "sha256": "9c9c23ad376d8ffee25c0eb8d8273922240e41e7131c28a40c8f9c8ce9b83318"
+  },
+  {
+    "path": "confirmation-mock.png",
+    "bytes": 119036,
+    "sha256": "8b861d61d6ee603b4833d348694b9a249ea295791516cef7feef434c352b942a"
+  },
+  {
+    "path": "external-services.json",
+    "bytes": 2157,
+    "sha256": "47324250594b2b3904686a6862c744950cf20cef8168ed2d1bb527b1c5a17dc7"
+  },
+  {
+    "path": "live-pipeline.json",
+    "bytes": 1250,
+    "sha256": "e0edb0b596300e1edd2271176c5f4ac0aecca0e094a768d88562b3c66e8238e1"
+  },
+  {
+    "path": "mobile-bundle.json",
+    "bytes": 469,
+    "sha256": "772b821976037cca962cfa2fc64ad6926b841dc034c7210101cd2e182a181608"
+  },
+  {
+    "path": "mobile-resource-manifest.json",
+    "bytes": 1295,
+    "sha256": "dfce8af90240539778b572fa220d1f0cff1be52e757ae3e4ce6d1de224821600"
+  },
+  {
+    "path": "native-confirmation.jpg",
+    "bytes": 87351,
+    "sha256": "ccd8f3c2afaeea59cf0bafa8e1150a61945122c214db1c67077b61bafac1f5d6"
+  },
+  {
+    "path": "native-metadata.jpg",
+    "bytes": 111180,
+    "sha256": "e0a0540250d7af9950c34f1626283a08ea3bc30f6af377fa8241db2accb9d028"
+  },
+  {
+    "path": "native-review.json",
+    "bytes": 1502,
+    "sha256": "09c6523e773b60388f46de6d881f0d24cd6756c3f2af14c8d58f16c506cde66e"
+  },
+  {
+    "path": "preferences-compact-mock.png",
+    "bytes": 77686,
+    "sha256": "027002f0688e3649fd646088e66dd9dd4979457749d6b4d9b6050666706615a1"
+  },
+  {
+    "path": "release-resource-check.json",
+    "bytes": 2127,
+    "sha256": "1fb23b18ca4f1ad408408951a04191efaf683140af221048cf668a700f14180c"
+  },
+  {
+    "path": "source-hashes.json",
+    "bytes": 4970,
+    "sha256": "5d6b3ef07a7f3d771fbdd05f333b18e5fa1c98688f58f5387296cd1bd27ae90d"
+  },
+  {
+    "path": "validation.json",
+    "bytes": 2417,
+    "sha256": "5a045d9019263f178b05826d081f7914f07912cd10a90b381a0ff12a84f3615b"
+  },
+  {
+    "path": "wd-live.json",
+    "bytes": 1487,
+    "sha256": "090b21e63fc26c8f7723ac464059f939aa6c4a97e58a03887b505456750108ee"
+  },
+  {
+    "path": "weighted-metadata-mock.png",
+    "bytes": 119615,
+    "sha256": "50f9d691ff22c36801bf24c37c3c77eb77abc115c0d6435f1f4271648fd5bf7b"
+  }
+]

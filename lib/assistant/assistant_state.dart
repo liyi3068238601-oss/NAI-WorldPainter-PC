@@ -1,5 +1,6 @@
 import '../media/image_asset_validation.dart' show parseImageAssetRef;
 import 'agent_contract.dart';
+import 'assistant_preferences.dart';
 import 'prompt_memory.dart';
 import 'prompt_application.dart';
 import 'prompting_knowledge.dart';
@@ -272,10 +273,12 @@ class AssistantState {
     this.systemPrompt = '',
     this.promptingVersion = PromptingVersion.v45,
     this.wdTagger = const WdTaggerSettings(),
+    AssistantPreferences? preferences,
     PromptMemoryLibrary? memories,
     List<AssistantSession> sessions = const [],
     String? activeSessionId,
-  }) : memories = memories ?? PromptMemoryLibrary(),
+  }) : preferences = preferences ?? AssistantPreferences(),
+       memories = memories ?? PromptMemoryLibrary(),
        providers = List<AssistantProvider>.of(providers),
        mainProviderId = _emptyToNull(mainProviderId),
        visionProviderId = _emptyToNull(visionProviderId),
@@ -291,6 +294,7 @@ class AssistantState {
   String systemPrompt;
   PromptingVersion promptingVersion;
   WdTaggerSettings wdTagger;
+  AssistantPreferences preferences;
   final PromptMemoryLibrary memories;
   List<AssistantSession> sessions;
   String? activeSessionId;
@@ -331,6 +335,7 @@ class AssistantState {
       'systemPrompt': systemPrompt,
       'promptingVersion': promptingVersion.name,
       'wdTagger': wdTagger.toJson(),
+      'preferences': preferences.toJson(),
       'memories': memories.toJson(),
       'sessions': sessions.map((session) => session.toJson()).toList(),
       'activeSessionId': activeSessionId,
@@ -364,6 +369,11 @@ class AssistantState {
                 _asStringMap(json['wdTagger'], 'wdTagger'),
               )
             : const WdTaggerSettings(),
+        preferences: json.containsKey('preferences')
+            ? AssistantPreferences.fromJson(
+                _asStringMap(json['preferences'], 'preferences'),
+              )
+            : AssistantPreferences(),
         promptingVersion: json.containsKey('promptingVersion')
             ? _promptingVersion(json['promptingVersion']) ??
                   (throw const FormatException('Missing prompting version.'))
@@ -408,6 +418,7 @@ class AssistantState {
     }
     _validateText(systemPrompt, 'systemPrompt', _maxSystemPromptLength);
     wdTagger.validate();
+    preferences.validate();
 
     final providerIds = <String>{};
     for (final provider in providers) {

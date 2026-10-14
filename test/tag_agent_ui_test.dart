@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:worldpainter_pc/assistant/assistant_mobile_resources.dart';
 import 'package:worldpainter_pc/main.dart';
 import 'package:worldpainter_pc/prototype/workbench_controller.dart';
 
@@ -20,6 +21,7 @@ void main() {
     await (FontLoader(
       'MaterialIcons',
     )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
+    await AssistantMobileResources.shared.load();
   });
   testWidgets(
     'assistant previews tag and memory driven changes before approval',

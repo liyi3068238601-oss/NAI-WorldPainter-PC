@@ -1,0 +1,51 @@
+{
+  "imageGenerationPosts": 0,
+  "automaticRetries": 0,
+  "reviewPipeline": {
+    "passed": true,
+    "wdGeneralCount": 18,
+    "selectedEnglishTags": [
+      "no humans",
+      "scenery",
+      "outdoors",
+      "tree",
+      "nature"
+    ],
+    "translations": {
+      "no humans": "无人",
+      "scenery": "风景",
+      "outdoors": "户外",
+      "tree": "树",
+      "nature": "自然"
+    },
+    "sourceSha256": "d791d0041348d3fccf7154b87386c25c80fa15611fd72ba45d3720a79790b3ca",
+    "originalBytesUnchanged": true,
+    "assistantWdDefaultUnchanged": true,
+    "confirmBeforeMutation": true,
+    "negativeUnchanged": true,
+    "existingWeightsPreserved": true,
+    "model": "deepseek-v4.1-flash"
+  },
+  "sqliteReopen": {
+    "passed": true,
+    "reviewRestored": true,
+    "draftRestored": true,
+    "bothVersionPreferencesRestored": true,
+    "sourceProtectedByAssetReferences": true
+  },
+  "mobilePromptAgent": {
+    "passed": true,
+    "status": "complete",
+    "completedTools": [
+      "read_prompting_reference",
+      "read_current_prompts"
+    ],
+    "requests": 2,
+    "testToolSubset": [
+      "read_prompting_reference",
+      "read_current_prompts"
+    ],
+    "draftUnchanged": true,
+    "fullMobileLibraryInSqlite": false
+  }
+}

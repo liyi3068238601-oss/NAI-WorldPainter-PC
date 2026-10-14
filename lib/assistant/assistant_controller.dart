@@ -7,6 +7,8 @@ import '../prototype/workbench_controller.dart';
 import '../security/credential_vault.dart';
 import 'agent_contract.dart';
 import 'agent_engine.dart';
+import 'assistant_mobile_resources.dart';
+import 'assistant_preferences.dart';
 import 'assistant_state.dart';
 import 'openai_agent_transport.dart';
 import 'prompt_memory.dart';
@@ -54,8 +56,10 @@ class AssistantController extends ChangeNotifier {
     AssistantState? state,
     AgentTransport? transport,
     WdTaggerClient? wdTaggerClient,
+    AssistantMobileResources? mobileResources,
   }) : state = state ?? AssistantState(),
        wdTaggerClient = wdTaggerClient ?? WdTaggerClient(),
+       mobileResources = mobileResources ?? AssistantMobileResources.shared,
        transport =
            transport ??
            OpenAiAgentTransport(
@@ -72,6 +76,7 @@ class AssistantController extends ChangeNotifier {
   final AssistantState state;
   final AgentTransport transport;
   final WdTaggerClient wdTaggerClient;
+  final AssistantMobileResources mobileResources;
   AgentCancellation? _token;
   Future<void>? _active;
   bool _disposed = false;
@@ -171,6 +176,24 @@ class AssistantController extends ChangeNotifier {
     changed();
     await workbench.flush();
     return result;
+  }
+
+  Future<void> savePreferences(AssistantPreferences preferences) async {
+    _idle();
+    preferences.validate();
+    state.preferences = preferences;
+    changed();
+    await workbench.flush();
+  }
+
+  Future<MobileAssistantResourcesSnapshot> loadMobileResources() =>
+      mobileResources.load();
+
+  Future<List<MobileAssistantKnowledgeEntry>> _loadAndMatchKnowledge(
+    String userText,
+  ) async {
+    await mobileResources.load();
+    return mobileResources.matchKnowledge(userText);
   }
 
   Future<MemoryEntry> approveMemory(
@@ -511,19 +534,23 @@ class AssistantController extends ChangeNotifier {
       }
       state.wdTagger.validate();
     }
+    final runPromptingVersion = promptingVersion;
     final turn = AssistantTurn(
       id: _id('turn'),
       userText: text,
       attachments: diagnostic ? [] : [...target.attachments],
       providerLabel: '${provider.name} · ${provider.model}'.take(180),
       providerContext: provider.contextKey,
-      promptingVersion: promptingVersion,
+      promptingVersion: runPromptingVersion,
       proposalDraftFingerprint: diagnostic
           ? ''
           : workbench.assistantDraftFingerprint,
       proposalInpaint:
           workbench.assistantPromptSnapshot['is_inpainting_mode'] == true,
     );
+    final preferencesSnapshot = state.preferences;
+    final systemPromptSnapshot = state.systemPrompt;
+    final contextTurnsSnapshot = state.contextTurns;
     target.turns.add(turn);
     if (!diagnostic) {
       target.input = '';
@@ -543,6 +570,10 @@ class AssistantController extends ChangeNotifier {
       agent: agent,
       requireTool: requireTool,
       diagnostic: diagnostic,
+      preferences: preferencesSnapshot,
+      systemPromptOverride: systemPromptSnapshot,
+      contextTurns: contextTurnsSnapshot,
+      userText: text,
     );
     _active = future;
     return future;
@@ -556,92 +587,109 @@ class AssistantController extends ChangeNotifier {
     required bool agent,
     required bool requireTool,
     required bool diagnostic,
+    required AssistantPreferences preferences,
+    required String systemPromptOverride,
+    required int contextTurns,
+    required String userText,
   }) async {
-    // Capture bindings, preferences and the draft BEFORE any network await.
+    // Send captured preferences, prompt override, version, and user text into
+    // this method before the first asynchronous resource load.
     final vision = state.visionProvider;
     final wdSettings = state.wdTagger;
-    final host = WorkspaceAgentTools(
-      workbench,
-      askUser: (question, options) => _interact(
-        AssistantInteraction(
-          title: question,
-          preview: const {},
-          options: options,
-          question: true,
-        ),
-        token,
-      ),
-    );
-    var tools = [
-      ...host.build(),
-      ...buildPromptingTools(turn.promptingVersion!),
-    ];
-    if (diagnostic) {
-      final nonce = _id('probe');
-      tools = [
-        AgentTool(
-          name: 'diagnostic_echo',
-          label: '工具诊断',
-          description: '调用本工具回显提供的 value，再根据工具结果完成回答。',
-          parameters: schema(
-            {
-              'value': {
-                'type': 'string',
-                'enum': [nonce],
-              },
-            },
-            required: ['value'],
-          ),
-          prepare: (args, cancel) async => PreparedAgentTool(
-            summary: '结构化调用与结果回传',
-            execute: () async => {'value': args['value'], 'received': true},
-          ),
-        ),
-      ];
-    }
-    final context = <Map<String, dynamic>>[
-      {
-        'role': 'system',
-        'content':
-            assistantSystemPrompt(state.systemPrompt) +
-            (diagnostic
-                ? ''
-                : '\n${promptingInstructions(turn.promptingVersion!)}\n'
-                      '只提供可审阅提案时可输出单一 JSON 代码块，字段 positive、negative、characters（最多6个对象，各含positive/negative）及reason。'
-                      '不包含未建议修改的字段。文本提案不会自动执行，须用户在界面确认。'),
-      },
-    ];
-    final history = target.turns
-        .where((t) => !identical(t, turn) && t.status == 'complete')
-        .toList();
-    for (final old in history.skip(
-      (history.length - state.contextTurns).clamp(0, history.length),
-    )) {
-      final observation = replayImageObservations(old.traces);
-      context.add({
-        'role': 'user',
-        'content':
-            old.userText + (observation.isEmpty ? '' : '\n\n$observation'),
-      });
-      context.addAll(
-        old.messages.map((message) {
-          final copy = Map<String, dynamic>.from(message);
-          if (old.providerContext != provider.contextKey) {
-            copy.remove('reasoning_content');
-          }
-          return copy;
-        }),
-      );
-    }
+    final version = turn.promptingVersion!;
     try {
+      // Bind tool operations to the submitted draft before resource IO too.
+      final host = WorkspaceAgentTools(
+        workbench,
+        askUser: (question, options) => _interact(
+          AssistantInteraction(
+            title: question,
+            preview: const {},
+            options: options,
+            question: true,
+          ),
+          token,
+        ),
+      );
+      final knowledgeMatches = diagnostic
+          ? const <MobileAssistantKnowledgeEntry>[]
+          : await token.bind(_loadAndMatchKnowledge(userText));
+      token.check();
+      var tools = [
+        ...host.build(),
+        ...mobileResources.buildPromptingTools(version),
+      ];
+      if (diagnostic) {
+        final nonce = _id('probe');
+        tools = [
+          AgentTool(
+            name: 'diagnostic_echo',
+            label: '工具诊断',
+            description: '调用本工具回显提供的 value，再根据工具结果完成回答。',
+            parameters: schema(
+              {
+                'value': {
+                  'type': 'string',
+                  'enum': [nonce],
+                },
+              },
+              required: ['value'],
+            ),
+            prepare: (args, cancel) async => PreparedAgentTool(
+              summary: '结构化调用与结果回传',
+              execute: () async => {'value': args['value'], 'received': true},
+            ),
+          ),
+        ];
+      }
+      final context = <Map<String, dynamic>>[
+        {
+          'role': 'system',
+          'content': diagnostic
+              ? assistantSystemPrompt(systemPromptOverride)
+              : mobileResources.buildSystemPrompt(
+                  systemPromptOverride: systemPromptOverride,
+                  preferences: preferences,
+                  version: version,
+                ),
+        },
+      ];
+      if (knowledgeMatches.isNotEmpty) {
+        context.add({
+          'role': 'system',
+          'content': mobileResources.buildKnowledgeMessage(knowledgeMatches),
+        });
+      }
+      final history = target.turns
+          .where((t) => !identical(t, turn) && t.status == 'complete')
+          .toList();
+      for (final old in history.skip(
+        (history.length - contextTurns).clamp(0, history.length),
+      )) {
+        final observation = replayImageObservations(old.traces);
+        context.add({
+          'role': 'user',
+          'content':
+              old.userText + (observation.isEmpty ? '' : '\n\n$observation'),
+        });
+        context.addAll(
+          old.messages.map((message) {
+            final copy = Map<String, dynamic>.from(message);
+            if (old.providerContext != provider.contextKey) {
+              copy.remove('reasoning_content');
+            }
+            return copy;
+          }),
+        );
+      }
       // Persist the submitted user turn before contacting any service.
       await workbench.flush();
       token.check();
-      var content = turn.userText;
+      var content = userText;
       if (turn.attachments.isNotEmpty) {
         final observations = await analyzeAssistantImages(
           refs: List.unmodifiable(turn.attachments),
-          userText: turn.userText,
+          userText: userText,
           assets: workbench.assets!,
           vision: vision,
           transport: transport,

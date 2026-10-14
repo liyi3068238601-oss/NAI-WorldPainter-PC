@@ -18,6 +18,7 @@ import 'assistant_image_settings.dart';
 import 'assistant_material_picker.dart';
 import 'assistant_memory_dialog.dart';
 import 'assistant_model_picker.dart';
+import 'assistant_preferences_dialog.dart';
 import 'prompt_proposal_dialog.dart';
 import 'stored_image.dart';
 import 'workbench_controller.dart';
@@ -1012,6 +1013,9 @@ class _AssistantSettingsState extends State<_AssistantSettings> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _openAssistantPreferences() =>
+      showAssistantPreferencesDialog(context, a);
+
   Future<void> _remove(AssistantProvider provider) async {
     final approved = await showDialog<bool>(
       context: context,
@@ -1141,11 +1145,18 @@ class _AssistantSettingsState extends State<_AssistantSettings> {
               icon: const Icon(Icons.image_search_outlined),
               label: const Text('WD-Tagger 图片识别设置'),
             ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              key: const ValueKey('assistant-style-knowledge-settings'),
+              onPressed: a.busy ? null : _openAssistantPreferences,
+              icon: const Icon(Icons.palette_outlined),
+              label: const Text('画风偏好与手机端资料'),
+            ),
             const SizedBox(height: 4),
             Text(
               a.state.wdTagger.enabled
-                  ? '已启用 · ${WdTaggerSettings.models[a.state.wdTagger.model] ?? a.state.wdTagger.model}'
-                  : '已关闭',
+                  ? 'WD-Tagger 已启用 · ${WdTaggerSettings.models[a.state.wdTagger.model] ?? a.state.wdTagger.model}'
+                  : 'WD-Tagger 已关闭',
               style: const TextStyle(fontSize: 11),
             ),
             const SizedBox(height: 14),

@@ -26,3 +26,7 @@ docs/evidence/prompting/* -text whitespace=blank-at-eol,blank-at-eof,space-befor
 docs/evidence/assistant-images/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 
 docs/evidence/assistant-live/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Original mobile resources are verified by exact-byte SHA-256 checks.
+assets/assistant/mobile/** -text -whitespace
+docs/evidence/assistant-tag-knowledge/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

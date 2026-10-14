@@ -29,6 +29,10 @@ flutter:
     - assets/fonts/OFL.txt
     - assets/prompts/capsules.json
     - licenses/CAPSULES_MIT.txt
+    - assets/assistant/mobile/system_prompt.txt
+    - assets/assistant/mobile/nsfw_knowledge.json
+    - assets/assistant/mobile/nai5-prompting/
+    - assets/assistant/mobile/nai5-prompting/references/
   fonts:
     - family: NotoSansSC
       fonts:

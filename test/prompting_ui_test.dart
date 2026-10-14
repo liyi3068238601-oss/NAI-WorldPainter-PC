@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:worldpainter_pc/assistant/agent_contract.dart';
+import 'package:worldpainter_pc/assistant/assistant_mobile_resources.dart';
 import 'package:worldpainter_pc/assistant/assistant_state.dart';
 import 'package:worldpainter_pc/assistant/prompt_application.dart';
 import 'package:worldpainter_pc/assistant/prompting_knowledge.dart';
@@ -23,6 +24,7 @@ void main() {
     await (FontLoader(
       'MaterialIcons',
     )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
+    await AssistantMobileResources.shared.load();
   });
 
   testWidgets('v5 knowledge mode is saved and restored with the assistant', (

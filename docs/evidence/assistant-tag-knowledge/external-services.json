@@ -1,0 +1,46 @@
+{
+  "imageGenerationPosts": 0,
+  "automaticRetries": 0,
+  "tagSearch": {
+    "passed": true,
+    "source": "https://sakizuki-danboorusearch.hf.space",
+    "query": "moonlight",
+    "results": [
+      {
+        "tag": "moonlight",
+        "cn_name": "月光,光线,夜晚",
+        "category": "General",
+        "nsfw": "0",
+        "count": 4866,
+        "final_score": 0.9298,
+        "wiki": "夜晚月亮投射的苍白、白色至蓝白色的光线"
+      },
+      {
+        "tag": "holding_lamp",
+        "cn_name": "提灯,持灯,动作",
+        "category": "General",
+        "nsfw": "0",
+        "count": 348,
+        "final_score": 0.4937,
+        "wiki": "某人手持一盏灯"
+      },
+      {
+        "tag": "gekkou_no_carnevale",
+        "cn_name": "月光嘉年华, 游戏, 作品",
+        "category": "Copyright",
+        "nsfw": "0",
+        "count": 112,
+        "final_score": 0.4798,
+        "wiki": "出自视觉小说作品《月光嘉年华》。"
+      }
+    ]
+  },
+  "vision": {
+    "passed": true,
+    "model": "deepseek-v4.1-flash",
+    "source": "saved user-approved DeepSeek relay",
+    "temporaryRoleBinding": "test only; user settings untouched",
+    "toolsSent": false,
+    "description": "这张图片可见以下内容：\n\n建筑：画面右下方有一栋红色木质小屋，带有倾斜的棕色屋顶，屋顶上有两个天窗，屋旁可见一个木制结构（可能是烟囱或小平台）。\n\n树木：画面左侧前景有一棵高大挺拔的深绿色松树，树干粗壮；中景和湖边散布着许多较小的针叶树，形成茂密的绿色森林；画面右上方边缘有垂下的松树枝叶，作为前景框架。\n\n山水：远处背景是连绵的高山，山顶覆盖着白雪，山坡上覆盖着森林；中景是广阔的山坡和茂密的针叶林；近景是一面清澈的湖泊，湖水倒映着岸边的树木和红色小屋，湖畔有浅黄色的沙地或草地。\n\n光照：画面右上方有强烈的金黄色阳光光束穿过云层斜射下来，形成明显的丁达尔效应，照亮了山坡、湖面和红色小屋的屋顶，营造出明亮而神圣的氛围。"
+  }
+}

@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:worldpainter_pc/assistant/agent_contract.dart';
+import 'package:worldpainter_pc/assistant/assistant_mobile_resources.dart';
 import 'package:worldpainter_pc/main.dart';
 import 'package:worldpainter_pc/prototype/workbench_controller.dart';
 
@@ -19,6 +20,7 @@ void main() {
     await (FontLoader(
       'MaterialIcons',
     )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
+    await AssistantMobileResources.shared.load();
   });
   testWidgets(
     'assistant runs read confirm write result loop and keeps history',
@@ -116,7 +118,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.menu_rounded).first);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('AI 助手').first);
+      final assistantNavigationItem = find.text('AI 助手').first;
+      await tester.ensureVisible(assistantNavigationItem);
+      await tester.pumpAndSettle();
+      await tester.tap(assistantNavigationItem);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byKey(const ValueKey('assistant-input')), findsOneWidget);

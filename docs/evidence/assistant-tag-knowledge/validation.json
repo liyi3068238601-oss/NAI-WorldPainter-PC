@@ -1,0 +1,74 @@
+{
+  "baseCommit": "b824bd963a79779494f651f874b720ff776dca77",
+  "tests": {
+    "passed": 435,
+    "skipped": 1,
+    "skippedReason": "optional local SR probe, requires opt-in"
+  },
+  "staticAnalysis": "No issues found",
+  "windowsReleaseBuild": "passed",
+  "webReleaseBuild": "passed",
+  "webExistingWarning": "CupertinoIcons font declaration warning; current icons use MaterialIcons",
+  "originalMobileKnowledgeEntries": 12738,
+  "originalResourceFilesByteIdenticalInBothBundles": 7,
+  "liveWdTagger": "passed",
+  "liveTagSearch": "passed",
+  "liveDeepSeekVision": "passed",
+  "liveTagTranslationAndSqliteReopen": "passed",
+  "liveMobileV5Agent": {
+    "requests": 2,
+    "completedReadTools": [
+      "read_prompting_reference",
+      "read_current_prompts"
+    ],
+    "testToolSubsetOnly": true
+  },
+  "liveMobileV5AgentAuto": {
+    "passed": true,
+    "status": "complete",
+    "completedTools": [
+      "read_prompting_reference",
+      "read_current_prompts"
+    ],
+    "model": "deepseek-v4.1-flash",
+    "requests": 2,
+    "toolChoices": [
+      "auto",
+      "auto"
+    ],
+    "forcedFirstTool": false,
+    "fullProductionToolSchemas": true,
+    "advertisedToolCount": 12,
+    "executionRestrictedTo": [
+      "read_prompting_reference",
+      "read_current_prompts"
+    ],
+    "draftUnchanged": true,
+    "imageGenerationPosts": 0
+  },
+  "imageGenerationPosts": 0,
+  "newGenerationChannels": 0,
+  "nativeMetadataReviewAndConfirm": "passed with an isolated synthetic fixture",
+  "freshWindowsTestProcessRestoredReleaseWorkspace": true,
+  "releaseUiReopenAndNonemptyKeyboardPreferenceEntry": "not verified; input automation was interrupted",
+  "stagedCredentialPatternScan": "passed",
+  "exactSavedCredentialValueScanPassed": true,
+  "stagedOriginalMobileResourceHashes": "passed",
+  "artifacts": [
+    {
+      "path": "build/windows/x64/runner/Release/worldpainter_pc.exe",
+      "bytes": 152576,
+      "sha256": "980fb2f1a03940f75bd96867b17c672581b2dd1e2ac61f94f7fa89a484820329"
+    },
+    {
+      "path": "build/windows/x64/runner/Release/data/app.so",
+      "bytes": 9257864,
+      "sha256": "5759f3120e525bdd0428dbad67717c614912ecef7ae8ae22da081cfa3e1b991a"
+    },
+    {
+      "path": "build/web/main.dart.js",
+      "bytes": 3961288,
+      "sha256": "a986a03a827158952e83e7923065f53870abc4c8ee2416d2962e44eaea8f1623"
+    }
+  ]
+}

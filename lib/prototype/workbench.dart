@@ -13,6 +13,7 @@ import 'stored_image.dart';
 import 'prompt_library_panel.dart';
 import 'assistant_panel.dart';
 import 'tag_search_panel.dart';
+import 'image_tag_panel.dart';
 import 'parameter_number_field.dart';
 import '../editing/image_crop_dialog.dart';
 import '../editing/image_editing_session.dart';
@@ -318,6 +319,8 @@ class _WorkbenchState extends State<Workbench> {
                                 ? AssistantPanel(workbench: c)
                                 : page == 6
                                 ? TagSearchPanel(controller: c)
+                                : page == 7
+                                ? ImageTagPanel(controller: c)
                                 : Row(
                                     children: [
                                       Expanded(
@@ -428,6 +431,7 @@ class _WorkbenchState extends State<Workbench> {
       _navItem(Icons.grid_view_rounded, '图库与素材', 1, wide),
       _navItem(Icons.bookmarks_outlined, '提示词素材', 4, wide),
       _navItem(Icons.manage_search_outlined, '标签搜索', 6, wide),
+      _navItem(Icons.image_search_outlined, '图片反推', 7, wide),
       const SizedBox(height: 12),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -606,7 +610,7 @@ class _WorkbenchState extends State<Workbench> {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            ['创作工作台', '图库与素材', '偏好设置', '图像工具', '提示词素材', 'AI 助手', '标签搜索'][page],
+            ['创作工作台', '图库与素材', '偏好设置', '图像工具', '提示词素材', 'AI 助手', '标签搜索', '图片反推'][page],
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),

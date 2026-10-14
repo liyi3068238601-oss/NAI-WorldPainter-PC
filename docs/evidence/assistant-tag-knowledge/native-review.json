@@ -1,0 +1,25 @@
+{
+  "scope": "Windows Release UI; isolated synthetic 64x64 PNG and workspace; no credentials",
+  "imageGenerationPosts": 0,
+  "nativeMetadataAnalysis": true,
+  "candidateCount": 7,
+  "confirmBeforeMutation": true,
+  "confirmedDraftPersistedAfterQaProcessExit": true,
+  "positivePrompt": "Native synthetic fixture prompt, 1.2::{red hair,\nblue eyes}::, [long hair, wavy hair], (smile, open mouth), 3::red coat, silver trim::",
+  "negativeUnchanged": true,
+  "originalSourceSha256": "47e9a1d5ef96cc0e1fe88383cfa51d6956ddae3d74ce2b4b0c43675200226883",
+  "originalSourceUnchanged": true,
+  "originalMobileResourceUi": {
+    "loaded": true,
+    "entryCount": 12738,
+    "systemPromptSha256": "644fef0d802ee47aa61893054e59520181cdc087feda0bcc197ba29cb7e36c77",
+    "skillSha256": "c2461185579f280f4db68266dd9bee4f83604e48233074a095c95bee3455c360",
+    "knowledgeSha256": "fe8788cb82dd8a6ef7ebf5bd11b39d7fa7b1dec4f912835d5bf525bb7d9ac66c"
+  },
+  "nativeNonemptyPreferenceTypingVerified": false,
+  "inputAutomationLimit": "UIA element indices expired; literal typing did not update the field, then the test window was minimized and user input was detected. Further input automation stopped.",
+  "preferencePersistenceEvidence": "live-pipeline.json and six Widget tests; not native keyboard acceptance",
+  "reopenedReleaseUiVerified": false,
+  "freshProcessControllerRestored": true,
+  "freshProcessType": "Flutter test VM on Windows; production controller, asset store and SQLite; not a reopened Release UI"
+}

@@ -384,7 +384,12 @@ Future<void> _openMemoryManager(
     await tester.tap(find.byIcon(Icons.menu_rounded).first);
     await tester.pumpAndSettle();
   }
-  await tester.tap(find.text('AI 助手').first);
+  final assistantNavigationItem = find.text('AI 助手').first;
+  if (compact) {
+    await tester.ensureVisible(assistantNavigationItem);
+    await tester.pumpAndSettle();
+  }
+  await tester.tap(assistantNavigationItem);
   await tester.pumpAndSettle();
   final memoriesButton = find.byKey(const ValueKey('assistant-memories'));
   await tester.ensureVisible(memoriesButton);

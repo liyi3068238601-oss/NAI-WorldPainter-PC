@@ -1,16 +1,20 @@
 # 助手提示词知识来源与迁移边界
 
-日期：2026-10-14。PC 本地摘要修订号：`nai-image-official-2026-10-14-r1`，定义于 `lib/assistant/prompting_knowledge.dart`。本文件记录手机端基线、官方事实来源、许可边界和本地实现对照。
+日期：2026-10-14。`nai-image-official-2026-10-14-r1` 是此前独立整理的官方摘要修订号，定义于 `lib/assistant/prompting_knowledge.dart`；本批接入手机端原始资源后，该摘要不再是当前助手运行时的提示词/参考正文来源。本文件记录手机端基线、官方事实来源、许可边界和当前接线。
 
 ## 结论与运行边界
 
 `PromptingVersion` 是助手知识模式，`V4.5` 与 `V5` 只选择相应的本地提示词指导。它不改变生图模型、渠道、参数或权限。当前 PC 生图服务拒绝超过六个角色槽（`lib/generation/novelai_generation_service.dart:572-576`），助手工具目标也只开放 `character_1..6`（`lib/assistant/workspace_tools.dart:67-79`）。NovelAI 文档列出的 V5 22 角色是模型能力资料，不能写成 PC 当前可执行能力或据此宣称 PC 已连接 V5 生图。
 
-V4.5 的六个主题摘要直接进入系统提示；V5 系统提示保持精简，提供边界与主题索引，需要具体资料时才调用 `read_prompting_reference`。该工具的 `topic` 只允许 `ideation`、`writing`、`syntax_weights`、`multi_character`、`text_rendering`、`quality_tags` 六项，读取固定的本地摘要，不接受路径或网址，不修改工作区。每次读取回传知识版本、资料修订号、topic 和来源 URL，单项内容上限为 2,000 字符。
+当前运行时由 `lib/assistant/assistant_mobile_resources.dart` 读取手机端固定包内资源：无非空自定义覆盖时采用手机默认系统提示词；V4.5/V5 分别选取用户保存的画风词；V5 使用手机原始 `SKILL.md`，`read_prompting_reference` 只接受 `ideation` 和 `writing` 并读取两份对应原文。知识库按手机原有命中规则处理当前用户输入，命中内容才添加到本次模型上下文，最多 5 条、正文合计 2,000 字符。固定 asset 的界面摘要只显示来源、路径、哈希和条数，不提供正文编辑或外部文件导入。本批没有改写手机端 system prompt asset，也没有增加新的系统提示词内容；V5 沿用手机端原有 App 集成边界模板。
+
+这五项资料作为整体加载和校验；任一项失败会阻止普通助手发送，独立诊断路径与这组资料加载分开。Windows native 路径用 `compute` 在 UI isolate 外完成资源解码、知识索引解析和 SHA-256 计算，以降低大资源处理对界面的阻塞；处理只读资产字节并构造内存快照，不修改原资源。资源逐项的来源、长度与哈希见永久 [mobile-resource-manifest.json](evidence/assistant-tag-knowledge/mobile-resource-manifest.json)。
+
+此前六主题官方摘要及其工具定义仍留在 `prompting_knowledge.dart` 作为独立资料代码；当前 `lib/` 的助手生产路径只从该文件引用 `PromptingVersion` 类型，不再调用其摘要/工具实现。具体资源清单与实测边界见 [助手手机资源复核](ASSISTANT_TAG_KNOWLEDGE_REVIEW.md)。
 
 ## 官方事实摘要
 
-本地知识只对 NovelAI 官方文档进行独立概述，不搬用手机端 GPL 技能包或本地参考仓库的提示词内容。
+下表保留此前对 NovelAI 官方文档的独立概述，供事实对照；它不是本批接线后的运行时提示词/参考内容，也不替代手机端现有原文资源。
 
 | 主题 | 已核对事实 | 官方来源 |
 | --- | --- | --- |
@@ -33,7 +37,7 @@ V4.5 的六个主题摘要直接进入系统提示；V5 系统提示保持精简
 
 ## 手机文件校验记录
 
-以下 SHA-256 对应上述手机 HEAD 工作区的实际文件字节；其中提示词资源只记录哈希，不把内容复制到 PC。
+以下 SHA-256 对应上述手机 HEAD 工作区的实际文件字节。手机端资源中含有经 GPLv3 许可的提示词包；本批按指定来源将原有资源纳入 PC 包，七项的 PC 路径、长度与哈希见 [原始资源清单](ASSISTANT_TAG_KNOWLEDGE_REVIEW.md) 和永久 [mobile-resource-manifest.json](evidence/assistant-tag-knowledge/mobile-resource-manifest.json)，文件与来源 manifest 匹配。
 
 | 手机端相对路径 | SHA-256 |
 | --- | --- |
@@ -57,9 +61,9 @@ V4.5 的六个主题摘要直接进入系统提示；V5 系统提示保持精简
 
 ## 许可边界
 
-手机 README 的 MIT 徽标（`../手机端/README.md:12`）链接到根 `LICENSE`，但该手机目录当前没有根 `LICENSE` 文件。`assets/nai5-prompting/LICENSE` 是 GNU GPLv3 文本，且手机 `pubspec.yaml:58-59` 将整个目录作为应用资源打包；目录包括 `SKILL.md`、`NAI5_All_Prompting.md`、`references/通用构思.md`、`references/通用写法.md` 和许可证。合订文档头部及附录（`NAI5_All_Prompting.md:3,1700-1716`）说明该包依托社群真实提示词、图片与反推语料，公开版对成员名做了匿名化。不能把手机 README 的 MIT 标识当作该技能包按 MIT 授权的证据；本批没有复制该包、其中的社区提示词、经验段落或匿名作者画像。
+手机 README 的 MIT 徽标（`../手机端/README.md:12`）链接到根 `LICENSE`，但该手机目录当前没有根 `LICENSE` 文件。`assets/nai5-prompting/LICENSE` 是 GNU GPLv3 文本，手机 `pubspec.yaml:58-59` 将包含 `SKILL.md`、`NAI5_All_Prompting.md`、两份参考和许可证的整个目录作为应用资源打包。合订文档头部及附录（`NAI5_All_Prompting.md:3,1700-1716`）说明该包依托社群提示词、图片与反推语料，公开版对成员名做了匿名化。不能把手机 README 的 MIT 标识当作该技能包按 MIT 授权的证据。
 
-PC 的 `ideation` 与 `writing` 是对 NovelAI 官方基础指南的独立概述；它们没有复制手机端两篇 Markdown 的内容、示例或社区语料。PC 六主题摘要范围与手机 `ideation|writing` 主题部分相近，但不等价于手机技能包的完整引导深度；手机包基于社群数据的经验总结不在本迁移范围内。以后若要直接移植手机技能包，仍须单独完成许可、来源与分发义务审查。
+本批依据用户指示，将手机 HEAD `01e85981a52b5d45d3cb6d1ee03a8604fe53d9ab` 中的原始默认系统提示词、skill、固定参考和知识库随原 GPL `LICENSE` 复制到 PC 包内；所复制内容没有改写，PC 哈希/长度列于资源清单。运行时只按手机既有接线使用系统提示词、V5 skill、两份参考及匹配到的知识条目；合订文档和许可证只随原包保留，不注入模型。流程证据 [`live-pipeline.json`](evidence/assistant-tag-knowledge/live-pipeline.json) 记录了真实 WD 返回 18 个标签、5 个标签经 DeepSeek 翻译后由用户确认追加且保留权重和负向词；SQLite 重开恢复来源、审核和双版本偏好并通过资产引用保护。手机端原 V5 Agent 子集仅调用 `read_prompting_reference` / `read_current_prompts` 两个只读工具，两次请求后草稿未变、0 生图。全量 Flutter 测试为 435 通过、1 跳过（可选 SR opt-in），静态分析无问题；Windows Release 已完成最后 caption 微改后的顺序重建，Web Release 构建成功，最后微改后的结果待主控核对。Core/bundle 探针确认原知识库 12,738 条且 SHA-256 与 manifest 一致，Windows Release 原资料设置 UI 实际加载并展示五个哈希和条数，见 [mobile-bundle.json](evidence/assistant-tag-knowledge/mobile-bundle.json)、[native-metadata.jpg](evidence/assistant-tag-knowledge/native-metadata.jpg)。隔离合成 PNG 的 native 确认流程与 QA 进程退出后的 SQLite 值已验证，详见 [native-review.json](evidence/assistant-tag-knowledge/native-review.json) 和 [native-confirmation.jpg](evidence/assistant-tag-knowledge/native-confirmation.jpg)。非空偏好 native 键盘录入因 UIA 索引过期未验证，应用重开验证也待补；双版本偏好持久化已有 live pipeline 与 6 项 Widget 测试证据，但本轮不据此宣称完整 native 手工验收。
 
 ## 本地参考实现对照
 
@@ -68,4 +72,4 @@ PC 的 `ideation` 与 `writing` 是对 NovelAI 官方基础指南的独立概述
 | `../参考资料/novelai_local_web`，HEAD `aa0fcbe477eae0a703ec47740785f9419d7d5cbe`，根许可证 AGPL-3.0 | `next_nai_web/src/components/ai-painting/PromptEditor/promptWeights.mjs` 提供提示词权重编辑；`usePromptSuggestions.js` 会取消过期的联想请求并校验文本/光标上下文。 | 可作为权重编辑和过期联想处理的体验参考；没有同类的助手知识读取工具或文本提案确认流程。本批不复制代码。 |
 | `.tmp/novelai-image-desktop`，HEAD `2d609393c3902874afae5200c26165d86b76055f`，MIT | `src/prompt-assistant.ts:14-22` 校验编辑请求并限制输入长度；`src/components/PromptAssistant.tsx:20,42-68` 显示只读结果预览、比较来源上下文并要求显式点击应用；`src/App.tsx:2295-2297` 再核对当前提示词是否仍等于提案原文。 | 有用的“预览后应用”和陈旧结果拦截模式，但只有单个正向提示词编辑，不提供 V4.5/V5 固定官方知识，也不覆盖 PC 的多目标结构化工具确认。本批记录其行为，不复制实现。 |
 
-PC 的 `WorkspaceAgentTools` 保留目标级差异预览、显式确认和草稿 fingerprint（`lib/assistant/workspace_tools.dart:45-115`）。PC 还提供用户主动审阅普通文本提案的入口：助手完成回复后可选择“查看提示词提案”，核对目标和修改前后内容，再勾选应用目标并填写原因；控制器会重验会话、回复、知识版本和草稿 fingerprint（`lib/prototype/assistant_panel.dart:707-821`、`lib/assistant/assistant_controller.dart:322-405`）。普通文本或模型返回的工具 JSON 不会自行执行或应用。新建的 `read_prompting_reference` 只返回有来源的只读摘要；应用提案仍由用户显式触发，并留下本地应用记录。
+PC 的 `WorkspaceAgentTools` 保留目标级差异预览、显式确认和草稿 fingerprint（`lib/assistant/workspace_tools.dart:45-115`）。PC 还提供用户主动审阅普通文本提案的入口：助手完成回复后可选择“查看提示词提案”，核对目标和修改前后内容，再勾选应用目标并填写原因；控制器会重验会话、回复、知识版本和草稿 fingerprint（`lib/prototype/assistant_panel.dart:707-821`、`lib/assistant/assistant_controller.dart:322-405`）。普通文本或模型返回的工具 JSON 不会自行执行或应用。当前 `read_prompting_reference` 从手机固定参考文件中只读返回 `ideation` 或 `writing` 原文；应用提案仍由用户显式触发，并留下本地应用记录。
