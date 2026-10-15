@@ -1568,6 +1568,8 @@ export interface AppSettings {
   agentApiBaseUrl: string;
   agentApiKey: string;
   agentApiModel: string;
+  /** Versioned multi-provider registry; flat agentApi* fields remain the active-provider projection. */
+  agentProviders?: import("./agent/provider-profiles").AgentProviderRegistry;
   savedAgentModels?: import("./agent/model-selections").SavedAgentModel[];
   agentReasoningEffort?: import("./agent/types").AgentReasoningEffort;
   agentProviderName: string;

@@ -6,7 +6,7 @@ Windows 图像创作工作台。当前主实现为 **Electron + React 迁移预�
 
 本批完成情况和 Windows 验收证据见 [迁移与 M4 报告](docs/M4_ELECTRON_MIGRATION.md)。参考项目功能更多不代表手机全量 parity 已通过；原 Flutter 的验证结论也不能直接继承给 Electron。
 
-最新本地可运行预览：`build/WorldPainter-0.1.0-agent-preview/win-unpacked/NAI WorldPainter PC.exe`。包含 [Agent 执行改进、Skill 系统和手机预设启动图](docs/AGENT_EXECUTION_V1.md)。请保留同目录内全部文件；这是未签名的解包开发版本。上一批 M4 预览仍保留在 `build/WorldPainter-0.1.0-preview`。
+最新本地预览包：`build/WorldPainter-0.1.0-models-preview/win-unpacked/NAI WorldPainter PC.exe`。包含 [多供应商模型管理与真实启动屏修正](docs/AGENT_PROVIDERS_V1.md)，并保留此前的 [Agent 执行改进和 Skill 系统](docs/AGENT_EXECUTION_V1.md)。请保留同目录内全部文件；这是未签名的解包开发版本，本批原生窗口验收受自动审批阻断。上一批 `agent-preview` 与 M4 `preview` 均保留。
 
 ## 启动与开发
 
@@ -32,6 +32,7 @@ npm run pack:dir
 
 ## 本批入口
 
+- **设置 → 智能体模型**：多供应商 / 多模型管理；Agent 原设置入口保留，输入区旁可原位展开模型菜单。
 - **生图智能体 → 资源 → 记忆**：分类记忆、候选审核、冲突合并/替换/并存、有界检索与清理预览。
 - **生图智能体 → 创作资源 → 技能**：替换世界书入口，按会话选择或关键词匹配工作流、按需读取正文；预设保留。多轮工具结果以原生调用协议回传，函数文本可进行一次协议纠正。
 - **设置 → 绘世资料**：旧 Flutter 工作区只读预览后追加导入、风格/画师 JSON 与预览图导入、本地超分、V4.5/V5 风格词和外部知识库。

@@ -1210,14 +1210,62 @@
     "この会話で使うスキルを選択します。一覧には概要だけを表示し、指示は必要時に読み込みます。",
     "이 대화에서 사용할 스킬을 선택하세요. 목록에는 요약만 표시하고 지침은 필요할 때 읽습니다."
   ],
-  "skillNew": ["新建技能", "新增技能", "New skill", "新しいスキル", "새 스킬"],
-  "skillEdit": ["编辑", "編輯", "Edit", "編集", "편집"],
-  "skillDelete": ["删除技能", "刪除技能", "Delete skill", "スキルを削除", "스킬 삭제"],
-  "skillBuiltIn": ["内置", "內建", "Built in", "内蔵", "내장"],
-  "skillNoDescription": ["暂无简介。", "暫無簡介。", "No description.", "説明はありません。", "설명이 없습니다."],
-  "skillUseInChat": ["本对话使用", "本對話使用", "Use in this chat", "この会話で使用", "이 대화에서 사용"],
-  "skillEnabled": ["全局启用", "全域啟用", "Enabled", "有効", "사용"],
-  "skillAutoSelect": ["按关键词自动选择", "依關鍵字自動選擇", "Auto-select by keywords", "キーワードで自動選択", "키워드로 자동 선택"],
+  "skillNew": [
+    "新建技能",
+    "新增技能",
+    "New skill",
+    "新しいスキル",
+    "새 스킬"
+  ],
+  "skillEdit": [
+    "编辑",
+    "編輯",
+    "Edit",
+    "編集",
+    "편집"
+  ],
+  "skillDelete": [
+    "删除技能",
+    "刪除技能",
+    "Delete skill",
+    "スキルを削除",
+    "스킬 삭제"
+  ],
+  "skillBuiltIn": [
+    "内置",
+    "內建",
+    "Built in",
+    "内蔵",
+    "내장"
+  ],
+  "skillNoDescription": [
+    "暂无简介。",
+    "暫無簡介。",
+    "No description.",
+    "説明はありません。",
+    "설명이 없습니다."
+  ],
+  "skillUseInChat": [
+    "本对话使用",
+    "本對話使用",
+    "Use in this chat",
+    "この会話で使用",
+    "이 대화에서 사용"
+  ],
+  "skillEnabled": [
+    "全局启用",
+    "全域啟用",
+    "Enabled",
+    "有効",
+    "사용"
+  ],
+  "skillAutoSelect": [
+    "按关键词自动选择",
+    "依關鍵字自動選擇",
+    "Auto-select by keywords",
+    "キーワードで自動選択",
+    "키워드로 자동 선택"
+  ],
   "skillAutoSelectHint": [
     "开启后，关键词命中时自动适用；关键词留空则每轮都适用。",
     "開啟後，關鍵字命中時自動套用；關鍵字留空則每輪都套用。",
@@ -1225,10 +1273,34 @@
     "有効にするとキーワード一致時に適用します。キーワードが空の場合は毎ターン適用します。",
     "켜면 키워드가 일치할 때 적용됩니다. 키워드가 비어 있으면 모든 턴에 적용됩니다."
   ],
-  "skillName": ["名称", "名稱", "Name", "名前", "이름"],
-  "skillDescription": ["简介", "簡介", "Description", "説明", "설명"],
-  "skillInstructions": ["技能指令", "技能指令", "Instructions", "スキルの指示", "스킬 지침"],
-  "skillKeywords": ["触发关键词", "觸發關鍵字", "Trigger keywords", "トリガーキーワード", "트리거 키워드"],
+  "skillName": [
+    "名称",
+    "名稱",
+    "Name",
+    "名前",
+    "이름"
+  ],
+  "skillDescription": [
+    "简介",
+    "簡介",
+    "Description",
+    "説明",
+    "설명"
+  ],
+  "skillInstructions": [
+    "技能指令",
+    "技能指令",
+    "Instructions",
+    "スキルの指示",
+    "스킬 지침"
+  ],
+  "skillKeywords": [
+    "触发关键词",
+    "觸發關鍵字",
+    "Trigger keywords",
+    "トリガーキーワード",
+    "트리거 키워드"
+  ],
   "skillKeywordsHint": [
     "用逗号或换行分隔关键词",
     "用逗號或換行分隔關鍵字",
@@ -1627,5 +1699,131 @@
     "A task-scoped rewrite of IG5 workflow rules, not an upstream image preset. Applied in the actual system layer without granting tools, network access or payment approval.",
     "IG5の一般ルールを画像タスク向けに改写。実際のシステム層に適用しますが、ツール・ネットワーク・支払い権限は付与しません。",
     "IG5 일반 작업 규칙의 이미지 작업용 적용입니다. 실제 시스템 계층에 적용되지만 도구·네트워크·결제 권한을 부여하지 않습니다."
+  ],
+  "agentModelsTitle": [
+    "智能体模型",
+    "智慧體模型",
+    "Agent models",
+    "エージェントモデル",
+    "에이전트 모델"
+  ],
+  "savedProviders": [
+    "已保存供应商",
+    "已儲存供應商",
+    "Saved providers",
+    "保存済みプロバイダー",
+    "저장된 공급자"
+  ],
+  "newProvider": [
+    "新供应商",
+    "新供應商",
+    "New provider",
+    "新しいプロバイダー",
+    "새 공급자"
+  ],
+  "addProvider": [
+    "添加供应商",
+    "新增供應商",
+    "Add provider",
+    "プロバイダーを追加",
+    "공급자 추가"
+  ],
+  "providerTemplate": [
+    "添加模板",
+    "新增範本",
+    "Provider template",
+    "追加テンプレート",
+    "공급자 템플릿"
+  ],
+  "providerName": [
+    "供应商名称",
+    "供應商名稱",
+    "Provider name",
+    "プロバイダー名",
+    "공급자 이름"
+  ],
+  "activeProvider": [
+    "当前使用",
+    "目前使用",
+    "Active provider",
+    "使用中",
+    "현재 사용 중"
+  ],
+  "deleteProvider": [
+    "移除供应商",
+    "移除供應商",
+    "Remove provider",
+    "プロバイダーを削除",
+    "공급자 제거"
+  ],
+  "deleteProviderPrompt": [
+    "从配置中移除「{name}」及其已保存模型？保存后生效。",
+    "從設定中移除「{name}」及其已儲存模型？儲存後生效。",
+    "Remove “{name}” and its saved models? Applies after saving.",
+    "「{name}」と保存モデルを削除しますか？保存後に適用されます。",
+    "“{name}” 및 저장 모델을 제거할까요? 저장 후 적용됩니다."
+  ],
+  "providerModelCount": [
+    "{name} 个模型",
+    "{name} 個模型",
+    "{name} models",
+    "{name} モデル",
+    "모델 {name}개"
+  ],
+  "providersHint": [
+    "分别保存供应商的地址、密钥和模型；在助手输入框下方直接切换。",
+    "分別儲存供應商的位址、金鑰和模型；在助手輸入框下方直接切換。",
+    "Save each provider’s connection and models, then switch below the assistant composer.",
+    "接続情報とモデルを個別保存し、入力欄の下で切り替えます。",
+    "공급자별 연결과 모델을 저장하고 입력창 아래에서 전환하세요."
+  ],
+  "noProviders": [
+    "添加供应商，保存后即可在助手中选择模型。",
+    "新增供應商，儲存後即可在助手中選擇模型。",
+    "Add and save a provider to choose its models in the assistant.",
+    "プロバイダーを追加・保存してモデルを選択してください。",
+    "공급자를 추가하고 저장하여 모델을 선택하세요."
+  ],
+  "providerConnection": [
+    "连接与模型",
+    "連線與模型",
+    "Connection and models",
+    "接続とモデル",
+    "연결 및 모델"
+  ],
+  "providerNameRequired": [
+    "请填写供应商名称。",
+    "請填寫供應商名稱。",
+    "Enter a provider name.",
+    "プロバイダー名を入力してください。",
+    "공급자 이름을 입력하세요."
+  ],
+  "providerAddressInvalid": [
+    "请为「{name}」填写有效的 HTTP(S) 地址，不含账号、密码、查询参数或片段。",
+    "請為「{name}」填寫有效的 HTTP(S) 位址，不含帳號、密碼、查詢參數或片段。",
+    "Enter a valid HTTP(S) URL for “{name}”, without credentials, query or fragment.",
+    "「{name}」に認証情報・クエリ・フラグメントを含まない HTTP(S) URL を入力してください。",
+    "“{name}”의 올바른 HTTP(S) 주소를 입력하세요. 인증 정보, 쿼리, 프래그먼트는 제외하세요."
+  ],
+  "providersSaved": [
+    "供应商与模型已保存。",
+    "供應商與模型已儲存。",
+    "Providers and models saved.",
+    "プロバイダーとモデルを保存しました。",
+    "공급자와 모델을 저장했습니다."
+  ],
+  "unsavedChanges": [
+    "尚未保存",
+    "尚未儲存",
+    "Unsaved changes",
+    "未保存",
+    "저장되지 않은 변경 사항"
+  ],
+  "manualModelHint": [
+    "手动输入模型 ID，或下方拉取模型列表",
+    "手動輸入模型 ID，或下方取得模型清單",
+    "Enter a model ID or load the model list below",
+    "モデル ID を入力するか、下の一覧を取得",
+    "모델 ID를 입력하거나 아래에서 목록 불러오기"
   ]
 }

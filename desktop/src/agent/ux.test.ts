@@ -66,7 +66,13 @@ it('replaces the Pi worldbook resource with persisted skills while retaining pre
 it('wires owned page controls to real preload APIs and keeps model setup out of the header', () => {
   const source = readFileSync(new URL('../PiAgentPage.tsx', import.meta.url), 'utf8');
   expect(source).not.toContain('className="pi-header"');expect(source).toContain('className="pi-sidebar-footer"');
-  expect(source).toContain('<AgentModelCollection draft={modelDraft}');
+  expect(source).toContain('<AgentProviderSettings settings={settings}');
+  expect(source).toContain('<AgentModelPicker registry={providers}');
+  expect(source).toContain("setSetting('agentProviders', selectAgentProviderModel(");
+  const settings = readFileSync(new URL('../components/AgentProviderSettings.tsx', import.meta.url), 'utf8');
+  expect(settings).toContain('<AgentModelCollection draft={draft}');
+  const app = readFileSync(new URL('../App.tsx', import.meta.url), 'utf8');
+  expect(app).toContain('section === "agent-models" && <AgentProviderSettings settings={settings}');
   const collection = readFileSync(new URL('../components/AgentModelCollection.tsx', import.meta.url), 'utf8');
   expect(collection).toContain('window.naiDesktop.discoverAgentModels(');
   expect(source).not.toContain('getAgentModels(');
@@ -128,7 +134,7 @@ it('keeps the source renderer in the actual timeline and uses the existing exter
  expect(source).toContain('window.naiDesktop.openExternal(url)');
  const collection=readFileSync(new URL('../components/AgentModelCollection.tsx',import.meta.url),'utf8');
  expect(collection).toContain("result.models.length?t('foundModels'):t('emptyModels')");
- expect(collection).toContain('t("modelSource_"+m.metadataSource)');
+ expect(collection).toContain('t(`modelSource_${model.metadataSource}`)');
  expect(source).toContain('setChatActions(actions,id)');expect(source).toContain('sendAgentMessage({ conversationId: id, text: input, actions })');
 });
 

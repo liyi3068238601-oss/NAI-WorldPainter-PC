@@ -1,7 +1,8 @@
 import {EffortControl, effortText} from './components/EffortControl';
 import {supportsNAIMediumEffort} from './types';
-import {AgentModelCollection} from './components/AgentModelCollection';
-import {selectedAgentModels,selectedAgentModelPatch,normalizeSavedAgentModels,agentProviderKey} from './agent/model-selections';
+import {AgentProviderSettings} from './components/AgentProviderSettings';
+import {AgentModelPicker} from './components/AgentModelPicker';
+import {getAgentProviderRegistry,selectAgentProviderModel} from './agent/provider-profiles';
 import {PreviewImageViewer} from './components/PreviewImageViewer';
 import {AnchoredPopover} from './components/AnchoredPopover';
 import {createStudioScrollFollower} from './agent/scroll-follower';
@@ -10,12 +11,11 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
-import { LuArrowDown, LuArrowUp, LuCheck, LuChevronDown, LuCopy, LuImage, LuLoaderCircle, LuMessageSquare, LuPencil, LuPlus, LuSearch, LuSettings, LuSparkles, LuSquare, LuArchive, LuArchiveRestore, LuTrash2, LuEllipsis, LuX, LuUserRound, LuBot, LuNetwork, LuWrench, LuGauge, LuFileText, LuShieldCheck, LuZap, LuPanelLeftOpen, LuPanelLeftClose, LuPanelRightOpen, LuPanelRightClose } from 'react-icons/lu';
+import { LuArrowDown, LuArrowUp, LuCheck, LuChevronDown, LuCopy, LuImage, LuLoaderCircle, LuMessageSquare, LuPencil, LuPlus, LuSearch, LuSettings, LuSparkles, LuSquare, LuArchive, LuArchiveRestore, LuTrash2, LuEllipsis, LuX, LuUserRound, LuWrench, LuGauge, LuFileText, LuShieldCheck, LuZap, LuPanelLeftOpen, LuPanelLeftClose, LuPanelRightOpen, LuPanelRightClose } from 'react-icons/lu';
 import type { AgentComposerAction, AgentConversation, AgentAttachment, AgentEvent, AgentMessage, AgentPermissionRequest, AgentWorkspaceData } from './agent/types';
-import { AGENT_PROVIDER_PRESETS, agentProviderRequiresApiKey, inferAgentProviderPreset } from './agent/provider-catalog';
-import { studioSourceUrl, studioWebSources, studioContextMeter, preparedStudioPreview, studioToolStatus, studioToolTitle, studioUxText, validStudioModelConfig } from './agent/ux';
+import { agentProviderRequiresApiKey } from './agent/provider-catalog';
+import { studioSourceUrl, studioWebSources, studioContextMeter, preparedStudioPreview, studioToolStatus, studioToolTitle, studioUxText } from './agent/ux';
 import { clampCompactThreshold } from './agent/context';
-import type { AppSettings } from './types';
 import { useAppStore } from './store';
 import {confirmAction} from './components/confirm';
 import {MotionDisclosure} from './components/MotionDisclosure';
@@ -28,11 +28,6 @@ import {AgentQuestionCards} from './components/AgentQuestionCards';
 import type {AgentQuestionRequest} from './agent/types';
 import {AgentResourcePanel} from './components/AgentResourcePanel';
 import {studioSessionOptions,type StudioConversationOptions} from './agent/workspace-controls';
-
-function providerIcon(id: string): ReactNode {
-  if(id==='custom')return <LuWrench/>;
-  return <span className="pi-provider-brand"><img className="brand-light" src={`${import.meta.env.BASE_URL}provider-logos/light/${id}.png`} alt=""/><img className="brand-dark" src={`${import.meta.env.BASE_URL}provider-logos/dark/${id}.png`} alt=""/></span>;
-}
 
 function AgentDialog({title, children, close}: {title: string; children: ReactNode; close: () => void}) {
   const ref=useRef<HTMLElement>(null),id=useId();
@@ -77,18 +72,14 @@ export default function PiAgentPage({ active }: { active: boolean }) {
   const [archivedView, setArchivedView] = useState(settings?.agentUiPreferences?.archivedView??false);
   const [error, setError] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [modelDraft, setModelDraft] = useState<Partial<AppSettings>>({});
-  const [providerPreset, setProviderPreset] = useState('');
   const [saving, setSaving] = useState(false);
-  const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const [compacting, setCompacting] = useState(false);
   const [uploading,setUploading]=useState(false),[dragging,setDragging]=useState(false);
   const uploadLock=useRef(false);
-  const selectedModels=settings?selectedAgentModels(settings):[];
+  const providers=settings?getAgentProviderRegistry(settings):{version:1 as const,activeProviderId:"",providers:[]};
   const [draftActions, setDraftActions] = useState<Record<string, AgentComposerAction[]>>({});
   const contextRef=useRef<HTMLButtonElement>(null),[contextOpen,setContextOpen]=useState(false);
   const closeContext=useCallback(()=>setContextOpen(false),[]);
-  const [configError, setConfigError] = useState('');
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(()=>settings?.agentUiPreferences?.sidebarOpen??window.innerWidth>760);
@@ -269,23 +260,16 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     } catch (reason) { setError(String(reason)); }
     finally { setCompacting(false); }
   };
-  const chooseModel = async (id: string) => {
-    setSaving(true);
-    try { const selected=selectedModels.find(m=>m.id===id);if(!selected)return;for(const [key,value] of Object.entries(selectedAgentModelPatch(selected)))await window.naiDesktop.setSetting(key as keyof AppSettings,value as never); await refreshSettings(); setModelPickerOpen(false); }
-    catch (reason) { setError(String(reason)); }
-    finally { setSaving(false); }
-  };
-  const openSettings = () => { setProviderPreset(inferAgentProviderPreset(settings?.agentApiProtocol??'openai-compatible',settings?.agentApiBaseUrl??'')); setModelDraft({ agentApiProtocol: settings?.agentApiProtocol ?? 'openai-compatible', agentApiBaseUrl: settings?.agentApiBaseUrl ?? '', agentApiModel: settings?.agentApiModel ?? '', agentApiKey: settings?.agentApiKey ?? '', agentVisionEnabled: settings?.agentVisionEnabled !== false, agentProviderName: settings?.agentProviderName, agentContextWindow: settings?.agentContextWindow, agentMaxOutputTokens: settings?.agentMaxOutputTokens,agentReasoningEffort:settings?.agentReasoningEffort??"auto",savedAgentModels:[...normalizeSavedAgentModels(settings?.savedAgentModels).filter(m=>m.providerKey!==agentProviderKey(settings!)),...selectedModels],language:settings?.language }); setConfigError(''); setSettingsOpen(true); };
-  const saveModel = async () => {
-    if (saving) return;
-    if (!validStudioModelConfig(String(modelDraft.agentApiBaseUrl ?? ''), String(modelDraft.agentApiModel ?? ''))) { setConfigError(t('configInvalid')); return; }
-    setSaving(true); setConfigError('');
+  const chooseModel = async (providerId: string, modelId: string) => {
+    if (controlsBusy || saving) return;
+    setSaving(true); setError('');
     try {
-      for (const [key, value] of Object.entries({...modelDraft,...(normalizeSavedAgentModels(modelDraft.savedAgentModels).find(m=>m.providerKey===agentProviderKey(modelDraft as AppSettings)&&m.id===modelDraft.agentApiModel)?selectedAgentModelPatch(normalizeSavedAgentModels(modelDraft.savedAgentModels).find(m=>m.providerKey===agentProviderKey(modelDraft as AppSettings)&&m.id===modelDraft.agentApiModel)!):{})})) await window.naiDesktop.setSetting(key as keyof AppSettings, value as never);
-      await refreshSettings(); setSettingsOpen(false); setError('');
-    } catch (reason) { setConfigError(String(reason)); }
+      await window.naiDesktop.setSetting('agentProviders', selectAgentProviderModel(providers, providerId, modelId));
+      await refreshSettings();
+    } catch (reason) { setError(String(reason)); throw reason; }
     finally { setSaving(false); }
   };
+  const openSettings = () => setSettingsOpen(true);
   const respond = async (response: 'once' | 'reject', revise = false) => {
     if (!pending || answering) return;
     setAnswering(true);
@@ -389,7 +373,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
           <button className="pi-option-toggle" disabled={archived||controlsBusy||!chat} aria-pressed={sessionOptions.templateEnabled} title={t('presetSwitchHint')} onClick={()=>void saveOptions({studioTemplateEnabled:!sessionOptions.templateEnabled})}><LuFileText/>{t('presetToggle')}</button>
           {supportsNAIMediumEffort(imageParams.model) && <><button ref={effortAnchor} className="pi-option-toggle" disabled={archived||controlsBusy} aria-expanded={effortOpen} aria-label={effortText(settings?.language).title} onClick={()=>setEffortOpen(value=>!value)}>Effort · {imageParams.effort==='medium'?'Medium':'High'}<LuChevronDown aria-hidden/></button>{effortOpen&&<AnchoredPopover anchor={effortAnchor} onClose={closeEffort} label={effortText(settings?.language).title}><fieldset disabled={archived||controlsBusy} className="pi-image-effort"><EffortControl model={imageParams.model} value={imageParams.effort??'high'} language={settings?.language} onChange={effort=>setImageParam('effort',effort)}/></fieldset></AnchoredPopover>}</>}
           {sessionOptions.approvalMode==='auto'&&<small className="pi-auto-note" role="status">{t('autoCostNote')}</small>}
-          <button className="pi-model-chip" disabled={controlsBusy} onClick={()=>setModelPickerOpen(true)} title={t('modelSettings')}><span className={`pi-model-dot ${configured?'is-ready':''}`}/><span>{settings?.agentApiModel||t('missingModel')}</span><LuChevronDown aria-hidden/></button><button ref={contextRef} className="pi-context-trigger" aria-expanded={contextOpen} aria-label={t('context')} onClick={()=>setContextOpen(value=>!value)} title={`${t('context')} · ${meter.used.toLocaleString()} / ${meter.limit.toLocaleString()} ${t(meter.estimated?'tokensEstimated':'tokensReported')}`}><LuGauge aria-hidden/><span>{Math.round(meter.percent)}%</span></button>{contextOpen&&<AnchoredPopover anchor={contextRef} onClose={closeContext} label={t('context')}><div className="pi-context-panel-content"><p>{t('context')} · {meter.used.toLocaleString()} / {meter.limit.toLocaleString()} {t(meter.estimated?'tokensEstimated':'tokensReported')}</p><progress className={chat?.context.danger?'is-danger':undefined} aria-label={t('context')} max={100} value={meter.percent}/><div className="pi-context-controls"><button disabled={archived||controlsBusy||!configured||!chat?.messages.length} onClick={()=>void compact()}>{t(compacting?'statusRunning':'compactNow')}</button><label><input type="checkbox" disabled={controlsBusy} checked={settings?.agentAutoCompact===true} onChange={async event=>{try{await window.naiDesktop.setSetting('agentAutoCompact',event.target.checked);await refreshSettings()}catch(reason){setError(String(reason))}}}/>{t('autoCompact')}</label><label>{t('compactThreshold')}<SelectMenuCompat aria-label={t('compactThreshold')} disabled={controlsBusy} value={clampCompactThreshold(settings?.agentAutoCompactThreshold)} onChange={async event=>{try{await window.naiDesktop.setSetting('agentAutoCompactThreshold',Number(event.target.value));await refreshSettings()}catch(reason){setError(String(reason))}}}>{Array.from(new Set([0.5,0.7,0.8,0.88,0.9,0.95,clampCompactThreshold(settings?.agentAutoCompactThreshold)])).sort((a,b)=>a-b).map(value=><option key={value} value={value}>{Math.round(value*100)}%</option>)}</SelectMenuCompat></label><small>{t('compactHint')}</small></div>{chat?.lastSummary&&<pre>{chat.lastSummary}</pre>}</div></AnchoredPopover>}</div>
+          <AgentModelPicker registry={providers} language={settings?.language} disabled={controlsBusy} onSelect={chooseModel} onManage={openSettings}/><button ref={contextRef} className="pi-context-trigger" aria-expanded={contextOpen} aria-label={t('context')} onClick={()=>setContextOpen(value=>!value)} title={`${t('context')} · ${meter.used.toLocaleString()} / ${meter.limit.toLocaleString()} ${t(meter.estimated?'tokensEstimated':'tokensReported')}`}><LuGauge aria-hidden/><span>{Math.round(meter.percent)}%</span></button>{contextOpen&&<AnchoredPopover anchor={contextRef} onClose={closeContext} label={t('context')}><div className="pi-context-panel-content"><p>{t('context')} · {meter.used.toLocaleString()} / {meter.limit.toLocaleString()} {t(meter.estimated?'tokensEstimated':'tokensReported')}</p><progress className={chat?.context.danger?'is-danger':undefined} aria-label={t('context')} max={100} value={meter.percent}/><div className="pi-context-controls"><button disabled={archived||controlsBusy||!configured||!chat?.messages.length} onClick={()=>void compact()}>{t(compacting?'statusRunning':'compactNow')}</button><label><input type="checkbox" disabled={controlsBusy} checked={settings?.agentAutoCompact===true} onChange={async event=>{try{await window.naiDesktop.setSetting('agentAutoCompact',event.target.checked);await refreshSettings()}catch(reason){setError(String(reason))}}}/>{t('autoCompact')}</label><label>{t('compactThreshold')}<SelectMenuCompat aria-label={t('compactThreshold')} disabled={controlsBusy} value={clampCompactThreshold(settings?.agentAutoCompactThreshold)} onChange={async event=>{try{await window.naiDesktop.setSetting('agentAutoCompactThreshold',Number(event.target.value));await refreshSettings()}catch(reason){setError(String(reason))}}}>{Array.from(new Set([0.5,0.7,0.8,0.88,0.9,0.95,clampCompactThreshold(settings?.agentAutoCompactThreshold)])).sort((a,b)=>a-b).map(value=><option key={value} value={value}>{Math.round(value*100)}%</option>)}</SelectMenuCompat></label><small>{t('compactHint')}</small></div>{chat?.lastSummary&&<pre>{chat.lastSummary}</pre>}</div></AnchoredPopover>}</div>
         </div>
       </div>
     </section>
@@ -398,8 +382,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     <div id="pi-creative-resources-pane" className="pi-pane-slot pi-pane-right" {...disclosureAttributes(resourcesOpen)} onKeyDown={event=>{if(event.key==='Escape'&&!event.defaultPrevented){event.preventDefault();setResourcesOpen(false);rightToggle.current?.focus();}}}>
     {resourcesPresent&&<AgentResourcePanel tab={resourceTab} onTab={setResourceTab} workspace={workspace} chat={chat} language={settings?.language} disabled={archived||controlsBusy||!chat} onChange={patch=>void saveOptions(patch)} onImport={kind=>void importResources(kind)} onWorkspaceChange={updateWorkspace}/> }
     </div>
-    {modelPickerOpen&&<AgentDialog title={t('modelSettings')} close={()=>{if(!saving)setModelPickerOpen(false)}}><div className="pi-model-list">{selectedModels.map(model=><button disabled={saving||controlsBusy} key={model.id} aria-pressed={model.id===settings?.agentApiModel} onClick={()=>void chooseModel(model.id)}><LuBot aria-hidden/><span>{model.displayName}</span>{model.id===settings?.agentApiModel&&<LuCheck aria-hidden/>}<small>{model.contextWindow.toLocaleString()} · {t('reasoning_'+model.reasoningEffort)}</small></button>)}</div><footer><button disabled={saving||controlsBusy} onClick={()=>{setModelPickerOpen(false);openSettings()}}><LuSettings/>{t('advancedSettings')}</button></footer></AgentDialog>}
-    {settingsOpen&&<AgentDialog title={t('modelSettings')} close={()=>{if(!saving)setSettingsOpen(false)}}><p>{t('configureHint')}</p><p className="pi-notice">{t('imageApi')}</p><label>{t('providerPreset')}<SelectMenu ariaLabel={t('providerPreset')} popoverClassName="pi-provider-menu" disabled={saving} value={providerPreset} options={[{value:'',label:t('selectProvider'),icon:<LuNetwork/>},...AGENT_PROVIDER_PRESETS.map(preset=>({value:preset.id,label:preset.label,icon:providerIcon(preset.id)}))]} onChange={id=>{const preset=AGENT_PROVIDER_PRESETS.find(item=>item.id===id);setProviderPreset(id);if(preset)setModelDraft({...modelDraft,agentApiProtocol:preset.protocol,agentApiBaseUrl:preset.baseUrl,agentApiModel:preset.model,agentProviderName:preset.providerName,agentContextWindow:preset.contextWindow,agentMaxOutputTokens:preset.maxOutputTokens,agentVisionEnabled:preset.vision,agentApiKey:''})}}/></label><label>{t('apiAddress')}<input autoFocus placeholder="https://your-provider.example/v1" value={modelDraft.agentApiBaseUrl??''} onChange={e=>setModelDraft({...modelDraft,agentApiBaseUrl:e.target.value})}/></label><label>{t('modelId')}<input value={modelDraft.agentApiModel??''} onChange={e=>setModelDraft({...modelDraft,agentApiModel:e.target.value})}/></label><label>{t('apiKey')}<input type="password" autoComplete="off" value={modelDraft.agentApiKey??''} onChange={e=>setModelDraft({...modelDraft,agentApiKey:e.target.value})}/></label><AgentModelCollection draft={modelDraft} disabled={saving} onChange={patch=>setModelDraft(current=>({...current,...patch}))}/><details><summary>{t('details')}</summary><label>{t('protocol')}<SelectMenu ariaLabel={t('protocol')} popoverClassName="pi-provider-menu" disabled={saving} value={modelDraft.agentApiProtocol??'openai-compatible'} options={[{value:'openai-compatible',label:'OpenAI Chat Completions',icon:providerIcon('openai')},{value:'openai-responses',label:'OpenAI Responses',icon:providerIcon('openai')},{value:'anthropic-messages',label:'Anthropic Messages',icon:providerIcon('anthropic')},{value:'google-gemini',label:'Google Gemini',icon:providerIcon('gemini')}]} onChange={protocol=>setModelDraft({...modelDraft,agentApiProtocol:protocol as AppSettings['agentApiProtocol']})}/></label><label className="pi-check"><input type="checkbox" checked={modelDraft.agentVisionEnabled!==false} onChange={e=>setModelDraft({...modelDraft,agentVisionEnabled:e.target.checked})}/>{t('imageAnalysis')}</label></details>{configError&&<p role="alert" className="pi-error">{configError}</p>}<footer><button disabled={saving} onClick={()=>setSettingsOpen(false)}>{t('cancel')}</button><button className="pi-primary" disabled={saving} onClick={()=>void saveModel()}>{t(saving?'saveBusy':'save')}</button></footer></AgentDialog>}
+    {settingsOpen&&settings&&<AgentDialog title={t('agentModelsTitle')} close={()=>{if(!saving)setSettingsOpen(false)}}><AgentProviderSettings settings={settings} disabled={controlsBusy} onSaved={()=>setSettingsOpen(false)} onCancel={()=>setSettingsOpen(false)}/></AgentDialog>}
     {chatAction&&<AgentDialog title={t('rename')} close={()=>setChatAction(undefined)}><label>{t('chatName')}<input autoFocus value={chatName} maxLength={100} onChange={e=>setChatName(e.target.value)}/></label><footer><button onClick={()=>setChatAction(undefined)}>{t('cancel')}</button><button className="pi-primary" disabled={!chatName.trim()||controlsBusy} onClick={()=>{void mutateChat(window.naiDesktop.renameAgentConversation(chatAction.id,chatName.trim()));setChatAction(undefined)}}>{t('save')}</button></footer></AgentDialog>}
     {image?.fileUrl&&<AppPortal><div className="tavern-image-lightbox" role="dialog" aria-modal="true" aria-label={t('preview')}><button className="tavern-image-lightbox-close" aria-label={t('close')} onClick={()=>setImage(undefined)}><LuX/></button><PreviewImageViewer images={[{src:image.fileUrl,alt:image.name}]} index={0} onIndex={()=>{}} showNavigation={false} onBackgroundClick={()=>setImage(undefined)}/></div></AppPortal>}
   </div>;

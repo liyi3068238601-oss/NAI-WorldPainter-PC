@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-15",
+  "baselineCommit": "c26b21c",
+  "platform": "win32",
+  "arch": "x64",
+  "scope": "Current Electron startup screen and Pi Agent multi-provider configuration",
+  "regression": {
+    "success": true,
+    "testFiles": 450,
+    "passed": 4129,
+    "failed": 0,
+    "skipped": 2,
+    "skippedTests": [
+      {
+        "file": "desktop/electron/ipc/local-super-resolution.test.ts",
+        "test": "local super-resolution service runs the installed Real-CUGAN CLI on a synthetic PNG and preserves evidence under .tmp"
+      },
+      {
+        "file": "desktop/electron/ipc/vibe-fixture-acceptance.test.ts",
+        "test": "provided mixed Vibe bundle constructs both references without re-encoding"
+      }
+    ],
+    "rawReportPath": ".tmp/agent-providers-regression.json",
+    "rawReportSha256": "f7521d9d60d8f5bebd642aec4304c53e0f0c647c901ace7a011af7fee2ee6140"
+  },
+  "commands": {
+    "typecheck": {
+      "path": "typecheck.log",
+      "sha256": "741c824fe1d512417ec78d9b6e68ebf204ebb6e49e25f7208a88a66055c46bfd",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec command completion"
+    },
+    "regression": {
+      "path": "regression.log",
+      "sha256": "3a9e2e735444ac0dff79a7db7081272e66edce4dd77a7aa54461ebeab0b38e08",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec command completion"
+    },
+    "build": {
+      "path": "build.log",
+      "sha256": "d6a8f678c4d5114295a41d1c9126e89ef388d75c5c6ccb822fb84b7d2720f664",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec command completion"
+    },
+    "renderer-final": {
+      "path": "renderer-final.log",
+      "sha256": "d3fa9253941c1702f40824a3ddfb0ac82c95d2a902cdaa7b47ab1e935f536b34",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec command completion"
+    },
+    "ui-final": {
+      "path": "ui-final.log",
+      "sha256": "e4e5b181d8ec58f66793130cec37584f49b2cf9dfe67b07dacdde868b8baa2c8",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec command completion"
+    },
+    "package": {
+      "path": "package.log",
+      "sha256": "d0783a54cf81bc79119180ec7b44344bc4d27d020db28b28472afd8aaf1f60e5",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec command completion"
+    }
+  },
+  "package": {
+    "path": "build/WorldPainter-0.1.0-models-preview/win-unpacked",
+    "exeSha256": "f7d34412460eb5b993263fd1c862d7232a97e8b9b1d693f2a2e46169b32f6c31",
+    "asarSha256": "e7a2fa756bbc036fe03f9e05769cea8a3425374342667e32c82e4cded254a1ee",
+    "signedRelease": false,
+    "oldSplashPackaged": false
+  },
+  "byteChecks": [
+    {
+      "path": "dist/index.html",
+      "sha256": "29954f14b1f90acd75c0fb40b2dad4ac5a141c3b61c096c9be9294034d141861",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/worldpainter/onboarding-style-preset-001.jpg",
+      "sha256": "90b8db98a9ac7f59ea44635e8aeafb8e26df7e50f2b6b8ba6066582c4309e53d",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/ArtistLab-B4xElAJD.css",
+      "sha256": "b32dbe536aaa011e6597fbd90f245fa615281d2b6655499db66296b1464c570e",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/ArtistLab-EfbHcbSR.js",
+      "sha256": "0a0dba7f8d08cfb0129c4a5d9ddca1871b047d4316ffde70439dd7650fd9af20",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/ArtistStringWeightDraw-DdorEMTu.js",
+      "sha256": "94dbb1dc34dfecd6c32c60be57fee4de8fd8377650f15c77b3c042326f7067ad",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/ComicGenerator-BsWnwI4g.js",
+      "sha256": "c14de0f09a2729469a5a8a7fad399d76d0652509acd3670ab5547de688bac7c4",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/icons-DXIBx4Vv.js",
+      "sha256": "6e90abe7336f9587245ae39146cbc7c9335a9db201df6928e1414f05a31aec7d",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/index-Bk3N73iS.css",
+      "sha256": "cca4bde1413a9a68f54fe1fc5b8c469e2c7dfa48258ea2932577b94bce18f230",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/index-DuWTYivi.js",
+      "sha256": "3caeda00858d79897e1758abadcaeb969cf9ac0a762634667aa096d08ea8b735",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/InpaintCanvas-CPbLypL_.js",
+      "sha256": "a2b6c0c01e82255400f268975a9b9867206bb3b1494f2e6e278dbaa1072f0149",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/MetadataInspector-CsoT4IvL.css",
+      "sha256": "76003bd8f15b9aaf7dfd7f561d14dc722228940624d7a31fea47431240a4e433",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/MetadataInspector-DN2EFRvm.js",
+      "sha256": "6962356aff483f22f0c0e83459b15d623d9e681571bc0d1473697ceca23f38e4",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/official-metadata-online-DLVSRsXK.js",
+      "sha256": "00b9ce12c152d3cc72801e3b35c0c87fd46d270efc274db1dd9e69a471cf977c",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/official-metadata-worker-KL90Qa0M.js",
+      "sha256": "ad8e65755460cf5d8b1f5c29aec1a0e9fdab0e0d6d485e5ea4de4b1c5e393e47",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/OnlineGalleryPage-BP4MhG0O.js",
+      "sha256": "e8c8abdef6cccb29f30a2d042c608698d8f24c9bbd890ed79eb6794795be393f",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/PiAgentPage-BIJDg8ob.css",
+      "sha256": "46c113a3be391798822a415449d9c04eaf4c85c974833d9e2401ab31c6ac30fc",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/PiAgentPage-DxIc0Jzq.js",
+      "sha256": "fe3e5f03704ec30c48665ef91f2ba22b2fa0ce18e07c56f62f606fb11b1b3cb6",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/PromptCodex-F20s3TXq.js",
+      "sha256": "50c0433694143e6b9aa7e22f2a9ec3b288ab9689bdafdb869d49bddf0a691085",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/random-custom-tag-library-nreLjpcK.js",
+      "sha256": "732cc96839a4486c90dd0d53d2ca590f25c543a3edae03830bb24af093c83066",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/RangeInput-BJfZORf-.js",
+      "sha256": "af6856637981d012f7910122b50333bbfdcbb319ff504dc335d0cb83a03aa296",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/TagComicGenerator-Uj6Zb4ks.js",
+      "sha256": "352220b8fd5dc4aa7a540fbf2700880f99bfcba3fe38cd0c2ccd4c2e3e72c5bd",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/ToolsHub-CKiVz8Q-.js",
+      "sha256": "0b22e8174fb73dd4b1c2ac760701555def1fa25aa0fbeede1b1988a943b379ce",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/ui-D_baPERF.js",
+      "sha256": "66c2be6642e90c3c9d44a46b1ccf4b164c894cc97cda6b0727a3c7130a5030db",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist/assets/V5ArtistWeightRepair-DQ9g4LAq.js",
+      "sha256": "d13a770381444e6114d30e35b543f4d2b1c2de5c058f59427ccff1a7f6620405",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist-electron/electron/ipc/store.js",
+      "sha256": "b1b4a64ae6e7e3f6acbcfe949bab50229928e14a843f75dd0cec3bc00f9cabc8",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist-electron/electron/ipc/credential-vault.js",
+      "sha256": "cc638f1107c6b3b258f38a33cc9288684f8e037bcb765e6ad4322bd83797eb00",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist-electron/electron/ipc/data-backup.js",
+      "sha256": "0b4143a3004d7d6245287b7996c2b95b82dac9af61c27808df0d8bbe8e578b05",
+      "matchesBuiltSource": true
+    },
+    {
+      "path": "dist-electron/src/agent/provider-profiles.js",
+      "sha256": "e271c977ae48a0c7ce297c83f9c920b99b9dfa21fe95322260fa033cb71d7423",
+      "matchesBuiltSource": true
+    }
+  ],
+  "mobileArtworkSha256": "90b8db98a9ac7f59ea44635e8aeafb8e26df7e50f2b6b8ba6066582c4309e53d",
+  "browser": {
+    "surface": "Codex in-app browser",
+    "url": "http://127.0.0.1:5173/.tmp/agent-providers-qa.html",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "type": "Real React components with in-memory preload mock; not native acceptance",
+    "checks": {
+      "darkStartupImageAndStyle": true,
+      "lightStartupImageAndStyle": true,
+      "contextEmptyDraftObserved": "",
+      "contextRetypedAndSaved": 131072,
+      "providersSaved": 2,
+      "providerAModels": [
+        "shared-chat"
+      ],
+      "providerBModels": [
+        "shared-chat",
+        "vision-demo"
+      ],
+      "sameModelIdUsesIndependentContext": {
+        "a": 131072,
+        "b": 65536
+      },
+      "inlineTwoColumnMenu": true,
+      "visionBadge": true,
+      "keyboardArrowSelection": true,
+      "escapeClosesAndRestoresFocus": true,
+      "manageModelsOpensSharedEditor": true
+    },
+    "nativeMainSettingsEntry": "Wiring confirmed by source assertions and typecheck; native UI not executed",
+    "screenshots": [
+      "startup-dark-browser.png",
+      "startup-light-browser.png",
+      "settings-browser.png",
+      "context-edited-browser.png",
+      "model-menu-browser.png"
+    ],
+    "fixture": "fixture/agent-providers-qa.html and fixture/agent-providers-qa.tsx; copy to desktop/.tmp to replay; reload resets all mock data"
+  },
+  "native": {
+    "status": "not_run",
+    "reason": "Automatic approval rejected development Electron launch with blocked by policy and no detailed reason; no alternate launch attempted",
+    "fixturePrepared": "scripts/agent-providers-native-fixture.cjs",
+    "realModelRequests": 0,
+    "realPaidRequests": 0
+  },
+  "correctionToPriorEvidence": "Previous agent-execution-v1 startup-image screenshots covered onboarding only; this batch fixes the independent loading screen.",
+  "limitations": [
+    "Native final-package cold startup, provider switching and restart persistence remain unverified.",
+    "Browser mock does not establish operating-system encryption or IPC behavior; backend tests mock Electron cryptography.",
+    "Real provider capability and paid generation/edit workflows were not invoked.",
+    "No comprehensive DPI/multi-monitor acceptance."
+  ]
+}

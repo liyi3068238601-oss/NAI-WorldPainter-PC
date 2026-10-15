@@ -1,0 +1,8 @@
+
+ RUN  v4.1.11 E:/NAI-WorldPainter/PC端/desktop
+
+
+ Test Files  4 passed (4)
+      Tests  13 passed (13)
+   Start at  21:04:24
+   Duration  446ms (transform 393ms, setup 0ms, import 682ms, tests 44ms, environment 0ms)

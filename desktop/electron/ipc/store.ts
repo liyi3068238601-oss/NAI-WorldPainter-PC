@@ -2,6 +2,14 @@ import {normalizeNegativePromptPresets} from "../../src/negative-prompt-library"
 import {normalizeAutomaticComparison} from "../../src/automatic-comparison";
 import {normalizeTypography,DEFAULT_TYPOGRAPHY} from "../../src/typography";
 import {normalizeSavedAgentModels,agentEffort} from '../../src/agent/model-selections';
+import {
+  agentProviderCredentialKey,
+  agentProviderSettingsPatch,
+  assertSavableAgentProviderRegistry,
+  getAgentProviderRegistry,
+  normalizeAgentProviderRegistry,
+  syncActiveAgentProviderFromSettings,
+} from '../../src/agent/provider-profiles';
 import {normalizeAgentUiPreferences} from '../../src/agent/preferences';
 import {normalizeCompletionSound} from "../../src/completion-sound";
 import {DEFAULT_OPENAI_IMAGE_EDIT,normalizeOpenAIImageEditSettings} from "../../src/openai-image-edit";
@@ -75,6 +83,7 @@ function normalizeLanguage(value: unknown): AppSettings["language"] {
 
 function encryptForDisk(data: PersistedData, replacements: ReadonlySet<string> = new Set()): PersistedData {
   const clone: PersistedData = { ...data, settings: { ...data.settings } };
+  if(clone.settings.agentProviders)clone.settings.agentProviders=normalizeAgentProviderRegistry(clone.settings.agentProviders);
   clone.token = credentialVault.encode("token", clone.token, replacements.has("token")) as string;
   delete clone.settings.credentialIssues;
   delete clone.settings.imageServiceRevision;
@@ -84,6 +93,14 @@ function encryptForDisk(data: PersistedData, replacements: ReadonlySet<string> =
   const settings = clone.settings as unknown as Record<string, unknown>;
   for (const key of SENSITIVE_SETTING_KEYS) {
     settings[key] = credentialVault.encode(key, settings[key], replacements.has(key));
+  }
+  const registry=clone.settings.agentProviders;
+  if(registry)for(const profile of registry.providers){
+    profile.apiKey=credentialVault.encode(
+      agentProviderCredentialKey(profile.id),
+      profile.apiKey,
+      replacements.has(agentProviderCredentialKey(profile.id)),
+    ) as string;
   }
   return clone;
 }
@@ -98,6 +115,14 @@ function decryptFromDisk(raw: Partial<PersistedData>): Partial<PersistedData> {
     for (const key of SENSITIVE_SETTING_KEYS) {
       const current = settings[key];
       if (typeof current === "string") settings[key] = credentialVault.decode(key, current);
+    }
+    const registry=settings.agentProviders;
+    if(registry&&typeof registry==='object'&&Array.isArray((registry as {providers?:unknown}).providers)){
+      for(const profile of (registry as {providers:Array<{id?:unknown;apiKey?:unknown}>}).providers){
+        if(typeof profile.id==='string'&&typeof profile.apiKey==='string'){
+          profile.apiKey=credentialVault.decode(agentProviderCredentialKey(profile.id),profile.apiKey) as string;
+        }
+      }
     }
   }
   return clone;
@@ -335,6 +360,14 @@ function normalize(raw: Partial<PersistedData> | null): PersistedData {
     ? clampCompactThreshold(rawSettings.agentAutoCompactThreshold)
     : adaptiveAgentCompactThreshold(settings.agentContextWindow, settings.agentMaxOutputTokens);
   settings.agentVisionEnabled = settings.agentVisionEnabled !== false;
+  const agentRegistry=rawSettings.agentProviders===undefined||rawSettings.agentProviders===null
+    ? getAgentProviderRegistry(settings)
+    : normalizeAgentProviderRegistry(rawSettings.agentProviders);
+  if((rawSettings.agentProviders===undefined||rawSettings.agentProviders===null)&&credentialVault.issues().includes('agentApiKey')){
+    const legacy=agentRegistry.providers.find(profile=>profile.id===agentRegistry.activeProviderId);
+    if(legacy)credentialVault.copyLocked('agentApiKey',agentProviderCredentialKey(legacy.id));
+  }
+  Object.assign(settings,{agentProviders:agentRegistry,...agentProviderSettingsPatch(agentRegistry)});
   // v2.0.2 enabled full-library image archives for every installation. On a
   // large gallery that can consume hundreds of MB and starve both Electron
   // and Flutter shortly after launch. Existing installations are migrated
@@ -629,9 +662,14 @@ export function readStore(): PersistedData {
   if (cache) return cache;
 
   const file = storePath();
+  let legacyProviderRegistryMissing=false;
   const recovered = readWithBackupRecoverySync<PersistedData>(
     file,
-    (raw) => normalize(decryptFromDisk(JSON.parse(raw) as Partial<PersistedData>)),
+    (raw) => {
+      const parsed=JSON.parse(raw) as Partial<PersistedData>;
+      legacyProviderRegistryMissing=parsed.settings?.agentProviders===undefined||parsed.settings?.agentProviders===null;
+      return normalize(decryptFromDisk(parsed));
+    },
     (value) => JSON.stringify(encryptForDisk(value), null, 2),
   );
   if (recovered) {
@@ -640,7 +678,7 @@ export function readStore(): PersistedData {
     }
     const migration = migrateLegacyInstalledOutputForCurrentApp(recovered.value);
     cache = migration.data;
-    if (migration.changed) writeStore(cache);
+    if (migration.changed||legacyProviderRegistryMissing) writeStore(cache);
     return cache;
   }
 
@@ -659,13 +697,42 @@ export function readStore(): PersistedData {
 
 export function credentialIssues() { return credentialVault.issues(); }
 
+function assertLockedAgentProfilesRetained(registry:AppSettings['agentProviders']) {
+  const profiles=registry?.providers??[];
+  for(const issue of credentialVault.issues()){
+    if(!issue.startsWith('agentProviders:'))continue;
+    if(!profiles.some(profile=>agentProviderCredentialKey(profile.id)===issue)){
+      throw new Error('某个 Agent 服务凭据仍处于锁定状态，无法删除对应服务配置；请先恢复本地凭据访问。');
+    }
+  }
+}
+
 export function writeStore(next: PersistedData, replaceCredentials: readonly string[] = []) {
-  next={...next,settings:normalizeNovelAiSettings(next.settings)};
+  const previousRegistry=cache?.settings.agentProviders;
+  let settings=normalizeNovelAiSettings(next.settings);
+  let registry=getAgentProviderRegistry(settings);
+  // Direct legacy callers may still write a flat provider setting into a copy
+  // of the current store. If the registry itself did not change, keep that
+  // edit by projecting the flat values back into its active profile.
+  const flatAgentKeys=['agentApiProtocol','agentApiBaseUrl','agentApiKey','agentApiModel','agentProviderName','agentContextWindow','agentMaxOutputTokens','agentReasoningEffort','agentVisionEnabled','savedAgentModels'] as const;
+  const changedFlatAgentKeys=cache
+    ?flatAgentKeys.filter(key=>JSON.stringify(settings[key])!==JSON.stringify(cache!.settings[key]))
+    :[];
+  const flatAgentChanged=changedFlatAgentKeys.length>0;
+  if(previousRegistry&&settings.agentProviders&&flatAgentChanged&&JSON.stringify(settings.agentProviders)===JSON.stringify(previousRegistry)){
+    registry=syncActiveAgentProviderFromSettings(registry,settings,changedFlatAgentKeys);
+  }
+  settings={...settings,agentProviders:registry,...agentProviderSettingsPatch(registry)};
+  next={...next,settings:normalizeNovelAiSettings(settings)};
+  assertLockedAgentProfilesRetained(next.settings.agentProviders);
+  const replacements=new Set(replaceCredentials);
+  if(next.settings.agentApiKey)replacements.add('agentApiKey');
+  for(const profile of next.settings.agentProviders?.providers??[])if(profile.apiKey)replacements.add(agentProviderCredentialKey(profile.id));
   const file = storePath();
   fs.mkdirSync(path.dirname(file), { recursive: true });
   rotateBackupsSync(file);
-  atomicWriteFileSync(file, JSON.stringify(encryptForDisk(next, new Set(replaceCredentials)), null, 2));
-  for (const key of replaceCredentials) credentialVault.forget(key);
+  atomicWriteFileSync(file, JSON.stringify(encryptForDisk(next, replacements), null, 2));
+  for (const key of replacements) credentialVault.forget(key);
   cache = next; // commit cache only after persistence succeeds
   commitImageSettings(next.settings);
 }
@@ -698,10 +765,21 @@ export function setSetting<K extends SettingKey>(key: K, value: AppSettings[K]):
   }
   const data = { ...readStore() }; // Failed persistence must not mutate the live settings cache.
   const replaceCredential = (SENSITIVE_SETTING_KEYS as readonly string[]).includes(key);
+  if(key==='agentProviders'){
+    const registry=assertSavableAgentProviderRegistry(value);
+    assertLockedAgentProfilesRetained(registry);
+    data.settings={...data.settings,agentProviders:registry,...agentProviderSettingsPatch(registry)};
+    writeStore(data,registry.providers.filter(profile=>profile.apiKey).map(profile=>agentProviderCredentialKey(profile.id)));
+    return registry as AppSettings[K];
+  }
   data.settings = {
     ...data.settings,
     [key]: key === "negativePromptPresets" ? normalizeNegativePromptPresets(value) : key === "automaticComparison" ? normalizeAutomaticComparison(value) : key === "uiTypography" ? normalizeTypography(value) : key === "agentUiPreferences" ? normalizeAgentUiPreferences(value) : key === "language" ? normalizeLanguage(value) : key === "completionSound" ? normalizeCompletionSound(value) : key === "openaiImageEdit" ? normalizeOpenAIImageEditSettings(value) : key === "inpaintEngine" ? (value === "openai" ? "openai" : "novelai") : value,
   };
+  if(['agentApiProtocol','agentApiBaseUrl','agentApiKey','agentApiModel','agentProviderName','agentContextWindow','agentMaxOutputTokens','agentReasoningEffort','agentVisionEnabled','savedAgentModels'].includes(key)){
+    const registry=syncActiveAgentProviderFromSettings(getAgentProviderRegistry(data.settings),data.settings,[key]);
+    data.settings={...data.settings,agentProviders:registry,...agentProviderSettingsPatch(registry)};
+  }
   writeStore(data, replaceCredential ? [key] : []);
   return data.settings[key];
 }

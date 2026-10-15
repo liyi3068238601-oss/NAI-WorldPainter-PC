@@ -30,6 +30,25 @@ it('round trips mobile-only preferences and desktop drafts through a real archiv
 });
 it('old archives lacking mobile-state remain importable',async()=>{const input=new JSZip();input.file('manifest.json',JSON.stringify({format:'langbai-novelai-studio-backup',version:1,categories:[]}));input.file('data/workspace.json','{}');const file=path.join(fixture.root,'old.naisbackup');await fs.writeFile(file,await input.generateAsync({type:'nodebuffer'}));const result=await importDataBackup({path:file,categories:['workspaceData'],confirmConfigurationOverwrite:false});expect(result.ok,result.message).toBe(true);await expect(fs.stat(path.join(fixture.root,'backup-mobile-state.json'))).rejects.toMatchObject({code:'ENOENT'});});
 
+it('keeps provider keys out of configuration backups and includes nested keys only in API credentials backups',async()=>{
+ fixture.store.settings={agentApiKey:'flat-synthetic-secret',agentProviders:{version:1,activeProviderId:'profile-a',providers:[
+   {id:'profile-a',name:'Synthetic A',protocol:'openai-compatible',baseUrl:'https://a.example/v1',apiKey:'nested-synthetic-secret',modelId:'model-a',models:[]},
+ ]}};
+ const configuration=await exportDataBackup({categories:['configuration'],destination:'internal'});
+ expect(configuration.ok,configuration.message).toBe(true);
+ const configZip=await JSZip.loadAsync(await fs.readFile(configuration.path!));
+ const config=JSON.parse(await configZip.file('data/configuration.json')!.async('string'));
+ expect(config.agentProviders).toBeUndefined();
+ expect(JSON.stringify(config)).not.toContain('synthetic-secret');
+
+ const credentials=await exportDataBackup({categories:['apiCredentials'],destination:'internal'});
+ expect(credentials.ok,credentials.message).toBe(true);
+ const credentialZip=await JSZip.loadAsync(await fs.readFile(credentials.path!));
+ const payload=JSON.parse(await credentialZip.file('data/api-credentials.json')!.async('string'));
+ expect(payload.settings.agentApiKey).toBe('flat-synthetic-secret');
+ expect(payload.settings.agentProviders.providers[0].apiKey).toBe('nested-synthetic-secret');
+});
+
 it('inspection lifts native data from an old manifest into independent categories with real counts',async()=>{
  const home=path.join(fixture.root,'TavernAgent/user-home/profiles');await fs.mkdir(home,{recursive:true});await fs.writeFile(path.join(home,'synthetic.json'),'{}');
  const exported=await exportDataBackup({categories:['tavernAgent'],destination:'internal'});

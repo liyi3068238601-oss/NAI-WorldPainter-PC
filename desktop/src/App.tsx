@@ -1,5 +1,7 @@
 import { anlasBillingDisplay, visibleAnlasQuote, type ScopedAnlasQuote } from "./anlas-billing";
 import { McpServerSettings } from "./components/McpServerSettings";
+import { AgentProviderSettings } from "./components/AgentProviderSettings";
+import { studioUxText } from './agent/ux';
 import WorldpainterMaterialImport from "./components/WorldpainterMaterialImport";
 import LocalSuperResolutionSettings from "./components/LocalSuperResolutionSettings";
 import WorldpainterLegacyImport from "./components/WorldpainterLegacyImport";
@@ -65,7 +67,7 @@ import { normalizeAppLanguage } from "./i18n";
 import { MetadataApplyPanel } from "./MetadataApplyPanel";
 import { ImageSaveFeedback } from "./components/ImageSaveFeedback";
 import { imagePasteProps } from "./image-paste";
-import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { lazy, memo, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import clsx from "clsx";
 import { format } from "date-fns";
@@ -112,6 +114,7 @@ import {
 } from "./data/prompt-templates-v45";
 import { Button, IconText, AppPortal, Toggle, NumberInput, CommittedNumberInput, SliderInput, SecretInput, SelectMenu, SelectMenuCompat } from "./components/ui";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
+import { StartupScreen } from "./components/StartupScreen";
 import { confirmAction } from "./components/confirm";
 import {CharacterPresetControls} from './components/CharacterPresetControls';
 import {CharacterNameControl} from './components/CharacterNameControl';
@@ -209,6 +212,7 @@ const novelAiImageUrl = "https://novelai.net/image";
 const DEFAULT_HTTP_PROXY = "http://127.0.0.1:7890";
 const DEFAULT_SOCKS_PROXY = "socks5://127.0.0.1:10808";
 const appIconUrl = "./icon.png";
+const BOOT_THEME_CACHE_KEY = "langbai.boot-theme.v1";
 const onboardingHeroUrl = "./worldpainter/onboarding-style-preset-001.jpg";
 const projectGithubUrl = "https://github.com/liyi3068238601-oss/NAI-WorldPainter-PC";
 
@@ -616,57 +620,6 @@ function PromptTextarea({
 }
 
 // ── Shared UI primitives ──────────────────────────────────────────────────────
-// ── Splash ────────────────────────────────────────────────────────────────────
-function SplashPage() {
-  // Show a custom entrance image when public/splash.png exists; otherwise fall
-  // back to the built-in animated orbs. The <img> hides itself on load error.
-  const [hasCustom, setHasCustom] = useState(true);
-  const language = useAppStore((state) => state.settings?.language);
-  const bootError = useAppStore((state) => state.bootError);
-  const load = useAppStore((state) => state.load);
-  return (
-    <div className="splash-page splash-animate">
-      {hasCustom && (
-        <img
-          className="splash-custom"
-          src="./splash.png"
-          alt=""
-          onError={() => setHasCustom(false)}
-        />
-      )}
-      {!hasCustom && (
-        <div className="splash-art">
-          <div className="splash-orb splash-orb-a" />
-          <div className="splash-orb splash-orb-b" />
-          <div className="splash-logo-mark">
-            <div className="logo-gem" />
-            <div className="logo-ring" />
-          </div>
-        </div>
-      )}
-      <div className="splash-title">
-        <div className="splash-brand">
-          <img className="brand-icon-img" src={appIconUrl} alt="" />
-          <h1>{APP_NAME}</h1>
-        </div>
-        <div className="splash-divider" />
-        <p className="splash-sub">{desktopUiText(language, "splash.subtitle")}</p>
-        <p className="splash-ver">v{APP_VERSION}</p>
-        {bootError && (
-          <>
-            <p className="splash-sub" style={{ color: "var(--danger)" }}>
-              {bootError}
-            </p>
-            <Button variant="primary" onClick={() => void load()}>
-              {desktopUiText(language, "splash.retry")}
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Title bar ─────────────────────────────────────────────────────────────────
 function OpusUsageDialog({ onClose }: { onClose: () => void }) {
   const account = useAppStore((state) => state.account);
@@ -5891,6 +5844,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
     ["gateway", settings.language.startsWith('zh') ? "兼容网关" : "Image gateways", "globe"],
     ["ai-reverse", settingsShellText.nav["ai-reverse"], "smartToy"],
     ["convert-api", settingsShellText.nav["convert-api"], "translate"],
+    ["agent-models", studioUxText(settings.language, 'agentModelsTitle'), "smartToy"],
     ["templates", settingsShellText.nav.templates, "template"],
     ["prompt", settingsShellText.nav.prompt, "wand"],
     ["language", settingsShellText.nav.language, "globe"],
@@ -6250,6 +6204,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
               features={{characterPrompts:gatewayCharacters,vibeReferences:gatewayVibes,preciseReferences:gatewayReferences}}
               onHistoryAdded={()=>void useAppStore.getState().refreshHistory()}
             /></div>}
+            {section === "agent-models" && <AgentProviderSettings settings={settings} />}
             {section === "ai-reverse" && (
               <div className="settings-form">
                 <p className="settings-hint">{t("settings.aiReverseHint")}</p>
@@ -7195,7 +7150,6 @@ function MainPage() {
   const wsHistoryDragWidth = useAppStore((state) => state.wsHistoryDragWidth);
   const displayedHistoryWidth = wsHistoryDragWidth ?? (wsHistoryCollapsed ? 0 : wsRightWidth);
   const uiCaptureParams = useMemo(() => new URLSearchParams(window.location.search), []);
-  const uiCaptureTheme = uiCaptureParams.get("uiTheme");
   // Final render-boundary guard: even if a future IPC path forgets to sanitize
   // an upstream HTML error page, it can never expand across the application.
   const displayStatusText = useMemo(
@@ -7245,22 +7199,6 @@ function MainPage() {
   }, [uiCaptureParams]);
 
   useGlobalTypography(settings?.uiTypography);
-
-  // Apply theme class
-  useEffect(() => {
-    if (!settings) return;
-    if (uiCaptureTheme === "dark" || uiCaptureTheme === "light") {
-      document.documentElement.classList.toggle("theme-dark", uiCaptureTheme === "dark");
-      return;
-    }
-    const resolved =
-      settings.theme === "system"
-        ? window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light"
-        : settings.theme;
-    document.documentElement.classList.toggle("theme-dark", resolved === "dark");
-  }, [settings?.theme, uiCaptureTheme]);
 
   // Motion is an explicit in-app accessibility choice. Do not inherit Windows'
   // broad "Animation effects" performance flag: on this machine it is off for
@@ -7376,8 +7314,30 @@ export default function App() {
   const SPLASH_MIN_VISIBLE_MS = 700;
   const [splash, setSplash] = useState(true);
   const bootDone = useAppStore((state) => state.bootDone);
+  const bootError = useAppStore((state) => state.bootError);
+  const settings = useAppStore((state) => state.settings);
   const load = useAppStore((state) => state.load);
   const checkUpdate = useAppStore((state) => state.checkUpdate);
+  const uiCaptureTheme = new URLSearchParams(window.location.search).get("uiTheme");
+
+  // Resolve theme while the startup screen is still mounted. index.html seeds
+  // the first paint from the last known preference before settings IPC returns.
+  useLayoutEffect(() => {
+    if (!settings) return;
+    if (uiCaptureTheme === "dark" || uiCaptureTheme === "light") {
+      document.documentElement.classList.toggle("theme-dark", uiCaptureTheme === "dark");
+      return;
+    }
+    try {
+      window.localStorage.setItem(BOOT_THEME_CACHE_KEY, settings.theme);
+    } catch {
+      // Theme persistence remains owned by the main-process settings store.
+    }
+    const resolved = settings.theme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      : settings.theme;
+    document.documentElement.classList.toggle("theme-dark", resolved === "dark");
+  }, [settings?.theme, uiCaptureTheme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -7472,5 +7432,7 @@ export default function App() {
   }, [load, checkUpdate]);
 
   const shouldShowSplash = useMemo(() => splash || !bootDone, [splash, bootDone]);
-  return shouldShowSplash ? <SplashPage /> : <MainPage />;
+  return shouldShowSplash
+    ? <StartupScreen language={settings?.language} bootError={bootError} onRetry={() => void load()} />
+    : <MainPage />;
 }

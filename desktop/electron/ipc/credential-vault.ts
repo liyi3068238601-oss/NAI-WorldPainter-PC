@@ -14,6 +14,10 @@ export class CredentialVault {
   constructor(private readonly crypto: Cryptography) {}
   issues() { return [...this.locked.keys()]; }
   forget(key: string) { this.locked.delete(key); }
+  copyLocked(sourceKey: string, destinationKey: string) {
+    const value=this.locked.get(sourceKey);
+    if(value&&!this.locked.has(destinationKey))this.locked.set(destinationKey,value);
+  }
   reset() { this.locked.clear(); }
   decode(key: string, value: unknown): unknown {
     if (typeof value !== "string" || !value.startsWith(CREDENTIAL_PREFIX)) return value;

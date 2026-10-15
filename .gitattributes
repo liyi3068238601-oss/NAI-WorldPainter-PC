@@ -40,3 +40,5 @@ docs/evidence/assistant-tag-knowledge/* -text whitespace=blank-at-eol,blank-at-e
 docs/evidence/agent-execution-v1/*.log text eol=lf
 docs/evidence/agent-execution-v1/*.jsonl text eol=lf
 scripts/agent-native-fixture.cjs text eol=lf
+docs/evidence/agent-providers-v1/*.log text eol=lf
+scripts/agent-providers-native-fixture.cjs text eol=lf

@@ -1,0 +1,38 @@
+.agent-provider-settings { color: var(--text-primary); min-width: 0; }
+.agent-provider-settings .agent-provider-hint { margin: 0 0 16px; color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+.agent-provider-layout { display: grid; grid-template-columns: 185px minmax(0, 1fr); gap: 18px; align-items: start; }
+.agent-provider-sidebar { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 0; min-width: 0; }
+.agent-provider-sidebar strong { font-size: 13px; }
+.agent-provider-settings button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-panel); color: var(--text-primary); padding: 9px 10px; cursor: pointer; font-size: 12px; }
+.agent-provider-settings button:disabled { cursor: default; opacity: .5; }
+.agent-provider-settings button:hover:not(:disabled) { border-color: var(--accent); }
+.agent-provider-list { display: flex; flex-direction: column; gap: 5px; max-height: 250px; overflow-y: auto; }
+.agent-provider-list button { width: 100%; justify-content: flex-start; text-align: left; }
+.agent-provider-list button[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 14%, var(--bg-panel)); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); color: var(--accent); }
+.agent-provider-list button > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.agent-provider-list button small { display: block; color: var(--text-secondary); margin-top: 3px; font-size: 11px; }
+.agent-provider-list svg { flex-shrink: 0; }
+.agent-provider-settings label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+.agent-provider-settings input:not([type="checkbox"]) { width: 100%; min-width: 0; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-input, var(--bg-window)); color: var(--text-primary); font-size: 13px; }
+.agent-provider-settings input:focus { border-color: var(--accent); outline: 1px solid var(--accent); outline-offset: -1px; }
+.agent-provider-editor { min-width: 0; }
+.agent-provider-editor fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
+.agent-provider-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; }
+.agent-provider-heading h3 { margin: 0; font-size: 14px; }
+.agent-provider-heading .agent-provider-remove { color: var(--text-secondary); border-color: transparent; font-size: 11px; padding: 6px; }
+.agent-provider-settings .pi-model-collection { padding-top: 8px; }
+.agent-provider-settings .pi-model-toolbar { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+.agent-provider-settings .pi-saved-model { margin-top: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-panel); }
+.agent-provider-settings .pi-saved-model h3, .agent-provider-settings .pi-model-collection h3 { font-size: 13px; }
+.agent-provider-settings .pi-model-discovery-list { max-height: 230px; overflow-y: auto; }
+.agent-provider-settings .pi-model-discovery-list label { flex-direction: row; align-items: center; }
+.agent-provider-settings label.pi-check { display: flex; flex-direction: row; align-items: center; }
+.agent-provider-settings input[type="checkbox"] { width: 16px; height: 16px; min-height: 0; padding: 0; margin: 0; flex: 0 0 auto; accent-color: var(--accent); }
+.agent-provider-settings .pi-model-discovery-list small { display: block; opacity: .7; }
+.agent-provider-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--border); }
+.agent-provider-actions > small { margin-right: auto; color: var(--text-secondary); font-size: 11px; max-width: 65%; }
+.agent-provider-actions .agent-provider-save { background: var(--accent); color: var(--accent-text, #171717); border-color: var(--accent); }
+.agent-provider-error { color: var(--danger); font-size: 13px; }
+.agent-provider-empty { padding: 30px 10px; color: var(--text-secondary); }
+.pi-agent.pi-modal:has(.agent-provider-settings) { width: min(840px, calc(100vw - 32px)); }
+@media (max-width: 640px) { .agent-provider-layout { grid-template-columns: 1fr; }.agent-provider-sidebar { position: static; }.agent-provider-list { max-height: 160px; }.agent-provider-actions { flex-wrap: wrap; }.agent-provider-actions > small { max-width: 100%; width: 100%; } }

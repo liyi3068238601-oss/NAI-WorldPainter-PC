@@ -2,6 +2,7 @@ import {preservedGenerationTime} from "./history-generation-time";
 import { app, dialog, shell } from "electron";
 import {exportImageSettings, readImageSettingsBackup} from "../../src/compatible-image-backup";
 import {SENSITIVE_SETTING_KEYS} from "./credential-vault";
+import {agentProviderCredentialKey,normalizeAgentProviderRegistry} from "../../src/agent/provider-profiles";
 import {imageSettingsStamp} from "./image-settings-events";
 import crypto, { randomUUID } from "node:crypto";
 import {exportNaiAccountsBackup,prepareNaiAccountsBackupRestore} from './nai-accounts';
@@ -109,6 +110,7 @@ const API_SETTING_KEYS: Array<keyof AppSettings> = [
   "agentApiBaseUrl",
   "agentApiKey",
   "agentApiModel",
+  "agentProviders",
   "savedAgentModels",
   "agentReasoningEffort",
   "agentProviderName",
@@ -1730,8 +1732,16 @@ export async function importDataBackup(
       for (const key of API_SETTING_KEYS) {
         if (["imageProvider", "compatibleImage", "imageApiKey"].includes(key)) continue;
         if (incoming.settings && key in incoming.settings) {
-          (next.settings as unknown as Record<string, unknown>)[key] = cloneJson(incoming.settings[key]);
+          const value=key==='agentProviders'
+            ? normalizeAgentProviderRegistry(incoming.settings[key])
+            : cloneJson(incoming.settings[key]);
+          (next.settings as unknown as Record<string, unknown>)[key] = value;
           if ((SENSITIVE_SETTING_KEYS as readonly string[]).includes(key)) replaceCredentials.push(key);
+          if(key==='agentProviders'&&value){
+            for(const profile of (value as AppSettings['agentProviders'])?.providers??[])if(profile.apiKey){
+              replaceCredentials.push(agentProviderCredentialKey(profile.id));
+            }
+          }
           counters.count += 1;
         }
       }
