@@ -1,7 +1,8 @@
 # PC 端工作约定
 
 - 本仓库是独立 PC 客户端。全部新增文件、实验和开发产物放在 `E:\NAI-WorldPainter\PC端` 内。
-- 用户指定的参考克隆目录例外：`E:\NAI-WorldPainter\novelai_local_web`；该目录供调查，不是 PC 产品开发目录。
+- 用户指定的参考克隆目录例外：`E:\NAI-WorldPainter\novelai_local_web`、`E:\NAI-WorldPainter\novelai-image-desktop`；均只读，产品开发放在本仓库。
+- 2026-10-15 用户授权直接迁移成熟桌面源码。当前主实现为 `desktop/`（Electron/React）；原 Flutter 代码和数据保留为迁移基线。先完成首版与绘世品牌，再按矩阵逐项处理参考实现缺点，不把源码导入标为全量验收。
 - 相邻 `手机端`、`参考资料` 与已有审计材料可只读调查；不修改、不批量复制、不提交相邻项目的用户数据和未提交改动。
 - 先读 `docs/PC_PLAN.md`、`docs/ARCHITECTURE.md` 和 `docs/RESEARCH.md`。规划中的建议不等于已实现或已通过验收。
 - 首版同时支持 NovelAI 官方与兼容网关；分别维护能力、凭据和请求适配，不宣称所有网关完全兼容。

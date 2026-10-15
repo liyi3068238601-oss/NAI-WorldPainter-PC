@@ -1,0 +1,193 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+
+import '../models/nai_models.dart';
+import 'proxy_http_client.dart';
+
+class UpdateInfo {
+  final bool hasUpdate;
+  final String currentVersion;
+  final String? latestVersion;
+  final String? releaseUrl;
+  final String? error;
+  final String? apkSha256;
+  final int? apkSize;
+
+  const UpdateInfo({
+    required this.hasUpdate,
+    required this.currentVersion,
+    this.latestVersion,
+    this.releaseUrl,
+    this.error,
+    this.apkSha256,
+    this.apkSize,
+  });
+}
+
+int compareVersions(String left, String right) {
+  List<int> parts(String value) => value
+      .replaceFirst(RegExp(r'^v'), '')
+      .split(RegExp(r'[.+-]'))
+      .map((value) => int.tryParse(value) ?? 0)
+      .toList();
+  final a = parts(left);
+  final b = parts(right);
+  final length = a.length > b.length ? a.length : b.length;
+  for (var index = 0; index < length; index++) {
+    final x = index < a.length ? a[index] : 0;
+    final y = index < b.length ? b[index] : 0;
+    if (x > y) return 1;
+    if (x < y) return -1;
+  }
+  return 0;
+}
+
+Future<UpdateInfo> checkAppUpdate(AppSettings settings) async {
+  final client = createProxyHttpClient(settings, scope: ProxyScope.update);
+  try {
+    return await checkAppUpdateWithClient(
+      client,
+      preferredSource: settings.updateSource,
+    );
+  } finally {
+    client.close();
+  }
+}
+
+const _githubReleaseUrl =
+    'https://github.com/2786886095/novelai-image-desktop/releases/latest';
+const _githubLatestYmlUrl =
+    'https://github.com/2786886095/novelai-image-desktop/releases/latest/download/latest.yml';
+const _githubReleaseApiUrl =
+    'https://api.github.com/repos/2786886095/novelai-image-desktop/releases/latest';
+
+String? parseLatestYmlVersion(String source) {
+  final match = RegExp(
+    r'''^\s*version\s*:\s*["']?v?([^\s"']+)''',
+    caseSensitive: false,
+    multiLine: true,
+  ).firstMatch(source);
+  return match?.group(1)?.trim();
+}
+
+Future<http.Response> _getWithRetry(
+  http.Client client,
+  Uri uri, {
+  Map<String, String>? headers,
+}) async {
+  Object? lastError;
+  for (var attempt = 0; attempt < 2; attempt++) {
+    try {
+      final response = await client
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode < 500 || attempt == 1) return response;
+      lastError = Exception('HTTP ${response.statusCode}');
+    } catch (error) {
+      lastError = error;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+  }
+  throw lastError ?? Exception('update check failed');
+}
+
+String? _assetUrl(dynamic value, String wantedName) {
+  if (value is! List) return null;
+  for (final item in value) {
+    if (item is! Map) continue;
+    final name = (item['name'] ?? item['filename'])?.toString();
+    if (name != wantedName) continue;
+    final url =
+        (item['browser_download_url'] ?? item['download_url'] ?? item['url'])
+            ?.toString();
+    if (url != null && Uri.tryParse(url)?.scheme == 'https') return url;
+  }
+  return null;
+}
+
+Future<UpdateInfo> _checkGithubApi(
+  http.Client client, {
+  required bool isAndroid,
+}) async {
+  const current = appVersion;
+  final response = await _getWithRetry(
+    client,
+    Uri.parse(_githubReleaseApiUrl),
+    headers: const {'Accept': 'application/vnd.github+json'},
+  );
+  if (response.statusCode == 404) {
+    return const UpdateInfo(hasUpdate: false, currentVersion: current);
+  }
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw Exception('HTTP ${response.statusCode}');
+  }
+  final json = jsonDecode(response.body) as Map<String, dynamic>;
+  final latest = (json['tag_name']?.toString() ?? '')
+      .replaceFirst(RegExp(r'^v'), '')
+      .trim();
+  if (latest.isEmpty) {
+    throw Exception('invalid GitHub release');
+  }
+  final hasUpdate = compareVersions(latest, current) > 0;
+  final installerUrl =
+      isAndroid ? _assetUrl(json['assets'], 'app-release.apk') : null;
+  if (hasUpdate && isAndroid && installerUrl == null) {
+    throw Exception('GitHub release is missing app-release.apk');
+  }
+  final apk=(json['assets'] is List ? json['assets'] as List : const []).whereType<Map>().where((item)=>item['name']=='app-release.apk').firstOrNull;
+  final digest=apk?['digest']?.toString();
+  return UpdateInfo(
+    apkSha256: digest?.startsWith('sha256:')==true ? digest!.substring(7).toLowerCase() : null,
+    apkSize: apk?['size'] is int ? apk!['size'] as int : null,
+    hasUpdate: hasUpdate,
+    currentVersion: current,
+    latestVersion: latest,
+    releaseUrl:
+        installerUrl ?? json['html_url']?.toString() ?? _githubReleaseUrl,
+  );
+}
+
+Future<UpdateInfo> _checkGithub(
+  http.Client client, {
+  required bool isAndroid,
+}) async {
+  const current = appVersion;
+  UpdateInfo manifestInfo;
+  try {
+    final response =
+        await _getWithRetry(client, Uri.parse(_githubLatestYmlUrl));
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('HTTP ${response.statusCode}');
+    }
+    final latest = parseLatestYmlVersion(response.body);
+    if (latest == null || latest.isEmpty) {
+      throw Exception('invalid GitHub manifest');
+    }
+    manifestInfo = UpdateInfo(
+      hasUpdate: compareVersions(latest, current) > 0,
+      currentVersion: current,
+      latestVersion: latest,
+      releaseUrl: _githubReleaseUrl,
+    );
+  } catch (_) {
+    return _checkGithubApi(client, isAndroid: isAndroid);
+  }
+  if (isAndroid && manifestInfo.hasUpdate) {
+    return _checkGithubApi(client, isAndroid: true);
+  }
+  return manifestInfo;
+}
+
+/// Old source preferences are ignored after migrating to GitHub-only updates.
+Future<UpdateInfo> checkAppUpdateWithClient(http.Client client,
+    {String preferredSource = 'github', bool? isAndroid}) async {
+  try {
+    return await _checkGithub(client,
+        isAndroid: isAndroid ?? Platform.isAndroid);
+  } catch (_) {
+    return const UpdateInfo(
+        hasUpdate: false, currentVersion: appVersion, error: 'network');
+  }
+}

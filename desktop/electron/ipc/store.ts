@@ -1,0 +1,1231 @@
+import {normalizeNegativePromptPresets} from "../../src/negative-prompt-library";
+import {normalizeAutomaticComparison} from "../../src/automatic-comparison";
+import {normalizeTypography,DEFAULT_TYPOGRAPHY} from "../../src/typography";
+import {normalizeSavedAgentModels,agentEffort} from '../../src/agent/model-selections';
+import {normalizeAgentUiPreferences} from '../../src/agent/preferences';
+import {normalizeCompletionSound} from "../../src/completion-sound";
+import {DEFAULT_OPENAI_IMAGE_EDIT,normalizeOpenAIImageEditSettings} from "../../src/openai-image-edit";
+import { currentNaiAccount, getNaiAccountSummary, rememberNaiAccountSummary, naiAccountsBusy, configureLegacyNaiBinding, boundLegacyNaiAccount, legacyNaiBindingAllowed, naiAccountRevision } from './nai-accounts-runtime';
+import { ensureNaiAccountsLoaded } from './nai-accounts';
+import {normalizeNovelAiSettings,NOVELAI_ONLY_MESSAGE} from '../../src/novelai-only-settings';
+import { refreshShippedTemplates } from "../../src/data/prompt-template-migration";
+import {STYLE_SORTS,styleMetadata} from "../../src/style-library";
+import {mergeCharacterPresets} from "../../src/positive-prompt-presets";
+import {normalizeCharacterCaptions} from "../../src/character-presets";
+import { CredentialVault, SENSITIVE_SETTING_KEYS } from "./credential-vault";
+import { assertSafeDataDirectory, PROTECTED_DIRECTORY_KEYS } from "./update-output-protection";
+import { migrateInstalledOutputData } from "./output-recovery";
+import { app, safeStorage } from "electron";
+import crypto from "crypto";
+import { imageSettingsStamp, commitImageSettings } from "./image-settings-events";
+import fs from "fs";
+import path from "path";
+import { WORLDPAINTER_STORE_FILE } from "../../shared/worldpainter-product";
+import { toLocalMediaUrl } from "./local-media-protocol";
+import type { AccountSummary, AppSettings, HistoryGroup, HistoryItem, SettingKey, TextToolHistoryItem } from "../../src/types";
+import { SCOPED_REVERSE_SYSTEM_PROMPTS } from "../../src/data/prompt-templates";
+import { installedAppDir } from "./app-mode";
+import {
+  adaptiveAgentCompactThreshold,
+  clampCompactThreshold,
+  clampContextWindow,
+  DEFAULT_AGENT_COMPACT_THRESHOLD,
+} from "../../src/agent/context";
+import {
+  DEFAULT_AGENT_PROVIDER_PRESET,
+  normalizeAgentApiBaseUrl,
+  normalizeAgentProviderProtocol,
+} from "../../src/agent/provider-catalog";
+import {
+  createDefaultImageTaskPromptPreset,
+  createDefaultImageTaskPromptPresets,
+  imageTaskPresetIds,
+  normalizeImageTaskPromptPresets,
+} from "../../src/tavern/image-task-preset";
+
+export interface PersistedData {
+  token?: string;
+  account?: Omit<AccountSummary, "hasToken">;
+  settings: AppSettings;
+  history: HistoryItem[];
+  historyGroups: HistoryGroup[];
+  convertHistory: TextToolHistoryItem[];
+  reverseHistory: TextToolHistoryItem[];
+}
+
+let cache: PersistedData | null = null;
+configureLegacyNaiBinding(()=>{const data=readStore();return {token:data.token,apiBaseUrl:data.settings.apiBaseUrl,imageBaseUrl:data.settings.imageBaseUrl,allowCustomEndpoint:data.settings.allowCustomEndpoint,allowCustomEndpointFallback:data.settings.allowCustomEndpointFallback};});
+
+function storePath() {
+  return path.join(app.getPath("userData"), WORLDPAINTER_STORE_FILE);
+}
+
+// --- At-rest encryption for credentials -------------------------------------
+// The NovelAI token and the third-party AI keys are encrypted with Electron's
+// safeStorage (OS keychain / DPAPI) before being written to disk. The in-memory
+// cache always holds plaintext; only the JSON file holds ciphertext. Existing
+// plaintext stores are transparently migrated on the next write.
+const credentialVault = new CredentialVault(safeStorage);
+
+const SUPPORTED_LANGUAGES = new Set(["zh-CN", "zh-TW", "en-US", "ja-JP", "ko-KR"]);
+
+function normalizeLanguage(value: unknown): AppSettings["language"] {
+  return typeof value === "string" && SUPPORTED_LANGUAGES.has(value) ? (value as AppSettings["language"]) : "zh-CN";
+}
+
+function encryptForDisk(data: PersistedData, replacements: ReadonlySet<string> = new Set()): PersistedData {
+  const clone: PersistedData = { ...data, settings: { ...data.settings } };
+  clone.token = credentialVault.encode("token", clone.token, replacements.has("token")) as string;
+  delete clone.settings.credentialIssues;
+  delete clone.settings.imageServiceRevision;
+  delete clone.settings.imageServiceVersion;
+  delete clone.settings.naiAccountId;
+  delete clone.settings.naiAccountRevision;
+  const settings = clone.settings as unknown as Record<string, unknown>;
+  for (const key of SENSITIVE_SETTING_KEYS) {
+    settings[key] = credentialVault.encode(key, settings[key], replacements.has(key));
+  }
+  return clone;
+}
+
+function decryptFromDisk(raw: Partial<PersistedData>): Partial<PersistedData> {
+  credentialVault.reset();
+  const clone: Partial<PersistedData> = { ...raw };
+  if (typeof clone.token === "string") clone.token = credentialVault.decode("token", clone.token) as string;
+  if (clone.settings) {
+    clone.settings = { ...clone.settings };
+    const settings = clone.settings as unknown as Record<string, unknown>;
+    for (const key of SENSITIVE_SETTING_KEYS) {
+      const current = settings[key];
+      if (typeof current === "string") settings[key] = credentialVault.decode(key, current);
+    }
+  }
+  return clone;
+}
+
+function emptyModeTemplates(): AppSettings["reversePromptTemplates"] {
+  return { tags: "", natural: "", mixed: "" };
+}
+
+// Canonical defaults for the AI-reverse templates. Since V5, defaults are
+// versioned with the application instead of being shadowed by an old optional
+// V4.5 text file in Downloads. User-edited overrides remain supported.
+export function getReversePromptTemplateDefaults(): AppSettings["reversePromptTemplates"] {
+  return {
+    tags: SCOPED_REVERSE_SYSTEM_PROMPTS.tags,
+    natural: SCOPED_REVERSE_SYSTEM_PROMPTS.natural,
+    mixed: SCOPED_REVERSE_SYSTEM_PROMPTS.mixed,
+  };
+}
+
+function isEmptyModeTemplates(value: unknown): boolean {
+  if (!value || typeof value !== "object") return true;
+  const next = value as Partial<AppSettings["reversePromptTemplates"]>;
+  return !next.tags?.trim() && !next.natural?.trim() && !next.mixed?.trim();
+}
+
+function isLegacyScopedReverseTemplates(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const next = value as Partial<AppSettings["reversePromptTemplates"]>;
+  const text = [next.tags, next.natural, next.mixed].filter(Boolean).join("\n");
+  return (
+    text.includes("You are a NovelAI V4.5 image-to-prompt specialist") &&
+    text.includes("The user message will include an explicit reverse scope") &&
+    text.includes("Scope rules:")
+  );
+}
+
+// Generated images are user data, not application files. Keeping them beside an
+// installed EXE lets NSIS/electron-updater remove them while replacing the old
+// application directory. Always use the OS Pictures folder for every build.
+function defaultOutputDir(): string {
+  return path.join(app.getPath("userData"), "outputs");
+}
+
+function modeTemplatesFingerprint(value: unknown): string {
+  if (!value || typeof value !== "object") return "";
+  const next = value as Partial<AppSettings["reversePromptTemplates"]>;
+  const canonical = (["tags", "natural", "mixed"] as const)
+    .map((mode) => (next[mode] ?? "").replace(/\r\n/g, "\n").trim())
+    .join("\n␞\n");
+  return crypto.createHash("sha256").update(canonical).digest("hex");
+}
+
+const KNOWN_V45_REVERSE_TEMPLATE_FINGERPRINTS = new Set([
+  // v1.9.8 built-in scoped reverse templates.
+  "4798b1d8367f42e448fb124aab6b841aaefe38b3afd3b71ddd9b0dfe05b4090a",
+  // Optional owner template file previously loaded from Downloads.
+  "e940f4b2f5eba04688265f68af186567515c75ec05336533ced5245e174c6fbd",
+]);
+
+function isKnownV45DefaultReverseTemplates(value: unknown): boolean {
+  return KNOWN_V45_REVERSE_TEMPLATE_FINGERPRINTS.has(modeTemplatesFingerprint(value));
+}
+
+/** Kept as a public compatibility entry point for older migration fixtures. */
+export function migrateLegacyInstalledOutput(data: PersistedData, oldRoot: string, newRoot: string, installerBackupRoot?: string) {
+  return migrateInstalledOutputData(data, oldRoot, newRoot, installerBackupRoot);
+}
+
+function migrateLegacyInstalledOutputForCurrentApp(data: PersistedData) {
+  const install = installedAppDir();
+  return migrateInstalledOutputData(data, path.join(install, "outputs"), defaultOutputDir(),
+    path.join(app.getPath("userData"), "update-backups"), install);
+}
+
+export function defaultSettings(): AppSettings {
+  return {
+    hasOnboarded: false,
+    language: "zh-CN",
+    outputDir: defaultOutputDir(),
+    onlineGalleryDownloadDir: "",
+    logDir: "",
+    apiBaseUrl: "https://api.novelai.net",
+    imageBaseUrl: "https://image.novelai.net",
+    imageProvider: "novelai",
+    imageApiKey: "",
+    openaiImageEdit: { ...DEFAULT_OPENAI_IMAGE_EDIT },
+    openaiImageEditApiKey: "",
+    inpaintEngine: "novelai",
+    compatibleImage: { baseUrl: "", model: "", size: "1024x1024", responseFormat: "auto" },
+    harnessAutoUpdatePlugins: true,
+    allowCustomEndpoint: true,
+    allowCustomEndpointFallback: false,
+    proxyMode: "auto",
+    proxyUrl: "",
+    proxyForNai: true,
+    proxyForMcp: true,
+    proxyForAi: true,
+    proxyForUpdate: true,
+    proxyForTranslate: true,
+    updateSource: "github",
+    uiTypography: {...DEFAULT_TYPOGRAPHY},
+    automaticComparison: normalizeAutomaticComparison(null),
+    theme: "dark",
+    reduceMotion: false,
+    completionSound: normalizeCompletionSound(null),
+    autoComplete: true,
+    weightHighlight: true,
+    promptRandomizer: true,
+    superDrop: true,
+    streamPreviewEnabled: true,
+    mcpServerEnabled: false,
+    mcpServerPort: 39280,
+    mcpServerToken: "",
+    mcpMaxAnlasPerCall: 0,
+    showFloatingToolbar: true,
+    historyJumpAfterGenerate: true,
+    historyRetentionDays: 30,
+    loggingEnabled: true,
+    keepImageMetadata: true,
+    copyImageMetadata: false,
+    autoBackupEnabled: true,
+    autoBackupIntervalHours: 24,
+    autoBackupRetentionCount: 7,
+    autoBackupIncludeImages: false,
+    autoBackupAssetPolicyVersion: 1,
+    backupDir: "",
+    visionApiUrl: "https://api.openai.com/v1",
+    visionApiKey: "",
+    visionApiModel: "gpt-4o",
+    visionSystemPrompt: "",
+    reversePromptMode: "tags" as const,
+    reversePromptTemplateVersion: "v5" as const,
+    reversePromptTemplates: emptyModeTemplates(),
+    reversePromptTemplatesV45: emptyModeTemplates(),
+    reverseConvertDshEnabled: true,
+    reverseConvertDshMode: "focused" as const,
+    reverseConvertPromptPresets: createDefaultImageTaskPromptPresets(),
+    convertSystemPromptPresetId: createDefaultImageTaskPromptPreset("convert").id,
+    reverseSystemPromptPresetId: createDefaultImageTaskPromptPreset("reverse").id,
+    reverseConvertPromptPresetId: createDefaultImageTaskPromptPreset().id,
+    comicAnalyzePromptTemplates: { tags: "", natural: "", mixed: "" },
+    comicAnalyzePromptTemplate: "",
+    promptOptimizeTemplate: "",
+    promptAssistantTemplate: "",
+    promptAssistantMode: "mixed" as const,
+    convertApiUrl: "https://api.openai.com/v1",
+    convertApiKey: "",
+    convertApiModel: "gpt-4o-mini",
+    convertSystemPrompt: "",
+    agentApiProtocol: DEFAULT_AGENT_PROVIDER_PRESET.protocol,
+    agentApiBaseUrl: DEFAULT_AGENT_PROVIDER_PRESET.baseUrl,
+    agentApiKey: "",
+    agentApiModel: DEFAULT_AGENT_PROVIDER_PRESET.model,
+    agentProviderName: DEFAULT_AGENT_PROVIDER_PRESET.providerName,
+    agentContextWindow: DEFAULT_AGENT_PROVIDER_PRESET.contextWindow,
+    agentMaxOutputTokens: DEFAULT_AGENT_PROVIDER_PRESET.maxOutputTokens,
+    agentAutoCompact: true,
+    agentAutoCompactThreshold: DEFAULT_AGENT_COMPACT_THRESHOLD,
+    agentVisionEnabled: true,
+    convertMode: "tags" as const,
+    convertPromptTemplateVersion: "v5" as const,
+    convertPromptTemplates: { tags: "", natural: "", mixed: "" },
+    convertPromptTemplatesV45: { tags: "", natural: "", mixed: "" },
+    tagServerEnabled: false,
+    tagServerUrl: "",
+    tagServerApiKey: "",
+    tagServerType: "rest" as const,
+    tagServerCommand: "",
+    tagServerArgs: "",
+    tagServerTool: "search_tags",
+    mcpForCapsule: true,
+    mcpForReverse: false,
+    mcpForConvert: false,
+    translateProvider: "google" as const,
+    translateTargetLanguage: "system",
+    translateSourceLanguage: "auto",
+    translateRealtime: false,
+    baiduAppId: "",
+    baiduSecret: "",
+    translateAiApiUrl: "https://api.openai.com/v1",
+    translateAiApiKey: "",
+    translateAiModel: "gpt-4o-mini",
+    activeHistoryGroupId: "",
+    generationGroupId: "",
+    modelMode: "anime" as const,
+    lockStylePrompt: false,
+    lockNegativePrompt: false,
+    savedStylePrompt: "",
+    savedNegativePrompt: "",
+    imageNameTemplate: "{date}_{seq}_{model}",
+    promptTemplates: [],
+    stylePromptPresets: [],
+    stylePromptPresetGroups: ["Default"],
+    negativePromptPresets: normalizeNegativePromptPresets(undefined),
+    positivePromptPresets: [],
+    promptChunks: [],
+    lastGenerationState: null,
+    persistGenerateParams: true,
+    persistI2IParams: true,
+    persistInpaintParams: true,
+    persistUpscaleParams: true,
+    persistDirectorParams: true,
+  };
+}
+
+function normalize(raw: Partial<PersistedData> | null): PersistedData {
+  const defaults = defaultSettings();
+  const rawSettings = (raw?.settings ?? {}) as Partial<AppSettings>;
+  const settings = normalizeNovelAiSettings({ ...defaults, ...rawSettings });
+  settings.uiTypography=normalizeTypography(rawSettings.uiTypography);
+  settings.automaticComparison=normalizeAutomaticComparison(rawSettings.automaticComparison);
+  settings.copyImageMetadata = rawSettings.copyImageMetadata === true;
+  settings.agentApiProtocol = normalizeAgentProviderProtocol(settings.agentApiProtocol);
+  settings.agentApiBaseUrl = typeof settings.agentApiBaseUrl === "string"
+    ? normalizeAgentApiBaseUrl(settings.agentApiBaseUrl)
+    : defaults.agentApiBaseUrl;
+  settings.agentApiModel = typeof settings.agentApiModel === "string"
+    ? settings.agentApiModel.trim()
+    : defaults.agentApiModel;
+  settings.agentProviderName = typeof settings.agentProviderName === "string" && settings.agentProviderName.trim()
+    ? settings.agentProviderName.trim().slice(0, 80)
+    : defaults.agentProviderName;
+  settings.savedAgentModels = normalizeSavedAgentModels(settings.savedAgentModels);
+  settings.agentReasoningEffort = agentEffort(settings.agentReasoningEffort);
+  settings.agentContextWindow = clampContextWindow(settings.agentContextWindow);
+  settings.agentMaxOutputTokens = Math.max(512, Math.min(
+    settings.agentContextWindow,
+    Math.trunc(Number(settings.agentMaxOutputTokens) || defaults.agentMaxOutputTokens),
+  ));
+  settings.agentUiPreferences = normalizeAgentUiPreferences(settings.agentUiPreferences);
+  settings.agentAutoCompact = settings.agentAutoCompact !== false;
+  // Preserve the explicitly selected threshold; derive only for older stores.
+  settings.agentAutoCompactThreshold = typeof rawSettings.agentAutoCompactThreshold === "number" && Number.isFinite(rawSettings.agentAutoCompactThreshold)
+    ? clampCompactThreshold(rawSettings.agentAutoCompactThreshold)
+    : adaptiveAgentCompactThreshold(settings.agentContextWindow, settings.agentMaxOutputTokens);
+  settings.agentVisionEnabled = settings.agentVisionEnabled !== false;
+  // v2.0.2 enabled full-library image archives for every installation. On a
+  // large gallery that can consume hundreds of MB and starve both Electron
+  // and Flutter shortly after launch. Existing installations are migrated
+  // once to the lightweight policy; manually exporting still includes every
+  // selected asset, and toggling image auto-backup on persists version 1.
+  if (Number(rawSettings.autoBackupAssetPolicyVersion ?? 0) < 1) {
+    settings.autoBackupIncludeImages = false;
+    settings.autoBackupAssetPolicyVersion = 1;
+  }
+  settings.language = normalizeLanguage(settings.language);
+  settings.reversePromptTemplateVersion = settings.reversePromptTemplateVersion === "v4.5" ? "v4.5" : "v5";
+  settings.convertPromptTemplateVersion = settings.convertPromptTemplateVersion === "v4.5" ? "v4.5" : "v5";
+  settings.reverseConvertPromptPresets = normalizeImageTaskPromptPresets(
+    rawSettings.reverseConvertPromptPresets,
+  );
+  settings.reverseConvertPromptPresetId = settings.reverseConvertPromptPresets.some(
+    (preset) => preset.id === rawSettings.reverseConvertPromptPresetId,
+  )
+    ? String(rawSettings.reverseConvertPromptPresetId)
+    : settings.reverseConvertPromptPresets[0]?.id ?? "";
+  Object.assign(settings, imageTaskPresetIds(rawSettings, settings.reverseConvertPromptPresets));
+  settings.updateSource = "github";
+  settings.stylePromptPresetGroups = Array.from(
+    new Set(
+      (Array.isArray(settings.stylePromptPresetGroups)
+        ? settings.stylePromptPresetGroups
+        : ["Default"]
+      )
+        .filter((group): group is string => typeof group === "string")
+        .map((group) => group.trim())
+        .filter(Boolean),
+    ),
+  );
+  if (!settings.stylePromptPresetGroups.includes("Default")) {
+    settings.stylePromptPresetGroups.unshift("Default");
+  }
+  settings.stylePromptPresetSort = STYLE_SORTS.includes(settings.stylePromptPresetSort as never) ? settings.stylePromptPresetSort : "default";
+  settings.stylePromptPresets = Array.isArray(settings.stylePromptPresets)
+    ? settings.stylePromptPresets
+        .filter((preset) => preset && typeof preset === "object")
+        .map((preset) => {
+          const previewImages = Array.isArray(preset.previewImages)
+            ? preset.previewImages
+                .filter(
+                  (image) =>
+                    image &&
+                    typeof image.id === "string" &&
+                    typeof image.name === "string" &&
+                    typeof image.filePath === "string" &&
+                    fs.existsSync(image.filePath),
+                )
+                .slice(0, 9)
+                .map((image) => ({
+                  id: image.id,
+                  name: image.name,
+                  filePath: image.filePath,
+                  fileUrl: toLocalMediaUrl(image.filePath),
+                  createdAt:
+                    typeof image.createdAt === "string"
+                      ? image.createdAt
+                      : new Date(0).toISOString(),
+                }))
+            : [];
+          return {
+            id: typeof preset.id === "string" ? preset.id : "",
+            name: typeof preset.name === "string" ? preset.name : "",
+            prompt: typeof preset.prompt === "string" ? preset.prompt : "",
+            group:
+              typeof preset.group === "string" && preset.group.trim()
+                ? preset.group.trim()
+                : "Default",
+            createdAt:
+              typeof preset.createdAt === "string"
+                ? preset.createdAt
+                : new Date(0).toISOString(),
+            previewImages,
+            ...styleMetadata(preset),
+            coverImageId: previewImages.find(image => image.id === preset.coverImageId)?.id ?? previewImages[0]?.id,
+          };
+        })
+        .filter((preset) => preset.id && preset.name)
+    : [];
+  settings.negativePromptPresets = normalizeNegativePromptPresets(settings.negativePromptPresets);
+  settings.positivePromptPresets = Array.isArray(settings.positivePromptPresets)
+    ? settings.positivePromptPresets
+        .filter((preset) => preset && typeof preset === "object")
+        .map((preset) => {
+          const previewImages = Array.isArray(preset.previewImages)
+            ? preset.previewImages
+                .filter(
+                  (image) =>
+                    image &&
+                    typeof image.id === "string" &&
+                    typeof image.name === "string" &&
+                    typeof image.filePath === "string" &&
+                    fs.existsSync(image.filePath),
+                )
+                .slice(0, 3)
+                .map((image) => ({
+                  id: image.id,
+                  name: image.name,
+                  filePath: image.filePath,
+                  fileUrl: toLocalMediaUrl(image.filePath),
+                  createdAt:
+                    typeof image.createdAt === "string"
+                      ? image.createdAt
+                      : new Date(0).toISOString(),
+                }))
+            : [];
+          return {
+            id: typeof preset.id === "string" ? preset.id : "",
+            name: typeof preset.name === "string" ? preset.name.trim() : "",
+            prompt: typeof preset.prompt === "string" ? preset.prompt : "",
+            captions: normalizeCharacterCaptions(preset.captions).map(({id: _, ...c}) => c),
+            createdAt:
+              typeof preset.createdAt === "string"
+                ? preset.createdAt
+                : new Date(0).toISOString(),
+            previewImages,
+          };
+        })
+        .filter((preset) => preset.id && preset.name && (preset.prompt.trim() || preset.captions.length))
+    : [];
+  settings.positivePromptPresets = mergeCharacterPresets(settings.positivePromptPresets, settings.characterPromptPresets);
+  settings.characterPromptPresets = [];
+  settings.promptChunks = Array.isArray(settings.promptChunks)
+    ? settings.promptChunks
+        .filter((chunk) => chunk && typeof chunk === "object")
+        .map((chunk) => ({
+          id: typeof chunk.id === "string" ? chunk.id : "",
+          name: typeof chunk.name === "string" ? chunk.name.trim() : "",
+          content: typeof chunk.content === "string" ? chunk.content.trim() : "",
+          createdAt: typeof chunk.createdAt === "string" ? chunk.createdAt : new Date(0).toISOString(),
+          updatedAt: typeof chunk.updatedAt === "string" ? chunk.updatedAt : new Date(0).toISOString(),
+        }))
+        .filter((chunk) => chunk.id && chunk.name && chunk.content)
+    : [];
+  for (const preset of settings.stylePromptPresets) {
+    if (!settings.stylePromptPresetGroups.includes(preset.group)) {
+      settings.stylePromptPresetGroups.push(preset.group);
+    }
+  }
+  // Old releases allowed the two official subdomains to be swapped. Both are
+  // trusted hosts, but they do not serve the same routes; a stale API host in
+  // the image slot makes every generation fail until app data is reset.
+  if (!settings.allowCustomEndpoint) {
+    settings.apiBaseUrl = defaults.apiBaseUrl;
+    settings.imageBaseUrl = defaults.imageBaseUrl;
+  } else {
+    const repairOfficialRole = (value: string, fallback: string) => {
+      try {
+        const url = new URL(value);
+        const fallbackHost = new URL(fallback).hostname.toLowerCase();
+        const host = url.hostname.toLowerCase();
+        const official =
+          url.protocol === "https:" &&
+          (host === "novelai.net" || host.endsWith(".novelai.net"));
+        return official && host !== fallbackHost ? fallback : value;
+      } catch {
+        return value;
+      }
+    };
+    settings.apiBaseUrl = repairOfficialRole(settings.apiBaseUrl, defaults.apiBaseUrl);
+    settings.imageBaseUrl = repairOfficialRole(settings.imageBaseUrl, defaults.imageBaseUrl);
+  }
+  if (!rawSettings.proxyMode) {
+    const legacyProxy = rawSettings.proxyUrl?.trim() ?? "";
+    if (!legacyProxy || legacyProxy.toLowerCase().replace(/\/$/, "") === "http://127.0.0.1:7890") {
+      settings.proxyMode = "auto";
+      settings.proxyUrl = "";
+    } else if (/^socks/i.test(legacyProxy)) {
+      settings.proxyMode = "socks";
+    } else {
+      settings.proxyMode = "custom";
+    }
+  }
+  // Missing-mode legacy defaults are handled above. A persisted proxyMode is
+  // an explicit choice, even if its port matches an old shipped preset.
+  if (
+    isEmptyModeTemplates(rawSettings.reversePromptTemplates) ||
+    isLegacyScopedReverseTemplates(rawSettings.reversePromptTemplates) ||
+    isKnownV45DefaultReverseTemplates(rawSettings.reversePromptTemplates)
+  ) {
+    settings.reversePromptTemplates = defaults.reversePromptTemplates;
+  }
+  // Update only exact shipped defaults, mode by mode. Never overwrite custom prompts.
+  settings.reversePromptTemplates=refreshShippedTemplates(settings.reversePromptTemplates,"reverse");
+  settings.convertPromptTemplates=refreshShippedTemplates(settings.convertPromptTemplates,"convert");
+
+  if (!settings.comicAnalyzePromptTemplate?.trim()) {
+    settings.comicAnalyzePromptTemplate =
+      rawSettings.comicAnalyzePromptTemplates?.natural?.trim() ||
+      rawSettings.comicAnalyzePromptTemplates?.tags?.trim() ||
+      rawSettings.comicAnalyzePromptTemplates?.mixed?.trim() ||
+      defaults.comicAnalyzePromptTemplate;
+  }
+  return {
+    token: typeof raw?.token === "string" ? raw.token : undefined,
+    account: raw?.account && typeof raw.account === "object" ? raw.account : undefined,
+    settings,
+    history: Array.isArray(raw?.history) ? raw.history : [],
+    historyGroups: Array.isArray(raw?.historyGroups) ? raw.historyGroups : [],
+    convertHistory: Array.isArray(raw?.convertHistory) ? raw.convertHistory : [],
+    reverseHistory: Array.isArray(raw?.reverseHistory) ? raw.reverseHistory : [],
+  };
+}
+
+// Write to a temp file in the same directory, fsync it, then rename over the
+// target. Rename onto an existing path is atomic on both POSIX and Windows
+// (NTFS), so a crash/power-loss can never leave the live store half-written —
+// readers either see the old complete file or the new complete file.
+export function atomicWriteFileSync(file: string, data: string) {
+  const tmp = path.join(path.dirname(file), "." + path.basename(file) + ".tmp-" + process.pid + "-" + crypto.randomBytes(8).toString("hex"));
+  let owned = false;
+  try {
+    const fd = fs.openSync(tmp, "wx");
+    owned = true;
+    try { fs.writeFileSync(fd, data, "utf8"); fs.fsyncSync(fd); }
+    finally { fs.closeSync(fd); }
+    // Antivirus/indexer sharing locks can briefly reject NTFS replacement.
+    // Keep atomic rename: never unlink the live store as a workaround.
+    for (let attempt = 0; ; attempt++) {
+      try { fs.renameSync(tmp, file); return; }
+      catch (error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        if (attempt >= 4 || !["EPERM", "EBUSY", "EACCES"].includes(code ?? "")) throw error;
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 20 * 2 ** attempt);
+      }
+    }
+  } finally {
+    if (owned) { try { fs.unlinkSync(tmp); } catch { /* Renamed already, or retain the original error. */ } }
+  }
+}
+
+// Keep the last two known-good snapshots BEFORE overwriting `file`, so even a
+// logically-bad write still has a recovery path beyond "reset to defaults."
+// Best-effort: backup rotation must never block an actual save.
+export function rotateBackupsSync(file: string) {
+  try {
+    const bak1 = `${file}.bak`;
+    const bak2 = `${file}.bak2`;
+    // Rotation used to copy the complete JSON store twice for every history
+    // mutation.  On a large library that blocked Electron's main thread long
+    // enough for a single delete to feel frozen.  Renaming the previous
+    // snapshot and hard-linking the current immutable file preserves the same
+    // two recovery generations while reducing the common path to metadata-only
+    // filesystem operations.  Filesystems without hard-link support retain the
+    // old copy fallback.
+    if (fs.existsSync(bak2)) fs.unlinkSync(bak2);
+    if (fs.existsSync(bak1)) fs.renameSync(bak1, bak2);
+    if (fs.existsSync(file)) {
+      try {
+        fs.linkSync(file, bak1);
+      } catch {
+        fs.copyFileSync(file, bak1);
+      }
+    }
+  } catch {
+    // best-effort
+  }
+}
+
+// Reads `file`, parsing with `parse`. If that fails (missing, corrupt, torn
+// write), tries `${file}.bak` then `${file}.bak2` in turn before giving up.
+// A successful backup recovery is written back to `file` (atomically) so
+// future reads/writes build on it instead of leaving it stranded as a backup.
+export function readWithBackupRecoverySync<T>(
+  file: string,
+  parse: (raw: string) => T,
+  serialize: (value: T) => string,
+): { value: T; recoveredFrom: string | null } | null {
+  for (const candidate of [file, `${file}.bak`, `${file}.bak2`]) {
+    try {
+      if (!fs.existsSync(candidate)) continue;
+      const value = parse(fs.readFileSync(candidate, "utf8"));
+      if (candidate !== file) {
+        try {
+          atomicWriteFileSync(file, serialize(value));
+        } catch {
+          // recovered in memory even if writing the repair back out fails
+        }
+      }
+      return { value, recoveredFrom: candidate === file ? null : candidate };
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+export function readStore(): PersistedData {
+  if (cache) return cache;
+
+  const file = storePath();
+  const recovered = readWithBackupRecoverySync<PersistedData>(
+    file,
+    (raw) => normalize(decryptFromDisk(JSON.parse(raw) as Partial<PersistedData>)),
+    (value) => JSON.stringify(encryptForDisk(value), null, 2),
+  );
+  if (recovered) {
+    if (recovered.recoveredFrom) {
+      console.warn(`[store] primary store was unreadable; recovered from ${path.basename(recovered.recoveredFrom)}.`);
+    }
+    const migration = migrateLegacyInstalledOutputForCurrentApp(recovered.value);
+    cache = migration.data;
+    if (migration.changed) writeStore(cache);
+    return cache;
+  }
+
+  // Neither the primary file nor either backup was readable. If the primary
+  // file exists it's corrupt (not just missing) — back it up before resetting
+  // to defaults so it isn't silently lost.
+  try {
+    if (fs.existsSync(file)) fs.copyFileSync(file, `${file}.corrupt-${Date.now()}`);
+  } catch {
+    // ignore backup failure
+  }
+  cache = normalize(null);
+  writeStore(cache);
+  return cache;
+}
+
+export function credentialIssues() { return credentialVault.issues(); }
+
+export function writeStore(next: PersistedData, replaceCredentials: readonly string[] = []) {
+  next={...next,settings:normalizeNovelAiSettings(next.settings)};
+  const file = storePath();
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  rotateBackupsSync(file);
+  atomicWriteFileSync(file, JSON.stringify(encryptForDisk(next, new Set(replaceCredentials)), null, 2));
+  for (const key of replaceCredentials) credentialVault.forget(key);
+  cache = next; // commit cache only after persistence succeeds
+  commitImageSettings(next.settings);
+}
+
+export function getSettings(): AppSettings {
+  ensureNaiAccountsLoaded();
+  const settings = { ...normalizeNovelAiSettings(readStore().settings) };
+  const selected=currentNaiAccount();
+  const legacy=boundLegacyNaiAccount();
+  if(legacy) { const {token:_token,...endpoints}=legacy; Object.assign(settings,endpoints); }
+  if(selected) Object.assign(settings,{apiBaseUrl:selected.apiBaseUrl,imageBaseUrl:selected.imageBaseUrl,allowCustomEndpoint:selected.legacyConfiguration?.allowCustomEndpoint??(selected.method==='relay'),allowCustomEndpointFallback:selected.legacyConfiguration?.allowCustomEndpointFallback??false});
+  const stamp = imageSettingsStamp(settings);
+  return { ...settings, naiAccountId:selected?.id, naiAccountRevision:naiAccountRevision(), credentialIssues: credentialVault.issues(), imageServiceRevision: stamp.revision, imageServiceVersion: stamp.version };
+}
+
+export function getSetting<K extends SettingKey>(key: K): AppSettings[K] {
+  return getSettings()[key];
+}
+
+export function setSetting<K extends SettingKey>(key: K, value: AppSettings[K]): AppSettings[K] {
+  if (key === "mcpServerEnabled" && typeof value !== "boolean") throw new Error("Invalid MCP enabled setting");
+  if (key === "mcpServerPort" && (typeof value !== "number" || !Number.isInteger(value) || value < 1024 || value > 65535)) throw new Error("Invalid MCP port");
+  if (key === "mcpMaxAnlasPerCall" && (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 100000)) throw new Error("Invalid MCP Anlas limit");
+  if (key === "copyImageMetadata" && typeof value !== "boolean") throw new Error("Invalid image metadata copy setting");
+  if(['apiBaseUrl','imageBaseUrl','allowCustomEndpoint','allowCustomEndpointFallback'].includes(key) && (currentNaiAccount() || naiAccountsBusy())) throw Error('账户接口由所选账户绑定；操作期间不能修改。');
+  if(key==='imageProvider'&&value!=='novelai'&&value!=='openai-images')throw Error(NOVELAI_ONLY_MESSAGE);
+  if (key === "outputDir" && (typeof value !== "string" || !value.trim())) throw new Error("请选择图片保存目录，保存位置不可留空。");
+  if ((PROTECTED_DIRECTORY_KEYS as readonly string[]).includes(key) && typeof value === "string") {
+    assertSafeDataDirectory(value, installedAppDir());
+  }
+  const data = { ...readStore() }; // Failed persistence must not mutate the live settings cache.
+  const replaceCredential = (SENSITIVE_SETTING_KEYS as readonly string[]).includes(key);
+  data.settings = {
+    ...data.settings,
+    [key]: key === "negativePromptPresets" ? normalizeNegativePromptPresets(value) : key === "automaticComparison" ? normalizeAutomaticComparison(value) : key === "uiTypography" ? normalizeTypography(value) : key === "agentUiPreferences" ? normalizeAgentUiPreferences(value) : key === "language" ? normalizeLanguage(value) : key === "completionSound" ? normalizeCompletionSound(value) : key === "openaiImageEdit" ? normalizeOpenAIImageEditSettings(value) : key === "inpaintEngine" ? (value === "openai" ? "openai" : "novelai") : value,
+  };
+  writeStore(data, replaceCredential ? [key] : []);
+  return data.settings[key];
+}
+
+/** Commit endpoint, model and its independent credential together, never field-by-field. */
+export function setCompatibleImageSettings(config: NonNullable<AppSettings["compatibleImage"]>, apiKey: string, provider: NonNullable<AppSettings["imageProvider"]>) {
+  if(provider!=='novelai'&&provider!=='openai-images')throw Error(NOVELAI_ONLY_MESSAGE);
+  const data = { ...readStore() };
+  data.settings = { ...data.settings, compatibleImage: config, imageApiKey: apiKey, imageProvider: provider };
+  writeStore(data, ["imageApiKey"]);
+}
+
+export function completeSetup() {
+  setSetting("hasOnboarded", true);
+}
+
+export function getToken() {
+  ensureNaiAccountsLoaded();
+  const selected=currentNaiAccount(); if(selected) return selected.token;
+  const legacy=boundLegacyNaiAccount(); if(legacy) return legacy.token;
+  return legacyNaiBindingAllowed()?readStore().token:undefined;
+}
+
+export function setToken(token: string) {
+  if(currentNaiAccount()) throw Error('请通过账户管理新增 Token；不会覆盖已选账户。');
+  const data = { ...readStore(), token };
+  writeStore(data, ["token"]);
+}
+
+export function clearToken() {
+  if(currentNaiAccount() || naiAccountsBusy()) throw Error('请先在账户管理切回原账户，且等待操作完成。');
+  const data = { ...readStore() };
+  delete data.token;
+  delete data.account;
+  writeStore(data, ["token"]);
+}
+
+export function getAccountSummary(): AccountSummary {
+  ensureNaiAccountsLoaded();
+  if(currentNaiAccount()) return getNaiAccountSummary();
+  if(!legacyNaiBindingAllowed())return {hasToken:false};
+  const data = readStore();
+  return { hasToken: Boolean(data.token), ...(data.account ?? {}) };
+}
+
+export function setAccountSummary(account: Omit<AccountSummary, "hasToken">) {
+  const selected=currentNaiAccount();
+  if(selected){rememberNaiAccountSummary(selected,account);return;}
+  if(!legacyNaiBindingAllowed()) return;
+  const data = readStore();
+  // V5 Opus allowance is live telemetry. Persisting its minute-by-minute value
+  // would rewrite and fsync the entire history store on every poll. Keep only
+  // stable account fields on disk; the live response is returned directly to
+  // the renderer and refreshed again after startup.
+  const { opusUsage: _usage, opusUsageUpdatedAt: _usageAt, ...stableAccount } = account;
+  if (JSON.stringify(data.account ?? {}) === JSON.stringify(stableAccount)) return;
+  data.account = stableAccount;
+  writeStore(data);
+}
+
+export function addHistory(items: HistoryItem[]) {
+  const data = readStore();
+  // The selected history group is a view filter, not a save destination.
+  // Callers that own a destination (for example a comic project) set groupId
+  // explicitly on their history items.
+  data.history = [...items, ...data.history];
+  writeStore(data);
+}
+
+function textToolHistoryKey(kind: "convert" | "reverse"): "convertHistory" | "reverseHistory" {
+  return kind === "convert" ? "convertHistory" : "reverseHistory";
+}
+
+export function getTextToolHistory(kind: "convert" | "reverse"): TextToolHistoryItem[] {
+  return readStore()[textToolHistoryKey(kind)];
+}
+
+export function addTextToolHistoryItem(kind: "convert" | "reverse", item: TextToolHistoryItem) {
+  const data = readStore();
+  const key = textToolHistoryKey(kind);
+  data[key] = [item, ...data[key]];
+  writeStore(data);
+}
+
+export function removeTextToolHistoryItem(kind: "convert" | "reverse", id: string) {
+  const data = readStore();
+  const key = textToolHistoryKey(kind);
+  data[key] = data[key].filter((item) => item.id !== id);
+  writeStore(data);
+}
+
+export function clearTextToolHistory(kind: "convert" | "reverse") {
+  const data = readStore();
+  data[textToolHistoryKey(kind)] = [];
+  writeStore(data);
+}
+
+/** Reverse-only: drop a history record once its source image is gone. Unlike
+ * pruneMissingHistoryItem, there's no "moved file" search — the source image
+ * is an arbitrary user-picked path outside our managed output folders. */
+export function pruneMissingReverseHistoryItem(id: string): boolean {
+  const data = readStore();
+  const item = data.reverseHistory.find((h) => h.id === id);
+  if (!item || !item.sourceImagePath) return false;
+  if (fileExists(item.sourceImagePath)) return false;
+  data.reverseHistory = data.reverseHistory.filter((h) => h.id !== id);
+  writeStore(data);
+  return true;
+}
+
+function sanitizeGroupFolderName(name: string): string {
+  const cleaned = name
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, "_")
+    .replace(/^\.+/, "")
+    .trim()
+    .slice(0, 80);
+  return cleaned || "group";
+}
+
+export function fileExists(filePath: string): boolean {
+  try {
+    return fs.existsSync(filePath);
+  } catch {
+    return false;
+  }
+}
+
+export type DirectoryEntryCache = Map<string, Set<string> | null>;
+
+function normalizeDirectoryEntryName(name: string): string {
+  return process.platform === "win32" ? name.toLowerCase() : name;
+}
+
+// History images normally share date/group folders. Reading each parent once
+// avoids one synchronous exists/stat call per row while preserving the old
+// existsSync fallback for exceptional unreadable directories.
+export function fileExistsWithDirectoryCache(
+  filePath: string,
+  directoryCache: DirectoryEntryCache,
+): boolean {
+  const directory = path.dirname(filePath);
+  const cacheKey = process.platform === "win32"
+    ? path.resolve(directory).toLowerCase()
+    : path.resolve(directory);
+  if (!directoryCache.has(cacheKey)) {
+    try {
+      const names = fs.readdirSync(directory).map(normalizeDirectoryEntryName);
+      directoryCache.set(cacheKey, new Set(names));
+    } catch {
+      directoryCache.set(cacheKey, null);
+    }
+  }
+  const entries = directoryCache.get(cacheKey);
+  return entries
+    ? entries.has(normalizeDirectoryEntryName(path.basename(filePath)))
+    : fileExists(filePath);
+}
+
+function isInside(parent: string, child: string): boolean {
+  try {
+    const rel = path.relative(path.resolve(parent), path.resolve(child));
+    return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
+  } catch {
+    return false;
+  }
+}
+
+function inferGroupIdFromPath(filePath: string, data: PersistedData): string | undefined {
+  const outputDir = data.settings.outputDir?.trim();
+  if (!outputDir || !isInside(outputDir, filePath)) return undefined;
+  const relParts = path.relative(outputDir, filePath).split(path.sep).filter(Boolean);
+  if (relParts.length < 3 || !/^\d{4}-\d{2}-\d{2}$/.test(relParts[0])) return undefined;
+
+  const folderName = relParts[1];
+  const folderKey = folderName.toLowerCase();
+  const existing = data.historyGroups.find((group) => {
+    const nameKey = group.name.trim().toLowerCase();
+    const safeKey = sanitizeGroupFolderName(group.name).toLowerCase();
+    return nameKey === folderKey || safeKey === folderKey;
+  });
+  if (existing) return existing.id;
+
+  const created: HistoryGroup = {
+    id: crypto.randomUUID(),
+    name: folderName.replace(/_/g, " ").trim() || folderName,
+    createdAt: new Date().toISOString(),
+  };
+  data.historyGroups = [...data.historyGroups, created];
+  return created.id;
+}
+
+interface FileNameIndex {
+  index: Map<string, string[]>;
+  // True when the scan hit the 60k cap before finishing this root — a "not
+  // found" result against a truncated index is NOT proof the file is gone,
+  // just that we stopped looking before reaching it.
+  truncated: boolean;
+}
+
+function buildFileNameIndex(root: string): FileNameIndex {
+  const index = new Map<string, string[]>();
+  if (!root || !fileExists(root)) return { index, truncated: false };
+  const stack = [root];
+  let scanned = 0;
+  const maxScan = 60_000;
+  let truncated = false;
+  while (stack.length > 0) {
+    if (scanned >= maxScan) {
+      truncated = true;
+      break;
+    }
+    const dir = stack.pop()!;
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      // An unreadable subtree is not a completed search; do not prune records
+      // merely because their files were hidden by an access or disk error.
+      truncated = true;
+      continue;
+    }
+    scanned += entries.length;
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(full);
+      } else if (entry.isFile()) {
+        const key = entry.name.toLowerCase();
+        const list = index.get(key);
+        if (list) list.push(full);
+        else index.set(key, [full]);
+      }
+    }
+  }
+  return { index, truncated };
+}
+
+// `inconclusive` covers every reason "not found" doesn't prove the file is
+// gone: an unreachable root (e.g. an unplugged drive) or a scan that hit the
+// file cap before finishing. Callers must not delete a record on an
+// inconclusive result — only on a search that genuinely completed empty.
+export function findMovedHistoryFile(
+  item: HistoryItem,
+  data: PersistedData,
+  indexCache: Map<string, FileNameIndex>,
+): { path: string | null; inconclusive: boolean } {
+  if (!item.filePath) return { path: null, inconclusive: false };
+  const fileName = path.basename(item.filePath).toLowerCase();
+  const roots = [
+    data.settings.outputDir && item.date ? path.join(data.settings.outputDir, item.date) : "",
+    data.settings.outputDir,
+  ].filter(Boolean);
+  const uniqueRoots = Array.from(new Set(roots.map((root) => path.resolve(root))));
+  let inconclusive = false;
+  for (const root of uniqueRoots) {
+    if (!fileExists(root)) {
+      // Could mean "genuinely doesn't exist" or "drive/share is offline right
+      // now" — we can't tell the two apart, so don't let this root's absence
+      // count as evidence the file is gone.
+      // A deleted date subfolder is normal once its final image is removed.
+      // The subsequent complete output-root scan can still prove absence.
+      if (root === path.resolve(data.settings.outputDir || root)) inconclusive = true;
+      continue;
+    }
+    let entry = indexCache.get(root);
+    if (!entry) {
+      entry = buildFileNameIndex(root);
+      indexCache.set(root, entry);
+    }
+    if (entry.truncated) inconclusive = true;
+    const candidates = entry.index.get(fileName)?.filter((p) => fileExists(p)) ?? [];
+    if (candidates.length > 0) {
+      // Same basename can exist in more than one group (a user can rename two
+      // different images to the same name). Prefer whichever candidate's own
+      // folder maps to the group this record already belongs to, instead of
+      // picking whatever the directory scan happened to visit first.
+      const sameGroup = item.groupId
+        ? candidates.find((p) => inferGroupIdFromPath(p, data) === item.groupId)
+        : undefined;
+      return { path: sameGroup ?? candidates[0], inconclusive: false };
+    }
+  }
+  return { path: null, inconclusive };
+}
+
+// History is permanent now: records are never deleted because they are old.
+// Instead the index mirrors real files. If an image was moved inside the output
+// directory (for example from one group folder to another), the record follows
+// that file and keeps its original createdAt/date. If it cannot be found, only
+// the stale record is removed — and only when the search that failed to find
+// it actually completed (see findMovedHistoryFile's `inconclusive`), so an
+// offline drive or a huge library can't wipe the whole index in one pass.
+let lastHistoryReconcileAt = 0;
+const HISTORY_RECONCILE_INTERVAL_MS = 10_000;
+
+function reconcileHistoryFiles(force = false): void {
+  const now = Date.now();
+  // Renderer refreshes dates, groups and rows together. Without coalescing,
+  // each read independently stats/scans the entire library three times.
+  if (!force && now - lastHistoryReconcileAt < HISTORY_RECONCILE_INTERVAL_MS) return;
+  lastHistoryReconcileAt = now;
+  const data = readStore();
+  if (data.history.length === 0) return;
+  // If the output directory itself can't be reached at all, every item would
+  // look "missing" for the same reason — skip reconciliation entirely rather
+  // than risk mass-deleting a perfectly intact history because a removable/
+  // network drive happens to be disconnected right now.
+  const outputDir = data.settings.outputDir?.trim();
+  if (outputDir && !fileExists(outputDir)) return;
+  const indexCache = new Map<string, FileNameIndex>();
+  const directoryCache: DirectoryEntryCache = new Map();
+  let changed = false;
+  const next: HistoryItem[] = [];
+
+  for (const item of data.history) {
+    if (!item.filePath) {
+      next.push(item);
+      continue;
+    }
+
+    if (fileExistsWithDirectoryCache(item.filePath, directoryCache)) {
+      // Group edits are metadata-only; the image stays in its original folder.
+      // A present file must retain its saved assignment (including ungrouped),
+      // otherwise refresh/restart undoes moves, renames and group deletion.
+      // Infer a folder group only below when recovering an actually moved file.
+      next.push(item);
+      continue;
+    }
+
+    const moved = findMovedHistoryFile(item, data, indexCache);
+    if (!moved.path) {
+      if (moved.inconclusive) {
+        next.push(item); // keep it — the search wasn't conclusive
+      } else {
+        changed = true; // genuinely not found anywhere reachable
+      }
+      continue;
+    }
+
+    next.push({
+      ...item,
+      filePath: moved.path,
+      fileUrl: toLocalMediaUrl(moved.path, item.id),
+      groupId: inferGroupIdFromPath(moved.path, data),
+    });
+    changed = true;
+  }
+
+  if (changed) {
+    data.history = next;
+    writeStore(data);
+  }
+}
+
+// Remove a single history record when its image file is gone from disk (called
+// when the renderer fails to load a thumbnail/preview mid-session). Never
+// deletes a file — only drops the record, and only after confirming the file is
+// actually missing, so a transient decode error for a present file can't erase
+// it. Returns true if a record was removed.
+export function pruneMissingHistoryItem(id: string): boolean {
+  const data = readStore();
+  const item = data.history.find((h) => h.id === id);
+  if (!item || !item.filePath) return false;
+  if (fileExists(item.filePath)) return false;
+  const moved = findMovedHistoryFile(item, data, new Map());
+  if (moved.path) {
+    const updated = {
+      ...item,
+      filePath: moved.path,
+      fileUrl: toLocalMediaUrl(moved.path, item.id),
+      groupId: inferGroupIdFromPath(moved.path, data),
+    };
+    data.history = data.history.map((h) => (h.id === id ? updated : h));
+    writeStore(data);
+    return false;
+  }
+  // An inconclusive search (unreachable root, or a scan too large to finish)
+  // is not proof the file is gone — never drop the record on that basis.
+  if (moved.inconclusive) return false;
+  data.history = data.history.filter((h) => h.id !== id);
+  writeStore(data);
+  return true;
+}
+
+export function getHistory(date?: string, groupId?: string, forceReconcile = false): HistoryItem[] {
+  reconcileHistoryFiles(forceReconcile);
+  const history = readStore().history;
+  return history
+    .filter((item) => {
+      if (date && item.date !== date) return false;
+      if (!groupId) return true;
+      if (groupId === "__ungrouped") return !item.groupId;
+      return item.groupId === groupId;
+    })
+    // Older releases persisted file:// URLs. Rebuild the renderer URL from the
+    // authoritative path so existing libraries recover without migration or
+    // touching the image files on disk.
+    .map((item) => item.filePath
+      ? { ...item, fileUrl: toLocalMediaUrl(item.filePath, item.id) }
+      : item);
+}
+
+export function getHistoryDates(): string[] {
+  reconcileHistoryFiles();
+  return Array.from(new Set(readStore().history.map((item) => item.date))).sort().reverse();
+}
+
+/** Identity-only snapshot: no filesystem reconciliation or per-image stat calls. */
+/** Generation-time snapshot: no reconciliation/stat or credential fields exposed. */
+export function getFavoriteHistoryReferences(): Array<Pick<HistoryItem, "id"|"filePath"|"generatedAt"|"generatedAtSource"|"generatedImageSha256">> {
+  return readStore().history.map(({id,filePath,generatedAt,generatedAtSource,generatedImageSha256}) =>
+    ({id,filePath,generatedAt,generatedAtSource,generatedImageSha256}));
+}
+
+export function getHistoryReferenceItems(): Array<Pick<HistoryItem, "id" | "filePath">> {
+  return readStore().history.map(({ id, filePath }) => ({ id, filePath }));
+}
+
+export function removeHistory(id: string): HistoryItem | null {
+  const data = readStore();
+  const found = data.history.find((item) => item.id === id) ?? null;
+  data.history = data.history.filter((item) => item.id !== id);
+  writeStore(data);
+  return found;
+}
+
+/** One disk commit for a user-approved batch, preserving unselected rows. */
+export function removeHistoryItems(ids: readonly string[]): void {
+  const data = readStore(), selected = new Set(ids);
+  writeStore({ ...data, history: data.history.filter(item => !selected.has(item.id)) });
+}
+
+export function updateHistoryItem(id: string, patch: Partial<HistoryItem>): HistoryItem | null {
+  const data = {...readStore()};
+  let updated: HistoryItem | null = null;
+  data.history = data.history.map((item) => {
+    if (item.id !== id) return item;
+    updated = { ...item, ...patch };
+    return updated;
+  });
+  if (updated) writeStore(data);
+  return updated;
+}
+
+export function getHistoryGroups(): HistoryGroup[] {
+  reconcileHistoryFiles();
+  return readStore().historyGroups;
+}
+
+export function ensureHistoryGroup(name: string, preferredId?: string): HistoryGroup {
+  const normalizedName = name.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80) || "未命名漫画项目";
+  const data = readStore();
+  const preferred = preferredId ? data.historyGroups.find((group) => group.id === preferredId) : undefined;
+  if (preferred) {
+    if (preferred.name !== normalizedName) {
+      const updated = { ...preferred, name: normalizedName };
+      data.historyGroups = data.historyGroups.map((group) => (group.id === preferred.id ? updated : group));
+      writeStore(data);
+      return updated;
+    }
+    return preferred;
+  }
+  const existing = data.historyGroups.find((group) => group.name.toLowerCase() === normalizedName.toLowerCase());
+  if (existing) return existing;
+  const created = { id: crypto.randomUUID(), name: normalizedName, createdAt: new Date().toISOString() };
+  data.historyGroups = [...data.historyGroups, created];
+  writeStore(data);
+  return created;
+}
+
+export function createHistoryGroup(name: string): HistoryGroup[] {
+  const trimmed = name.trim();
+  const data = readStore();
+  if (!trimmed) return data.historyGroups;
+  const exists = data.historyGroups.some((group) => group.name.toLowerCase() === trimmed.toLowerCase());
+  if (!exists) {
+    data.historyGroups = [
+      ...data.historyGroups,
+      { id: crypto.randomUUID(), name: trimmed, createdAt: new Date().toISOString() },
+    ];
+    writeStore(data);
+  }
+  return data.historyGroups;
+}
+
+export function renameHistoryGroup(id: string, name: string): HistoryGroup[] {
+  const trimmed = name.trim();
+  const data = readStore();
+  if (trimmed) {
+    data.historyGroups = data.historyGroups.map((group) =>
+      group.id === id ? { ...group, name: trimmed } : group,
+    );
+    writeStore(data);
+  }
+  return data.historyGroups;
+}
+
+export function deleteHistoryGroup(id: string): HistoryGroup[] {
+  const data = readStore();
+  data.historyGroups = data.historyGroups.filter((group) => group.id !== id);
+  // Items in the deleted group fall back to ungrouped (images are kept).
+  data.history = data.history.map((item) => (item.groupId === id ? { ...item, groupId: undefined } : item));
+  if (data.settings.activeHistoryGroupId === id) {
+    data.settings = { ...data.settings, activeHistoryGroupId: "" };
+  }
+  if (data.settings.generationGroupId === id) {
+    data.settings = { ...data.settings, generationGroupId: "" };
+  }
+  writeStore(data);
+  return data.historyGroups;
+}
+
+export function setHistoryGroup(id: string | string[], groupId?: string) {
+  const data = readStore();
+  const normalized = groupId && groupId !== "__ungrouped" ? groupId : undefined;
+  const ids = Array.isArray(id) ? id : [id];
+  const available = new Set(data.history.map(item => item.id));
+  if (Array.isArray(id) && (!ids.length || ids.length > 50_000 || ids.some(value => typeof value !== 'string')
+    || (normalized && !data.historyGroups.some(group => group.id === normalized))
+    || ids.some(value => !available.has(value)))) {
+    return { ok: false, message: '所选作品或目标分组已变化，请刷新后重试。' };
+  }
+  const selected = new Set(ids);
+  writeStore({ ...data, history: data.history.map((item) => selected.has(item.id) ? { ...item, groupId: normalized } : item) });
+  return { ok: true };
+}

@@ -1,0 +1,365 @@
+import { dialog, shell } from "electron";
+import fs from "fs/promises";
+import path from "path";
+import JSZip from "jszip";
+import type { BatchExportFile, HistoryItem } from "../../src/types";
+import { toLocalMediaUrl } from "./local-media-protocol";
+import { invalidateAgentHistoryImage } from "./agent-store";
+import {
+  createHistoryGroup,
+  deleteHistoryGroup,
+  getHistory,
+  getHistoryDates,
+  getHistoryGroups,
+  getSetting,
+  removeHistory,
+  removeHistoryItems,
+  renameHistoryGroup,
+  setHistoryGroup,
+  setSetting,
+  updateHistoryItem,
+} from "./store";
+
+/** Sanitize a string for safe use inside a filename. */
+function safeName(value: string) {
+  return (value || "").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, "_").slice(0, 80);
+}
+
+/** True only when `child` resolves to a path inside `parent` (blocks `..` traversal and absolute paths pointing elsewhere). */
+function isInsideDir(child: string, parent: string): boolean {
+  const rel = path.relative(path.resolve(parent), path.resolve(child));
+  return rel.length > 0 && !rel.startsWith("..") && !path.isAbsolute(rel);
+}
+
+/** Render a filename from the user template + a history item. */
+function formatImageName(template: string, item: HistoryItem, seq: number): string {
+  const created = new Date(item.createdAt);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const time = `${pad(created.getHours())}${pad(created.getMinutes())}${pad(created.getSeconds())}`;
+  const tokens: Record<string, string> = {
+    date: item.date,
+    time,
+    seq: String(seq + 1).padStart(3, "0"),
+    seed: String(item.actualSeed ?? 0),
+    model: safeName(item.model),
+  };
+  let name = (template && template.trim()) || "{date}_{seq}_{model}";
+  name = name.replace(/\{(\w+)\}/g, (_m, key: string) => tokens[key] ?? "");
+  name = safeName(name);
+  return name || `image_${seq + 1}`;
+}
+
+export function renameGroup(id: string, name: string) {
+  return renameHistoryGroup(id, name);
+}
+
+export function removeGroup(id: string) {
+  return deleteHistoryGroup(id);
+}
+
+/** Bundle all images in a group into a ZIP at a user-chosen location. */
+export async function exportGroup(groupId: string) {
+  // Pack in ascending file-name order (1, 2, 10…) — history is stored newest-first,
+  // which would otherwise zip the images in descending order.
+  const items = [...getHistory(undefined, groupId || undefined)].sort((a, b) =>
+    path.basename(a.filePath).localeCompare(path.basename(b.filePath), "zh-CN", { numeric: true }),
+  );
+  if (items.length === 0) return { ok: false, message: "该分组没有可导出的图片。" };
+
+  const groups = getHistoryGroups();
+  const groupName =
+    groupId === "__ungrouped"
+      ? "未分组"
+      : groups.find((g) => g.id === groupId)?.name ?? "全部";
+  const result = await dialog.showSaveDialog({
+    title: "导出分组为 ZIP",
+    defaultPath: `${safeName(groupName)}.zip`,
+    filters: [{ name: "ZIP 压缩包", extensions: ["zip"] }],
+  });
+  if (result.canceled || !result.filePath) return { ok: false, cancelled: true, message: "已取消导出。" };
+
+  const template = getSetting("imageNameTemplate");
+  const zip = new JSZip();
+  const used = new Set<string>();
+  let added = 0;
+  for (let i = 0; i < items.length; i++) {
+    try {
+      const buf = await fs.readFile(items[i].filePath);
+      const ext = path.extname(items[i].filePath) || ".png";
+      let base = formatImageName(template, items[i], i);
+      let name = `${base}${ext}`;
+      let dup = 1;
+      while (used.has(name)) name = `${base}_${dup++}${ext}`;
+      used.add(name);
+      zip.file(name, buf);
+      added++;
+    } catch {
+      // Skip images whose file was deleted/moved.
+    }
+  }
+  if (added === 0) return { ok: false, message: "分组内的图片文件已不存在。" };
+
+  const content = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+  await fs.writeFile(result.filePath, content);
+  return { ok: true, count: added, failed: items.length - added, message: `已导出 ${added} 张图片。`, path: result.filePath };
+}
+
+/** Bundle an explicit ordered list of files into a ZIP. Used by batch img2img so
+ * the export contains exactly the current run's final outputs, independent of
+ * history groups with the same name or stale history state. */
+// SECURITY: filePath comes from renderer state that can originate in an
+// imported project JSON (batch/comic), which is untrusted input — a crafted
+// resultPath could otherwise point anywhere on disk and get read into the
+// exported ZIP. Only ever read files inside the app's own output directory.
+export function filterExportableFiles(files: BatchExportFile[], outputDir: string | undefined): BatchExportFile[] {
+  if (!Array.isArray(files)) return [];
+  return files.filter(
+    (file) =>
+      file &&
+      typeof file.filePath === "string" &&
+      file.filePath.trim() &&
+      outputDir &&
+      isInsideDir(file.filePath, outputDir),
+  );
+}
+
+export async function exportFiles(files: BatchExportFile[], defaultName = "images") {
+  const outputDir = getSetting("outputDir");
+  const requested = filterExportableFiles(files, outputDir);
+  if (requested.length === 0) return { ok: false, message: "没有可打包的图片。" };
+
+  const result = await dialog.showSaveDialog({
+    title: "导出图片为 ZIP",
+    defaultPath: `${safeName(defaultName || "images")}.zip`,
+    filters: [{ name: "ZIP 压缩包", extensions: ["zip"] }],
+  });
+  if (result.canceled || !result.filePath) return { ok: false, cancelled: true, message: "已取消导出。" };
+
+  const zip = new JSZip();
+  const used = new Set<string>();
+  let added = 0;
+  for (let i = 0; i < requested.length; i++) {
+    const source = requested[i];
+    try {
+      const filePath = source.filePath.trim();
+      const buf = await fs.readFile(filePath);
+      const ext = path.extname(filePath) || ".png";
+      const rawName = source.name?.trim() || path.basename(filePath, ext) || `image_${i + 1}`;
+      const rawNameExt = path.extname(rawName);
+      const baseInput = rawNameExt ? rawName.slice(0, -rawNameExt.length) : rawName;
+      const seq = String(i + 1).padStart(3, "0");
+      let base = safeName(baseInput);
+      if (!base) base = `image_${seq}`;
+      if (!/^\d{3}[_-]/.test(base)) base = `${seq}_${base}`;
+      let name = `${base}${ext}`;
+      let dup = 1;
+      while (used.has(name)) name = `${base}_${dup++}${ext}`;
+      used.add(name);
+      zip.file(name, buf);
+      added++;
+    } catch {
+      // Skip files that were deleted or moved after generation.
+    }
+  }
+  if (added === 0) return { ok: false, message: "要打包的图片文件已不存在。" };
+
+  const content = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+  await fs.writeFile(result.filePath, content);
+  return { ok: true, count: added, failed: requested.length - added, message: `已导出 ${added} 张图片。`, path: result.filePath };
+}
+
+export function listHistory(date?: string, groupId?: string, forceReconcile = false) {
+  return getHistory(date, groupId, forceReconcile);
+}
+
+export function listHistoryDates() {
+  return getHistoryDates();
+}
+
+export function listHistoryGroups() {
+  return getHistoryGroups();
+}
+
+export function createGroup(name: string) {
+  return createHistoryGroup(name);
+}
+
+export function assignHistoryGroup(id: string | string[], groupId?: string) {
+  return setHistoryGroup(id, groupId);
+}
+
+/**
+ * Rename a saved image from the history panel: rename the file on disk (keeping
+ * its extension, in the same folder, avoiding collisions) and update the index.
+ */
+const renamingHistoryIds = new Set<string>();
+export async function renameHistoryItem(id: string, rawName: string): Promise<{ ok: boolean; message?: string; item?: HistoryItem }> {
+  // Windows may allow both pending unlinks to succeed. Serialize identity,
+  // not just destination filenames, before the first asynchronous operation.
+  if (renamingHistoryIds.has(id)) return {ok:false,message:"该图片正在重命名，请稍后重试。"};
+  renamingHistoryIds.add(id);
+  try { return await renameHistoryItemUnlocked(id, rawName); }
+  finally { renamingHistoryIds.delete(id); }
+}
+async function renameHistoryItemUnlocked(id: string, rawName: string): Promise<{ ok: boolean; message?: string; item?: HistoryItem }> {
+  const items = getHistory();
+  const item = items.find((it) => it.id === id);
+  if (!item) return { ok: false, message: "找不到该图片记录。" };
+  const cleaned = safeName(rawName);
+  if (!cleaned) return { ok: false, message: "文件名不能为空。" };
+  const sourcePath = item.filePath;
+  try { const stat=await fs.lstat(sourcePath);if(!stat.isFile()||stat.isSymbolicLink())return {ok:false,message:'图片不是普通文件。'}; }
+  catch { return {ok:false,message:'图片文件已移动或删除。'}; }
+  const dir = path.dirname(sourcePath);
+  const ext = path.extname(sourcePath) || ".png";
+  let target = path.join(dir, `${cleaned}${ext}`);
+  if (path.resolve(target) === path.resolve(sourcePath)) {
+    return { ok: true, item }; // unchanged
+  }
+  // Reserve the destination atomically. access() followed by rename() lets
+  // concurrent requests overwrite a file created between those two calls.
+  let n = 1;
+  while (true) {
+    try {
+      await fs.copyFile(sourcePath, target, fs.constants.COPYFILE_EXCL);
+      break;
+    } catch (error: any) {
+      if (error?.code !== 'EEXIST') return { ok: false, message: `重命名失败：${error?.message ?? "未知错误"}` };
+      target = path.join(dir, `${cleaned}-${n++}${ext}`);
+    }
+  }
+  const fileUrl = toLocalMediaUrl(target, id);
+  let updated:HistoryItem|null;
+  try {
+    updated=updateHistoryItem(id,{filePath:target,fileUrl});
+    if(!updated)throw Error('图片记录在操作期间已变化');
+  } catch(e) {
+    await fs.unlink(target).catch(()=>undefined);
+    return {ok:false,message:`重命名未保存：${e instanceof Error?e.message:String(e)}`};
+  }
+  const key=(file:string)=>process.platform==='win32'?path.resolve(file).toLowerCase():path.resolve(file);
+  if(!getHistory().some(row=>row.id!==id&&key(row.filePath)===key(sourcePath))) {
+    try { await fs.unlink(sourcePath); }
+    catch(e) {
+      if((e as NodeJS.ErrnoException).code!=='ENOENT') {
+        // The persisted copy remains valid if rollback itself hits an IO error.
+        try { updateHistoryItem(id,{filePath:sourcePath,fileUrl:item.fileUrl}); }
+        catch { return {ok:true,item:updated,message:'新文件已保存，旧副本保留。'}; }
+        await fs.unlink(target).catch(()=>undefined);
+        return {ok:false,message:`旧文件清理失败，已恢复原名称：${String(e)}`};
+      }
+    }
+  }
+  invalidateAgentHistoryImage(id);
+  return { ok: true, item: updated };
+}
+
+export async function deleteHistoryItem(id: string) {
+  if (renamingHistoryIds.has(id)) return { ok: false, message: '该图片正在处理，请稍后重试。' };
+  renamingHistoryIds.add(id);
+  try { return await deleteHistoryItemUnlocked(id); }
+  finally { renamingHistoryIds.delete(id); }
+}
+
+/** Batch counterpart of the guarded single delete: disk first, one index commit.
+ * Partial disk failures retain those records; shared or unmanaged files stay put. */
+export async function deleteHistoryItems(rawIds: string[]) {
+  if (!Array.isArray(rawIds) || !rawIds.length || rawIds.length > 50_000 || rawIds.some(id => typeof id !== 'string' || !id)) {
+    return { ok: false, deletedIds: [] as string[], failed: [{ id: '', message: '无效的作品选择。' }] };
+  }
+  const ids = [...new Set(rawIds)], selected = new Set(ids), history = getHistory();
+  const rows = new Map(history.map(item => [item.id, item]));
+  const failed: Array<{ id: string; message: string }> = [], deletedIds: string[] = [], owned: string[] = [];
+  // Acquire every selected identity before awaiting any filesystem operation.
+  for (const id of ids) {
+    if (renamingHistoryIds.has(id)) { failed.push({ id, message: '该图片正在处理，请稍后重试。' }); selected.delete(id); }
+    else { renamingHistoryIds.add(id); owned.push(id); }
+  }
+  const key = (file: string) => process.platform === 'win32' ? path.resolve(file).toLowerCase() : path.resolve(file);
+  const outsideSelection = new Set(history.filter(row => !selected.has(row.id) && row.filePath).map(row => key(row.filePath)));
+  const outcomes = new Map<string, string | null>(), outputDir = getSetting('outputDir');
+  try {
+    for (const id of owned) {
+      const item = rows.get(id); let failure: string | null = null;
+      if (item?.filePath && outputDir && isInsideDir(item.filePath, outputDir) && !outsideSelection.has(key(item.filePath))) {
+        const fileKey = key(item.filePath);
+        if (outcomes.has(fileKey)) failure = outcomes.get(fileKey)!;
+        else {
+          try {
+            const stat = await fs.lstat(item.filePath);
+            if (!stat.isFile() || stat.isSymbolicLink()) throw Error('图片路径不是普通文件。');
+            const [file, root] = await Promise.all([fs.realpath(item.filePath), fs.realpath(outputDir)]);
+            if (!isInsideDir(file, root)) throw Error('图片路径通过链接指向保存目录之外。');
+            await fs.unlink(item.filePath);
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') failure = error instanceof Error ? error.message : String(error);
+          }
+          outcomes.set(fileKey, failure);
+        }
+      }
+      if (failure) failed.push({ id, message: failure }); else deletedIds.push(id);
+    }
+    if (deletedIds.length) {
+      removeHistoryItems(deletedIds);
+      invalidateAgentHistoryImage(deletedIds);
+    }
+    return { ok: failed.length === 0, deletedIds, failed };
+  } finally { for (const id of owned) renamingHistoryIds.delete(id); }
+}
+async function deleteHistoryItemUnlocked(id: string) {
+  const history = getHistory(), item = history.find(row => row.id === id);
+  // Only unlink a path that's actually inside the configured output
+  // directory — a record that was ever mis-bound (e.g. two groups sharing a
+  // renamed file's basename) must never let a delete reach outside the app's
+  // own managed space.
+  const outputDir = getSetting("outputDir");
+  const samePath = (a: string, b: string) => process.platform === 'win32'
+    ? path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase()
+    : path.resolve(a) === path.resolve(b);
+  const shared = item?.filePath && history.some(row => row.id !== id && row.filePath && samePath(row.filePath, item.filePath));
+  if (item?.filePath && !shared && outputDir && isInsideDir(item.filePath, outputDir)) {
+    try {
+      const stat = await fs.lstat(item.filePath);
+      if (!stat.isFile() || stat.isSymbolicLink()) return { ok: false, message: '图片路径不是普通文件，保留历史记录。' };
+      const [canonicalFile, canonicalOutput] = await Promise.all([fs.realpath(item.filePath), fs.realpath(outputDir)]);
+      if (!isInsideDir(canonicalFile, canonicalOutput)) return { ok: false, message: '图片路径通过链接指向保存目录之外，未删除。' };
+      await fs.unlink(item.filePath);
+    } catch (error) {
+      // Only a genuinely missing file permits index-only removal. Access and
+      // disk errors must keep the record so the user can see and retry it.
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') return { ok: false, message: '图片删除失败，历史记录保留：' + (error instanceof Error ? error.message : String(error)) };
+    }
+  }
+  removeHistory(id);
+  invalidateAgentHistoryImage(id);
+  return { ok: true };
+}
+
+export async function openTarget(targetPath: string) {
+  if (!targetPath) return { ok: false };
+  try {
+    const stat = await fs.stat(targetPath);
+    if (stat.isDirectory()) {
+      await shell.openPath(targetPath);
+    } else {
+      shell.showItemInFolder(targetPath);
+    }
+    return { ok: true };
+  } catch {
+    const fallback = path.dirname(targetPath);
+    await shell.openPath(fallback);
+    return { ok: true };
+  }
+}
+
+export async function selectOutputDir() {
+  const result = await dialog.showOpenDialog({
+    title: "选择图片保存目录",
+    properties: ["openDirectory", "createDirectory"],
+    defaultPath: getSetting("outputDir"),
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  const selected = result.filePaths[0];
+  setSetting("outputDir", selected);
+  return selected;
+}

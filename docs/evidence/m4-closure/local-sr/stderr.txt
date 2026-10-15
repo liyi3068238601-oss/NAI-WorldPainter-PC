@@ -1,0 +1,8 @@
+[0 NVIDIA GeForce RTX 5070 Ti Laptop GPU]  queueC=2[8]  queueG=0[16]  queueT=1[2]
+[0 NVIDIA GeForce RTX 5070 Ti Laptop GPU]  bugsbn1=0  bugbilz=0  bugcopc=0  bugihfa=0
+[0 NVIDIA GeForce RTX 5070 Ti Laptop GPU]  fp16-p/s/a=1/1/1  int8-p/s/a=1/1/1
+[0 NVIDIA GeForce RTX 5070 Ti Laptop GPU]  subgroup=32  basic=1  vote=1  ballot=1  shuffle=1
+[1 Intel(R) Graphics]  queueC=1[4]  queueG=0[1]  queueT=2[1]
+[1 Intel(R) Graphics]  bugsbn1=0  bugbilz=0  bugcopc=0  bugihfa=0
+[1 Intel(R) Graphics]  fp16-p/s/a=1/1/1  int8-p/s/a=1/1/1
+[1 Intel(R) Graphics]  subgroup=32  basic=1  vote=1  ballot=1  shuffle=1

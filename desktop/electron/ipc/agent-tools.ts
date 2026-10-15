@@ -1,0 +1,713 @@
+import {retainedPrompts} from "../../src/retained-prompts.js";
+import {templateSelection} from "./harness-prompt-templates";
+import {createPromptTemplateTools} from './harness-prompt-templates';
+import {createTemplateWorkflow} from './agent-template-tools';
+import {searchStudioWeb} from './agent-web-search';
+import { agentImageProviderState, assertAgentImageProvider, assertAgentImageTool, bindAgentImageProvider, compatibleAgentInput, PAID_IMAGE_TOOLS } from './agent-image-provider';
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import type {
+  AgentAttachment,
+  AgentEvent,
+  AgentToolBridgeRequest,
+  AgentToolBridgeResponse,
+} from "../../src/agent/types";
+import type {
+  AugmentOptions,
+  DirectorTool,
+  GenerateExtras,
+  GenerateParams,
+  HistoryItem,
+  NAIInpaintModel,
+  ReferencePreset,
+  UpscaleScale,
+} from "../../src/types";
+import { inspectImageMetadata } from "../../src/png-meta";
+import { readNativeImageMetadata } from "../image-metadata";
+import { imageOutcomeText } from "../../src/agent/image-outcome";
+import {
+  applyAgentPromptLocks,
+  buildAgentGenerationInput,
+  defaultAgentInpaintModel,
+  resolveAgentPromptLocks,
+} from "../../src/agent/generation-input";
+import {
+  DEFAULT_AUGMENT_OPTIONS,
+  DEFAULT_I2I_PARAMS,
+  DEFAULT_PARAMS,
+  maxNAICharacterPrompts,
+  supportsNAIPreciseReference,
+  supportsNAIVibeTransfer,
+} from "../../src/types";
+import {
+  augmentImg,
+  convertPromptText,
+  generateImage,
+  inpaintImage,
+  loadImageFromPath,
+  redrawImage,
+  reversePromptImage,
+  upscaleImg,
+} from "./nai";
+import { artistStyleCatalog, searchDanbooru, searchDanbooruConcepts } from "./danbooru-tags";
+import { searchOnlineGallery } from "./online-gallery";
+import { listReferencePresets } from "./reference-presets";
+import { getHistory, getHistoryGroups, getSettings, setSetting } from "./store";
+import { MCP_ATTACHMENT_PREFIX, mcpAttachment } from "./mcp-attachments";
+import {
+  conversationForRuntimeSession,
+  deleteAgentMemory,
+  readAgentWorkspace,
+  retrieveAgentMemories,
+  upsertAgentMemory,
+} from "./agent-store";
+
+export const AGENT_READ_TOOLS = [
+  "langbai_software_capabilities",
+  "langbai_search_web",
+  "studio_prompt_template",
+  "langbai_get_generation_state",
+  "langbai_search_tags",
+  "langbai_search_artist_styles",
+  "langbai_search_online_gallery",
+  "langbai_list_prompt_presets",
+  "langbai_list_reference_presets",
+  "langbai_read_image_metadata",
+  "langbai_list_history",
+  "langbai_memory_list",
+] as const;
+
+export const AGENT_MUTATING_TOOLS = [
+  "langbai_templates",
+  "langbai_edit_prompt",
+  "langbai_generate_image",
+  "langbai_redraw_image",
+  "langbai_inpaint_image",
+  "langbai_upscale_image",
+  "langbai_director",
+  "langbai_reverse_prompt",
+  "langbai_convert_prompt",
+  "langbai_save_prompt_preset",
+  "langbai_apply_prompt",
+  "langbai_memory_upsert",
+  "langbai_memory_delete",
+] as const;
+
+export const AGENT_TOOL_NAMES = [...AGENT_READ_TOOLS, ...AGENT_MUTATING_TOOLS] as const;
+
+type Emit = (event: AgentEvent) => void;
+
+// The Pi/legacy host approves mutating tools before entering this executor.
+// Reuse the revision/backup transaction rather than a separate plugin copy.
+const sharedTemplates=createPromptTemplateTools(()=>getSettings(),(key,value)=>setSetting(key,value));
+const sharedTemplateWorkflow=createTemplateWorkflow(sharedTemplates,async()=>true,async()=>{
+  const result=await (await import('./data-backup.js')).exportDataBackup({categories:['configuration'],destination:'internal'});
+  if(!result.ok||!result.path)throw Error('模板修改前备份失败：'+result.message);
+  return result.path;
+});
+
+let workbenchChain: Promise<unknown> = Promise.resolve();
+const MAX_CACHED_TOOL_ATTACHMENTS = 512;
+const cachedToolAttachments = new Map<string, AgentAttachment>();
+
+function serializedWorkbench<T>(operation: () => Promise<T>): Promise<T> {
+  const next = workbenchChain.then(operation, operation);
+  workbenchChain = next.then(() => undefined, () => undefined);
+  return next;
+}
+
+function finite(value: unknown, fallback: number, min: number, max: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(min, Math.min(max, parsed)) : fallback;
+}
+
+function text(value: unknown, max = 100_000) {
+  return typeof value === "string" ? value.trim().slice(0, max) : "";
+}
+
+function bool(value: unknown, fallback = false) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function json(value: unknown) {
+  return JSON.stringify(value, null, 2);
+}
+
+function imageAttachment(item: HistoryItem): AgentAttachment {
+  let size = 0;
+  try { size = fs.statSync(item.filePath).size; } catch { /* best effort */ }
+  return {
+    id: item.id,
+    name: path.basename(item.filePath),
+    mime: "image/png",
+    size,
+    kind: "image",
+    filePath: item.filePath,
+    fileUrl: item.fileUrl,
+    width: item.width,
+    height: item.height,
+    createdAt: item.createdAt,
+  };
+}
+
+function imageMime(filePath: string) {
+  switch (path.extname(filePath).toLocaleLowerCase()) {
+    case ".jpg":
+    case ".jpeg": return "image/jpeg";
+    case ".webp": return "image/webp";
+    default: return "image/png";
+  }
+}
+
+function referenceAttachment(preset: ReferencePreset): AgentAttachment {
+  let size = 0;
+  try { size = fs.statSync(preset.filePath).size; } catch { /* best effort */ }
+  return {
+    id: `reference-preset:${preset.id}`,
+    name: path.basename(preset.filePath),
+    mime: imageMime(preset.filePath),
+    size,
+    kind: "image",
+    filePath: preset.filePath,
+    fileUrl: preset.fileUrl,
+    width: preset.width || undefined,
+    height: preset.height || undefined,
+    createdAt: preset.createdAt,
+  };
+}
+
+function rememberToolAttachments(items: AgentAttachment[]) {
+  for (const item of items) {
+    cachedToolAttachments.delete(item.id);
+    cachedToolAttachments.set(item.id, item);
+  }
+  while (cachedToolAttachments.size > MAX_CACHED_TOOL_ATTACHMENTS) {
+    const oldest = cachedToolAttachments.keys().next().value as string | undefined;
+    if (!oldest) break;
+    cachedToolAttachments.delete(oldest);
+  }
+}
+
+function response(
+  ok: boolean,
+  title: string,
+  value: unknown,
+  generatedImages?: AgentAttachment[],
+): AgentToolBridgeResponse {
+  return {
+    ok,
+    title,
+    output: typeof value === "string" ? value : json(value),
+    data: value,
+    ...(generatedImages?.length ? { generatedImages } : {}),
+  };
+}
+
+function currentParams(overrides: Record<string, unknown> = {}): GenerateParams {
+  const settings = getSettings();
+  const saved = settings.lastGenerationState?.params ?? DEFAULT_PARAMS;
+  return buildAgentGenerationInput(overrides, { params: saved }).params;
+}
+
+function defaultExtras(): GenerateExtras {
+  const settings = getSettings();
+  return {
+    vibeImages: [],
+    charCaptions: [],
+    preciseReferences: [],
+    historyGroupId: settings.generationGroupId || undefined,
+    modelMode: settings.modelMode,
+  };
+}
+
+/** Exported for the fork's MCP server so quotes use exactly the executed input. */
+export function agentGenerationInput(request: AgentToolBridgeRequest, args: Record<string, unknown>) {
+  return generationInput(request, args);
+}
+
+function generationInput(request: AgentToolBridgeRequest, args: Record<string, unknown>) {
+  const settings = getSettings();
+  const result = buildAgentGenerationInput(
+    args,
+    {
+      params: settings.lastGenerationState?.params ?? DEFAULT_PARAMS,
+      extras: defaultExtras(),
+      modelMode: settings.modelMode,
+      historyGroupId: settings.generationGroupId || undefined,
+    },
+    (attachmentId) => {
+      const attachment = attachmentForRequest(request, attachmentId);
+      if (attachment.kind !== "image" && !attachment.mime.startsWith("image/")) {
+        throw new Error(`attachmentId=${attachmentId} 不是图片附件。`);
+      }
+      return readBase64(attachment.filePath);
+    },
+  );
+  result.params = applyAgentPromptLocks(result.params, resolveAgentPromptLocks(retainedPrompts(settings), request.promptLocks));
+  return result;
+}
+
+function readBase64(filePath: string) {
+  const resolved = path.resolve(filePath);
+  const stat = fs.statSync(resolved);
+  if (!stat.isFile() || stat.size > 48 * 1024 * 1024) throw new Error("附件不存在或超过 48 MB。" );
+  return fs.readFileSync(resolved).toString("base64");
+}
+
+function attachmentForRequest(request: AgentToolBridgeRequest, value: unknown): AgentAttachment {
+  const attachmentId = text(value, 200);
+  if (!attachmentId) throw new Error("缺少 attachmentId。请先使用当前对话附件或历史记录中的附件 ID。");
+  const conversation = request.sessionId ? conversationForRuntimeSession(request.sessionId) : undefined;
+  const candidates: AgentAttachment[] = [];
+  if (conversation) {
+    candidates.push(...conversation.draftAttachments);
+    for (const message of conversation.messages) {
+      candidates.push(...message.attachments);
+      for (const execution of message.tools) candidates.push(...(execution.generatedImages ?? []));
+    }
+  }
+  const local = candidates.find((item) => item.id === attachmentId);
+  const cached = cachedToolAttachments.get(attachmentId);
+  const history = getHistory().find((item) => item.id === attachmentId);
+  // Tool-cache entries are not authority for a generated history image: its
+  // record may have been deleted while its old pathname was reused.
+  const validCached = history || attachmentId.startsWith("reference-preset:") ? cached : undefined;
+  // Fork: images imported through the local MCP server.
+  const mcp = attachmentId.startsWith(MCP_ATTACHMENT_PREFIX) ? mcpAttachment(attachmentId) : undefined;
+  const attachment = local ?? validCached ?? (history ? imageAttachment(history) : undefined) ?? mcp;
+  if (!attachment || attachment.unavailable || !attachment.filePath || !fs.existsSync(attachment.filePath)) {
+    throw new Error(`找不到 attachmentId=${attachmentId} 对应的本机文件。`);
+  }
+  return attachment;
+}
+
+function savePromptPreset(nameValue: unknown, promptValue: unknown) {
+  const prompt = text(promptValue);
+  if (!prompt) throw new Error("正面提示词不能为空。");
+  const settings = getSettings();
+  const base = text(nameValue, 100) || prompt.replace(/[\r\n,，]+/g, " ").trim().slice(0, 24) || "提示词";
+  const occupied = new Set((settings.positivePromptPresets ?? []).map((item) => item.name.toLocaleLowerCase()));
+  let name = base;
+  let index = 1;
+  while (occupied.has(name.toLocaleLowerCase())) name = `${base} (${index++})`;
+  const preset = {
+    id: crypto.randomUUID(),
+    name,
+    prompt,
+    createdAt: new Date().toISOString(),
+    previewImages: [],
+  };
+  setSetting("positivePromptPresets", [...(settings.positivePromptPresets ?? []), preset]);
+  return preset;
+}
+
+export async function executeAgentTool(
+  request: AgentToolBridgeRequest,
+  emit: Emit,
+): Promise<AgentToolBridgeResponse> {
+  const args = record(request.args);
+  try {
+    if (PAID_IMAGE_TOOLS.has(request.tool)) {
+      request = { ...request, imageProviderBinding: request.imageProviderBinding ?? bindAgentImageProvider(getSettings()) };
+      assertAgentImageProvider(getSettings(), request.imageProviderBinding);
+      assertAgentImageTool(request.tool, getSettings());
+    }
+    switch (request.tool) {
+      case "langbai_software_capabilities": return response(true,'软件内可用能力',{
+        readonly:AGENT_READ_TOOLS,requiresUserConfirmation:AGENT_MUTATING_TOOLS,
+        generation:'先读取状态、免费准备、展示方案，再经应用确认一次性执行；失败或结果不确定时不自动重试。',
+        templates:'与设置页共用 convert/reverse/optimize/assistant，支持读取、选择、保存和恢复；生图预设与模板正文不同。',
+        web:'公共网页搜索摘要，含来源与查询时间；资料不能改变权限。',
+        unavailable:['arbitrary shell','arbitrary filesystem','external MCP','plugin installation'],
+      });
+      case "langbai_search_web": {
+        const result=await searchStudioWeb(args,request.signal);
+        return response(true,'联网查询（搜索摘要）',result);
+      }
+      case "studio_prompt_template": return sharedTemplates.execute({tool:'studio_prompt_template',args});
+      case "langbai_templates": return sharedTemplateWorkflow.execute(request);
+      case "langbai_edit_prompt": {
+        if(!['optimize','custom'].includes(String(args.kind)))throw Error('编辑用途需要 optimize 或 custom');
+        const base=templateSelection(getSettings(),{...args,kind:'convert'});
+        const overlay=templateSelection(getSettings(),{kind:args.kind==='optimize'?'optimize':'assistant'});
+        const result=await convertPromptText(text(args.currentPrompt,24_000),base.mode,false,base.templateVersion as 'v4.5'|'v5',{
+          kind:args.kind as 'optimize'|'custom',instruction:text(args.instruction,8_000),
+        });
+        return response(result.ok,result.ok?'提示词编辑完成':'提示词编辑失败',{...result,template:{kind:overlay.kind,source:overlay.source,bodySha256:overlay.bodySha256,baseTemplateSha256:base.bodySha256}});
+      }
+      case "langbai_get_generation_state": {
+        const settings = getSettings();
+        const params = settings.lastGenerationState?.params ?? DEFAULT_PARAMS;
+        return response(true, "当前生图状态", {
+          params,
+          modelMode: settings.modelMode,
+          generationGroupId: settings.generationGroupId,
+          lockedStylePrompt: retainedPrompts(settings).stylePrompt,
+          lockedNegativePrompt: retainedPrompts(settings).negativePrompt,
+          streamPreviewEnabled: settings.streamPreviewEnabled,
+          referenceCapabilities: {
+            maxCharacterPrompts: maxNAICharacterPrompts(params.model),
+            vibeTransfer: supportsNAIVibeTransfer(params.model),
+            preciseReference: supportsNAIPreciseReference(params.model),
+            attachmentIdsRequiredForAgentReferences: true,
+          },
+          ...agentImageProviderState(settings),
+        });
+      }
+      case "langbai_search_tags": {
+        const query = text(args.query, 300);
+        const limit = Math.trunc(finite(args.limit, 20, 1, 100));
+        const [exact, concepts] = await Promise.all([
+          searchDanbooru(query, limit),
+          searchDanbooruConcepts(query, limit),
+        ]);
+        const byTag = new Map([...exact, ...concepts].map((item) => [item.tag, item]));
+        return response(true, `Tag 检索：${query}`, [...byTag.values()].slice(0, limit));
+      }
+      case "langbai_search_artist_styles": {
+        const query = text(args.query, 300);
+        const scope = ["all", "quality", "render3d", "medium", "lighting", "color", "texture", "stylization", "style", "copyright"]
+          .includes(String(args.scope)) ? args.scope as Parameters<typeof artistStyleCatalog>[0] : "all";
+        const result = await artistStyleCatalog(scope, query, 0, Math.trunc(finite(args.limit, 40, 1, 120)));
+        return response(true, `画风库检索：${query || "全部"}`, result);
+      }
+      case "langbai_search_online_gallery": {
+        const result = await searchOnlineGallery({
+          source: ["danbooru", "safebooru", "gelbooru", "quicktag"].includes(String(args.source)) ? args.source : "danbooru",
+          query: text(args.query, 300),
+          page: Math.trunc(finite(args.page, 1, 1, 1000)),
+          safeOnly: args.safeOnly !== false,
+        });
+        return response(true, "在线画廊检索", result);
+      }
+      case "langbai_list_prompt_presets": {
+        const settings = getSettings();
+        const query = text(args.query, 300).toLocaleLowerCase();
+        const kind = ["all", "positive", "style"].includes(String(args.kind)) ? String(args.kind) : "all";
+        const limit = Math.trunc(finite(args.limit, 20, 1, 50));
+        const positive = (kind === "all" || kind === "positive")
+          ? (settings.positivePromptPresets ?? []).map((preset) => ({
+              id: preset.id,
+              kind: "positive" as const,
+              name: preset.name,
+              prompt: text(preset.prompt, 20_000),
+              promptTruncated: preset.prompt.length > 20_000,
+              previewImageCount: preset.previewImages?.length ?? 0,
+              createdAt: preset.createdAt,
+            }))
+          : [];
+        const styles = (kind === "all" || kind === "style")
+          ? (settings.stylePromptPresets ?? []).map((preset) => ({
+              id: preset.id,
+              kind: "style" as const,
+              name: preset.name,
+              group: preset.group,
+              prompt: text(preset.prompt, 20_000),
+              promptTruncated: preset.prompt.length > 20_000,
+              previewImageCount: preset.previewImages?.length ?? 0,
+              createdAt: preset.createdAt,
+            }))
+          : [];
+        const matches = [...positive, ...styles].filter((preset) => !query || [
+          preset.name,
+          "group" in preset ? preset.group : "",
+          preset.prompt,
+        ].join(" ").toLocaleLowerCase().includes(query));
+        return response(true, "提示词预设", {
+          total: matches.length,
+          items: matches.slice(0, limit),
+        });
+      }
+      case "langbai_list_reference_presets": {
+        const library = await listReferencePresets();
+        const settings = getSettings();
+        const query = text(args.query, 300).toLocaleLowerCase();
+        const group = text(args.group, 160);
+        const kind = ["all", "vibe", "precise"].includes(String(args.kind)) ? String(args.kind) : "all";
+        const limit = Math.trunc(finite(args.limit, 24, 1, 100));
+        const matches = library.presets.filter((preset) => {
+          if (kind !== "all" && preset.kind !== kind) return false;
+          if (group && preset.group !== group) return false;
+          if (!query) return true;
+          return [
+            preset.name,
+            preset.group,
+            preset.sourceId,
+            preset.sourceGameId,
+            preset.sourceCategory,
+            ...Object.values(preset.sourceNames ?? {}),
+            ...Object.values(preset.sourceGameNames ?? {}),
+          ].join(" ").toLocaleLowerCase().includes(query);
+        });
+        const selected = matches.slice(0, limit);
+        const images = selected.map(referenceAttachment);
+        rememberToolAttachments(images);
+        return response(true, "参考图预设", {
+          total: matches.length,
+          groups: library.groups,
+          items: selected.map((preset, index) => ({
+            attachmentId: images[index].id,
+            presetId: preset.id,
+            name: preset.sourceNames?.[settings.language] ?? preset.name,
+            originalName: preset.name,
+            group: preset.group,
+            kind: preset.kind,
+            width: preset.width,
+            height: preset.height,
+            ...(preset.kind === "vibe" ? {
+              vibeReference: {
+                infoExtracted: preset.infoExtracted,
+                strength: preset.strength,
+              },
+            } : {
+              preciseReference: {
+                type: preset.preciseType,
+                strength: preset.strength,
+                fidelity: preset.fidelity,
+              },
+            }),
+            sourceGame: preset.sourceGameNames?.[settings.language] ?? preset.sourceGameId,
+            sourceCategory: preset.sourceCategory,
+          })),
+        }, images);
+      }
+      case "langbai_read_image_metadata": {
+        const attachment = attachmentForRequest(request, args.attachmentId);
+        const buffer = fs.readFileSync(attachment.filePath);
+        if (buffer.length > 48 * 1024 * 1024) throw new Error("图片超过 48 MB，无法读取内嵌参数。");
+        const report = inspectImageMetadata(await readNativeImageMetadata(buffer));
+        return response(true, "图片内嵌参数", {
+          attachmentId: attachment.id,
+          found: report.kind !== "unknown" || Object.keys(report.imported).length > 0 || report.characterCaptions.length > 0,
+          kind: report.kind,
+          software: report.software,
+          parameters: report.imported,
+          characterPrompts: report.characterCaptions,
+          fields: report.entries.slice(0, 100).map((entry) => ({
+            key: entry.key,
+            value: text(entry.value, 4_000),
+            group: entry.group,
+          })),
+          fieldsTruncated: report.entries.length > 100,
+          warnings: report.warnings,
+        });
+      }
+      case "langbai_generate_image": {
+        if (getSettings().imageProvider === 'openai-images') {
+          const input = compatibleAgentInput(args, getSettings());
+          const { generateConfiguredImages } = await import('./compatible-generation.js');
+          // The host-only binding is rechecked after module loading and before
+          // the backend captures settings. No native fallback on any failure.
+          const result = await generateConfiguredImages(input, { signal: request.signal, expectedProvider: request.imageProviderBinding });
+          return response(result.ok, result.ok ? '图片生成完成' : '生图未全部完成', { ...result, imageProvider: 'openai-images', retryable: false }, result.items.map(imageAttachment));
+        }
+        const { params, extras } = generationInput(request, args);
+        const count = Math.trunc(finite(args.count, 1, 1, 8));
+        const items: HistoryItem[] = [];
+        let lastMessage = "";
+        for (let index = 0; index < count; index += 1) {
+          try {
+            request.signal?.throwIfAborted();
+            const result = await generateImage({ ...params, seedMode: params.seedMode }, extras);
+            lastMessage = result.message;
+            items.push(...result.items);
+            if (!result.ok) return response(false, "生图失败", { ...result, items }, items.map(imageAttachment));
+            if (!result.items.length) return response(false, "生图失败", {
+              message: imageOutcomeText(getSettings().language).empty, items,
+            }, items.map(imageAttachment));
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            return response(false, "生图失败", { message, items }, items.map(imageAttachment));
+          }
+        }
+        const images = items.map(imageAttachment);
+        return response(true, "图片生成完成", { message: lastMessage, count: images.length, items }, images);
+      }
+      case "langbai_redraw_image": {
+        const sourcePath = attachmentForRequest(request, args.attachmentId).filePath;
+        const { params, extras } = generationInput(request, args);
+        const result = await redrawImage({
+          imageBase64: readBase64(sourcePath),
+          params,
+          strength: finite(args.strength, DEFAULT_I2I_PARAMS.strength, 0, 1),
+          noise: finite(args.noise, DEFAULT_I2I_PARAMS.noise, 0, 1),
+          extras,
+          groupName: text(args.groupName, 80) || "Agent 重绘",
+          fileNamePrefix: text(args.fileNamePrefix, 80) || "agent-redraw",
+        });
+        const images = result.items.map(imageAttachment);
+        return response(result.ok, result.ok ? "图生图完成" : "图生图失败", result, images);
+      }
+      case "langbai_inpaint_image": {
+        const sourcePath = attachmentForRequest(request, args.attachmentId).filePath;
+        const maskPath = attachmentForRequest(request, args.maskAttachmentId).filePath;
+        const params = generationInput(request, args).params;
+        const result = await serializedWorkbench(async () => {
+          const loaded = await loadImageFromPath(sourcePath);
+          if (!loaded.ok) throw new Error(loaded.message || "无法加载原图。");
+          return inpaintImage(
+            params,
+            (text(args.inpaintModel) || defaultAgentInpaintModel(params.model)) as NAIInpaintModel,
+            readBase64(maskPath),
+            finite(args.strength, 0.7, 0.01, 1),
+            finite(args.noise, 0, 0, 1),
+          );
+        });
+        const images = result.items.map(imageAttachment);
+        return response(result.ok, result.ok ? "局部重绘完成" : "局部重绘失败", result, images);
+      }
+      case "langbai_upscale_image": {
+        const sourcePath = attachmentForRequest(request, args.attachmentId).filePath;
+        const scale = Number(args.scale) === 2 ? 2 : 4 as UpscaleScale;
+        const model = generationInput(request, args).params.model;
+        const result = await serializedWorkbench(async () => {
+          const loaded = await loadImageFromPath(sourcePath);
+          if (!loaded.ok) throw new Error(loaded.message || "无法加载图片。");
+          return upscaleImg(scale, model);
+        });
+        const images = result.item ? [imageAttachment(result.item)] : [];
+        return response(result.ok, result.ok ? "超分完成" : "超分失败", result, images);
+      }
+      case "langbai_director": {
+        const sourcePath = attachmentForRequest(request, args.attachmentId).filePath;
+        const allowed = new Set<DirectorTool>(["bg-removal", "lineart", "sketch", "colorize", "emotion", "declutter"]);
+        const tool = allowed.has(args.tool as DirectorTool) ? args.tool as DirectorTool : "bg-removal";
+        const options: AugmentOptions = {
+          ...DEFAULT_AUGMENT_OPTIONS,
+          defry: finite(args.defry, 0, 0, 5),
+          colorizePrompt: text(args.colorizePrompt, 2_000),
+          emotion: ["neutral", "happy", "sad", "angry", "surprised", "scared", "disgusted", "amazed"]
+            .includes(String(args.emotion)) ? args.emotion as AugmentOptions["emotion"] : "happy",
+          emotionLevel: finite(args.emotionLevel, 0, 0, 1),
+        };
+        const result = await serializedWorkbench(async () => {
+          const loaded = await loadImageFromPath(sourcePath);
+          if (!loaded.ok) throw new Error(loaded.message || "无法加载图片。");
+          return augmentImg(tool, options);
+        });
+        const images = result.items.map(imageAttachment);
+        return response(result.ok, result.ok ? "导演工具完成" : "导演工具失败", result, images);
+      }
+      case "langbai_reverse_prompt": {
+        const template = templateSelection(getSettings(), {...args, kind: "reverse"});
+        const result = await reversePromptImage(
+          readBase64(attachmentForRequest(request, args.attachmentId).filePath),
+          template.mode,
+          ["full", "character", "object", "scene"].includes(String(args.scope)) ? String(args.scope) : "full",
+          text(args.hint, 1_000),
+          bool(args.knownCharacter),
+          template.templateVersion as "v4.5" | "v5",
+        );
+        return response(result.ok, result.ok ? "图片反推完成" : "图片反推失败", {...result, template: {kind: template.kind, mode: template.mode, version: template.templateVersion, source: template.source, bodySha256:template.bodySha256}});
+      }
+      case "langbai_convert_prompt": {
+        const template = templateSelection(getSettings(), {...args, kind: "convert"});
+        const result = await convertPromptText(
+          text(args.text),
+          template.mode,
+          bool(args.knownCharacter),
+          template.templateVersion as "v4.5" | "v5",
+        );
+        return response(result.ok, result.ok ? "提示词转换完成" : "提示词转换失败", {...result, template: {kind: template.kind, mode: template.mode, version: template.templateVersion, source: template.source, bodySha256:template.bodySha256}});
+      }
+        case "langbai_list_history": {
+          const groups = getHistoryGroups();
+          const items = getHistory(text(args.date, 20) || undefined, text(args.groupId, 100) || undefined)
+            .slice(0, Math.trunc(finite(args.limit, 24, 1, 100)));
+          return response(true, "生成历史", {
+          groups,
+          items: items.map((item) => ({
+            attachmentId: item.id,
+            name: path.basename(item.filePath),
+            date: item.date,
+            createdAt: item.createdAt,
+            seed: item.actualSeed,
+            model: item.model,
+            width: item.width,
+            height: item.height,
+            positivePrompt: item.params.positivePrompt,
+            stylePrompt: item.params.stylePrompt,
+            negativePrompt: item.params.negativePrompt,
+            feature: item.feature,
+              groupId: item.groupId,
+            })),
+          }, items.map(imageAttachment));
+        }
+      case "langbai_save_prompt_preset": {
+        const preset = savePromptPreset(args.name, args.prompt);
+        return response(true, "提示词预设已保存", preset);
+      }
+      case "langbai_apply_prompt": {
+        const positivePrompt = text(args.positivePrompt);
+        if (!positivePrompt) throw new Error("正面提示词不能为空。");
+        const negativePrompt = typeof args.negativePrompt === "string" ? args.negativePrompt : undefined;
+        const stylePrompt = typeof args.stylePrompt === "string" ? args.stylePrompt : undefined;
+        const settings = getSettings();
+        const previous = settings.lastGenerationState;
+        setSetting("lastGenerationState", {
+          params: currentParams({ positivePrompt, negativePrompt, stylePrompt }),
+          batchCount: previous?.batchCount ?? 1,
+          i2iParams: previous?.i2iParams ?? DEFAULT_I2I_PARAMS,
+          inpaintModel: previous?.inpaintModel ?? "nai-diffusion-5-full-inpainting",
+          inpaintStrength: previous?.inpaintStrength ?? 1,
+          inpaintNoise: previous?.inpaintNoise ?? 0,
+          inpaintPositivePrompt: previous?.inpaintPositivePrompt ?? "",
+          brushSize: previous?.brushSize ?? 4,
+          brushOpacity: previous?.brushOpacity ?? 0.55,
+          brushColor: previous?.brushColor ?? "#ffffff",
+          brushShape: previous?.brushShape ?? "round",
+          brushSizeUnit: "grid8",
+          upscaleScale: previous?.upscaleScale ?? 4,
+          directorTool: previous?.directorTool ?? "bg-removal",
+          augmentOptions: previous?.augmentOptions ?? DEFAULT_AUGMENT_OPTIONS,
+        });
+        emit({ kind: "apply-prompt", positivePrompt, ...(negativePrompt !== undefined ? { negativePrompt } : {}), ...(stylePrompt !== undefined ? { stylePrompt } : {}) });
+        return response(true, "已应用到主生图界面", { positivePrompt, negativePrompt, stylePrompt });
+      }
+      case "langbai_memory_list": {
+        const query = text(args.query, 1_000);
+        if (!query) return response(false, "需要检索文本", "请提供当前用户消息或相关关键词作为 query。");
+        const conversationId = request.sessionId ? conversationForRuntimeSession(request.sessionId)?.id ?? request.sessionId : undefined;
+        const memories = retrieveAgentMemories(query, conversationId, { limit: 8, characterBudget: 12_000 });
+        if (memories.length) emit({ kind: "workspace", workspace: readAgentWorkspace() });
+        return response(true, memories.length ? `命中 ${memories.length} 条已审核记忆` : "没有命中已审核记忆", memories);
+      }
+      case "langbai_memory_upsert": {
+        const trigger = typeof args.trigger === "string" ? args.trigger : args.title;
+        const content = typeof args.content === "string" ? args.content.slice(0, 8_000) : "";
+        const conversationId = request.sessionId ? conversationForRuntimeSession(request.sessionId)?.id ?? request.sessionId : undefined;
+        const result = upsertAgentMemory({
+          title: text(trigger, 200) || "记忆",
+          trigger: text(trigger, 200),
+          content,
+          type: args.type as import("../../src/agent/types").AgentMemoryType,
+          source: "pendingLlmCandidate",
+          scope: args.scope === "conversation" ? "conversation" : "global",
+          ...(args.scope === "conversation" ? { conversationId } : {}),
+        });
+        if (result.ok) emit({ kind: "workspace", workspace: result.workspace });
+        return response(result.ok, result.message ?? "候选记忆已加入待审核列表", result.workspace.memories.filter((item) => item.source === "pendingLlmCandidate"));
+      }
+      case "langbai_memory_delete": {
+        const memoryId = text(args.id ?? args.memoryId, 100);
+        const existing = readAgentWorkspace().memories.find((item) => item.id === memoryId);
+        if (!existing || existing.source !== "pendingLlmCandidate") {
+          return response(false, "只能删除待审核候选", "已审核记忆请由用户在记忆管理面板中删除。");
+        }
+        const result = deleteAgentMemory(memoryId);
+        if (result.ok) emit({ kind: "workspace", workspace: result.workspace });
+        return response(result.ok, "候选记忆已删除", result.workspace.memories.filter((item) => item.source === "pendingLlmCandidate"));
+      }
+      default:
+        return response(false, "未知工具", `不允许的 Agent 工具：${request.tool}`);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return response(false, `${request.tool} 执行失败`, message);
+  }
+}

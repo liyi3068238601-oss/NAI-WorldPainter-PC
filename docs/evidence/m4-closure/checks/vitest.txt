@@ -1,0 +1,13 @@
+
+> nai-worldpainter-pc@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 E:/NAI-WorldPainter/PC端/desktop
+
+FULL_POOL_SAMPLER: candidates=600000; recipes=8; milliseconds=51
+
+ Test Files  441 passed | 1 skipped (442)
+      Tests  4056 passed | 2 skipped (4058)
+   Start at  18:36:34
+   Duration  30.22s (transform 37.19s, setup 0ms, import 131.57s, tests 236.89s, environment 52ms)

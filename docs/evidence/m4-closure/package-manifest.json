@@ -1,0 +1,18 @@
+{
+  "product": "绘世 · NAI WorldPainter",
+  "version": "0.1.0",
+  "kind": "local unsigned Windows x64 unpacked development preview",
+  "electron": "42.11.0",
+  "files": [
+    {
+      "path": "build/WorldPainter-0.1.0-preview/win-unpacked/NAI WorldPainter PC.exe",
+      "bytes": 235081216,
+      "sha256": "987e2253d8ad336799dabca2043ec2edfc273ad00bfa0ada8dccfc65c75752b7"
+    },
+    {
+      "path": "build/WorldPainter-0.1.0-preview/win-unpacked/resources/app.asar",
+      "bytes": 257751747,
+      "sha256": "5aec007fc9467be326613965285ac38170c90d00cb04aaae2382c78a68d5e02a"
+    }
+  ]
+}

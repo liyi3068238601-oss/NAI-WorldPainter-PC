@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-15",
+  "scope": "Electron M4 migration closure evidence; synthetic data and isolated Windows profile only",
+  "automated": {
+    "tests": {
+      "status": "passed",
+      "filesPassed": 441,
+      "filesSkipped": 1,
+      "testsPassed": 4056,
+      "testsSkipped": 2,
+      "log": "checks/vitest.txt"
+    },
+    "typecheck": {
+      "status": "passed",
+      "command": "npm run typecheck",
+      "log": "checks/typecheck.txt"
+    },
+    "build": {
+      "status": "passed",
+      "command": "npm run build",
+      "log": "checks/build.txt",
+      "warning": "Vite reports a minified JavaScript chunk above 500 kB; build succeeds."
+    },
+    "windowsPackage": {
+      "status": "passed",
+      "kind": "unsigned Windows x64 unpacked development preview",
+      "output": "build/WorldPainter-0.1.0-preview",
+      "manifest": "package-manifest.json",
+      "log": "checks/package.txt",
+      "authenticode": "NotSigned"
+    }
+  },
+  "nativeWindows": {
+    "status": "passed",
+    "environment": "Windows 11 x64",
+    "profile": ".tmp/native-m4-profile (isolated synthetic profile)",
+    "flows": [
+      {
+        "id": "first-launch-and-settings",
+        "status": "passed",
+        "observed": [
+          "three-column workspace",
+          "settings",
+          "WorldPainter data section"
+        ]
+      },
+      {
+        "id": "external-knowledge-base",
+        "status": "passed",
+        "recordsBeforeReload": 2,
+        "recordsAfterReload": 3,
+        "evidence": "windows/knowledge-saved.jpg",
+        "reloadEvidence": "windows/knowledge-reloaded.jpg"
+      },
+      {
+        "id": "legacy-flutter-pc-import",
+        "status": "passed",
+        "sourceFixture": "desktop/.tmp/native-m4-fixtures/workspace.sqlite",
+        "mode": "read-only preview followed by explicit append import",
+        "imported": {
+          "drafts": 1,
+          "galleryItems": 1,
+          "styles": 1,
+          "artists": 1,
+          "approvedMemories": 1,
+          "pendingMemories": 1,
+          "sessions": 1,
+          "validatedImage": 1
+        },
+        "evidence": "windows/legacy-import-complete.jpg",
+        "sourceSha256Unchanged": "214d5efbcec8d6eb0c7326e8b4e7aa0d4e46a39bf16322bc2598a1379e4a0838"
+      },
+      {
+        "id": "cold-start-restoration",
+        "status": "passed",
+        "restored": [
+          "draft",
+          "gallery image",
+          "fixed seed 4242",
+          "selected model",
+          "three external knowledge-base records"
+        ]
+      },
+      {
+        "id": "memory-review-and-approval",
+        "status": "passed",
+        "pendingBefore": 1,
+        "pendingAfter": 0,
+        "approvedBefore": 1,
+        "approvedAfter": 2,
+        "evidence": "windows/memory-approved.jpg"
+      }
+    ]
+  },
+  "localSuperResolution": {
+    "status": "passed-on-synthetic-input",
+    "model": "Real-CUGAN Conservative 2x",
+    "cli": {
+      "status": "passed",
+      "source": {
+        "path": "local-sr/synthetic-source.png",
+        "width": 64,
+        "height": 64,
+        "bytes": 237
+      },
+      "output": {
+        "path": "local-sr/synthetic-upscaled.png",
+        "width": 128,
+        "height": 128,
+        "bytes": 565
+      },
+      "networkUsed": false,
+      "log": "local-sr/verification.json"
+    },
+    "initial_packaged_candidate_gui": {
+      "status": "passed",
+      "package": "build/electron-m4-preview",
+      "flow": "GUI selection through completed output",
+      "outputImage": {
+        "path": "local-sr/native-ui-result.png",
+        "width": 128,
+        "height": 128,
+        "bytes": 565,
+        "sha256": "132bdfda40233255711f3be5136f9d047d4c5f214f067d0af2121c98b008c317"
+      },
+      "screenshot": "windows/local-sr-native-success.jpg",
+      "finalPackageBackendByteComparison": {
+        "dist-electron/electron/ipc/local-super-resolution.js": "f8a886c98c4509c963ad60188c847457667260513267700c5b574b7ed193455b",
+        "dist-electron/src/local-super-resolution.js": "c4548e00dc15b7e3710d393919737c33548020a290b8adb631bf0769ee78bf78",
+        "result": "Both modules extracted from initial and final app.asar have identical SHA-256 values. Final package SR GUI was not rerun."
+      }
+    }
+  },
+  "final_package": "build/WorldPainter-0.1.0-preview",
+  "final_package_visual": {
+    "status": "passed-for-listed-flows",
+    "package": "build/WorldPainter-0.1.0-preview/win-unpacked",
+    "profile": ".tmp/native-m4-profile",
+    "observed": [
+      "cold-start draft/gallery/fixed seed 4242/model restoration",
+      "dark warm-gold workspace",
+      "light blue workspace after theme switch",
+      "WorldPainter title, icon, version and About information"
+    ],
+    "screenshots": [
+      "windows/final-workbench-dark.jpg",
+      "windows/final-workbench-light.jpg",
+      "windows/final-about.jpg"
+    ],
+    "additional150PercentFirstRun": {
+      "status": "not-verified",
+      "reason": "Computer Use activation failed twice with: foreground window did not report a process id. Further UI input stopped."
+    }
+  },
+  "externalServices": {
+    "paidNovelAIRequests": 0,
+    "paidLlmRequests": 0,
+    "paidGatewayRequests": 0,
+    "realTokensRead": false,
+    "realUserImagesOrPrivatePromptsRead": false,
+    "workspaceImportAndKnowledgeFixturesSynthetic": true,
+    "localSuperResolutionNetworkUsed": false
+  },
+  "limitations": [
+    "Final package native visual checks cover cold start, dark/light workbench and About. Full DPI/multi-monitor and fresh-profile 150% first-run checks are not established.",
+    "Only the listed synthetic Real-CUGAN 2x run is evidenced; other local super-resolution models are not validated here.",
+    "Local super-resolution is not connected to Agent tools or gallery return flow.",
+    "Automated tests and these bounded native flows do not establish real paid API compatibility, installer/signing, or full mobile parity."
+  ],
+  "screenshots": [
+    {
+      "path": "windows/final-about.jpg",
+      "bytes": 118291,
+      "sha256": "f8af2013213bcaba941a2884f5ad4caa493f24fb4b763b0679904f886c63b4eb"
+    },
+    {
+      "path": "windows/final-workbench-dark.jpg",
+      "bytes": 118291,
+      "sha256": "3c61248f8bd4451b8218112e118c16363536399a60e86e7bfd0198f98195de4f"
+    },
+    {
+      "path": "windows/final-workbench-light.jpg",
+      "bytes": 118291,
+      "sha256": "f8af2013213bcaba941a2884f5ad4caa493f24fb4b763b0679904f886c63b4eb"
+    },
+    {
+      "path": "windows/knowledge-reloaded.jpg",
+      "bytes": 76897,
+      "sha256": "4db34845b4f86d22e6392359d2c0c0050929489cec238aa8a5b17079463eb712"
+    },
+    {
+      "path": "windows/knowledge-saved.jpg",
+      "bytes": 74226,
+      "sha256": "a45c89ac9de7becfb195072688989d7e45a915da6b241d9ddf8311db4683c160"
+    },
+    {
+      "path": "windows/legacy-import-complete.jpg",
+      "bytes": 91703,
+      "sha256": "156c5306aeb9089ed7a1d49d361c18d6af6132aa7d4144fdf2ecdc8b0605aeb4"
+    },
+    {
+      "path": "windows/local-sr-native-success.jpg",
+      "bytes": 77085,
+      "sha256": "f96fccaa17cc3ba5d4735be5b5566ff760531a2a89a3296f71118a48a8c74220"
+    },
+    {
+      "path": "windows/memory-approved.jpg",
+      "bytes": 121494,
+      "sha256": "d27dbcdb28fa3c383ede24bc590d7892b99a3ab39f974de03a1da1dabaa51ec7"
+    }
+  ],
+  "sourceControlReview": {
+    "legacyFlutterFilesChanged": false,
+    "adjacentReferenceRepositoriesChanged": false,
+    "runtimeDataOrNodeModulesStaged": false,
+    "assistantResourcesExactBytesInIndex": 7,
+    "upstreamQuestionFixtureExactBytesInIndex": true,
+    "whitespaceCheck": "Warnings remain only on copied upstream lines; independently compared with upstream 7bc76ded. No added WorldPainter line identified as introducing whitespace errors. Verbatim resources retain bytes through scoped gitattributes."
+  }
+}

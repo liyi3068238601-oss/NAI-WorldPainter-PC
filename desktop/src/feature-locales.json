@@ -1,0 +1,4272 @@
+{
+  "生图智能体": [
+    "生图智能体",
+    "生圖智能體",
+    "Image Agent",
+    "画像エージェント",
+    "이미지 에이전트"
+  ],
+  "智能体": [
+    "智能体",
+    "智能體",
+    "Agent",
+    "エージェント",
+    "에이전트"
+  ],
+  "你": [
+    "你",
+    "你",
+    "You",
+    "あなた",
+    "나"
+  ],
+  "＋ 新对话": [
+    "＋ 新对话",
+    "＋ 新對話",
+    "＋ New chat",
+    "＋ 新しいチャット",
+    "＋ 새 대화"
+  ],
+  "新对话": [
+    "新对话",
+    "新對話",
+    "New chat",
+    "新しいチャット",
+    "새 대화"
+  ],
+  "对话列表": [
+    "对话列表",
+    "對話清單",
+    "Conversations",
+    "会話一覧",
+    "대화 목록"
+  ],
+  "只接入本软件工具，不开放任意文件、命令、Skills 或外部 MCP。": [
+    "只接入本软件工具，不开放任意文件、命令、Skills 或外部 MCP。",
+    "只連接本軟體工具，不開放任意檔案、命令、Skills 或外部 MCP。",
+    "Only in-app tools are available; arbitrary files, commands, Skills, and external MCP are disabled.",
+    "アプリ内ツールのみ利用可能です。任意のファイル、コマンド、Skills、外部 MCP は無効です。",
+    "앱 내부 도구만 사용할 수 있습니다. 임의 파일, 명령, Skills 및 외부 MCP는 비활성화됩니다."
+  ],
+  "聊天 · 参考图 · 提示词 · NovelAI 生图": [
+    "聊天 · 参考图 · 提示词 · NovelAI 生图",
+    "對話 · 參考圖 · 提示詞 · NovelAI 生圖",
+    "Chat · References · Prompts · NovelAI images",
+    "チャット · 参照画像 · プロンプト · NovelAI 画像",
+    "채팅 · 참조 이미지 · 프롬프트 · NovelAI 이미지"
+  ],
+  "模型设置": [
+    "模型设置",
+    "模型設定",
+    "Model settings",
+    "モデル設定",
+    "모델 설정"
+  ],
+  "从一个想法开始": [
+    "从一个想法开始",
+    "從一個想法開始",
+    "Start with an idea",
+    "アイデアから始める",
+    "아이디어로 시작하기"
+  ],
+  "可以描述画面、上传参考图，或让智能体读取当前生图设置。生图和更改软件数据前会单独询问。": [
+    "可以描述画面、上传参考图，或让智能体读取当前生图设置。生图和更改软件数据前会单独询问。",
+    "描述畫面、上傳參考圖，或讓智能體讀取目前生圖設定。生圖及更改軟體資料前會另行確認。",
+    "Describe a scene, attach a reference, or ask the agent to read generation settings. Image generation and data changes require separate confirmation.",
+    "場面を説明する、参照画像を添付する、または生成設定を読み取らせることができます。画像生成とデータ変更は個別に確認します。",
+    "장면을 설명하거나 참조 이미지를 첨부하고 생성 설정을 읽게 할 수 있습니다. 이미지 생성과 데이터 변경은 별도로 확인합니다."
+  ],
+  "添加附件": [
+    "添加附件",
+    "新增附件",
+    "Add attachment",
+    "添付ファイルを追加",
+    "첨부 파일 추가"
+  ],
+  "描述想法、分析参考图或请求生图…": [
+    "描述想法、分析参考图或请求生图…",
+    "描述想法、分析參考圖或請求生圖…",
+    "Describe an idea, analyze a reference, or request an image…",
+    "アイデアの説明、参照画像の分析、画像生成の依頼…",
+    "아이디어 설명, 참조 이미지 분석 또는 이미지 생성 요청…"
+  ],
+  "停止": [
+    "停止",
+    "停止",
+    "Stop",
+    "停止",
+    "중지"
+  ],
+  "发送": [
+    "发送",
+    "傳送",
+    "Send",
+    "送信",
+    "보내기"
+  ],
+  "智能体模型设置": [
+    "智能体模型设置",
+    "智能體模型設定",
+    "Agent model settings",
+    "エージェントのモデル設定",
+    "에이전트 모델 설정"
+  ],
+  "对话模型与 NovelAI 生图 API 分开保存；生图继续使用现有 NovelAI 配置。": [
+    "对话模型与 NovelAI 生图 API 分开保存；生图继续使用现有 NovelAI 配置。",
+    "對話模型與 NovelAI 生圖 API 分開儲存；生圖繼續使用現有 NovelAI 設定。",
+    "The chat model is stored separately from the NovelAI image API; generation keeps your existing NovelAI settings.",
+    "チャットモデルは NovelAI 画像 API と別に保存され、画像生成には既存の NovelAI 設定を使用します。",
+    "채팅 모델은 NovelAI 이미지 API와 별도로 저장되며 생성에는 기존 NovelAI 설정을 사용합니다."
+  ],
+  "协议": [
+    "协议",
+    "協定",
+    "Protocol",
+    "プロトコル",
+    "프로토콜"
+  ],
+  "API 地址": [
+    "API 地址",
+    "API 位址",
+    "API address",
+    "API アドレス",
+    "API 주소"
+  ],
+  "模型 ID": [
+    "模型 ID",
+    "模型 ID",
+    "Model ID",
+    "モデル ID",
+    "모델 ID"
+  ],
+  "允许分析参考图": [
+    "允许分析参考图",
+    "允許分析參考圖",
+    "Allow reference-image analysis",
+    "参照画像の分析を許可",
+    "참조 이미지 분석 허용"
+  ],
+  "保存": [
+    "保存",
+    "儲存",
+    "Save",
+    "保存",
+    "저장"
+  ],
+  "发送失败。": [
+    "发送失败。",
+    "傳送失敗。",
+    "Failed to send.",
+    "送信に失敗しました。",
+    "전송에 실패했습니다."
+  ],
+  "附件导入失败。": [
+    "附件导入失败。",
+    "附件匯入失敗。",
+    "Failed to import attachment.",
+    "添付ファイルの読み込みに失敗しました。",
+    "첨부 파일 가져오기에 실패했습니다."
+  ],
+  "移除 {name}": [
+    "移除 {name}",
+    "移除 {name}",
+    "Remove {name}",
+    "{name} を削除",
+    "{name} 제거"
+  ],
+  "按需下载": [
+    "按需下载",
+    "按需下載",
+    "Download on demand",
+    "必要に応じてダウンロード",
+    "필요할 때 다운로드"
+  ],
+  "下载中": [
+    "下载中",
+    "下載中",
+    "Downloading",
+    "ダウンロード中",
+    "다운로드 중"
+  ],
+  "校验 SHA-256": [
+    "校验 SHA-256",
+    "驗證 SHA-256",
+    "Verifying SHA-256",
+    "SHA-256 を検証中",
+    "SHA-256 검증 중"
+  ],
+  "解压中": [
+    "解压中",
+    "解壓中",
+    "Extracting",
+    "展開中",
+    "압축 해제 중"
+  ],
+  "检查 CUDA 与模型": [
+    "检查 CUDA 与模型",
+    "檢查 CUDA 與模型",
+    "Checking CUDA and models",
+    "CUDA とモデルを確認中",
+    "CUDA 및 모델 확인 중"
+  ],
+  "安装完成": [
+    "安装完成",
+    "安裝完成",
+    "Installation complete",
+    "インストール完了",
+    "설치 완료"
+  ],
+  "已取消，可继续": [
+    "已取消，可继续",
+    "已取消，可繼續",
+    "Cancelled; resumable",
+    "キャンセル済み・再開可能",
+    "취소됨 · 이어받기 가능"
+  ],
+  "安装失败": [
+    "安装失败",
+    "安裝失敗",
+    "Installation failed",
+    "インストール失敗",
+    "설치 실패"
+  ],
+  "未开始": [
+    "未开始",
+    "尚未開始",
+    "Not started",
+    "未開始",
+    "시작 전"
+  ],
+  "校验与加载本地模型": [
+    "校验与加载本地模型",
+    "驗證與載入本機模型",
+    "Verifying and loading local models",
+    "ローカルモデルを検証・読み込み中",
+    "로컬 모델 검증 및 로드 중"
+  ],
+  "检索相似画师组合": [
+    "检索相似画师组合",
+    "搜尋相似畫師組合",
+    "Finding similar artist combinations",
+    "類似する絵師の組み合わせを検索中",
+    "유사 작가 조합 검색 중"
+  ],
+  "正在生成": [
+    "正在生成",
+    "正在生成",
+    "Generating",
+    "生成中",
+    "생성 중"
+  ],
+  "图片已保存": [
+    "图片已保存",
+    "圖片已儲存",
+    "Image saved",
+    "画像を保存しました",
+    "이미지 저장됨"
+  ],
+  "本地评分": [
+    "本地评分",
+    "本機評分",
+    "Local scoring",
+    "ローカル評価中",
+    "로컬 평가 중"
+  ],
+  "本轮评分完成": [
+    "本轮评分完成",
+    "本輪評分完成",
+    "Round scoring complete",
+    "このラウンドの評価が完了",
+    "이번 라운드 평가 완료"
+  ],
+  "迭代完成": [
+    "迭代完成",
+    "迭代完成",
+    "Iteration complete",
+    "反復処理が完了",
+    "반복 작업 완료"
+  ],
+  "任务已停止": [
+    "任务已停止",
+    "工作已停止",
+    "Task stopped",
+    "タスク停止",
+    "작업 중지됨"
+  ],
+  "读取参考图失败": [
+    "读取参考图失败",
+    "讀取參考圖失敗",
+    "Failed to read reference image",
+    "参照画像の読み込みに失敗しました",
+    "참조 이미지 읽기 실패"
+  ],
+  "目标画风自动迭代 · Artist Detective": [
+    "目标画风自动迭代 · Artist Detective",
+    "目標畫風自動迭代 · Artist Detective",
+    "Target style iteration · Artist Detective",
+    "目標画風の自動探索 · Artist Detective",
+    "목표 그림체 자동 탐색 · Artist Detective"
+  ],
+  "本地画风模型检索、筛选与评分；使用 NAI 4.5 Full 实际生成，按多个 Seed 复测画师组合。": [
+    "本地画风模型检索、筛选与评分；使用 NAI 4.5 Full 实际生成，按多个 Seed 复测画师组合。",
+    "以本機畫風模型搜尋、篩選及評分；使用 NAI 4.5 Full 生成，以多個 Seed 複測畫師組合。",
+    "Search, filter and score with local style models. Generate with NAI 4.5 Full and retest artist combinations across multiple seeds.",
+    "ローカル画風モデルで検索・絞り込み・評価します。NAI 4.5 Full で生成し、複数のシードで絵師の組み合わせを再評価します。",
+    "로컬 그림체 모델로 검색·선별·평가합니다. NAI 4.5 Full로 생성하고 여러 시드로 작가 조합을 재검증합니다."
+  ],
+  "返回画风实验室": [
+    "返回画风实验室",
+    "返回畫風實驗室",
+    "Back to Style Lab",
+    "画風ラボに戻る",
+    "그림체 실험실로 돌아가기"
+  ],
+  "目标图片": [
+    "目标图片",
+    "目標圖片",
+    "Target image",
+    "目標画像",
+    "목표 이미지"
+  ],
+  "选择或粘贴参考图": [
+    "选择或粘贴参考图",
+    "選擇或貼上參考圖",
+    "Choose or paste a reference",
+    "参照画像を選択または貼り付け",
+    "참조 이미지 선택 또는 붙여넣기"
+  ],
+  "更换图片": [
+    "更换图片",
+    "更換圖片",
+    "Change image",
+    "画像を変更",
+    "이미지 변경"
+  ],
+  "选择图片": [
+    "选择图片",
+    "選擇圖片",
+    "Choose image",
+    "画像を選択",
+    "이미지 선택"
+  ],
+  "评分模型比较整体与人脸画风，不把分数当作“还原百分比”。": [
+    "评分模型比较整体与人脸画风，不把分数当作“还原百分比”。",
+    "評分模型比較整體與臉部畫風，分數並非「還原百分比」。",
+    "Scores compare overall and facial style, not a percentage of reconstruction accuracy.",
+    "全体と顔の画風を比較するスコアです。「再現率」を表すものではありません。",
+    "전체 및 얼굴 그림체를 비교하는 점수이며 '재현율'을 뜻하지 않습니다."
+  ],
+  "本地运行环境已配置": [
+    "本地运行环境已配置",
+    "本機執行環境已設定",
+    "Local runtime configured",
+    "ローカル実行環境は設定済み",
+    "로컬 실행 환경 설정됨"
+  ],
+  "请下载模型与运行环境": [
+    "请下载模型与运行环境",
+    "請下載模型與執行環境",
+    "Download models and runtime",
+    "モデルと実行環境をダウンロードしてください",
+    "모델과 실행 환경을 다운로드하세요"
+  ],
+  "使用已有运行环境": [
+    "使用已有运行环境",
+    "使用現有執行環境",
+    "Use existing runtime",
+    "既存の実行環境を使用",
+    "기존 실행 환경 사용"
+  ],
+  "使用已有模型目录": [
+    "使用已有模型目录",
+    "使用現有模型目錄",
+    "Use existing model folder",
+    "既存のモデルフォルダーを使用",
+    "기존 모델 폴더 사용"
+  ],
+  "模型与运行环境下载": [
+    "模型与运行环境下载",
+    "模型與執行環境下載",
+    "Model and runtime downloads",
+    "モデルと実行環境のダウンロード",
+    "모델 및 실행 환경 다운로드"
+  ],
+  "模型与 PyTorch 运行环境": [
+    "模型与 PyTorch 运行环境",
+    "模型與 PyTorch 執行環境",
+    "Models and PyTorch runtime",
+    "モデルと PyTorch 実行環境",
+    "모델 및 PyTorch 실행 환경"
+  ],
+  "Windows x64 · NVIDIA 显卡 · 完整版至少 8GB 显存；轻量版面向低显存设备，具体余量取决于驱动和其他程序。包含 Python 3.12、PyTorch CUDA 12.8。此流程目前仅开放 NAI 4.5 Full。": [
+    "Windows x64 · NVIDIA 显卡 · 完整版至少 8GB 显存；轻量版面向低显存设备，具体余量取决于驱动和其他程序。包含 Python 3.12、PyTorch CUDA 12.8。此流程目前仅开放 NAI 4.5 Full。",
+    "Windows x64 · NVIDIA 顯示卡 · 完整版至少 8GB 顯示記憶體；輕量版適用於低顯示記憶體裝置，實際餘量取決於驅動及其他程式。包含 Python 3.12、PyTorch CUDA 12.8。目前僅支援 NAI 4.5 Full。",
+    "Windows x64 · NVIDIA GPU · Full model requires at least 8GB VRAM. The light model targets lower-VRAM devices; available memory depends on drivers and other apps. Includes Python 3.12 and PyTorch CUDA 12.8. This workflow currently supports NAI 4.5 Full only.",
+    "Windows x64・NVIDIA GPU。通常版は VRAM 8GB 以上が必要です。軽量版は低 VRAM 向けですが、空き容量はドライバーや他のアプリに依存します。Python 3.12 と PyTorch CUDA 12.8 を同梱。この機能は現在 NAI 4.5 Full のみ対応です。",
+    "Windows x64 · NVIDIA GPU. 전체 모델은 VRAM 8GB 이상이 필요합니다. 경량 모델은 저용량 VRAM용이며 여유 메모리는 드라이버와 다른 앱에 따라 달라집니다. Python 3.12, PyTorch CUDA 12.8 포함. 현재 NAI 4.5 Full만 지원합니다."
+  ],
+  "模型版本": [
+    "模型版本",
+    "模型版本",
+    "Model variant",
+    "モデルの種類",
+    "모델 종류"
+  ],
+  "完整版 PE-G50 · 至少 8GB 显存": [
+    "完整版 PE-G50 · 至少 8GB 显存",
+    "完整版 PE-G50 · 至少 8GB 顯示記憶體",
+    "Full PE-G50 · 8GB+ VRAM",
+    "通常版 PE-G50 · VRAM 8GB 以上",
+    "전체 PE-G50 · VRAM 8GB 이상"
+  ],
+  "轻量版 PE-L24 · 低显存试用": [
+    "轻量版 PE-L24 · 低显存试用",
+    "輕量版 PE-L24 · 低顯示記憶體試用",
+    "Light PE-L24 · Low-VRAM trial",
+    "軽量版 PE-L24 · 低 VRAM 向け試用",
+    "경량 PE-L24 · 저용량 VRAM 체험"
+  ],
+  "资源下载进度": [
+    "资源下载进度",
+    "資源下載進度",
+    "Resource download progress",
+    "リソースのダウンロード進捗",
+    "리소스 다운로드 진행률"
+  ],
+  "存放位置：": [
+    "存放位置：",
+    "儲存位置：",
+    "Location: ",
+    "保存先：",
+    "저장 위치: "
+  ],
+  "选择存放位置": [
+    "选择存放位置",
+    "選擇儲存位置",
+    "Choose location",
+    "保存先を選択",
+    "저장 위치 선택"
+  ],
+  "取消下载": [
+    "取消下载",
+    "取消下載",
+    "Cancel download",
+    "ダウンロードをキャンセル",
+    "다운로드 취소"
+  ],
+  "下载并安装 / 继续下载": [
+    "下载并安装 / 继续下载",
+    "下載並安裝 / 繼續下載",
+    "Download & install / Resume",
+    "ダウンロードしてインストール / 再開",
+    "다운로드 및 설치 / 이어받기"
+  ],
+  "前往 Hugging Face 模型仓库 ↗": [
+    "前往 Hugging Face 模型仓库 ↗",
+    "前往 Hugging Face 模型儲存庫 ↗",
+    "Open Hugging Face model repository ↗",
+    "Hugging Face モデルリポジトリへ ↗",
+    "Hugging Face 모델 저장소 열기 ↗"
+  ],
+  "使用说明": [
+    "使用说明",
+    "使用說明",
+    "Instructions",
+    "使い方",
+    "사용 안내"
+  ],
+  "先选择模型版本和磁盘位置，建议预留至少 35GB（完整版）或 20GB（轻量版）。两种模型与索引成套下载，不可混用。": [
+    "先选择模型版本和磁盘位置，建议预留至少 35GB（完整版）或 20GB（轻量版）。两种模型与索引成套下载，不可混用。",
+    "先選擇模型版本及儲存位置，建議預留至少 35GB（完整版）或 20GB（輕量版）。模型與索引須成套下載，不可混用。",
+    "Choose a model and location. Allow at least 35GB for full or 20GB for light. Download each model with its matching index; do not mix variants.",
+    "モデルと保存先を選び、通常版は 35GB、軽量版は 20GB 以上の空きを確保してください。モデルと対応するインデックスはセットで使用し、混在させないでください。",
+    "모델과 저장 위치를 선택하세요. 전체 버전은 35GB, 경량 버전은 20GB 이상의 여유 공간을 권장합니다. 모델과 인덱스는 동일 버전끼리 사용하세요."
+  ],
+  "下载完成后自动校验、解压并检查 CUDA。未通过检查时保留原配置。": [
+    "下载完成后自动校验、解压并检查 CUDA。未通过检查时保留原配置。",
+    "下載後會自動驗證、解壓及檢查 CUDA。檢查失敗時保留原設定。",
+    "Downloads are verified, extracted and checked for CUDA automatically. Failed checks preserve your existing configuration.",
+    "ダウンロード後に自動で検証・展開・CUDA チェックを行います。失敗した場合は元の設定を保持します。",
+    "다운로드 후 자동 검증, 압축 해제 및 CUDA 확인을 수행합니다. 확인 실패 시 기존 설정을 유지합니다."
+  ],
+  "安装 NVIDIA 驱动；无需另装完整 CUDA Toolkit。完整版至少 8GB；轻量版尚未逐一验证各款低显存显卡。": [
+    "安装 NVIDIA 驱动；无需另装完整 CUDA Toolkit。完整版至少 8GB；轻量版尚未逐一验证各款低显存显卡。",
+    "請安裝 NVIDIA 驅動，無須另裝完整 CUDA Toolkit。完整版至少需 8GB；輕量版尚未逐一驗證所有低顯示記憶體顯示卡。",
+    "Install the NVIDIA driver; the full CUDA Toolkit is not required. Full needs 8GB+ VRAM; the light model has not been tested on every low-VRAM GPU.",
+    "NVIDIA ドライバーをインストールしてください。CUDA Toolkit 全体は不要です。通常版は 8GB 以上が必要です。軽量版はすべての低 VRAM GPU で検証済みではありません。",
+    "NVIDIA 드라이버를 설치하세요. 전체 CUDA Toolkit은 필요하지 않습니다. 전체 모델은 8GB 이상이 필요하며 경량 모델은 모든 저용량 GPU에서 검증된 것은 아닙니다."
+  ],
+  "配置 NovelAI API，选择参考图，反推或填写固定内容提示词，再选择图片预算开始迭代。": [
+    "配置 NovelAI API，选择参考图，反推或填写固定内容提示词，再选择图片预算开始迭代。",
+    "設定 NovelAI API、選擇參考圖、反推或輸入固定內容提示詞，再設定圖片預算開始迭代。",
+    "Configure the NovelAI API, choose a reference, infer or enter the fixed content prompt, then set an image budget and start.",
+    "NovelAI API を設定し、参照画像と固定内容プロンプトを用意して、画像枚数の上限を設定して開始します。",
+    "NovelAI API와 참조 이미지를 설정하고 고정 내용 프롬프트를 분석하거나 입력한 뒤 이미지 예산을 정해 시작하세요."
+  ],
+  "NAI 负责云端出图，本地 GPU 负责画风评分，CPU 负责画师检索与候选预测。不同模型的分数不能直接比较。": [
+    "NAI 负责云端出图，本地 GPU 负责画风评分，CPU 负责画师检索与候选预测。不同模型的分数不能直接比较。",
+    "NAI 負責雲端生圖、本機 GPU 負責畫風評分、CPU 負責畫師搜尋與候選預測。不同模型的分數不可直接比較。",
+    "NAI generates in the cloud; the local GPU scores style; the CPU searches artists and predicts candidates. Scores from different models are not directly comparable.",
+    "NAI がクラウドで生成し、ローカル GPU が画風を評価、CPU が絵師検索と候補予測を行います。異なるモデルのスコアは直接比較できません。",
+    "NAI는 클라우드 생성, 로컬 GPU는 그림체 평가, CPU는 작가 검색과 후보 예측을 담당합니다. 서로 다른 모델의 점수는 직접 비교할 수 없습니다."
+  ],
+  "网络中断保留下载片段，重试可断点续传；取消或失败不替换现有配置和历史图片。": [
+    "网络中断保留下载片段，重试可断点续传；取消或失败不替换现有配置和历史图片。",
+    "網路中斷時保留下載片段，可續傳；取消或失敗不會替換現有設定及歷史圖片。",
+    "Interrupted downloads retain partial files for resuming. Cancellation or failure leaves existing settings and image history unchanged.",
+    "通信が切れても部分ファイルを保持し再開できます。キャンセルや失敗で既存設定や画像履歴は置き換えません。",
+    "네트워크 중단 시 받은 부분을 유지해 이어받을 수 있습니다. 취소나 실패 시 기존 설정과 이미지 기록을 바꾸지 않습니다."
+  ],
+  "固定内容提示词": [
+    "固定内容提示词",
+    "固定內容提示詞",
+    "Fixed content prompt",
+    "固定内容プロンプト",
+    "고정 내용 프롬프트"
+  ],
+  "使用已配置的视觉模型反推内容": [
+    "使用已配置的视觉模型反推内容",
+    "使用已設定的視覺模型反推內容",
+    "Infer content with the configured vision model",
+    "設定済みの視覚モデルで内容を解析",
+    "설정된 시각 모델로 내용 분석"
+  ],
+  "固定辅助画风词（可选）": [
+    "固定辅助画风词（可选）",
+    "固定輔助畫風詞（選填）",
+    "Fixed style modifiers (optional)",
+    "固定画風補助プロンプト（任意）",
+    "고정 그림체 보조 프롬프트(선택)"
+  ],
+  "迭代轮数": [
+    "迭代轮数",
+    "迭代輪數",
+    "Iteration rounds",
+    "反復回数",
+    "반복 횟수"
+  ],
+  "最多生成图片数（含最终复测）": [
+    "最多生成图片数（含最终复测）",
+    "最多生成圖片數（含最終複測）",
+    "Maximum images (including final retests)",
+    "最大生成枚数（最終再評価を含む）",
+    "최대 이미지 수(최종 재검증 포함)"
+  ],
+  "最多 {rounds} 轮、{budget} 张：每轮最多 16 组 × 2 个 Seed，最后 4 组 × 4 个新 Seed 复测；最后一轮可不足一批。默认 300 张，不是 300 轮。": [
+    "最多 {rounds} 轮、{budget} 张：每轮最多 16 组 × 2 个 Seed，最后 4 组 × 4 个新 Seed 复测；最后一轮可不足一批。默认 300 张，不是 300 轮。",
+    "最多 {rounds} 輪、{budget} 張：每輪最多 16 組 × 2 個 Seed，最後 4 組 × 4 個新 Seed 複測；最後一輪可不足一批。預設 300 張，並非 300 輪。",
+    "Up to {rounds} rounds / {budget} images: up to 16 groups × 2 seeds per round; final 4 groups × 4 new seeds. The last round may be partial. Default: 300 images, not rounds.",
+    "最大 {rounds} 回・{budget} 枚。各回は最大 16 組 × 2 シード、最後に 4 組 × 4 新規シードで再評価します。最終回は少数の場合があります。既定値は 300 枚で、300 回ではありません。",
+    "최대 {rounds}회, {budget}장: 회당 최대 16조합 × 2시드, 최종 4조합 × 새 시드 4개로 재검증합니다. 마지막 회차는 일부만 진행할 수 있습니다. 기본값은 300회가 아닌 300장입니다."
+  ],
+  "生成与搜索参数": [
+    "生成与搜索参数",
+    "生成與搜尋參數",
+    "Generation and search settings",
+    "生成・検索パラメーター",
+    "생성 및 검색 설정"
+  ],
+  "生图模型": [
+    "生图模型",
+    "生圖模型",
+    "Generation model",
+    "生成モデル",
+    "생성 모델"
+  ],
+  "图片尺寸": [
+    "图片尺寸",
+    "圖片尺寸",
+    "Image size",
+    "画像サイズ",
+    "이미지 크기"
+  ],
+  "竖图 832 × 1216": [
+    "竖图 832 × 1216",
+    "直式 832 × 1216",
+    "Portrait 832 × 1216",
+    "縦長 832 × 1216",
+    "세로 832 × 1216"
+  ],
+  "横图 1216 × 832": [
+    "横图 1216 × 832",
+    "橫式 1216 × 832",
+    "Landscape 1216 × 832",
+    "横長 1216 × 832",
+    "가로 1216 × 832"
+  ],
+  "方图 1024 × 1024": [
+    "方图 1024 × 1024",
+    "方形 1024 × 1024",
+    "Square 1024 × 1024",
+    "正方形 1024 × 1024",
+    "정사각형 1024 × 1024"
+  ],
+  "采样器": [
+    "采样器",
+    "採樣器",
+    "Sampler",
+    "サンプラー",
+    "샘플러"
+  ],
+  "噪声计划": [
+    "噪声计划",
+    "雜訊排程",
+    "Noise schedule",
+    "ノイズスケジュール",
+    "노이즈 스케줄"
+  ],
+  "采样步数": [
+    "采样步数",
+    "採樣步數",
+    "Sampling steps",
+    "サンプリングステップ数",
+    "샘플링 단계"
+  ],
+  "提示词引导 CFG": [
+    "提示词引导 CFG",
+    "提示詞引導 CFG",
+    "Prompt guidance CFG",
+    "プロンプト誘導 CFG",
+    "프롬프트 유도 CFG"
+  ],
+  "搜索随机种子": [
+    "搜索随机种子",
+    "搜尋隨機種子",
+    "Search seed",
+    "検索シード",
+    "검색 시드"
+  ],
+  "候选预测池倍率": [
+    "候选预测池倍率",
+    "候選預測池倍率",
+    "Candidate pool multiplier",
+    "候補プールの倍率",
+    "후보 풀 배수"
+  ],
+  "质量与辅助后缀（可清空）": [
+    "质量与辅助后缀（可清空）",
+    "品質與輔助後綴（可清空）",
+    "Quality and extra suffix (optional)",
+    "品質・補助サフィックス（空欄可）",
+    "품질 및 보조 접미사(비워도 됨)"
+  ],
+  "负面提示词（可清空）": [
+    "负面提示词（可清空）",
+    "負面提示詞（可清空）",
+    "Negative prompt (optional)",
+    "ネガティブプロンプト（空欄可）",
+    "부정 프롬프트(비워도 됨)"
+  ],
+  "搜索种子控制组合与复测种子；固定每组多种子评分。新参数仅用于下一次任务，不改动正在运行的任务或历史。": [
+    "搜索种子控制组合与复测种子；固定每组多种子评分。新参数仅用于下一次任务，不改动正在运行的任务或历史。",
+    "搜尋種子控制組合及複測種子；每組固定多種子評分。新參數僅用於下一次工作，不更動執行中工作或歷史。",
+    "The search seed controls combinations and retest seeds. Each group uses multiple fixed seeds. Changes apply only to the next task, not running tasks or history.",
+    "検索シードで組み合わせと再評価用シードを決めます。各組は複数の固定シードで評価します。変更は次のタスクにのみ適用され、実行中のタスクや履歴には影響しません。",
+    "검색 시드는 조합과 재검증 시드를 결정합니다. 조합마다 여러 고정 시드를 사용합니다. 변경 사항은 다음 작업에만 적용되며 실행 중 작업과 기록에는 영향을 주지 않습니다."
+  ],
+  "仅恢复本页生成与迭代参数（默认 300 张）。保留参考图、内容提示词、密钥、模型、路径和历史记录。": [
+    "仅恢复本页生成与迭代参数（默认 300 张）。保留参考图、内容提示词、密钥、模型、路径和历史记录。",
+    "僅還原本頁生成與迭代參數（預設 300 張）。保留參考圖、內容提示詞、金鑰、模型、路徑及歷史紀錄。",
+    "Reset only this page's generation and iteration settings (300 images). Keep the reference, content prompt, credentials, models, paths and history.",
+    "このページの生成・反復設定のみ初期化します（300 枚）。参照画像、内容プロンプト、認証情報、モデル、パス、履歴は保持します。",
+    "이 페이지의 생성·반복 설정만 초기화합니다(300장). 참조 이미지, 내용 프롬프트, 인증 정보, 모델, 경로 및 기록은 유지합니다."
+  ],
+  "恢复默认配置？": [
+    "恢复默认配置？",
+    "還原預設設定？",
+    "Restore defaults?",
+    "既定の設定に戻しますか？",
+    "기본 설정으로 복원할까요?"
+  ],
+  "恢复默认配置": [
+    "恢复默认配置",
+    "還原預設設定",
+    "Restore defaults",
+    "既定の設定に戻す",
+    "기본 설정 복원"
+  ],
+  "停止（保留当前请求结果）": [
+    "停止（保留当前请求结果）",
+    "停止（保留目前請求結果）",
+    "Stop (keep the current request result)",
+    "停止（現在のリクエスト結果は保持）",
+    "중지(현재 요청 결과 유지)"
+  ],
+  "开始自动迭代": [
+    "开始自动迭代",
+    "開始自動迭代",
+    "Start automatic iteration",
+    "自動探索を開始",
+    "자동 탐색 시작"
+  ],
+  "读取状态…": [
+    "读取状态…",
+    "讀取狀態…",
+    "Reading status…",
+    "状態を読み込み中…",
+    "상태 읽는 중…"
+  ],
+  "打开结果目录": [
+    "打开结果目录",
+    "開啟結果目錄",
+    "Open results folder",
+    "結果フォルダーを開く",
+    "결과 폴더 열기"
+  ],
+  "{stage} · {done}/{total} 张": [
+    "{stage} · {done}/{total} 张",
+    "{stage} · {done}/{total} 張",
+    "{stage} · {done}/{total} images",
+    "{stage} · {done}/{total} 枚",
+    "{stage} · {done}/{total}장"
+  ],
+  "最终候选 · 4 个新 Seed 的平均相似度": [
+    "最终候选 · 4 个新 Seed 的平均相似度",
+    "最終候選 · 4 個新 Seed 的平均相似度",
+    "Final candidates · Mean similarity over 4 new seeds",
+    "最終候補 · 4 つの新規シードの平均類似度",
+    "최종 후보 · 새 시드 4개의 평균 유사도"
+  ],
+  "搜索候选 · 2 个固定 Seed 的平均相似度": [
+    "搜索候选 · 2 个固定 Seed 的平均相似度",
+    "搜尋候選 · 2 個固定 Seed 的平均相似度",
+    "Search candidates · Mean similarity over 2 fixed seeds",
+    "検索候補 · 2 つの固定シードの平均類似度",
+    "검색 후보 · 고정 시드 2개의 평균 유사도"
+  ],
+  "复制画师串": [
+    "复制画师串",
+    "複製畫師組合",
+    "Copy artist combination",
+    "絵師の組み合わせをコピー",
+    "작가 조합 복사"
+  ],
+  "应用到生成": [
+    "应用到生成",
+    "套用至生成",
+    "Apply to generation",
+    "生成に適用",
+    "생성에 적용"
+  ],
+  "已保存": [
+    "已保存",
+    "已儲存",
+    "Saved",
+    "保存しました",
+    "저장됨"
+  ],
+  "生成完成提示音": [
+    "生成完成提示音",
+    "生成完成提示音",
+    "Generation completion sound",
+    "生成完了の通知音",
+    "생성 완료 알림음"
+  ],
+  "启用提示音": [
+    "启用提示音",
+    "啟用提示音",
+    "Enable notification sound",
+    "通知音を有効にする",
+    "알림음 사용"
+  ],
+  "生成页单张或整批任务完成且至少保存一张图片时播放一次；全部失败或取消不播放。": [
+    "生成页单张或整批任务完成且至少保存一张图片时播放一次；全部失败或取消不播放。",
+    "生成頁單張或整批工作完成且至少儲存一張圖片時播放一次；全部失敗或取消不播放。",
+    "Play once when a single or batch generation finishes with at least one saved image. Do not play if all fail or the task is cancelled.",
+    "単枚またはバッチ生成が完了し、1 枚以上保存された場合に一度再生します。全件失敗やキャンセル時は再生しません。",
+    "단일 또는 일괄 생성 완료 후 한 장 이상 저장되면 한 번 재생합니다. 전체 실패 또는 취소 시 재생하지 않습니다."
+  ],
+  "音量": [
+    "音量",
+    "音量",
+    "Volume",
+    "音量",
+    "음량"
+  ],
+  "提示音音量": [
+    "提示音音量",
+    "提示音音量",
+    "Notification volume",
+    "通知音の音量",
+    "알림음 음량"
+  ],
+  "自定义音频（MP3 / WAV / OGG，最多 1 MiB，播放最多 10 秒）": [
+    "自定义音频（MP3 / WAV / OGG，最多 1 MiB，播放最多 10 秒）",
+    "自訂音訊（MP3 / WAV / OGG，最多 1 MiB，播放最多 10 秒）",
+    "Custom audio (MP3 / WAV / OGG, up to 1 MiB and 10 seconds)",
+    "カスタム音声（MP3 / WAV / OGG、最大 1 MiB・再生 10 秒）",
+    "사용자 지정 오디오(MP3 / WAV / OGG, 최대 1 MiB·10초)"
+  ],
+  "请选择不超过 1 MiB 的 MP3、WAV 或 OGG。": [
+    "请选择不超过 1 MiB 的 MP3、WAV 或 OGG。",
+    "請選擇不超過 1 MiB 的 MP3、WAV 或 OGG。",
+    "Choose an MP3, WAV or OGG file no larger than 1 MiB.",
+    "1 MiB 以下の MP3、WAV、OGG を選択してください。",
+    "1 MiB 이하의 MP3, WAV 또는 OGG 파일을 선택하세요."
+  ],
+  "读取音频失败": [
+    "读取音频失败",
+    "讀取音訊失敗",
+    "Failed to read audio",
+    "音声の読み込みに失敗しました",
+    "오디오 읽기 실패"
+  ],
+  "音频解码失败，原提示音保持不变。": [
+    "音频解码失败，原提示音保持不变。",
+    "音訊解碼失敗，原提示音保持不變。",
+    "Audio decoding failed; the previous sound is unchanged.",
+    "音声のデコードに失敗しました。元の通知音は変更していません。",
+    "오디오 디코딩 실패. 기존 알림음을 유지합니다."
+  ],
+  "内置双音提示": [
+    "内置双音提示",
+    "內建雙音提示",
+    "Built-in two-tone sound",
+    "内蔵の 2 音通知",
+    "기본 2음 알림"
+  ],
+  "已试听": [
+    "已试听",
+    "已試聽",
+    "Preview played",
+    "試聴しました",
+    "미리 듣기 완료"
+  ],
+  "未播放：请检查音量或音频设备。": [
+    "未播放：请检查音量或音频设备。",
+    "未播放：請檢查音量或音訊裝置。",
+    "Not played: check volume or audio device.",
+    "再生できませんでした。音量や音声デバイスを確認してください。",
+    "재생되지 않았습니다. 음량 또는 오디오 장치를 확인하세요."
+  ],
+  "试听": [
+    "试听",
+    "試聽",
+    "Preview sound",
+    "試聴",
+    "미리 듣기"
+  ],
+  "恢复内置提示音": [
+    "恢复内置提示音",
+    "還原內建提示音",
+    "Restore built-in sound",
+    "内蔵の通知音に戻す",
+    "기본 알림음 복원"
+  ],
+  "评分 / Rating（0–5）": [
+    "评分 / Rating（0–5）",
+    "評分（0–5）",
+    "Rating (0–5)",
+    "評価（0～5）",
+    "평점(0~5)"
+  ],
+  "快捷评分": [
+    "快捷评分",
+    "快速評分",
+    "Quick rating",
+    "評価を選択",
+    "빠른 평점"
+  ],
+  "自定义评分（例如 3.6、4.8）": [
+    "自定义评分（例如 3.6、4.8）",
+    "自訂評分（例如 3.6、4.8）",
+    "Custom rating (e.g. 3.6, 4.8)",
+    "任意の評価（例：3.6、4.8）",
+    "사용자 지정 평점(예: 3.6, 4.8)"
+  ],
+  "自定义评分": [
+    "自定义评分",
+    "自訂評分",
+    "Custom rating",
+    "任意の評価",
+    "사용자 지정 평점"
+  ],
+  "请输入 0 到 5 之间的数字。": [
+    "请输入 0 到 5 之间的数字。",
+    "請輸入 0 到 5 之間的數字。",
+    "Enter a number between 0 and 5.",
+    "0～5 の数値を入力してください。",
+    "0부터 5 사이의 숫자를 입력하세요."
+  ],
+  "升级前会备份插件和用户资料，校验兼容版本；用户自行添加或修改的插件保留。运行中的 Agent 不升级。": [
+    "升级前会备份插件和用户资料，校验兼容版本；用户自行添加或修改的插件保留。运行中的 Agent 不升级。",
+    "升級前會備份外掛與使用者資料並驗證相容版本；自行新增或修改的外掛將保留。執行中的 Agent 不升級。",
+    "Back up plugins and user data and verify compatibility before upgrading. Keep user-added or modified plugins. A running Agent is not upgraded.",
+    "更新前にプラグインとユーザーデータをバックアップし、互換性を確認します。追加・変更したプラグインは保持します。実行中の Agent は更新しません。",
+    "업데이트 전 플러그인과 사용자 데이터를 백업하고 호환성을 확인합니다. 사용자가 추가·수정한 플러그인은 유지합니다. 실행 중인 Agent는 업데이트하지 않습니다."
+  ],
+  "更新酒馆 Agent？": [
+    "更新酒馆 Agent？",
+    "更新酒館 Agent？",
+    "Update Tavern Agent?",
+    "酒場 Agent を更新しますか？",
+    "Tavern Agent를 업데이트할까요?"
+  ],
+  "检查中…": [
+    "检查中…",
+    "檢查中…",
+    "Checking…",
+    "確認中…",
+    "확인 중…"
+  ],
+  "检查官方与组件更新": [
+    "检查官方与组件更新",
+    "檢查官方與元件更新",
+    "Check upstream & component updates",
+    "公式・コンポーネントの更新を確認",
+    "공식 및 구성 요소 업데이트 확인"
+  ],
+  "Agent 更新状态": [
+    "Agent 更新状态",
+    "Agent 更新狀態",
+    "Agent update status",
+    "Agent の更新状況",
+    "Agent 업데이트 상태"
+  ],
+  "Studio 兼容组件：": [
+    "Studio 兼容组件：",
+    "Studio 相容元件：",
+    "Compatible Studio component: ",
+    "Studio 互換コンポーネント：",
+    "Studio 호환 구성 요소: "
+  ],
+  "暂无已发布组件": [
+    "暂无已发布组件",
+    "尚無已發佈元件",
+    "No published component",
+    "公開済みコンポーネントなし",
+    "게시된 구성 요소 없음"
+  ],
+  "· 官方 Harness：": [
+    "· 官方 Harness：",
+    "· 官方 Harness：",
+    "· Official Harness: ",
+    "· 公式 Harness：",
+    "· 공식 Harness: "
+  ],
+  "检查未成功": [
+    "检查未成功",
+    "檢查未成功",
+    "Check unsuccessful",
+    "確認できませんでした",
+    "확인 실패"
+  ],
+  "官方及插件版本仅作更新提示，适配包校验通过后才安装；新会话默认 Roleplay，保留已有模式选择。": [
+    "官方及插件版本仅作更新提示，适配包校验通过后才安装；新会话默认 Roleplay，保留已有模式选择。",
+    "官方及外掛版本僅供更新提示，適配套件驗證通過後才安裝；新對話預設 Roleplay，保留現有模式選擇。",
+    "Upstream and plugin versions are informational. Only verified compatible packages are installed. New sessions default to Roleplay; existing choices are retained.",
+    "公式・プラグインのバージョンは更新情報です。検証済みの互換パッケージのみインストールします。新規会話は Roleplay が既定で、既存の選択は保持します。",
+    "공식·플러그인 버전은 업데이트 안내용입니다. 검증된 호환 패키지만 설치합니다. 새 대화는 Roleplay가 기본이며 기존 선택은 유지합니다."
+  ],
+  "部分更新源检查失败，可稍后重试；现有版本未改变。": [
+    "部分更新源检查失败，可稍后重试；现有版本未改变。",
+    "部分更新來源檢查失敗，可稍後重試；現有版本未變更。",
+    "Some update sources could not be checked. Retry later; the installed version is unchanged.",
+    "一部の更新元を確認できませんでした。後で再試行してください。現在のバージョンは変更していません。",
+    "일부 업데이트 소스를 확인하지 못했습니다. 나중에 다시 시도하세요. 현재 버전은 변경되지 않았습니다."
+  ],
+  "取消": [
+    "取消",
+    "取消",
+    "Cancel",
+    "キャンセル",
+    "취소"
+  ],
+  "确认": [
+    "确认",
+    "確認",
+    "Confirm",
+    "確認",
+    "확인"
+  ],
+  "请确认": [
+    "请确认",
+    "請確認",
+    "Please confirm",
+    "確認してください",
+    "확인해 주세요"
+  ],
+  "Agent 日志": [
+    "Agent 日志",
+    "Agent 日誌",
+    "Agent logs",
+    "Agent ログ",
+    "Agent 로그"
+  ],
+  "最终复测": [
+    "最终复测",
+    "最終複測",
+    "Final retest",
+    "最終再テスト",
+    "최종 재검증"
+  ],
+  "搜索候选": [
+    "搜索候选",
+    "搜尋候選",
+    "Search candidates",
+    "検索候補",
+    "검색 후보"
+  ],
+  "画风候选 {number}": [
+    "画风候选 {number}",
+    "畫風候選 {number}",
+    "Style candidate {number}",
+    "画風候補 {number}",
+    "화풍 후보 {number}"
+  ],
+  "Artist Detective 图片预算须为至少 24 的偶数。": [
+    "Artist Detective 图片预算须为至少 24 的偶数。",
+    "Artist Detective 圖片預算須為至少 24 的偶數。",
+    "The image budget must be an even number of at least 24.",
+    "画像の上限は 24 以上の偶数にしてください。",
+    "이미지 예산은 24 이상의 짝수여야 합니다."
+  ],
+  "请输入有效的正整数轮数。": [
+    "请输入有效的正整数轮数。",
+    "請輸入有效的正整數輪數。",
+    "Enter a positive integer for the number of rounds.",
+    "ラウンド数は正の整数で入力してください。",
+    "라운드 수는 양의 정수로 입력하세요."
+  ],
+  "无效的迭代参数。": [
+    "无效的迭代参数。",
+    "無效的迭代參數。",
+    "Invalid iteration parameters.",
+    "反復パラメーターが無効です。",
+    "반복 매개변수가 올바르지 않습니다."
+  ],
+  "画风实验室目前仅开放 NAI 4.5 Full。": [
+    "画风实验室目前仅开放 NAI 4.5 Full。",
+    "畫風實驗室目前僅開放 NAI 4.5 Full。",
+    "Style Lab currently supports only NAI 4.5 Full.",
+    "画風ラボは現在 NAI 4.5 Full のみ対応しています。",
+    "화풍 실험실은 현재 NAI 4.5 Full만 지원합니다."
+  ],
+  "请选择支持的图片尺寸。": [
+    "请选择支持的图片尺寸。",
+    "請選擇支援的圖片尺寸。",
+    "Select a supported image size.",
+    "対応する画像サイズを選択してください。",
+    "지원되는 이미지 크기를 선택하세요."
+  ],
+  "生成或搜索参数超出有效范围。": [
+    "生成或搜索参数超出有效范围。",
+    "生成或搜尋參數超出有效範圍。",
+    "Generation or search parameters are out of range.",
+    "生成または検索パラメーターが範囲外です。",
+    "생성 또는 검색 매개변수가 허용 범위를 벗어났습니다."
+  ],
+  "无效的采样器或噪声计划。": [
+    "无效的采样器或噪声计划。",
+    "無效的取樣器或雜訊排程。",
+    "Invalid sampler or noise schedule.",
+    "サンプラーまたはノイズスケジュールが無効です。",
+    "샘플러 또는 노이즈 스케줄이 올바르지 않습니다."
+  ],
+  "提示词过长或格式无效。": [
+    "提示词过长或格式无效。",
+    "提示詞過長或格式無效。",
+    "The prompt is too long or has an invalid format.",
+    "プロンプトが長すぎるか、形式が無効です。",
+    "프롬프트가 너무 길거나 형식이 올바르지 않습니다."
+  ],
+  "请先取消当前下载，再切换模型版本。": [
+    "请先取消当前下载，再切换模型版本。",
+    "請先取消目前下載，再切換模型版本。",
+    "Cancel the current download before switching models.",
+    "ダウンロードをキャンセルしてからモデルを切り替えてください。",
+    "현재 다운로드를 취소한 후 모델을 변경하세요."
+  ],
+  "下载文件大小不符": [
+    "下载文件大小不符",
+    "下載檔案大小不符",
+    "Downloaded file size mismatch",
+    "ダウンロードしたファイルのサイズが一致しません",
+    "다운로드 파일 크기가 일치하지 않습니다"
+  ],
+  "下载文件 SHA-256 校验失败": [
+    "下载文件 SHA-256 校验失败",
+    "下載檔案 SHA-256 驗證失敗",
+    "Downloaded file failed SHA-256 verification",
+    "ダウンロードしたファイルの SHA-256 検証に失敗しました",
+    "다운로드 파일의 SHA-256 검증에 실패했습니다"
+  ],
+  "请先取消当前下载": [
+    "请先取消当前下载",
+    "請先取消目前下載",
+    "Cancel the current download first",
+    "先にダウンロードをキャンセルしてください",
+    "먼저 현재 다운로드를 취소하세요"
+  ],
+  "选择模型与运行环境存放位置": [
+    "选择模型与运行环境存放位置",
+    "選擇模型與執行環境儲存位置",
+    "Choose model and runtime location",
+    "モデルと実行環境の保存先を選択",
+    "모델 및 실행 환경 저장 위치 선택"
+  ],
+  "断点响应范围不符，请重试": [
+    "断点响应范围不符，请重试",
+    "續傳回應範圍不符，請重試",
+    "Resume response range mismatch; please retry",
+    "再開応答の範囲が一致しません。再試行してください",
+    "이어받기 응답 범위가 일치하지 않습니다. 다시 시도하세요"
+  ],
+  "下载响应异常": [
+    "下载响应异常",
+    "下載回應異常",
+    "Unexpected download response",
+    "ダウンロードの応答が異常です",
+    "다운로드 응답이 올바르지 않습니다"
+  ],
+  "响应超过预期文件大小": [
+    "响应超过预期文件大小",
+    "回應超過預期檔案大小",
+    "Response exceeds the expected file size",
+    "応答が想定ファイルサイズを超えています",
+    "응답이 예상 파일 크기를 초과했습니다"
+  ],
+  "此运行包支持 Windows x64": [
+    "此运行包支持 Windows x64",
+    "此執行套件支援 Windows x64",
+    "This runtime package supports Windows x64",
+    "この実行環境パッケージは Windows x64 用です",
+    "이 실행 환경 패키지는 Windows x64용입니다"
+  ],
+  "请先停止画风迭代，再安装环境": [
+    "请先停止画风迭代，再安装环境",
+    "請先停止畫風迭代，再安裝環境",
+    "Stop the style iteration before installing the runtime",
+    "画風の反復処理を停止してから実行環境をインストールしてください",
+    "화풍 반복 작업을 중지한 후 실행 환경을 설치하세요"
+  ],
+  "运行环境与模型校验通过，已切换到新版资源。原图片与历史记录保留。": [
+    "运行环境与模型校验通过，已切换到新版资源。原图片与历史记录保留。",
+    "執行環境與模型驗證通過，已切換至新版資源。原圖片與歷史紀錄保留。",
+    "Runtime and model verified; switched to the new resources. Existing images and history are preserved.",
+    "実行環境とモデルの検証が完了し、新しいリソースに切り替えました。既存の画像と履歴は保持されています。",
+    "실행 환경과 모델을 검증하고 새 리소스로 전환했습니다. 기존 이미지와 기록은 보존됩니다."
+  ],
+  "下载已取消，已下载内容保留，可继续下载。": [
+    "下载已取消，已下载内容保留，可继续下载。",
+    "下載已取消，已下載內容保留，可繼續下載。",
+    "Download cancelled. Downloaded data is retained for resuming.",
+    "ダウンロードをキャンセルしました。取得済みデータを保持し、再開できます。",
+    "다운로드를 취소했습니다. 받은 데이터는 보존되며 이어받을 수 있습니다."
+  ],
+  "请先停止当前迭代。": [
+    "请先停止当前迭代。",
+    "請先停止目前迭代。",
+    "Stop the current iteration first.",
+    "先に現在の反復処理を停止してください。",
+    "먼저 현재 반복 작업을 중지하세요."
+  ],
+  "选择已安装 Artist Detective 的 Python 3.12": [
+    "选择已安装 Artist Detective 的 Python 3.12",
+    "選擇已安裝 Artist Detective 的 Python 3.12",
+    "Select Python 3.12 with Artist Detective installed",
+    "Artist Detective 導入済みの Python 3.12 を選択",
+    "Artist Detective가 설치된 Python 3.12 선택"
+  ],
+  "选择 novelai-desktop-assets 模型目录": [
+    "选择 novelai-desktop-assets 模型目录",
+    "選擇 novelai-desktop-assets 模型目錄",
+    "Select the novelai-desktop-assets model directory",
+    "novelai-desktop-assets モデルフォルダーを選択",
+    "novelai-desktop-assets 모델 폴더 선택"
+  ],
+  "请等待模型与运行环境安装完成。": [
+    "请等待模型与运行环境安装完成。",
+    "請等待模型與執行環境安裝完成。",
+    "Wait for the model and runtime installation to finish.",
+    "モデルと実行環境のインストール完了をお待ちください。",
+    "모델 및 실행 환경 설치가 완료될 때까지 기다리세요."
+  ],
+  "已有画风迭代正在运行。": [
+    "已有画风迭代正在运行。",
+    "已有畫風迭代正在執行。",
+    "A style iteration is already running.",
+    "画風の反復処理はすでに実行中です。",
+    "화풍 반복 작업이 이미 실행 중입니다."
+  ],
+  "请先配置 Artist Detective 运行环境和模型目录。": [
+    "请先配置 Artist Detective 运行环境和模型目录。",
+    "請先設定 Artist Detective 執行環境和模型目錄。",
+    "Configure the Artist Detective runtime and model directory first.",
+    "先に Artist Detective の実行環境とモデルフォルダーを設定してください。",
+    "먼저 Artist Detective 실행 환경과 모델 폴더를 설정하세요."
+  ],
+  "请选择目标图片。": [
+    "请选择目标图片。",
+    "請選擇目標圖片。",
+    "Select a target image.",
+    "参照画像を選択してください。",
+    "대상 이미지를 선택하세요."
+  ],
+  "请填写有效的固定内容提示词。": [
+    "请填写有效的固定内容提示词。",
+    "請填寫有效的固定內容提示詞。",
+    "Enter a valid fixed content prompt.",
+    "有効な固定内容プロンプトを入力してください。",
+    "유효한 고정 내용 프롬프트를 입력하세요."
+  ],
+  "请先配置 NovelAI API。": [
+    "请先配置 NovelAI API。",
+    "請先設定 NovelAI API。",
+    "Configure the NovelAI API first.",
+    "先に NovelAI API を設定してください。",
+    "먼저 NovelAI API를 설정하세요."
+  ],
+  "操作已取消。": [
+    "操作已取消。",
+    "操作已取消。",
+    "Operation cancelled.",
+    "操作をキャンセルしました。",
+    "작업이 취소되었습니다."
+  ],
+  "组件准备完成，正在检查 Node 和 Harness 启动兼容性…": [
+    "组件准备完成，正在检查 Node 和 Harness 启动兼容性…",
+    "元件準備完成，正在檢查 Node 和 Harness 啟動相容性…",
+    "Component ready; checking Node and Harness startup compatibility…",
+    "コンポーネントの準備完了。Node と Harness の起動互換性を確認中…",
+    "구성 요소 준비 완료. Node 및 Harness 시작 호환성 확인 중…"
+  ],
+  "组件校验完成。用户配置、插件及对话目录未覆盖。": [
+    "组件校验完成。用户配置、插件及对话目录未覆盖。",
+    "元件驗證完成。使用者設定、外掛及對話目錄未覆寫。",
+    "Component verified. User settings, plugins and conversation directories were not overwritten.",
+    "コンポーネントの検証完了。ユーザー設定、プラグイン、会話フォルダーは上書きしていません。",
+    "구성 요소 검증 완료. 사용자 설정, 플러그인 및 대화 폴더를 덮어쓰지 않았습니다."
+  ],
+  "更新前备份用户配置、插件和会话…": [
+    "更新前备份用户配置、插件和会话…",
+    "更新前備份使用者設定、外掛和對話…",
+    "Backing up user settings, plugins and sessions before updating…",
+    "更新前にユーザー設定、プラグイン、セッションをバックアップ中…",
+    "업데이트 전에 사용자 설정, 플러그인 및 세션 백업 중…"
+  ],
+  "首次启动需要准备本地组件，完成后将自动打开浏览器。": [
+    "首次启动需要准备本地组件，完成后将自动打开浏览器。",
+    "首次啟動需要準備本機元件，完成後將自動開啟瀏覽器。",
+    "First launch requires local component preparation; the browser opens when ready.",
+    "初回起動ではローカルコンポーネントを準備し、完了後にブラウザーを開きます。",
+    "첫 실행 시 로컬 구성 요소를 준비하며 완료 후 브라우저가 열립니다."
+  ],
+  "发现软件随附的新组件；当前继续使用已安装版本，请关闭 Agent 后点击更新确认升级。": [
+    "发现软件随附的新组件；当前继续使用已安装版本，请关闭 Agent 后点击更新确认升级。",
+    "發現軟體隨附的新元件；目前繼續使用已安裝版本，請關閉 Agent 後點擊更新確認升級。",
+    "A newer bundled component is available. The installed version remains active; stop the Agent and confirm Update to upgrade.",
+    "新しい同梱コンポーネントがあります。現在のバージョンを維持します。Agent を停止して更新を確認してください。",
+    "새 번들 구성 요소가 있습니다. 현재 버전을 유지합니다. Agent를 종료하고 업데이트를 확인하세요."
+  ],
+  "Agent 启动超时，请查看日志。": [
+    "Agent 启动超时，请查看日志。",
+    "Agent 啟動逾時，請查看日誌。",
+    "Agent startup timed out. Check the logs.",
+    "Agent の起動がタイムアウトしました。ログを確認してください。",
+    "Agent 시작 시간이 초과되었습니다. 로그를 확인하세요."
+  ],
+  "启动已取消": [
+    "启动已取消",
+    "啟動已取消",
+    "Startup cancelled",
+    "起動をキャンセルしました",
+    "시작이 취소되었습니다"
+  ],
+  "Agent 已运行，正在打开浏览器。": [
+    "Agent 已运行，正在打开浏览器。",
+    "Agent 已執行，正在開啟瀏覽器。",
+    "Agent is running; opening the browser.",
+    "Agent が起動しました。ブラウザーを開いています。",
+    "Agent가 실행 중입니다. 브라우저를 여는 중입니다."
+  ],
+  "浏览器打开失败，请检查系统默认浏览器。": [
+    "浏览器打开失败，请检查系统默认浏览器。",
+    "瀏覽器開啟失敗，請檢查系統預設瀏覽器。",
+    "Failed to open the browser. Check the system default browser.",
+    "ブラウザーを開けませんでした。既定のブラウザーを確認してください。",
+    "브라우저를 열지 못했습니다. 시스템 기본 브라우저를 확인하세요."
+  ],
+  "[程序已由用户终止]": [
+    "[程序已由用户终止]",
+    "[程式已由使用者終止]",
+    "[Process stopped by user]",
+    "[ユーザーがプロセスを停止しました]",
+    "[사용자가 프로세스를 종료했습니다]"
+  ],
+  "请先关闭 Agent，再进行兼容性更新。": [
+    "请先关闭 Agent，再进行兼容性更新。",
+    "請先關閉 Agent，再進行相容性更新。",
+    "Stop the Agent before installing a compatible update.",
+    "互換性更新を行う前に Agent を停止してください。",
+    "호환 업데이트를 설치하기 전에 Agent를 종료하세요."
+  ],
+  "正在检查独立 Agent 组件更新…": [
+    "正在检查独立 Agent 组件更新…",
+    "正在檢查獨立 Agent 元件更新…",
+    "Checking for independent Agent component updates…",
+    "独立 Agent コンポーネントの更新を確認中…",
+    "독립 Agent 구성 요소 업데이트 확인 중…"
+  ],
+  "检查完成，没有可用更新；可以点击启动。": [
+    "检查完成，没有可用更新；可以点击启动。",
+    "檢查完成，沒有可用更新；可以點擊啟動。",
+    "Check complete; no updates available. You can start the Agent.",
+    "確認完了。利用可能な更新はありません。Agent を起動できます。",
+    "확인 완료. 사용 가능한 업데이트가 없습니다. Agent를 시작할 수 있습니다."
+  ],
+  "当前没有经过适配的新版 Agent 组件；用户数据保持不变。": [
+    "当前没有经过适配的新版 Agent 组件；用户数据保持不变。",
+    "目前沒有經過適配的新版 Agent 元件；使用者資料保持不變。",
+    "No newer compatible Agent component is available. User data is unchanged.",
+    "新しい互換 Agent コンポーネントはありません。ユーザーデータは変更していません。",
+    "새 호환 Agent 구성 요소가 없습니다. 사용자 데이터는 변경되지 않았습니다."
+  ],
+  "校验 Agent {version}（Harness {upstream}）…": [
+    "校验 Agent {version}（Harness {upstream}）…",
+    "驗證 Agent {version}（Harness {upstream}）…",
+    "Verifying Agent {version} (Harness {upstream})…",
+    "Agent {version}（Harness {upstream}）を検証中…",
+    "Agent {version}(Harness {upstream}) 검증 중…"
+  ],
+  "准备组件：{percent}%（{done}/{total}）": [
+    "准备组件：{percent}%（{done}/{total}）",
+    "準備元件：{percent}%（{done}/{total}）",
+    "Preparing component: {percent}% ({done}/{total})",
+    "コンポーネント準備中：{percent}%（{done}/{total}）",
+    "구성 요소 준비 중: {percent}%({done}/{total})"
+  ],
+  "组件兼容迁移：更新 {changed} 个未修改文件、{links} 个组件链接；保留 {custom} 个自定义文件。": [
+    "组件兼容迁移：更新 {changed} 个未修改文件、{links} 个组件链接；保留 {custom} 个自定义文件。",
+    "元件相容遷移：更新 {changed} 個未修改檔案、{links} 個元件連結；保留 {custom} 個自訂檔案。",
+    "Compatible migration: updated {changed} unmodified files and {links} component links; retained {custom} custom files.",
+    "互換移行：未変更ファイル {changed} 個、リンク {links} 個を更新し、カスタムファイル {custom} 個を保持しました。",
+    "호환 마이그레이션: 미수정 파일 {changed}개와 링크 {links}개 업데이트, 사용자 파일 {custom}개 보존."
+  ],
+  "正在启动酒馆 Agent（Harness {upstream}）…": [
+    "正在启动酒馆 Agent（Harness {upstream}）…",
+    "正在啟動酒館 Agent（Harness {upstream}）…",
+    "Starting Tavern Agent (Harness {upstream})…",
+    "酒場 Agent（Harness {upstream}）を起動中…",
+    "Tavern Agent(Harness {upstream}) 시작 중…"
+  ],
+  "Agent 已退出（{code}）。": [
+    "Agent 已退出（{code}）。",
+    "Agent 已退出（{code}）。",
+    "Agent exited ({code}).",
+    "Agent が終了しました（{code}）。",
+    "Agent가 종료되었습니다({code})."
+  ],
+  "酒馆插件需已验证的 Harness 服务 {required}；当前为 {actual}。": [
+    "酒馆插件需已验证的 Harness 服务 {required}；当前为 {actual}。",
+    "酒館外掛需已驗證的 Harness 服務 {required}；目前為 {actual}。",
+    "Tavern plugins require verified Harness services {required}; current version: {actual}.",
+    "酒場プラグインには検証済み Harness サービス {required} が必要です。現在：{actual}。",
+    "Tavern 플러그인에는 검증된 Harness 서비스 {required}가 필요합니다. 현재 버전: {actual}."
+  ],
+  "安装在 {stage} 阶段失败。原运行环境和模型配置未替换；请检查网络、磁盘空间及显卡驱动后重试。": [
+    "安装在 {stage} 阶段失败。原运行环境和模型配置未替换；请检查网络、磁盘空间及显卡驱动后重试。",
+    "安裝在 {stage} 階段失敗。原執行環境和模型設定未替換；請檢查網路、磁碟空間及顯示卡驅動後重試。",
+    "Installation failed during {stage}. Existing runtime and model settings are unchanged. Check the network, disk space and GPU driver before retrying.",
+    "{stage} でインストールに失敗しました。既存の実行環境とモデル設定は変更していません。ネットワーク、空き容量、GPU ドライバーを確認して再試行してください。",
+    "{stage} 단계에서 설치에 실패했습니다. 기존 실행 환경과 모델 설정은 변경되지 않았습니다. 네트워크, 디스크 공간 및 GPU 드라이버를 확인하고 다시 시도하세요."
+  ],
+  "Agent 更新源 HTTP {status}，现有组件未改变。": [
+    "Agent 更新源 HTTP {status}，现有组件未改变。",
+    "Agent 更新來源 HTTP {status}，現有元件未改變。",
+    "Agent update source HTTP {status}; existing components are unchanged.",
+    "Agent 更新元 HTTP {status}。既存コンポーネントは変更していません。",
+    "Agent 업데이트 소스 HTTP {status}. 기존 구성 요소는 변경되지 않았습니다."
+  ],
+  "尚无已发布的兼容 Agent 组件更新。": [
+    "尚无已发布的兼容 Agent 组件更新。",
+    "尚無已發佈的相容 Agent 元件更新。",
+    "No compatible Agent component update has been published yet.",
+    "公開済みの互換 Agent コンポーネント更新はありません。",
+    "아직 게시된 호환 Agent 구성 요소 업데이트가 없습니다."
+  ],
+  "Agent 更新包缺少可信摘要或体积异常。": [
+    "Agent 更新包缺少可信摘要或体积异常。",
+    "Agent 更新套件缺少可信摘要或大小異常。",
+    "Agent update package has no trusted digest or an invalid size.",
+    "Agent 更新パッケージに信頼できるダイジェストがないか、サイズが異常です。",
+    "Agent 업데이트 패키지의 신뢰할 수 있는 해시가 없거나 크기가 비정상입니다."
+  ],
+  "下载独立组件 {version}…": [
+    "下载独立组件 {version}…",
+    "下載獨立元件 {version}…",
+    "Downloading independent component {version}…",
+    "独立コンポーネント {version} をダウンロード中…",
+    "독립 구성 요소 {version} 다운로드 중…"
+  ],
+  "下载失败 HTTP {status}": [
+    "下载失败 HTTP {status}",
+    "下載失敗 HTTP {status}",
+    "Download failed: HTTP {status}",
+    "ダウンロード失敗：HTTP {status}",
+    "다운로드 실패: HTTP {status}"
+  ],
+  "Agent 更新包摘要校验失败。": [
+    "Agent 更新包摘要校验失败。",
+    "Agent 更新套件摘要驗證失敗。",
+    "Agent update package digest verification failed.",
+    "Agent 更新パッケージのダイジェスト検証に失敗しました。",
+    "Agent 업데이트 패키지 해시 검증에 실패했습니다."
+  ],
+  "酒馆 Agent · 生图任务": [
+    "酒馆 Agent · 生图任务",
+    "酒館 Agent · 生圖任務",
+    "Tavern Agent · Image task",
+    "酒場 Agent · 画像生成タスク",
+    "Tavern Agent · 이미지 작업"
+  ],
+  "Agent 请求调用 NovelAI 图片工具，可能消耗 Anlas。": [
+    "Agent 请求调用 NovelAI 图片工具，可能消耗 Anlas。",
+    "Agent 請求呼叫 NovelAI 圖片工具，可能消耗 Anlas。",
+    "The Agent requests a NovelAI image tool. This may consume Anlas.",
+    "Agent が NovelAI 画像ツールの実行を求めています。Anlas を消費する場合があります。",
+    "Agent가 NovelAI 이미지 도구 실행을 요청했습니다. Anlas가 소비될 수 있습니다."
+  ],
+  "工具：{tool}。确认后执行本次任务。": [
+    "工具：{tool}。确认后执行本次任务。",
+    "工具：{tool}。確認後執行本次任務。",
+    "Tool: {tool}. This task runs only after confirmation.",
+    "ツール：{tool}。確認後に今回のタスクを実行します。",
+    "도구: {tool}. 확인 후 이번 작업을 실행합니다."
+  ],
+  "执行本次任务": [
+    "执行本次任务",
+    "執行本次任務",
+    "Run this task",
+    "このタスクを実行",
+    "이번 작업 실행"
+  ],
+  "已取消": [
+    "已取消",
+    "已取消",
+    "Cancelled",
+    "キャンセル済み",
+    "취소됨"
+  ],
+  "用户取消本次生图任务。": [
+    "用户取消本次生图任务。",
+    "使用者取消本次生圖任務。",
+    "The user cancelled this image task.",
+    "ユーザーが今回の画像タスクをキャンセルしました。",
+    "사용자가 이번 이미지 작업을 취소했습니다."
+  ],
+  "Studio 工具：{tool}": [
+    "Studio 工具：{tool}",
+    "Studio 工具：{tool}",
+    "Studio tool: {tool}",
+    "Studio ツール：{tool}",
+    "Studio 도구: {tool}"
+  ],
+  "{tool} · 完成": [
+    "{tool} · 完成",
+    "{tool} · 完成",
+    "{tool} · Complete",
+    "{tool} · 完了",
+    "{tool} · 완료"
+  ],
+  "{tool} · 失败": [
+    "{tool} · 失败",
+    "{tool} · 失敗",
+    "{tool} · Failed",
+    "{tool} · 失敗",
+    "{tool} · 실패"
+  ],
+  "酒馆 Agent 仍在运行": [
+    "酒馆 Agent 仍在运行",
+    "酒館 Agent 仍在執行",
+    "Tavern Agent is still running",
+    "酒場 Agent はまだ実行中です",
+    "Tavern Agent가 아직 실행 중입니다"
+  ],
+  "退出软件会同时关闭酒馆 Agent。": [
+    "退出软件会同时关闭酒馆 Agent。",
+    "結束軟體會同時關閉酒館 Agent。",
+    "Exiting the app also stops Tavern Agent.",
+    "アプリを終了すると酒場 Agent も停止します。",
+    "앱을 종료하면 Tavern Agent도 종료됩니다."
+  ],
+  "正在执行的 Agent 任务会中断。是否关闭 Agent 并退出？": [
+    "正在执行的 Agent 任务会中断。是否关闭 Agent 并退出？",
+    "正在執行的 Agent 任務會中斷。是否關閉 Agent 並結束？",
+    "Running Agent tasks will be interrupted. Stop the Agent and exit?",
+    "実行中の Agent タスクは中断されます。Agent を停止して終了しますか？",
+    "진행 중인 Agent 작업이 중단됩니다. Agent를 종료하고 나갈까요?"
+  ],
+  "取消退出": [
+    "取消退出",
+    "取消結束",
+    "Cancel exit",
+    "終了をキャンセル",
+    "종료 취소"
+  ],
+  "关闭 Agent 并退出": [
+    "关闭 Agent 并退出",
+    "關閉 Agent 並結束",
+    "Stop Agent and exit",
+    "Agent を停止して終了",
+    "Agent 종료 후 나가기"
+  ],
+  "停止失败：{error}": [
+    "停止失败：{error}",
+    "停止失敗：{error}",
+    "Failed to stop: {error}",
+    "停止に失敗しました：{error}",
+    "종료 실패: {error}"
+  ],
+  "关闭": [
+    "关闭",
+    "關閉",
+    "Close",
+    "閉じる",
+    "닫기"
+  ],
+  "更新备份与恢复": [
+    "更新备份与恢复",
+    "更新備份與復原",
+    "Update backups and recovery",
+    "更新バックアップと復元",
+    "업데이트 백업 및 복원"
+  ],
+  "有可安装更新时，会先自动备份用户配置、插件和会话；备份失败则停止升级。没有更新时不会新建备份。": [
+    "有可安装更新时，会先自动备份用户配置、插件和会话；备份失败则停止升级。没有更新时不会新建备份。",
+    "有可安裝更新時，會先自動備份使用者設定、外掛和對話；備份失敗則停止升級。沒有更新時不會新增備份。",
+    "Before an available update is installed, settings, plugins and conversations are backed up automatically. Backup failure stops the upgrade. No update means no new backup.",
+    "インストール可能な更新がある場合、設定・プラグイン・会話を自動バックアップします。失敗時は更新を中止します。更新がない場合は新規バックアップを作成しません。",
+    "설치할 업데이트가 있으면 설정·플러그인·대화를 먼저 자동 백업합니다. 백업 실패 시 업그레이드를 중단합니다. 업데이트가 없으면 새 백업을 만들지 않습니다."
+  ],
+  "备份位置：": [
+    "备份位置：",
+    "備份位置：",
+    "Backup location:",
+    "バックアップ先：",
+    "백업 위치:"
+  ],
+  "打开备份目录": [
+    "打开备份目录",
+    "開啟備份目錄",
+    "Open backup folder",
+    "バックアップフォルダーを開く",
+    "백업 폴더 열기"
+  ],
+  "从备份恢复…": [
+    "从备份恢复…",
+    "從備份復原…",
+    "Restore from backup…",
+    "バックアップから復元…",
+    "백업에서 복원…"
+  ],
+  "先关闭正在运行的 Agent，再点击“从备份恢复”，选择备份目录中的日期文件夹。": [
+    "先关闭正在运行的 Agent，再点击“从备份恢复”，选择备份目录中的日期文件夹。",
+    "先關閉執行中的 Agent，再點擊「從備份復原」，選擇備份目錄中的日期資料夾。",
+    "Stop the Agent, choose Restore from backup, then select a dated folder inside the backup directory.",
+    "Agent を停止し、「バックアップから復元」でバックアップ先の日付フォルダーを選択してください。",
+    "Agent를 중지하고 “백업에서 복원”을 누른 다음 백업 폴더 안의 날짜 폴더를 선택하세요."
+  ],
+  "恢复前会保留当前资料；恢复完成后不会自动启动，请检查后手动启动 Agent。": [
+    "恢复前会保留当前资料；恢复完成后不会自动启动，请检查后手动启动 Agent。",
+    "復原前會保留目前資料；復原完成後不會自動啟動，請檢查後手動啟動 Agent。",
+    "Your current data is retained before restoration. The Agent will not start automatically; review it and start it manually.",
+    "復元前の現在のデータも保持します。自動起動はしません。内容を確認してから Agent を手動で起動してください。",
+    "복원 전에 현재 자료를 보존합니다. 자동으로 시작하지 않으므로 확인 후 Agent를 직접 시작하세요."
+  ],
+  "新备份会同步恢复对应的组件版本。较早且没有组件记录的备份只恢复资料，组件版本不变。请保留 versions 文件夹。": [
+    "新备份会同步恢复对应的组件版本。较早且没有组件记录的备份只恢复资料，组件版本不变。请保留 versions 文件夹。",
+    "新備份會同步復原對應的元件版本。較早且沒有元件記錄的備份只復原資料，元件版本不變。請保留 versions 資料夾。",
+    "New backups also restore the matching component version. Older backups without a component record restore data only and keep the current version. Keep the versions folder.",
+    "新しいバックアップは対応するコンポーネントも復元します。コンポーネント記録のない旧バックアップはデータのみ復元し、現在のバージョンを維持します。versions フォルダーを保持してください。",
+    "새 백업은 해당 구성 요소 버전도 복원합니다. 구성 요소 기록이 없는 이전 백업은 자료만 복원하며 현재 버전을 유지합니다. versions 폴더를 보존하세요."
+  ],
+  "请先关闭 Agent，再恢复备份。": [
+    "请先关闭 Agent，再恢复备份。",
+    "請先關閉 Agent，再復原備份。",
+    "Stop the Agent before restoring a backup.",
+    "バックアップを復元する前に Agent を停止してください。",
+    "백업을 복원하기 전에 Agent를 중지하세요."
+  ],
+  "选择要恢复的 Agent 备份": [
+    "选择要恢复的 Agent 备份",
+    "選擇要復原的 Agent 備份",
+    "Select an Agent backup to restore",
+    "復元する Agent バックアップを選択",
+    "복원할 Agent 백업 선택"
+  ],
+  "恢复此备份": [
+    "恢复此备份",
+    "復原此備份",
+    "Restore this backup",
+    "このバックアップを復元",
+    "이 백업 복원"
+  ],
+  "备份已保存：{path}": [
+    "备份已保存：{path}",
+    "備份已儲存：{path}",
+    "Backup saved: {path}",
+    "バックアップ保存先：{path}",
+    "백업 저장됨: {path}"
+  ],
+  "恢复前的资料已保留：{path}": [
+    "恢复前的资料已保留：{path}",
+    "復原前的資料已保留：{path}",
+    "Pre-restore data retained: {path}",
+    "復元前のデータを保持：{path}",
+    "복원 전 자료 보존됨: {path}"
+  ],
+  "此备份没有组件记录：仅恢复资料，组件版本保持不变。": [
+    "此备份没有组件记录：仅恢复资料，组件版本保持不变。",
+    "此備份沒有元件記錄：僅復原資料，元件版本保持不變。",
+    "This backup has no component record: only data was restored; the component version is unchanged.",
+    "このバックアップにはコンポーネント記録がありません。データのみ復元し、コンポーネントは変更しません。",
+    "구성 요소 기록이 없는 백업이므로 자료만 복원했고 구성 요소 버전은 유지했습니다."
+  ],
+  "备份恢复完成。请检查后手动启动 Agent。": [
+    "备份恢复完成。请检查后手动启动 Agent。",
+    "備份復原完成。請檢查後手動啟動 Agent。",
+    "Backup restored. Review it, then start the Agent manually.",
+    "バックアップを復元しました。確認後に Agent を手動で起動してください。",
+    "백업을 복원했습니다. 확인 후 Agent를 직접 시작하세요."
+  ],
+  "Agent 插件加载失败，请查看错误日志；尚未启动成功。": [
+    "Agent 插件加载失败，请查看错误日志；尚未启动成功。",
+    "Agent 外掛載入失敗，請查看錯誤記錄；尚未啟動成功。",
+    "Agent plugins failed to load. Check the error log; startup did not succeed.",
+    "Agent プラグインの読み込みに失敗しました。エラーログを確認してください。起動は完了していません。",
+    "Agent 플러그인을 불러오지 못했습니다. 오류 로그를 확인하세요. 시작되지 않았습니다."
+  ],
+  "历史随附插件兼容修复：{count} 个；自定义插件和用户资料保持不变。": [
+    "历史随附插件兼容修复：{count} 个；自定义插件和用户资料保持不变。",
+    "歷史隨附外掛相容修復：{count} 個；自訂外掛和使用者資料保持不變。",
+    "Repaired {count} legacy bundled plugins; custom plugins and user data were preserved.",
+    "旧同梱プラグイン {count} 個を修復しました。カスタムプラグインとユーザーデータは保持されています。",
+    "기존 번들 플러그인 {count}개를 복구했습니다. 사용자 플러그인과 데이터는 유지됩니다."
+  ],
+  "提示音": [
+    "提示音",
+    "提示音",
+    "Sounds",
+    "通知音",
+    "알림음"
+  ],
+  "检查两项更新": [
+    "检查两项更新",
+    "檢查兩項更新",
+    "Check both updates",
+    "両方の更新を確認",
+    "두 업데이트 확인"
+  ],
+  "Studio 适配组件": [
+    "Studio 适配组件",
+    "Studio 適配元件",
+    "Studio compatible component",
+    "Studio 互換コンポーネント",
+    "Studio 호환 구성 요소"
+  ],
+  "可安装的兼容更新": [
+    "可安装的兼容更新",
+    "可安裝的相容更新",
+    "Installable compatibility update",
+    "インストール可能な互換更新",
+    "설치 가능한 호환 업데이트"
+  ],
+  "当前组件版本：": [
+    "当前组件版本：",
+    "目前元件版本：",
+    "Installed component: ",
+    "現在のコンポーネント：",
+    "현재 구성 요소: "
+  ],
+  "尚未安装": [
+    "尚未安装",
+    "尚未安裝",
+    "Not installed",
+    "未インストール",
+    "설치되지 않음"
+  ],
+  "尚未检查": [
+    "尚未检查",
+    "尚未檢查",
+    "Not checked yet",
+    "未確認",
+    "아직 확인하지 않음"
+  ],
+  "检查失败，请重试": [
+    "检查失败，请重试",
+    "檢查失敗，請重試",
+    "Check failed; retry",
+    "確認失敗。再試行してください",
+    "확인 실패. 다시 시도하세요"
+  ],
+  "最新已发布组件：": [
+    "最新已发布组件：",
+    "最新已發布元件：",
+    "Latest published component: ",
+    "最新公開コンポーネント：",
+    "최신 게시 구성 요소: "
+  ],
+  "更新经过适配的运行环境和随附插件；安装前备份，保留自定义插件与资料。": [
+    "更新经过适配的运行环境和随附插件；安装前备份，保留自定义插件与资料。",
+    "更新經過適配的執行環境和隨附外掛；安裝前備份，保留自訂外掛與資料。",
+    "Updates the compatible runtime and bundled plugins. Backs up before installation and preserves custom plugins and data.",
+    "互換対応済みの実行環境と同梱プラグインを更新します。事前にバックアップし、カスタムプラグインとデータを保持します。",
+    "호환 런타임과 번들 플러그인을 업데이트합니다. 설치 전 백업하며 사용자 플러그인과 데이터를 보존합니다."
+  ],
+  "检查并安装适配更新": [
+    "检查并安装适配更新",
+    "檢查並安裝適配更新",
+    "Check and install compatible update",
+    "互換更新を確認してインストール",
+    "호환 업데이트 확인 및 설치"
+  ],
+  "Harness 官方版本": [
+    "Harness 官方版本",
+    "Harness 官方版本",
+    "Official Harness version",
+    "Harness 公式バージョン",
+    "Harness 공식 버전"
+  ],
+  "仅检测 · 不直接安装": [
+    "仅检测 · 不直接安装",
+    "僅檢測 · 不直接安裝",
+    "Check only · No direct installation",
+    "確認のみ · 直接インストールしません",
+    "확인만 · 직접 설치하지 않음"
+  ],
+  "当前运行环境：": [
+    "当前运行环境：",
+    "目前執行環境：",
+    "Installed runtime: ",
+    "現在の実行環境：",
+    "현재 런타임: "
+  ],
+  "官方最新版本：": [
+    "官方最新版本：",
+    "官方最新版本：",
+    "Latest official version: ",
+    "公式の最新バージョン：",
+    "공식 최신 버전: "
+  ],
+  "官方发布不代表插件已兼容；请通过 Studio 适配组件更新，避免插件加载失败。": [
+    "官方发布不代表插件已兼容；请通过 Studio 适配组件更新，避免插件加载失败。",
+    "官方發布不代表外掛已相容；請透過 Studio 適配元件更新，避免外掛載入失敗。",
+    "An official release does not guarantee plugin compatibility. Update through the Studio compatible component to avoid plugin loading failures.",
+    "公式リリースだけではプラグイン互換性は保証されません。読み込み失敗を避けるため、Studio 互換コンポーネントから更新してください。",
+    "공식 릴리스가 플러그인 호환성을 보장하지는 않습니다. 로딩 오류를 피하려면 Studio 호환 구성 요소를 통해 업데이트하세요."
+  ],
+  "每次进入此页面自动检测以上两项；重新打开软件后仍会检测，不会自动安装。": [
+    "每次进入此页面自动检测以上两项；重新打开软件后仍会检测，不会自动安装。",
+    "每次進入此頁面自動檢測以上兩項；重新開啟軟體後仍會檢測，不會自動安裝。",
+    "Both are checked whenever you enter this page, including after restarting the app. Nothing is installed automatically.",
+    "アプリ再起動後も、このページを開くたびに両方を確認します。自動インストールは行いません。",
+    "앱 재시작 후에도 이 페이지에 들어올 때마다 두 항목을 확인합니다. 자동 설치하지 않습니다."
+  ],
+  "上次检查：": [
+    "上次检查：",
+    "上次檢查：",
+    "Last checked: ",
+    "前回の確認：",
+    "마지막 확인: "
+  ],
+  "检查官方更新": [
+    "检查官方更新",
+    "檢查官方更新",
+    "Check official updates",
+    "公式更新を確認",
+    "공식 업데이트 확인"
+  ],
+  "更新说明": [
+    "更新说明",
+    "更新說明",
+    "Update details",
+    "更新の詳細",
+    "업데이트 안내"
+  ],
+  "检查适配更新": [
+    "检查适配更新",
+    "檢查適配更新",
+    "Check compatible update",
+    "互換更新を確認",
+    "호환 업데이트 확인"
+  ],
+  "正在检查兼容性…": [
+    "正在检查兼容性…",
+    "正在檢查相容性…",
+    "Checking compatibility…",
+    "互換性を確認中…",
+    "호환성 확인 중…"
+  ],
+  "兼容检查通过，等待确认升级。": [
+    "兼容检查通过，等待确认升级。",
+    "相容性檢查通過，等待確認升級。",
+    "Compatibility checks passed. Awaiting confirmation.",
+    "互換性確認完了。更新の確認待ちです。",
+    "호환성 검사를 통과했습니다. 업그레이드 확인을 기다립니다."
+  ],
+  "兼容检查通过。组件 {from} → {to}，Harness {fromUpstream} → {upstream}。确认后先备份再升级，保留自定义插件与资料。": [
+    "兼容检查通过。组件 {from} → {to}，Harness {fromUpstream} → {upstream}。确认后先备份再升级，保留自定义插件与资料。",
+    "相容性檢查通過。元件 {from} → {to}，Harness {fromUpstream} → {upstream}。確認後先備份再升級，保留自訂外掛與資料。",
+    "Compatibility checks passed. Component {from} → {to}; Harness {fromUpstream} → {upstream}. Confirmation creates a backup before upgrading and preserves custom plugins and data.",
+    "互換性確認完了。コンポーネント {from} → {to}、Harness {fromUpstream} → {upstream}。確認後にバックアップして更新します。カスタムプラグインとデータを保持します。",
+    "호환성 검사 통과. 구성 요소 {from} → {to}, Harness {fromUpstream} → {upstream}. 확인 후 백업하고 업그레이드하며 사용자 플러그인과 데이터를 보존합니다."
+  ],
+  "确认升级 Harness 官方版本？": [
+    "确认升级 Harness 官方版本？",
+    "確認升級 Harness 官方版本？",
+    "Upgrade official Harness version?",
+    "Harness 公式バージョンを更新しますか？",
+    "Harness 공식 버전을 업그레이드할까요?"
+  ],
+  "确认升级 Studio 适配组件？": [
+    "确认升级 Studio 适配组件？",
+    "確認升級 Studio 適配元件？",
+    "Upgrade Studio compatible component?",
+    "Studio 互換コンポーネントを更新しますか？",
+    "Studio 호환 구성 요소를 업그레이드할까요?"
+  ],
+  "已取消升级，现有酒馆保持不变。": [
+    "已取消升级，现有酒馆保持不变。",
+    "已取消升級，現有酒館保持不變。",
+    "Upgrade cancelled. Your existing Agent is unchanged.",
+    "更新をキャンセルしました。既存の Agent は変更されていません。",
+    "업그레이드를 취소했습니다. 기존 Agent는 변경되지 않았습니다."
+  ],
+  "升级失败，请查看日志；备份和旧组件已保留。": [
+    "升级失败，请查看日志；备份和旧组件已保留。",
+    "升級失敗，請查看記錄；備份和舊元件已保留。",
+    "Upgrade failed. Check logs; backups and old components are retained.",
+    "更新失敗。ログを確認してください。バックアップと旧コンポーネントは保持されています。",
+    "업그레이드 실패. 로그를 확인하세요. 백업과 기존 구성 요소가 보존됩니다."
+  ],
+  "升级完成，请手动启动 Agent。": [
+    "升级完成，请手动启动 Agent。",
+    "升級完成，請手動啟動 Agent。",
+    "Upgrade complete. Start the Agent manually.",
+    "更新完了。Agent を手動で起動してください。",
+    "업그레이드 완료. Agent를 직접 시작하세요."
+  ],
+  "两项更新均先检查兼容性，通过后由你确认升级；未通过时保留现有酒馆。": [
+    "两项更新均先检查兼容性，通过后由你确认升级；未通过时保留现有酒馆。",
+    "兩項更新均先檢查相容性，通過後由你確認升級；未通過時保留現有酒館。",
+    "Both updates check compatibility before asking you to confirm. Failed checks leave the existing Agent unchanged.",
+    "両方とも互換性を確認してから更新の確認を求めます。失敗時は既存の Agent を保持します。",
+    "두 업데이트 모두 호환성 확인 후 승인을 요청합니다. 검사 실패 시 기존 Agent를 유지합니다."
+  ],
+  "请先检查兼容性并确认升级。": [
+    "请先检查兼容性并确认升级。",
+    "請先檢查相容性並確認升級。",
+    "Check compatibility and confirm the upgrade first.",
+    "先に互換性を確認して更新を承認してください。",
+    "먼저 호환성을 확인하고 업그레이드를 승인하세요."
+  ],
+  "自定义插件需要兼容适配后再更新。": [
+    "自定义插件需要兼容适配后再更新。",
+    "自訂外掛需要相容適配後再更新。",
+    "Custom plugins require compatibility adaptation before updating.",
+    "カスタムプラグインの互換対応後に更新してください。",
+    "업데이트 전에 사용자 플러그인의 호환성 대응이 필요합니다."
+  ],
+  "候选组件启动检查未通过，现有酒馆保持不变。": [
+    "候选组件启动检查未通过，现有酒馆保持不变。",
+    "候選元件啟動檢查未通過，現有酒館保持不變。",
+    "Candidate startup check failed. The existing Agent is unchanged.",
+    "候補の起動確認に失敗しました。既存の Agent は変更されていません。",
+    "후보 시작 검사 실패. 기존 Agent는 변경되지 않았습니다."
+  ],
+  "兼容检查未通过，现有酒馆保持不变。": [
+    "兼容检查未通过，现有酒馆保持不变。",
+    "相容性檢查未通過，現有酒館保持不變。",
+    "Compatibility check failed. The existing Agent is unchanged.",
+    "互換性確認に失敗しました。既存の Agent は変更されていません。",
+    "호환성 검사 실패. 기존 Agent는 변경되지 않았습니다."
+  ],
+  "当前已是最新版本。": [
+    "当前已是最新版本。",
+    "目前已是最新版本。",
+    "Already up to date.",
+    "最新バージョンです。",
+    "이미 최신 버전입니다."
+  ],
+  "官方新版尚无匹配的兼容组件，请等待适配。": [
+    "官方新版尚无匹配的兼容组件，请等待适配。",
+    "官方新版尚無匹配的相容元件，請等待適配。",
+    "No matching compatible component exists for this official version yet. Awaiting adaptation.",
+    "この公式バージョンに対応する互換コンポーネントはまだありません。対応をお待ちください。",
+    "이 공식 버전에 맞는 호환 구성 요소가 아직 없습니다. 대응을 기다려 주세요."
+  ],
+  "暂无可安装的适配更新。": [
+    "暂无可安装的适配更新。",
+    "暫無可安裝的適配更新。",
+    "No compatible update is available to install.",
+    "インストール可能な互換更新はありません。",
+    "설치 가능한 호환 업데이트가 없습니다."
+  ],
+  "正在隔离环境检查候选组件，不改动现有酒馆资料。": [
+    "正在隔离环境检查候选组件，不改动现有酒馆资料。",
+    "正在隔離環境檢查候選元件，不改動現有酒館資料。",
+    "Checking candidate in an isolated environment without changing existing Agent data.",
+    "隔離環境で候補を確認しています。既存の Agent データは変更しません。",
+    "격리 환경에서 후보를 검사합니다. 기존 Agent 데이터는 변경하지 않습니다."
+  ],
+  "检查后插件发生变化，请重新检查。": [
+    "检查后插件发生变化，请重新检查。",
+    "檢查後外掛發生變化，請重新檢查。",
+    "Plugins changed after checking. Check again.",
+    "確認後にプラグインが変更されました。再確認してください。",
+    "검사 후 플러그인이 변경되었습니다. 다시 검사하세요."
+  ],
+  "升级确认已失效，请重新检查。": [
+    "升级确认已失效，请重新检查。",
+    "升級確認已失效，請重新檢查。",
+    "Upgrade confirmation expired or is no longer valid. Check again.",
+    "更新の確認が無効または期限切れです。再確認してください。",
+    "업그레이드 승인이 만료되었거나 유효하지 않습니다. 다시 검사하세요."
+  ],
+  "本机随附更新：{version}（待兼容检查）": [
+    "本机随附更新：{version}（待兼容检查）",
+    "本機隨附更新：{version}（待相容性檢查）",
+    "Bundled update: {version} (compatibility check pending)",
+    "同梱の更新：{version}（互換性チェック待ち）",
+    "앱에 포함된 업데이트: {version} (호환성 검사 대기)"
+  ],
+  "本机随附组件已安装：{version}": [
+    "本机随附组件已安装：{version}",
+    "本機隨附元件已安裝：{version}",
+    "Bundled component installed: {version}",
+    "同梱コンポーネントをインストール済み：{version}",
+    "앱에 포함된 구성 요소 설치됨: {version}"
+  ],
+  "最新已发布组件：{version}": [
+    "最新已发布组件：{version}",
+    "最新已發佈元件：{version}",
+    "Latest published component: {version}",
+    "公開済みの最新コンポーネント：{version}",
+    "최신 공개 구성 요소: {version}"
+  ],
+  "安装组件": [
+    "安装组件",
+    "安裝元件",
+    "Install component",
+    "コンポーネントをインストール",
+    "구성 요소 설치"
+  ],
+  "重新安装组件": [
+    "重新安装组件",
+    "重新安裝元件",
+    "Reinstall component",
+    "コンポーネントを再インストール",
+    "구성 요소 재설치"
+  ],
+  "卸载组件": [
+    "卸载组件",
+    "解除安裝元件",
+    "Uninstall component",
+    "コンポーネントを削除",
+    "구성 요소 제거"
+  ],
+  "组件管理": [
+    "组件管理",
+    "元件管理",
+    "Component management",
+    "コンポーネント管理",
+    "구성 요소 관리"
+  ],
+  "下载并安装组件": [
+    "下载并安装组件",
+    "下載並安裝元件",
+    "Download and install component",
+    "ダウンロードとインストール",
+    "다운로드 및 설치"
+  ],
+  "已取消下载。": [
+    "已取消下载。",
+    "已取消下載。",
+    "Download cancelled.",
+    "ダウンロードをキャンセルしました。",
+    "다운로드가 취소되었습니다."
+  ],
+  "将下载 Agent {version}，大小 {size} MiB。下载后检查兼容性，保留对话和全部用户资料。是否继续？": [
+    "将下载 Agent {version}，大小 {size} MiB。下载后检查兼容性，保留对话和全部用户资料。是否继续？",
+    "將下載 Agent {version}，大小 {size} MiB。下載後檢查相容性，保留對話和所有資料。繼續？",
+    "Download Agent {version} ({size} MiB), then check compatibility. All conversations and user data are retained. Continue?",
+    "Agent {version}（{size} MiB）をダウンロードし互換性を確認します。会話とデータは保持されます。続行しますか？",
+    "Agent {version}({size} MiB)을 다운로드하고 호환성을 확인합니다. 대화와 데이터를 유지합니다. 계속할까요?"
+  ],
+  "进入页面只检查版本，不下载。卸载组件保留对话、角色卡、预设、图片、设置和备份，重装后继续使用。": [
+    "进入页面只检查版本，不下载。卸载组件保留对话、角色卡、预设、图片、设置和备份，重装后继续使用。",
+    "開啟頁面只檢查版本，不下載。解除安裝保留對話、角色卡、預設、圖片、設定和備份，重裝後繼續使用。",
+    "Opening this page only checks versions. Uninstall keeps conversations, cards, presets, images, settings and backups for reinstall.",
+    "この画面ではバージョン確認のみ行います。削除後も会話、カード、プリセット、画像、設定、バックアップは保持されます。",
+    "이 페이지는 버전만 확인합니다. 제거 후에도 대화, 카드, 프리셋, 이미지, 설정과 백업은 유지됩니다."
+  ],
+  "仅移除 Agent 运行组件和下载缓存。对话、角色卡、预设、图片、设置和备份全部保留。": [
+    "仅移除 Agent 运行组件和下载缓存。对话、角色卡、预设、图片、设置和备份全部保留。",
+    "只移除 Agent 執行元件和下載快取。保留對話、角色卡、預設、圖片、設定和備份。",
+    "Remove only the Agent runtime and download cache. Keep conversations, cards, presets, images, settings and backups.",
+    "実行環境とキャッシュのみ削除します。会話、カード、プリセット、画像、設定、バックアップは保持します。",
+    "실행 환경과 캐시만 제거합니다. 대화, 카드, 프리셋, 이미지, 설정과 백업은 유지합니다."
+  ],
+  "请先安装组件，再启动 Agent。": [
+    "请先安装组件，再启动 Agent。",
+    "請先安裝元件，再啟動 Agent。",
+    "Install the component before starting Agent.",
+    "Agent の起動前にコンポーネントをインストールしてください。",
+    "Agent를 시작하기 전에 구성 요소를 설치하세요."
+  ],
+  "反推范围与角色": [
+    "反推范围与角色",
+    "反推範圍與角色",
+    "Caption target and character",
+    "解析対象とキャラクター",
+    "분석 대상 및 캐릭터"
+  ],
+  "目标/角色提示（可选）": [
+    "目标/角色提示（可选）",
+    "目標/角色提示（可選）",
+    "Target / character hint (optional)",
+    "対象・キャラクターのヒント（任意）",
+    "대상 / 캐릭터 힌트 (선택)"
+  ],
+  "例如：这是芙宁娜 / 只反推右侧角色 / 只反推桌上的物品": [
+    "例如：这是芙宁娜 / 只反推右侧角色 / 只反推桌上的物品",
+    "例如：這是芙寧娜 / 只反推右側角色 / 只反推桌上的物品",
+    "Example: This is Furina / Describe only the character on the right / Only the objects on the table",
+    "例：これはフリーナ / 右側のキャラだけ解析 / 机の上の物だけ解析",
+    "예: 푸리나입니다 / 오른쪽 캐릭터만 분석 / 탁자 위 물건만 분석"
+  ],
+  "网络角色：优先使用角色 Tag": [
+    "网络角色：优先使用角色 Tag",
+    "網路角色：優先使用角色 Tag",
+    "Known character: prefer character tags",
+    "既知のキャラクター：キャラクタータグを優先",
+    "알려진 캐릭터: 캐릭터 태그 우선"
+  ],
+  "提示用于告诉视觉模型要识别谁、看哪里；留空则分析整张图。开启网络角色后，仅在能可靠识别时优先使用角色 Tag；识别不确定时仍描述外貌，不猜角色名。": [
+    "提示用于告诉视觉模型要识别谁、看哪里；留空则分析整张图。开启网络角色后，仅在能可靠识别时优先使用角色 Tag；识别不确定时仍描述外貌，不猜角色名。",
+    "提示用於告訴視覺模型要辨識誰、看哪裡；留空則分析整張圖。開啟網路角色後，僅在能可靠辨識時優先使用角色 Tag；辨識不確定時仍描述外貌，不猜角色名。",
+    "Tell the vision model who or what to focus on. Leave blank to analyze the whole image. When known-character mode is enabled, character tags take priority only for reliable identifications; uncertain identities use appearance descriptions, not guessed names.",
+    "誰・どこを解析するか指定します。空欄なら画像全体を解析します。既知のキャラクターを有効にすると、確実に識別できた場合のみキャラクタータグを優先します。不確かな場合は名前を推測せず外見を記述します。",
+    "누구를, 어디를 분석할지 지정하세요. 비우면 이미지 전체를 분석합니다. 알려진 캐릭터 옵션을 켜면 확실히 식별한 경우에만 캐릭터 태그를 우선 사용하며, 불확실하면 이름을 추측하지 않고 외모를 설명합니다."
+  ],
+  "修改这些选项后需重新点击反推；结果填入上方固定内容提示词，不会自动开始生图。": [
+    "修改这些选项后需重新点击反推；结果填入上方固定内容提示词，不会自动开始生图。",
+    "修改這些選項後需重新點擊反推；結果填入上方固定內容提示詞，不會自動開始生圖。",
+    "After changing these options, run captioning again. The result fills the fixed content prompt above; it does not start image generation.",
+    "設定変更後は再度解析を実行してください。結果は上の固定内容プロンプトに入力され、画像生成は自動で開始しません。",
+    "옵션 변경 후 다시 분석을 실행하세요. 결과는 위의 고정 내용 프롬프트에 입력되며 이미지 생성은 자동으로 시작되지 않습니다."
+  ],
+  "轮数与图片上限说明": [
+    "轮数与图片上限说明",
+    "輪數與圖片上限說明",
+    "Rounds and image limit explained",
+    "ラウンド数と画像上限の説明",
+    "라운드 및 이미지 한도 안내"
+  ],
+  "本次最多生成 {budget} 张图片": [
+    "本次最多生成 {budget} 张图片",
+    "本次最多生成 {budget} 張圖片",
+    "Up to {budget} images in this run",
+    "今回の生成上限：{budget} 枚",
+    "이번 실행에서 최대 {budget}장 생성"
+  ],
+  "搜索阶段：最多 {search} 张，分 {rounds} 轮。": [
+    "搜索阶段：最多 {search} 张，分 {rounds} 轮。",
+    "搜尋階段：最多 {search} 張，分 {rounds} 輪。",
+    "Search: up to {search} images across {rounds} rounds.",
+    "探索：{rounds} ラウンドで最大 {search} 枚。",
+    "검색: {rounds}라운드에 걸쳐 최대 {search}장."
+  ],
+  "一轮尝试最多 16 组画师组合，每组生成 2 张，用不同随机种子比较画风；一轮最多 32 张。": [
+    "一轮尝试最多 16 组画师组合，每组生成 2 张，用不同随机种子比较画风；一轮最多 32 张。",
+    "一輪嘗試最多 16 組畫師組合，每組生成 2 張，用不同隨機種子比較畫風；一輪最多 32 張。",
+    "Each round tests up to 16 artist combinations, generating 2 images per combination with different random seeds to compare styles: up to 32 images per round.",
+    "各ラウンドは最大16組の画師の組み合わせを試し、異なるシードで各2枚を生成して画風を比較します。1ラウンド最大32枚です。",
+    "라운드마다 최대 16개 작가 조합을 시험하고, 각 조합을 다른 시드로 2장씩 생성해 화풍을 비교합니다. 라운드당 최대 32장입니다."
+  ],
+  "最终复测：最多 16 张（已包含在上限内）。": [
+    "最终复测：最多 16 张（已包含在上限内）。",
+    "最終複測：最多 16 張（已包含在上限內）。",
+    "Final validation: up to 16 images (included in the limit).",
+    "最終検証：最大16枚（上限に含まれます）。",
+    "최종 재검증: 최대 16장 (한도에 포함)."
+  ],
+  "从搜索结果中选出最多 4 组，每组再用 4 个新随机种子出图，检查画风是否稳定。": [
+    "从搜索结果中选出最多 4 组，每组再用 4 个新随机种子出图，检查画风是否稳定。",
+    "從搜尋結果中選出最多 4 組，每組再用 4 個新隨機種子出圖，檢查畫風是否穩定。",
+    "Select up to 4 combinations from the search results and generate each with 4 new random seeds to check style consistency.",
+    "探索結果から最大4組を選び、それぞれ4つの新しいシードで生成して画風の安定性を確認します。",
+    "검색 결과에서 최대 4개 조합을 선택하고 각 조합을 새로운 시드 4개로 생성해 화풍의 일관성을 확인합니다."
+  ],
+  "修改轮数会更新图片上限；修改图片上限会重新计算轮数。最后一轮可能不足 32 张，上限不代表一定生成满。": [
+    "修改轮数会更新图片上限；修改图片上限会重新计算轮数。最后一轮可能不足 32 张，上限不代表一定生成满。",
+    "修改輪數會更新圖片上限；修改圖片上限會重新計算輪數。最後一輪可能不足 32 張，上限不代表一定生成滿。",
+    "Changing rounds updates the image limit; changing the image limit recalculates rounds. The last round may have fewer than 32 images. The limit is a cap, not a guaranteed total.",
+    "ラウンド数を変えると画像上限が更新され、画像上限を変えるとラウンド数が再計算されます。最後のラウンドは32枚未満の場合があります。上限まで必ず生成するわけではありません。",
+    "라운드를 바꾸면 이미지 한도가 갱신되고, 이미지 한도를 바꾸면 라운드가 다시 계산됩니다. 마지막 라운드는 32장 미만일 수 있으며 한도만큼 반드시 생성되는 것은 아닙니다."
+  ],
+  "生成图片会调用 NovelAI API，可能消耗 Anlas；可随时停止，已完成图片会保留。": [
+    "生成图片会调用 NovelAI API，可能消耗 Anlas；可随时停止，已完成图片会保留。",
+    "生成圖片會呼叫 NovelAI API，可能消耗 Anlas；可隨時停止，已完成圖片會保留。",
+    "Generation uses the NovelAI API and may consume Anlas. You can stop at any time; completed images are kept.",
+    "生成にはNovelAI APIを使用し、Anlasを消費する場合があります。いつでも停止でき、完成済みの画像は保持されます。",
+    "생성 시 NovelAI API를 호출하며 Anlas가 소모될 수 있습니다. 언제든 중지할 수 있고 완성된 이미지는 유지됩니다."
+  ],
+  "清空当前任务的结果列表和进度。默认保留图片文件；勾选下方选项会将本次迭代生成的全部图片移入回收站，不仅是页面展示的候选。参考图、模型、参数和其他任务不受影响。": [
+    "清空当前任务的结果列表和进度。默认保留图片文件；勾选下方选项会将本次迭代生成的全部图片移入回收站，不仅是页面展示的候选。参考图、模型、参数和其他任务不受影响。",
+    "清空目前任務的結果清單與進度。預設保留圖片；勾選下方選項會將本次迭代生成的全部圖片移至資源回收筒，不僅是頁面顯示的候選。參考圖、模型、參數及其他任務不受影響。",
+    "Clear the current run’s results and progress. Files are kept by default. Select the option below to move ALL images generated by this run to the recycle bin, not just the displayed candidates. Reference images, models, parameters and other runs are unchanged.",
+    "現在の実行結果と進捗をクリアします。通常は画像ファイルを保持します。下の項目を選ぶと、表示中の候補だけでなく今回生成した全画像をゴミ箱へ移動します。参考画像、モデル、設定、他の実行には影響しません。",
+    "현재 실행 결과와 진행 상황을 지웁니다. 기본적으로 파일은 보존됩니다. 아래 옵션을 선택하면 표시된 후보뿐 아니라 이번 실행에서 생성한 모든 이미지를 휴지통으로 옮깁니다. 참조 이미지, 모델, 설정, 다른 실행은 유지됩니다."
+  ],
+  "清空迭代结果？": [
+    "清空迭代结果？",
+    "清空迭代結果？",
+    "Clear iteration results?",
+    "反復結果をクリアしますか？",
+    "반복 결과를 지울까요?"
+  ],
+  "同时将本次生成的全部图片移入回收站": [
+    "同时将本次生成的全部图片移入回收站",
+    "同時將本次生成的全部圖片移至資源回收筒",
+    "Also move all images generated by this run to the recycle bin",
+    "今回生成した全画像もゴミ箱へ移動する",
+    "이번 실행에서 생성한 모든 이미지도 휴지통으로 이동"
+  ],
+  "模型与环境已验证，可使用": [
+    "模型与环境已验证，可使用",
+    "模型與環境已驗證，可使用",
+    "Model and runtime verified — ready to use",
+    "モデルと環境を検証済み・使用可能",
+    "모델 및 환경 검증 완료 — 사용 가능"
+  ],
+  "正在校验文件并加载模型…": [
+    "正在校验文件并加载模型…",
+    "正在校驗檔案並載入模型…",
+    "Verifying files and loading the model…",
+    "ファイル検証・モデル読込中…",
+    "파일 검증 및 모델 로딩 중…"
+  ],
+  "模型与环境待验证": [
+    "模型与环境待验证",
+    "模型與環境待驗證",
+    "Model and runtime need verification",
+    "モデルと環境の検証が必要です",
+    "모델 및 환경 검증 필요"
+  ],
+  "请配置模型与运行环境": [
+    "请配置模型与运行环境",
+    "請設定模型與執行環境",
+    "Configure a model and runtime",
+    "モデルと実行環境を設定してください",
+    "모델 및 실행 환경을 설정하세요"
+  ],
+  "重新校验": [
+    "重新校验",
+    "重新校驗",
+    "Verify again",
+    "再検証",
+    "다시 검증"
+  ],
+  "已验证，无需下载": [
+    "已验证，无需下载",
+    "已驗證，無需下載",
+    "Verified — no download needed",
+    "検証済み・ダウンロード不要",
+    "검증 완료 — 다운로드 불필요"
+  ],
+  "正在检查模型完整性、Python、PyTorch 和 CUDA，并执行本地模型评分。不会下载资源或调用付费生图，请稍候。": [
+    "正在检查模型完整性、Python、PyTorch 和 CUDA，并执行本地模型评分。不会下载资源或调用付费生图，请稍候。",
+    "正在檢查模型完整性、Python、PyTorch 與 CUDA，並執行本機模型評分。不會下載資源或呼叫付費生圖，請稍候。",
+    "Checking model integrity, Python, PyTorch and CUDA, then running a local scoring test. No downloads or paid generation. Please wait.",
+    "モデルの整合性、Python、PyTorch、CUDAを確認し、ローカル採点テストを実行します。ダウンロードや有料生成は行いません。しばらくお待ちください。",
+    "모델 무결성, Python, PyTorch, CUDA를 확인한 후 로컬 점수 테스트를 실행합니다. 다운로드나 유료 생성은 하지 않습니다. 잠시 기다려 주세요."
+  ],
+  "模型或环境校验失败，请检查路径后重新校验。": [
+    "模型或环境校验失败，请检查路径后重新校验。",
+    "模型或環境校驗失敗，請檢查路徑後重新校驗。",
+    "Model or runtime verification failed. Check the paths and verify again.",
+    "モデルまたは環境の検証に失敗しました。パスを確認して再検証してください。",
+    "모델 또는 환경 검증 실패. 경로를 확인한 후 다시 검증하세요."
+  ],
+  "重新下载或切换模型（可选）": [
+    "重新下载或切换模型（可选）",
+    "重新下載或切換模型（可選）",
+    "Download again or switch models (optional)",
+    "再ダウンロード・モデル切替（任意）",
+    "다시 다운로드 또는 모델 변경 (선택)"
+  ],
+  "下载模型与运行环境": [
+    "下载模型与运行环境",
+    "下載模型與執行環境",
+    "Download model and runtime",
+    "モデルと実行環境のダウンロード",
+    "모델 및 실행 환경 다운로드"
+  ],
+  "清空迭代结果": [
+    "清空迭代结果",
+    "清空迭代結果",
+    "Clear iteration results",
+    "反復結果をクリア",
+    "반복 결과 지우기"
+  ],
+  "模型独立管理": [
+    "模型独立管理",
+    "模型獨立管理",
+    "Independent model management",
+    "モデル別の管理",
+    "모델별 관리"
+  ],
+  "两个版本分别保存模型、环境和下载位置，分别校验。切换不会自动下载；校验通过后才启用，失败不覆盖原可用模型。": [
+    "两个版本分别保存模型、环境和下载位置，分别校验。切换不会自动下载；校验通过后才启用，失败不覆盖原可用模型。",
+    "兩個版本分別儲存模型、環境與下載位置，分別校驗。切換不會自動下載；校驗通過後才啟用，失敗不覆蓋原可用模型。",
+    "Each version has its own model, runtime, download location and verification. Switching does not download anything automatically. Only verified models are activated; failures preserve the previously usable model.",
+    "モデル、実行環境、保存先、検証結果をバージョンごとに管理します。切替時の自動ダウンロードはありません。検証成功後に有効化し、失敗時は以前のモデルを保持します。",
+    "각 버전의 모델, 환경, 다운로드 위치, 검증 결과를 별도로 관리합니다. 전환 시 자동 다운로드하지 않습니다. 검증 성공 후 활성화하며 실패하면 기존 모델을 유지합니다."
+  ],
+  "当前版本路径：": [
+    "当前版本路径：",
+    "目前版本路徑：",
+    "Paths for the selected version:",
+    "選択中のバージョンのパス：",
+    "선택한 버전 경로:"
+  ],
+  "尚未选择模型目录": [
+    "尚未选择模型目录",
+    "尚未選擇模型目錄",
+    "No model directory selected",
+    "モデルフォルダー未選択",
+    "모델 폴더 미선택"
+  ],
+  "尚未选择运行环境": [
+    "尚未选择运行环境",
+    "尚未選擇執行環境",
+    "No runtime selected",
+    "実行環境未選択",
+    "실행 환경 미선택"
+  ],
+  "已验证": [
+    "已验证",
+    "已驗證",
+    "Verified",
+    "検証済み",
+    "검증 완료"
+  ],
+  "校验中": [
+    "校验中",
+    "校驗中",
+    "Verifying",
+    "検証中",
+    "검증 중"
+  ],
+  "校验失败": [
+    "校验失败",
+    "校驗失敗",
+    "Verification failed",
+    "検証失敗",
+    "검증 실패"
+  ],
+  "待校验": [
+    "待校验",
+    "待校驗",
+    "Not verified yet",
+    "未検証",
+    "검증 대기"
+  ],
+  "未配置": [
+    "未配置",
+    "未設定",
+    "Not configured",
+    "未設定",
+    "미설정"
+  ],
+  "混合模式": [
+    "混合模式",
+    "混合模式",
+    "Mixed mode",
+    "混合モード",
+    "혼합 모드"
+  ],
+  "自然语言": [
+    "自然语言",
+    "自然語言",
+    "Natural language",
+    "自然言語",
+    "자연어"
+  ],
+  "Danbooru 标签": [
+    "Danbooru 标签",
+    "Danbooru 標籤",
+    "Danbooru tags",
+    "Danbooru タグ",
+    "Danbooru 태그"
+  ],
+  "反推模式": [
+    "反推模式",
+    "反推模式",
+    "Caption mode",
+    "逆プロンプトの形式",
+    "역추론 모드"
+  ],
+  "使用软件设置中保存的 {version} 对应模式模板；网络角色选项不改变模板要求。": [
+    "使用软件设置中保存的 {version} 对应模式模板；网络角色选项不改变模板要求。",
+    "使用軟體設定中儲存的 {version} 對應模式範本；網路角色選項不改變範本要求。",
+    "Uses the saved {version} template for this mode. Character recognition does not override the template.",
+    "設定に保存された {version} の選択形式のテンプレートを使用します。キャラクター認識はテンプレート要件を変更しません。",
+    "설정에 저장된 {version} 모드별 템플릿을 사용합니다. 캐릭터 인식은 템플릿 요건을 변경하지 않습니다."
+  ],
+  "检查并升级官方版本": [
+    "检查并升级官方版本",
+    "檢查並升級官方版本",
+    "Check & upgrade Harness",
+    "公式版の確認・更新",
+    "공식 버전 확인 및 업데이트"
+  ],
+  "检测到官方新版；点击上方按钮检查适配包并确认升级。": [
+    "检测到官方新版；点击上方按钮检查适配包并确认升级。",
+    "偵測到官方新版；點擊上方按鈕檢查適配套件並確認升級。",
+    "A newer Harness version was detected. Check the compatible package above, then confirm the upgrade.",
+    "公式の新バージョンがあります。上のボタンで対応パッケージを確認し、更新を承認してください。",
+    "새 공식 버전이 있습니다. 위 버튼으로 호환 패키지를 확인한 후 업데이트를 승인하세요."
+  ],
+  "Harness 运行环境已是当前检测到的最新版本。": [
+    "Harness 运行环境已是当前检测到的最新版本。",
+    "Harness 執行環境已是目前偵測到的最新版本。",
+    "The installed Harness runtime is up to date with this check.",
+    "Harness 実行環境は今回確認した最新版です。",
+    "설치된 Harness 런타임은 이번 확인 기준 최신 버전입니다."
+  ],
+  "Studio 适配组件已是当前检测到的最新版本。": [
+    "Studio 适配组件已是当前检测到的最新版本。",
+    "Studio 適配元件已是目前偵測到的最新版本。",
+    "The Studio adapter is up to date with this check.",
+    "Studio 対応コンポーネントは今回確認した最新版です。",
+    "Studio 호환 구성 요소는 이번 확인 기준 최신 버전입니다."
+  ],
+  "请先安装 Studio 适配组件，再检查 Harness 官方更新。": [
+    "请先安装 Studio 适配组件，再检查 Harness 官方更新。",
+    "請先安裝 Studio 適配元件，再檢查 Harness 官方更新。",
+    "Install the Studio adapter before checking a Harness upgrade.",
+    "先に Studio 対応コンポーネントをインストールしてください。",
+    "먼저 Studio 호환 구성 요소를 설치하세요."
+  ],
+  "检测到 Harness {official}，当前为 {installed}；暂无更新的 Studio 适配包，尚未下载或升级。": [
+    "检测到 Harness {official}，当前为 {installed}；暂无更新的 Studio 适配包，尚未下载或升级。",
+    "偵測到 Harness {official}，目前為 {installed}；暫無更新的 Studio 適配套件，尚未下載或升級。",
+    "Harness {official} was detected; installed: {installed}. No newer Studio adapter package is available. Nothing was downloaded or upgraded.",
+    "Harness {official} が見つかりました（現在 {installed}）。新しい Studio 対応パッケージがないため、ダウンロード・更新は行っていません。",
+    "Harness {official}이 확인되었습니다(설치됨: {installed}). 새 Studio 호환 패키지가 없어 다운로드나 업데이트를 수행하지 않았습니다."
+  ],
+  "已发布组件早于当前安装版本，保留当前组件。": [
+    "已发布组件早于当前安装版本，保留当前组件。",
+    "已發布元件早於目前安裝版本，保留目前元件。",
+    "The published component is older than the installed version. Keeping the current component.",
+    "公開コンポーネントはインストール済みより古いため、現在の版を維持します。",
+    "게시된 구성 요소가 설치된 버전보다 이전 버전이므로 현재 버전을 유지합니다."
+  ],
+  "立即更新": [
+    "立即更新",
+    "立即更新",
+    "Update now",
+    "今すぐ更新",
+    "지금 업데이트"
+  ],
+  "稍后": [
+    "稍后",
+    "稍後",
+    "Later",
+    "後で",
+    "나중에"
+  ],
+  "检查完成，是否立即更新？": [
+    "检查完成，是否立即更新？",
+    "檢查完成，是否立即更新？",
+    "Checks complete. Update now?",
+    "確認完了。今すぐ更新しますか？",
+    "확인 완료. 지금 업데이트할까요?"
+  ],
+  "已选择稍后更新，尚未下载或修改组件。": [
+    "已选择稍后更新，尚未下载或修改组件。",
+    "已選擇稍後更新，尚未下載或修改元件。",
+    "Update postponed. No component was downloaded or changed.",
+    "更新を延期しました。ダウンロードや変更はありません。",
+    "업데이트를 미뤘습니다. 다운로드하거나 변경하지 않았습니다."
+  ],
+  "部分更新检查失败，请重试。": [
+    "部分更新检查失败，请重试。",
+    "部分更新檢查失敗，請重試。",
+    "Some update checks failed. Please retry.",
+    "一部の更新確認に失敗しました。再試行してください。",
+    "일부 업데이트 확인에 실패했습니다. 다시 시도하세요."
+  ],
+  "两项检查完成，暂无可安装更新。": [
+    "两项检查完成，暂无可安装更新。",
+    "兩項檢查完成，暫無可安裝更新。",
+    "Both checks completed. No installable update is available.",
+    "両方の確認が完了しました。インストール可能な更新はありません。",
+    "두 확인이 완료되었습니다. 설치 가능한 업데이트가 없습니다."
+  ],
+  "检测到更新，请先关闭 Agent 后再检查更新。": [
+    "检测到更新，请先关闭 Agent 后再检查更新。",
+    "偵測到更新，請先關閉 Agent 後再檢查更新。",
+    "An update is available. Stop the Agent, then check again.",
+    "更新があります。Agent を停止してから再確認してください。",
+    "업데이트가 있습니다. Agent를 중지한 후 다시 확인하세요."
+  ],
+  "两项检查完成。\nStudio 组件：{installedComponent} → {component}\nHarness 官方：{installedOfficial} → {official}\n\n可下载适配组件 {version}，大小 {size} MiB。选择立即更新后下载并检查兼容性；现有资料保留。": [
+    "两项检查完成。\nStudio 组件：{installedComponent} → {component}\nHarness 官方：{installedOfficial} → {official}\n\n可下载适配组件 {version}，大小 {size} MiB。选择立即更新后下载并检查兼容性；现有资料保留。",
+    "兩項檢查完成。\nStudio 元件：{installedComponent} → {component}\nHarness 官方：{installedOfficial} → {official}\n\n可下載適配元件 {version}，大小 {size} MiB。選擇立即更新後下載並檢查相容性；現有資料保留。",
+    "Both checks completed.\nStudio component: {installedComponent} → {component}\nOfficial Harness: {installedOfficial} → {official}\n\nCompatible package candidate: {version}, {size} MiB. Update now downloads it for compatibility testing; existing data is retained.",
+    "両方の確認が完了しました。\nStudio: {installedComponent} → {component}\n公式 Harness: {installedOfficial} → {official}\n\n対応パッケージ候補: {version}、{size} MiB。「今すぐ更新」でダウンロードして互換性を確認します。既存データは保持します。",
+    "두 확인이 완료되었습니다.\nStudio: {installedComponent} → {component}\n공식 Harness: {installedOfficial} → {official}\n\n호환 패키지 후보: {version}, {size} MiB. 지금 업데이트를 선택하면 다운로드 후 호환성을 확인하며 기존 데이터는 유지됩니다."
+  ],
+  "下载并升级官方运行环境": [
+    "下载并升级官方运行环境",
+    "下載並升級官方執行環境",
+    "Download and upgrade the official runtime",
+    "公式ランタイムをダウンロードして更新",
+    "공식 런타임 다운로드 및 업데이트"
+  ],
+  "检测到官方新版；可独立下载，兼容检查通过后确认升级。": [
+    "检测到官方新版；可独立下载，兼容检查通过后确认升级。",
+    "偵測到官方新版；可獨立下載，相容性檢查通過後確認升級。",
+    "A newer official runtime is available. Download independently, then confirm installation after compatibility checks.",
+    "公式の新しいバージョンがあります。単独でダウンロードし、互換性の確認後に更新を確定します。",
+    "공식 새 버전이 있습니다. 독립적으로 다운로드하고 호환성 검사 후 설치를 확인하세요."
+  ],
+  "两项检查完成：Studio {component}；Harness {official}。": [
+    "两项检查完成：Studio {component}；Harness {official}。",
+    "兩項檢查完成：Studio {component}；Harness {official}。",
+    "Both checks complete: Studio {component}; Harness {official}.",
+    "両方の確認が完了：Studio {component}、Harness {official}。",
+    "두 항목 확인 완료: Studio {component}; Harness {official}."
+  ],
+  "将独立下载 Harness 官方 {version} 及其依赖，下载大小由依赖决定。Studio 适配组件版本保持不变。下载走软件更新代理，先隔离检查兼容性，通过后确认备份和安装。是否立即更新？": [
+    "将独立下载 Harness 官方 {version} 及其依赖，下载大小由依赖决定。Studio 适配组件版本保持不变。下载走软件更新代理，先隔离检查兼容性，通过后确认备份和安装。是否立即更新？",
+    "將獨立下載 Harness 官方 {version} 及其相依套件，下載大小由相依套件決定。Studio 適配元件版本保持不變。下載使用軟體更新代理，先隔離檢查相容性，通過後確認備份和安裝。是否立即更新？",
+    "Download official Harness {version} and its dependencies independently; download size depends on the dependencies. The Studio component version stays unchanged. Downloads use the software-update proxy. Compatibility is tested in isolation before confirming backup and installation. Update now?",
+    "Harness 公式 {version} と依存パッケージを単独でダウンロードします。サイズは依存関係によります。Studio コンポーネントのバージョンは変わりません。ソフトウェア更新プロキシを使用し、隔離環境で互換性を確認してからバックアップとインストールを確定します。今すぐ更新しますか？",
+    "공식 Harness {version} 및 종속성을 독립적으로 다운로드합니다. 용량은 종속성에 따라 달라집니다. Studio 구성 요소 버전은 유지됩니다. 소프트웨어 업데이트 프록시를 사용하며 격리된 호환성 검사 후 백업과 설치를 확인합니다. 지금 업데이트할까요?"
+  ],
+  "选择插件兼容处理方式": [
+    "选择插件兼容处理方式",
+    "選擇外掛相容處理方式",
+    "Choose how to handle plugin compatibility",
+    "プラグインの互換性への対応を選択",
+    "플러그인 호환성 처리 방법 선택"
+  ],
+  "禁用会暂停所列插件提供的功能，不删除插件和配置。其余插件仍需通过兼容检查；安装前备份，可从“更新备份与恢复”还原原来的插件和运行环境。": [
+    "禁用会暂停所列插件提供的功能，不删除插件和配置。其余插件仍需通过兼容检查；安装前备份，可从“更新备份与恢复”还原原来的插件和运行环境。",
+    "停用會暫停所列外掛的功能，不刪除外掛與設定。其餘外掛仍須通過相容檢查；安裝前備份，可從「更新備份與還原」還原原來的外掛與執行環境。",
+    "Disabling suspends these plugins without deleting their files or settings. Remaining plugins must still pass compatibility checks. A pre-install backup lets you restore the previous plugins and runtime under Update backup and restore.",
+    "無効化すると対象機能は停止しますが、ファイルや設定は保持されます。残りのプラグインも互換性確認が必要です。インストール前のバックアップから元の環境を復元できます。",
+    "비활성화하면 해당 기능이 중지되지만 파일과 설정은 유지됩니다. 나머지 플러그인도 호환성 검사를 통과해야 합니다. 설치 전 백업으로 이전 플러그인과 실행 환경을 복원할 수 있습니다."
+  ],
+  "暂不更新，保留现状": [
+    "暂不更新，保留现状",
+    "暫不更新，保留現狀",
+    "Not now — keep current setup",
+    "更新せず現状を維持",
+    "나중에 — 현재 상태 유지"
+  ],
+  "禁用未适配插件，其余升级后继续": [
+    "禁用未适配插件，其余升级后继续",
+    "停用未適配外掛，其餘升級後繼續",
+    "Disable unavailable plugins, upgrade the rest",
+    "未対応を無効化、残りを更新して続行",
+    "미지원 플러그인 비활성화 후 나머지 업그레이드"
+  ],
+  "禁用所列冲突插件并继续": [
+    "禁用所列冲突插件并继续",
+    "停用列出的衝突外掛並繼續",
+    "Disable listed conflicting plugins and continue",
+    "一覧の競合プラグインを無効化して続行",
+    "표시된 충돌 플러그인 비활성화 후 계속"
+  ],
+  "升级兼容插件并继续": [
+    "升级兼容插件并继续",
+    "升級相容外掛並繼續",
+    "Upgrade compatible plugins and continue",
+    "互換性のあるプラグインを更新して続行",
+    "호환 플러그인 업그레이드 후 계속"
+  ],
+  "禁用（保留插件和配置）": [
+    "禁用（保留插件和配置）",
+    "停用（保留外掛與設定）",
+    "Disabled (files and settings retained)",
+    "無効化（ファイルと設定を保持）",
+    "비활성화 (파일 및 설정 유지)"
+  ],
+  "插件自动更新": [
+    "插件自动更新",
+    "插件自動更新",
+    "Automatic plugin updates",
+    "プラグイン自動更新",
+    "플러그인 자동 업데이트"
+  ],
+  "检查并更新插件": [
+    "检查并更新插件",
+    "檢查並更新插件",
+    "Check and update plugins",
+    "プラグインを確認・更新",
+    "플러그인 확인 및 업데이트"
+  ],
+  "自动检查并安装兼容的插件更新": [
+    "自动检查并安装兼容的插件更新",
+    "自動檢查並安裝相容的插件更新",
+    "Automatically check and install compatible plugin updates",
+    "互換性のあるプラグイン更新を自動確認・インストール",
+    "호환되는 플러그인 업데이트 자동 확인 및 설치"
+  ],
+  "启动后及每 6 小时检查；Agent 运行时等待关闭。更新前备份并隔离测试，不自动禁用插件。": [
+    "启动后及每 6 小时检查；Agent 运行时等待关闭。更新前备份并隔离测试，不自动禁用插件。",
+    "啟動後及每 6 小時檢查；Agent 執行時等待關閉。更新前備份並隔離測試，不自動停用插件。",
+    "Checks after startup and every 6 hours. Waits until Agent stops; backs up and tests in isolation before updating. Never disables plugins automatically.",
+    "起動後と6時間ごとに確認。Agent停止後、バックアップと隔離テストを行って更新します。自動で無効化はしません。",
+    "시작 후 및 6시간마다 확인합니다. Agent 종료 후 백업과 격리 테스트를 거쳐 업데이트하며 자동으로 비활성화하지 않습니다."
+  ],
+  "插件检查详情": [
+    "插件检查详情",
+    "插件檢查詳情",
+    "Plugin check details",
+    "プラグイン確認の詳細",
+    "플러그인 확인 세부 정보"
+  ],
+  "Agent 已启动，但部分插件未加载": [
+    "Agent 已启动，但部分插件未加载",
+    "Agent 已啟動，但部分插件未載入",
+    "Agent is running, but some plugins did not load",
+    "Agentは起動しましたが、一部のプラグインは未読込です",
+    "Agent가 실행 중이지만 일부 플러그인이 로드되지 않았습니다"
+  ],
+  "插件自动检查尚未开始": [
+    "插件自动检查尚未开始",
+    "插件自動檢查尚未開始",
+    "Automatic plugin check has not started",
+    "自動確認はまだ開始していません",
+    "플러그인 자동 확인이 아직 시작되지 않았습니다"
+  ],
+  "插件自动更新已关闭": [
+    "插件自动更新已关闭",
+    "插件自動更新已關閉",
+    "Automatic plugin updates are off",
+    "自動更新はオフです",
+    "플러그인 자동 업데이트가 꺼져 있습니다"
+  ],
+  "正在检查已启用插件的兼容更新…": [
+    "正在检查已启用插件的兼容更新…",
+    "正在檢查已啟用插件的相容更新…",
+    "Checking enabled plugins for compatible updates…",
+    "有効なプラグインの互換更新を確認中…",
+    "활성 플러그인의 호환 업데이트 확인 중…"
+  ],
+  "部分插件尚无兼容新版，保留现状；没有自动禁用。": [
+    "部分插件尚无兼容新版，保留现状；没有自动禁用。",
+    "部分插件尚無相容新版，保留現狀；沒有自動停用。",
+    "Some plugins have no compatible update. Kept unchanged; none disabled.",
+    "互換版がないプラグインがあります。変更や自動無効化はしていません。",
+    "일부 플러그인에 호환 버전이 없어 기존 상태를 유지했습니다. 자동 비활성화하지 않았습니다."
+  ],
+  "插件检查完成，暂无可安装的兼容更新。": [
+    "插件检查完成，暂无可安装的兼容更新。",
+    "插件檢查完成，暫無可安裝的相容更新。",
+    "Check complete; no compatible updates available.",
+    "確認完了。インストール可能な互換更新はありません。",
+    "확인 완료. 설치 가능한 호환 업데이트가 없습니다."
+  ],
+  "发现插件更新，等待 Agent 关闭后自动处理。": [
+    "发现插件更新，等待 Agent 关闭后自动处理。",
+    "發現插件更新，等待 Agent 關閉後自動處理。",
+    "Plugin updates found; waiting for Agent to stop.",
+    "更新が見つかりました。Agentの停止を待っています。",
+    "플러그인 업데이트가 있습니다. Agent 종료를 기다립니다."
+  ],
+  "正在备份、隔离检查并更新插件…": [
+    "正在备份、隔离检查并更新插件…",
+    "正在備份、隔離檢查並更新插件…",
+    "Backing up, testing in isolation and updating plugins…",
+    "バックアップ・隔離テスト・プラグイン更新中…",
+    "플러그인 백업, 격리 테스트 및 업데이트 중…"
+  ],
+  "插件更新完成，原插件和配置已备份。": [
+    "插件更新完成，原插件和配置已备份。",
+    "插件更新完成，原插件和設定已備份。",
+    "Plugins updated; previous plugins and settings are backed up.",
+    "更新完了。元のプラグインと設定はバックアップ済みです。",
+    "업데이트 완료. 기존 플러그인과 설정은 백업되었습니다."
+  ],
+  "插件更新检查未完成，请检查网络后重试；原插件保持不变。": [
+    "插件更新检查未完成，请检查网络后重试；原插件保持不变。",
+    "插件更新檢查未完成，請檢查網路後重試；原插件保持不變。",
+    "Plugin check failed. Check your connection and retry; plugins are unchanged.",
+    "確認が完了しませんでした。ネット接続を確認してください。元のプラグインは未変更です。",
+    "확인을 완료하지 못했습니다. 네트워크 확인 후 다시 시도하세요. 기존 플러그인은 그대로입니다."
+  ],
+  "插件自动更新已停止；未提交的更新已取消。": [
+    "插件自动更新已停止；未提交的更新已取消。",
+    "插件自動更新已停止；未提交的更新已取消。",
+    "Plugin updater stopped; uncommitted changes cancelled.",
+    "自動更新を停止し、未確定の変更を取り消しました。",
+    "자동 업데이트를 중지하고 적용 전 변경 사항을 취소했습니다."
+  ],
+  "插件更新未完成，保留原有环境：{reason}": [
+    "插件更新未完成，保留原有环境：{reason}",
+    "插件更新未完成，保留原有環境：{reason}",
+    "Plugin update failed; original environment retained: {reason}",
+    "更新未完了。元の環境を保持：{reason}",
+    "업데이트 실패. 기존 환경 유지: {reason}"
+  ],
+  "退出软件确认": [
+    "退出软件确认",
+    "結束軟體確認",
+    "Confirm exit",
+    "終了の確認",
+    "종료 확인"
+  ],
+  "退出软件？": [
+    "退出软件？",
+    "結束軟體？",
+    "Exit Studio?",
+    "Studio を終了しますか？",
+    "Studio를 종료할까요?"
+  ],
+  "停止任务并退出": [
+    "停止任务并退出",
+    "停止任務並結束",
+    "Stop tasks and exit",
+    "タスクを停止して終了",
+    "작업 중지 후 종료"
+  ],
+  "仍有任务正在运行。退出会停止助手和本地任务，已保存的聊天与图片不会删除。已提交的生图请求可能继续计费，重新打开后请先查看历史。": [
+    "仍有任务正在运行。退出会停止助手和本地任务，已保存的聊天与图片不会删除。已提交的生图请求可能继续计费，重新打开后请先查看历史。",
+    "仍有任務正在執行。結束會停止助手和本機任務，已儲存的聊天與圖片不會刪除。已提交的生圖請求可能繼續計費，重新開啟後請先查看歷史。",
+    "Tasks are still running. Exiting stops the assistant and local tasks without deleting saved chats or images. Submitted image requests may still incur charges; check history before retrying.",
+    "タスクが実行中です。終了するとアシスタントとローカルタスクが停止します。保存済みの会話と画像は削除されません。送信済みの画像生成は課金される場合があるため、再試行の前に履歴を確認してください。",
+    "작업이 실행 중입니다. 종료하면 도우미와 로컬 작업이 중지되며, 저장된 대화와 이미지는 삭제되지 않습니다. 제출한 이미지 요청에는 요금이 발생할 수 있으므로 다시 시도하기 전에 기록을 확인하세요。"
+  ],
+  "重绘引擎": [
+    "重绘引擎",
+    "重繪引擎",
+    "Inpaint engine",
+    "再描画エンジン",
+    "리드로우 엔진"
+  ],
+  "OpenAI 图像编辑": [
+    "OpenAI 图像编辑",
+    "OpenAI 圖像編輯",
+    "OpenAI image edit",
+    "OpenAI 画像編集",
+    "OpenAI 이미지 편집"
+  ],
+  "尚未配置接口密钥。": [
+    "尚未配置接口密钥。",
+    "尚未設定介面金鑰。",
+    "API key not configured yet.",
+    "API キーが未設定です。",
+    "API 키가 아직 설정되지 않았습니다."
+  ],
+  "前往设置": [
+    "前往设置",
+    "前往設定",
+    "Open settings",
+    "設定を開く",
+    "설정 열기"
+  ],
+  "重绘指令": [
+    "重绘指令",
+    "重繪指令",
+    "Edit instruction",
+    "編集指示",
+    "편집 지시"
+  ],
+  "用自然语言描述蒙版区域要变成什么，例如：把她手里的杯子换成一束白玫瑰": [
+    "用自然语言描述蒙版区域要变成什么，例如：把她手里的杯子换成一束白玫瑰",
+    "用自然語言描述蒙版區域要變成什麼，例如：把她手裡的杯子換成一束白玫瑰",
+    "Describe in plain language what the masked area should become, e.g. replace the cup in her hand with a bouquet of white roses",
+    "マスク範囲をどう変えるか自然な文章で書いてください。例：彼女が持っているカップを白いバラの花束に変える",
+    "마스크 영역을 어떻게 바꿀지 자연어로 설명하세요. 예: 그녀가 들고 있는 컵을 흰 장미 꽃다발로 바꾸기"
+  ],
+  "质量": [
+    "质量",
+    "品質",
+    "Quality",
+    "品質",
+    "품질"
+  ],
+  "自动（不发送）": [
+    "自动（不发送）",
+    "自動（不傳送）",
+    "Auto (not sent)",
+    "自動（送信しない）",
+    "자동 (전송 안 함)"
+  ],
+  "输入保真度": [
+    "输入保真度",
+    "輸入保真度",
+    "Input fidelity",
+    "入力忠実度",
+    "입력 충실도"
+  ],
+  "不发送": [
+    "不发送",
+    "不傳送",
+    "Not sent",
+    "送信しない",
+    "전송 안 함"
+  ],
+  "只把蒙版区域（外扩并羽化）贴回原图，蒙版外像素保持不变。由 OpenAI 或中转服务按其价格计费，不消耗 Anlas；失败不会自动重试。": [
+    "只把蒙版区域（外扩并羽化）贴回原图，蒙版外像素保持不变。由 OpenAI 或中转服务按其价格计费，不消耗 Anlas；失败不会自动重试。",
+    "只把蒙版區域（外擴並羽化）貼回原圖，蒙版外像素保持不變。由 OpenAI 或中轉服務按其價格計費，不消耗 Anlas；失敗不會自動重試。",
+    "Only the masked area (grown and feathered) is pasted back; pixels outside the mask stay unchanged. Billed by OpenAI or your relay at their prices, no Anlas used; failures are never retried automatically.",
+    "マスク範囲（拡張・ぼかし済み）だけを元画像に貼り戻し、マスク外のピクセルは変わりません。料金は OpenAI または中継サービスの価格で請求され、Anlas は消費しません。失敗しても自動で再送しません。",
+    "마스크 영역(확장 및 페더링)만 원본에 다시 붙이며 마스크 밖 픽셀은 그대로입니다. OpenAI 또는 중계 서비스 요금으로 청구되며 Anlas는 사용하지 않습니다. 실패 시 자동으로 재시도하지 않습니다."
+  ],
+  "请先涂抹蒙版。": [
+    "请先涂抹蒙版。",
+    "請先塗抹蒙版。",
+    "Paint a mask first.",
+    "先にマスクを塗ってください。",
+    "먼저 마스크를 칠하세요."
+  ],
+  "请输入重绘指令。": [
+    "请输入重绘指令。",
+    "請輸入重繪指令。",
+    "Enter an edit instruction.",
+    "編集指示を入力してください。",
+    "편집 지시를 입력하세요."
+  ],
+  "OpenAI 重绘": [
+    "OpenAI 重绘",
+    "OpenAI 重繪",
+    "Inpaint with OpenAI",
+    "OpenAI で再描画",
+    "OpenAI로 리드로우"
+  ],
+  "尺寸应为 WIDTHxHEIGHT。": [
+    "尺寸应为 WIDTHxHEIGHT。",
+    "尺寸應為 WIDTHxHEIGHT。",
+    "Size must be WIDTHxHEIGHT.",
+    "サイズは WIDTHxHEIGHT の形式で指定してください。",
+    "크기는 WIDTHxHEIGHT 형식이어야 합니다."
+  ],
+  "请输入模型名称。": [
+    "请输入模型名称。",
+    "請輸入模型名稱。",
+    "Enter a model name.",
+    "モデル名を入力してください。",
+    "모델 이름을 입력하세요."
+  ],
+  "密钥格式无效。": [
+    "密钥格式无效。",
+    "金鑰格式無效。",
+    "Invalid key format.",
+    "キーの形式が無効です。",
+    "키 형식이 올바르지 않습니다."
+  ],
+  "已保存；尚未发送任何请求。": [
+    "已保存；尚未发送任何请求。",
+    "已儲存；尚未傳送任何請求。",
+    "Saved; no request has been sent.",
+    "保存しました。リクエストはまだ送信していません。",
+    "저장했습니다. 아직 요청을 보내지 않았습니다."
+  ],
+  "保存失败，请检查接口地址（须为 HTTPS）、模型和密钥。": [
+    "保存失败，请检查接口地址（须为 HTTPS）、模型和密钥。",
+    "儲存失敗，請檢查介面位址（須為 HTTPS）、模型和金鑰。",
+    "Save failed. Check the endpoint (must be HTTPS), model and key.",
+    "保存に失敗しました。エンドポイント（HTTPS 必須）、モデル、キーを確認してください。",
+    "저장하지 못했습니다. 엔드포인트(HTTPS 필수), 모델, 키를 확인하세요."
+  ],
+  "用于重绘页的“OpenAI 图像编辑”引擎。支持官方接口和 OpenAI 兼容中转；不会改变当前的生图服务。": [
+    "用于重绘页的“OpenAI 图像编辑”引擎。支持官方接口和 OpenAI 兼容中转；不会改变当前的生图服务。",
+    "用於重繪頁的「OpenAI 圖像編輯」引擎。支援官方介面和 OpenAI 相容中轉；不會改變目前的生圖服務。",
+    "Used by the “OpenAI image edit” engine on the inpaint page. Works with the official API or any OpenAI-compatible relay; your image generation service is not changed.",
+    "再描画ページの「OpenAI 画像編集」エンジンで使用します。公式 API と OpenAI 互換の中継に対応し、現在の画像生成サービスは変更しません。",
+    "리드로우 페이지의 ‘OpenAI 이미지 편집’ 엔진에 사용됩니다. 공식 API와 OpenAI 호환 중계를 지원하며 현재 이미지 생성 서비스는 바뀌지 않습니다."
+  ],
+  "接口地址": [
+    "接口地址",
+    "介面位址",
+    "Endpoint",
+    "エンドポイント",
+    "엔드포인트"
+  ],
+  "填写到 /v1 即可，会自动使用 /images/edits。": [
+    "填写到 /v1 即可，会自动使用 /images/edits。",
+    "填寫到 /v1 即可，會自動使用 /images/edits。",
+    "Enter the URL up to /v1; /images/edits is added automatically.",
+    "/v1 までを入力してください。/images/edits は自動で付加されます。",
+    "/v1까지만 입력하세요. /images/edits는 자동으로 붙습니다."
+  ],
+  "API 密钥": [
+    "API 密钥",
+    "API 金鑰",
+    "API key",
+    "API キー",
+    "API 키"
+  ],
+  "显示": [
+    "显示",
+    "顯示",
+    "Show",
+    "表示",
+    "표시"
+  ],
+  "隐藏": [
+    "隐藏",
+    "隱藏",
+    "Hide",
+    "非表示",
+    "숨기기"
+  ],
+  "模型": [
+    "模型",
+    "模型",
+    "Model",
+    "モデル",
+    "모델"
+  ],
+  "请求尺寸": [
+    "请求尺寸",
+    "請求尺寸",
+    "Request size",
+    "リクエストサイズ",
+    "요청 크기"
+  ],
+  "自动匹配标准尺寸（推荐）": [
+    "自动匹配标准尺寸（推荐）",
+    "自動匹配標準尺寸（推薦）",
+    "Closest standard size (recommended)",
+    "最も近い標準サイズ（推奨）",
+    "가장 가까운 표준 크기 (권장)"
+  ],
+  "由服务端决定（auto）": [
+    "由服务端决定（auto）",
+    "由服務端決定（auto）",
+    "Let the server decide (auto)",
+    "サーバーに任せる（auto）",
+    "서버가 결정 (auto)"
+  ],
+  "自定义": [
+    "自定义",
+    "自訂",
+    "Custom",
+    "カスタム",
+    "사용자 지정"
+  ],
+  "自定义尺寸": [
+    "自定义尺寸",
+    "自訂尺寸",
+    "Custom size",
+    "カスタムサイズ",
+    "사용자 지정 크기"
+  ],
+  "图片会先补边到请求比例再上传，结果按原尺寸裁回，不会拉伸。": [
+    "图片会先补边到请求比例再上传，结果按原尺寸裁回，不会拉伸。",
+    "圖片會先補邊到請求比例再上傳，結果按原尺寸裁回，不會拉伸。",
+    "The image is padded to the requested aspect before upload and the result is cropped back to the original size — never stretched.",
+    "画像はリクエストの比率まで余白を足してからアップロードし、結果は元のサイズに切り戻すため引き伸ばされません。",
+    "이미지는 요청 비율에 맞게 여백을 더해 업로드하고, 결과는 원래 크기로 잘라내므로 늘어나지 않습니다."
+  ],
+  "保存中…": [
+    "保存中…",
+    "儲存中…",
+    "Saving…",
+    "保存中…",
+    "저장 중…"
+  ],
+  "正在请求 OpenAI 图像编辑…": [
+    "正在请求 OpenAI 图像编辑…",
+    "正在請求 OpenAI 圖像編輯…",
+    "Requesting OpenAI image edit…",
+    "OpenAI 画像編集をリクエスト中…",
+    "OpenAI 이미지 편집 요청 중…"
+  ],
+  "OpenAI 图像编辑完成，已保存 {count} 张。费用以服务商记录为准。": [
+    "OpenAI 图像编辑完成，已保存 {count} 张。费用以服务商记录为准。",
+    "OpenAI 圖像編輯完成，已儲存 {count} 張。費用以服務商記錄為準。",
+    "OpenAI image edit finished; saved {count} image(s). Charges follow your provider's records.",
+    "OpenAI 画像編集が完了し、{count} 枚保存しました。料金はプロバイダーの記録に従います。",
+    "OpenAI 이미지 편집 완료, {count}장 저장했습니다. 요금은 제공자 기록을 따릅니다."
+  ],
+  "请先在 设置 → API 配置 → OpenAI 图像编辑 中填写接口地址、模型和密钥。": [
+    "请先在 设置 → API 配置 → OpenAI 图像编辑 中填写接口地址、模型和密钥。",
+    "請先在 設定 → API 設定 → OpenAI 圖像編輯 中填寫介面位址、模型和金鑰。",
+    "Fill in the endpoint, model and key under Settings → API → OpenAI image edit first.",
+    "先に 設定 → API → OpenAI 画像編集 でエンドポイント、モデル、キーを入力してください。",
+    "먼저 설정 → API → OpenAI 이미지 편집에서 엔드포인트, 모델, 키를 입력하세요."
+  ],
+  "请先绘制需要重绘的蒙版区域。": [
+    "请先绘制需要重绘的蒙版区域。",
+    "請先繪製需要重繪的蒙版區域。",
+    "Paint the area to redraw first.",
+    "先に再描画する範囲をマスクで塗ってください。",
+    "먼저 다시 그릴 영역을 마스크로 칠하세요."
+  ],
+  "蒙版为空，请先涂抹需要重绘的区域。": [
+    "蒙版为空，请先涂抹需要重绘的区域。",
+    "蒙版為空，請先塗抹需要重繪的區域。",
+    "The mask is empty. Paint the area to redraw first.",
+    "マスクが空です。再描画する範囲を塗ってください。",
+    "마스크가 비어 있습니다. 다시 그릴 영역을 칠하세요."
+  ],
+  "结果保存未完成，请检查输出目录和历史存储；没有自动重新提交。": [
+    "结果保存未完成，请检查输出目录和历史存储；没有自动重新提交。",
+    "結果儲存未完成，請檢查輸出目錄和歷史儲存；沒有自動重新提交。",
+    "Saving the result did not finish. Check the output folder and history storage; nothing was resubmitted.",
+    "結果の保存が完了しませんでした。出力フォルダーと履歴の保存先を確認してください。自動で再送信はしていません。",
+    "결과 저장을 완료하지 못했습니다. 출력 폴더와 기록 저장소를 확인하세요. 자동으로 다시 제출하지 않았습니다."
+  ],
+  "请求未提交，请检查 OpenAI 图像编辑配置、蒙版与图片。": [
+    "请求未提交，请检查 OpenAI 图像编辑配置、蒙版与图片。",
+    "請求未提交，請檢查 OpenAI 圖像編輯設定、蒙版與圖片。",
+    "Request not submitted. Check the OpenAI image edit settings, the mask and the image.",
+    "リクエストは送信されていません。OpenAI 画像編集の設定、マスク、画像を確認してください。",
+    "요청을 보내지 않았습니다. OpenAI 이미지 편집 설정, 마스크, 이미지를 확인하세요."
+  ],
+  "请求未完成，请核对服务商记录；没有自动重新提交。": [
+    "请求未完成，请核对服务商记录；没有自动重新提交。",
+    "請求未完成，請核對服務商記錄；沒有自動重新提交。",
+    "The request did not finish. Check your provider's records; nothing was resubmitted.",
+    "リクエストが完了しませんでした。プロバイダーの記録を確認してください。自動で再送信はしていません。",
+    "요청이 완료되지 않았습니다. 제공자 기록을 확인하세요. 자동으로 다시 제출하지 않았습니다."
+  ],
+  "MCP 服务": [
+    "MCP 服务",
+    "MCP 服務",
+    "MCP server",
+    "MCP サーバー",
+    "MCP 서버"
+  ],
+  "本地 MCP 服务": [
+    "本地 MCP 服务",
+    "本機 MCP 服務",
+    "Local MCP server",
+    "ローカル MCP サーバー",
+    "로컬 MCP 서버"
+  ],
+  "让外部智能体（pi、Claude Code、Codex 等）通过 MCP 控制本软件：文生图、图生图、局部重绘、超分、查看历史和图片。仅监听 127.0.0.1，需要 Bearer Token；生成结果照常保存到历史记录。": [
+    "让外部智能体（pi、Claude Code、Codex 等）通过 MCP 控制本软件：文生图、图生图、局部重绘、超分、查看历史和图片。仅监听 127.0.0.1，需要 Bearer Token；生成结果照常保存到历史记录。",
+    "讓外部智慧體（pi、Claude Code、Codex 等）透過 MCP 控制本軟體：文生圖、圖生圖、局部重繪、超解析、檢視歷史和圖片。僅監聽 127.0.0.1，需要 Bearer Token；生成結果照常儲存到歷史記錄。",
+    "Let external agents (pi, Claude Code, Codex, …) drive this app over MCP: text-to-image, img2img, inpainting, upscaling, browsing history and images. Listens on 127.0.0.1 only and requires a Bearer token; results are saved to history as usual.",
+    "外部エージェント（pi、Claude Code、Codex など）から MCP 経由で本アプリを操作できます：テキストから画像、画像から画像、部分再描画、アップスケール、履歴と画像の閲覧。127.0.0.1 のみで待ち受け、Bearer トークンが必要です。生成結果は通常どおり履歴に保存されます。",
+    "외부 에이전트(pi, Claude Code, Codex 등)가 MCP로 이 앱을 제어할 수 있습니다: 텍스트→이미지, 이미지→이미지, 부분 리드로우, 업스케일, 기록 및 이미지 보기. 127.0.0.1에서만 수신하며 Bearer 토큰이 필요합니다. 결과는 평소처럼 기록에 저장됩니다."
+  ],
+  "启用 MCP 服务": [
+    "启用 MCP 服务",
+    "啟用 MCP 服務",
+    "Enable MCP server",
+    "MCP サーバーを有効化",
+    "MCP 서버 사용"
+  ],
+  "运行中：{url}": [
+    "运行中：{url}",
+    "執行中：{url}",
+    "Running: {url}",
+    "実行中：{url}",
+    "실행 중: {url}"
+  ],
+  "启动失败：{error}": [
+    "启动失败：{error}",
+    "啟動失敗：{error}",
+    "Failed to start: {error}",
+    "起動に失敗しました：{error}",
+    "시작 실패: {error}"
+  ],
+  "未运行": [
+    "未运行",
+    "未執行",
+    "Not running",
+    "停止中",
+    "실행 중 아님"
+  ],
+  "端口": [
+    "端口",
+    "連接埠",
+    "Port",
+    "ポート",
+    "포트"
+  ],
+  "单次调用 Anlas 上限（0 = 只允许免费操作）": [
+    "单次调用 Anlas 上限（0 = 只允许免费操作）",
+    "單次呼叫 Anlas 上限（0 = 只允許免費操作）",
+    "Anlas limit per call (0 = free operations only)",
+    "1 回あたりの Anlas 上限（0 = 無料操作のみ）",
+    "호출당 Anlas 한도 (0 = 무료 작업만)"
+  ],
+  "每次付费操作执行前都会先估价，超过上限直接拒绝，不会扣点。Opus 免费范围：≤1MP、≤28 步、单张、无精准参考。精准参考按每张参考图 5 Anlas 计入上限（偏保守）。": [
+    "每次付费操作执行前都会先估价，超过上限直接拒绝，不会扣点。Opus 免费范围：≤1MP、≤28 步、单张、无精准参考。精准参考按每张参考图 5 Anlas 计入上限（偏保守）。",
+    "每次付費操作執行前都會先估價，超過上限直接拒絕，不會扣點。Opus 免費範圍：≤1MP、≤28 步、單張、無精準參考。精準參考按每張參考圖 5 Anlas 計入上限（偏保守）。",
+    "Every paid operation is quoted first and refused without charge if it exceeds the limit. Opus free range: ≤1MP, ≤28 steps, single image, no precise references. Precise references count as 5 Anlas per reference image (conservative).",
+    "有料操作は実行前に必ず見積もり、上限を超える場合は課金せずに拒否します。Opus の無料範囲：1MP 以下、28 ステップ以下、1 枚、精密参照なし。精密参照は参照画像 1 枚につき 5 Anlas として計上します（保守的）。",
+    "유료 작업은 실행 전에 항상 견적을 내고, 한도를 넘으면 차감 없이 거부합니다. Opus 무료 범위: 1MP 이하, 28스텝 이하, 1장, 정밀 참조 없음. 정밀 참조는 참조 이미지당 5 Anlas로 계산합니다(보수적)."
+  ],
+  "访问令牌（Bearer Token）": [
+    "访问令牌（Bearer Token）",
+    "存取權杖（Bearer Token）",
+    "Access token (Bearer)",
+    "アクセストークン（Bearer）",
+    "액세스 토큰 (Bearer)"
+  ],
+  "启用后自动生成": [
+    "启用后自动生成",
+    "啟用後自動產生",
+    "Generated when enabled",
+    "有効化すると自動生成",
+    "사용 시 자동 생성"
+  ],
+  "复制令牌": [
+    "复制令牌",
+    "複製權杖",
+    "Copy token",
+    "トークンをコピー",
+    "토큰 복사"
+  ],
+  "重新生成令牌": [
+    "重新生成令牌",
+    "重新產生權杖",
+    "Regenerate token",
+    "トークンを再生成",
+    "토큰 다시 생성"
+  ],
+  "接入客户端": [
+    "接入客户端",
+    "接入用戶端",
+    "Client",
+    "接続クライアント",
+    "연결 클라이언트"
+  ],
+  "复制": [
+    "复制",
+    "複製",
+    "Copy",
+    "コピー",
+    "복사"
+  ],
+  "配置里包含访问令牌，请勿分享。长时间生成会通过进度通知保持连接；如果客户端不支持，请把它的 MCP 工具超时调到 600 秒左右。": [
+    "配置里包含访问令牌，请勿分享。长时间生成会通过进度通知保持连接；如果客户端不支持，请把它的 MCP 工具超时调到 600 秒左右。",
+    "設定裡包含存取權杖，請勿分享。長時間生成會透過進度通知保持連線；如果用戶端不支援，請把它的 MCP 工具逾時調到 600 秒左右。",
+    "These configs contain your access token — do not share them. Long generations keep the connection alive with progress notifications; if your client ignores them, raise its MCP tool timeout to about 600 seconds.",
+    "設定にはアクセストークンが含まれます。共有しないでください。長時間の生成は進捗通知で接続を維持します。クライアントが対応していない場合は、MCP ツールのタイムアウトを 600 秒程度に設定してください。",
+    "설정에 액세스 토큰이 포함되어 있으니 공유하지 마세요. 긴 생성은 진행 알림으로 연결을 유지합니다. 클라이언트가 지원하지 않으면 MCP 도구 타임아웃을 약 600초로 늘리세요."
+  ],
+  "已复制到剪贴板": [
+    "已复制到剪贴板",
+    "已複製到剪貼簿",
+    "Copied to clipboard",
+    "クリップボードにコピーしました",
+    "클립보드에 복사했습니다"
+  ],
+  "MCP：已生成 {count} 张图片": [
+    "MCP：已生成 {count} 张图片",
+    "MCP：已生成 {count} 張圖片",
+    "MCP: generated {count} image(s)",
+    "MCP：{count} 枚の画像を生成しました",
+    "MCP: 이미지 {count}장 생성됨"
+  ],
+  "终端执行": [
+    "终端执行",
+    "終端機執行",
+    "Run in a terminal",
+    "ターミナルで実行",
+    "터미널에서 실행"
+  ],
+  "或写入 ~/.pi/agent/mcp.json": [
+    "或写入 ~/.pi/agent/mcp.json",
+    "或寫入 ~/.pi/agent/mcp.json",
+    "Or write to ~/.pi/agent/mcp.json",
+    "または ~/.pi/agent/mcp.json に書き込む",
+    "또는 ~/.pi/agent/mcp.json에 작성"
+  ],
+  "添加后在 pi 会话里执行 /reload；`pi mcp list` 可检查连接。": [
+    "添加后在 pi 会话里执行 /reload；`pi mcp list` 可检查连接。",
+    "新增後在 pi 對話裡執行 /reload；`pi mcp list` 可檢查連線。",
+    "Run /reload in your pi session after adding; `pi mcp list` checks the connection.",
+    "追加後、pi のセッションで /reload を実行してください。`pi mcp list` で接続を確認できます。",
+    "추가한 뒤 pi 세션에서 /reload를 실행하세요. `pi mcp list`로 연결을 확인할 수 있습니다."
+  ],
+  "终端执行（--scope user 对所有项目生效）": [
+    "终端执行（--scope user 对所有项目生效）",
+    "終端機執行（--scope user 對所有專案生效）",
+    "Run in a terminal (--scope user applies to all projects)",
+    "ターミナルで実行（--scope user で全プロジェクトに適用）",
+    "터미널에서 실행 (--scope user는 모든 프로젝트에 적용)"
+  ],
+  "或写入项目根目录 .mcp.json": [
+    "或写入项目根目录 .mcp.json",
+    "或寫入專案根目錄 .mcp.json",
+    "Or write to .mcp.json in the project root",
+    "またはプロジェクト直下の .mcp.json に書き込む",
+    "또는 프로젝트 루트의 .mcp.json에 작성"
+  ],
+  "在 Claude Code 里用 /mcp 查看状态。长任务可把环境变量 MCP_TOOL_TIMEOUT 设为 600000（毫秒）。": [
+    "在 Claude Code 里用 /mcp 查看状态。长任务可把环境变量 MCP_TOOL_TIMEOUT 设为 600000（毫秒）。",
+    "在 Claude Code 裡用 /mcp 檢視狀態。長任務可把環境變數 MCP_TOOL_TIMEOUT 設為 600000（毫秒）。",
+    "Use /mcp in Claude Code to check the status. For long jobs set the MCP_TOOL_TIMEOUT environment variable to 600000 (ms).",
+    "Claude Code では /mcp で状態を確認できます。長いジョブでは環境変数 MCP_TOOL_TIMEOUT を 600000（ミリ秒）に設定してください。",
+    "Claude Code에서 /mcp로 상태를 확인하세요. 긴 작업은 환경 변수 MCP_TOOL_TIMEOUT을 600000(밀리초)으로 설정하세요."
+  ],
+  "写入 ~/.codex/config.toml": [
+    "写入 ~/.codex/config.toml",
+    "寫入 ~/.codex/config.toml",
+    "Write to ~/.codex/config.toml",
+    "~/.codex/config.toml に書き込む",
+    "~/.codex/config.toml에 작성"
+  ],
+  "或用环境变量保存令牌": [
+    "或用环境变量保存令牌",
+    "或用環境變數儲存權杖",
+    "Or keep the token in an environment variable",
+    "またはトークンを環境変数に保存",
+    "또는 토큰을 환경 변수에 보관"
+  ],
+  "使用第二种方式时，需要先把令牌设为环境变量 LANGBAI_MCP_TOKEN。Codex 里用 /mcp 查看状态。": [
+    "使用第二种方式时，需要先把令牌设为环境变量 LANGBAI_MCP_TOKEN。Codex 里用 /mcp 查看状态。",
+    "使用第二種方式時，需要先把權杖設為環境變數 LANGBAI_MCP_TOKEN。Codex 裡用 /mcp 檢視狀態。",
+    "For the second option, set the token as the LANGBAI_MCP_TOKEN environment variable first. Use /mcp in Codex to check the status.",
+    "2 つ目の方法では、先にトークンを環境変数 LANGBAI_MCP_TOKEN に設定してください。Codex では /mcp で状態を確認できます。",
+    "두 번째 방법은 먼저 토큰을 환경 변수 LANGBAI_MCP_TOKEN으로 설정해야 합니다. Codex에서 /mcp로 상태를 확인하세요."
+  ],
+  "合并到 ~/.gemini/settings.json": [
+    "合并到 ~/.gemini/settings.json",
+    "合併到 ~/.gemini/settings.json",
+    "Merge into ~/.gemini/settings.json",
+    "~/.gemini/settings.json にマージ",
+    "~/.gemini/settings.json에 병합"
+  ],
+  "注意字段是 httpUrl（Streamable HTTP），timeout 单位为毫秒。": [
+    "注意字段是 httpUrl（Streamable HTTP），timeout 单位为毫秒。",
+    "注意欄位是 httpUrl（Streamable HTTP），timeout 單位為毫秒。",
+    "Note the field is httpUrl (Streamable HTTP); timeout is in milliseconds.",
+    "フィールド名は httpUrl（Streamable HTTP）、timeout の単位はミリ秒です。",
+    "필드 이름은 httpUrl(Streamable HTTP)이며 timeout 단위는 밀리초입니다."
+  ],
+  "合并到 ~/.cursor/mcp.json（或项目 .cursor/mcp.json）": [
+    "合并到 ~/.cursor/mcp.json（或项目 .cursor/mcp.json）",
+    "合併到 ~/.cursor/mcp.json（或專案 .cursor/mcp.json）",
+    "Merge into ~/.cursor/mcp.json (or the project's .cursor/mcp.json)",
+    "~/.cursor/mcp.json（またはプロジェクトの .cursor/mcp.json）にマージ",
+    "~/.cursor/mcp.json(또는 프로젝트의 .cursor/mcp.json)에 병합"
+  ],
+  "保存后在 Cursor 设置 → MCP 中确认服务已启用。": [
+    "保存后在 Cursor 设置 → MCP 中确认服务已启用。",
+    "儲存後在 Cursor 設定 → MCP 中確認服務已啟用。",
+    "After saving, make sure the server is enabled in Cursor Settings → MCP.",
+    "保存後、Cursor の設定 → MCP でサーバーが有効になっていることを確認してください。",
+    "저장한 뒤 Cursor 설정 → MCP에서 서버가 활성화되었는지 확인하세요."
+  ],
+  "命令面板 “MCP: Open User Configuration”，合并到 mcp.json（或项目 .vscode/mcp.json）": [
+    "命令面板 “MCP: Open User Configuration”，合并到 mcp.json（或项目 .vscode/mcp.json）",
+    "命令面板 “MCP: Open User Configuration”，合併到 mcp.json（或專案 .vscode/mcp.json）",
+    "Command Palette “MCP: Open User Configuration”, merge into mcp.json (or the project's .vscode/mcp.json)",
+    "コマンドパレット “MCP: Open User Configuration” から mcp.json（またはプロジェクトの .vscode/mcp.json）にマージ",
+    "명령 팔레트 “MCP: Open User Configuration”에서 mcp.json(또는 프로젝트의 .vscode/mcp.json)에 병합"
+  ],
+  "VS Code 使用 servers 而不是 mcpServers。": [
+    "VS Code 使用 servers 而不是 mcpServers。",
+    "VS Code 使用 servers 而不是 mcpServers。",
+    "VS Code uses servers, not mcpServers.",
+    "VS Code では mcpServers ではなく servers を使います。",
+    "VS Code는 mcpServers가 아니라 servers를 사용합니다."
+  ],
+  "合并到 ~/.codeium/windsurf/mcp_config.json": [
+    "合并到 ~/.codeium/windsurf/mcp_config.json",
+    "合併到 ~/.codeium/windsurf/mcp_config.json",
+    "Merge into ~/.codeium/windsurf/mcp_config.json",
+    "~/.codeium/windsurf/mcp_config.json にマージ",
+    "~/.codeium/windsurf/mcp_config.json에 병합"
+  ],
+  "Windsurf 的远程地址字段是 serverUrl。": [
+    "Windsurf 的远程地址字段是 serverUrl。",
+    "Windsurf 的遠端位址欄位是 serverUrl。",
+    "Windsurf uses the serverUrl field for remote servers.",
+    "Windsurf のリモート URL フィールドは serverUrl です。",
+    "Windsurf의 원격 주소 필드는 serverUrl입니다."
+  ],
+  "Cline 面板 → MCP Servers → Configure，合并到 cline_mcp_settings.json": [
+    "Cline 面板 → MCP Servers → Configure，合并到 cline_mcp_settings.json",
+    "Cline 面板 → MCP Servers → Configure，合併到 cline_mcp_settings.json",
+    "Cline panel → MCP Servers → Configure, merge into cline_mcp_settings.json",
+    "Cline パネル → MCP Servers → Configure から cline_mcp_settings.json にマージ",
+    "Cline 패널 → MCP Servers → Configure에서 cline_mcp_settings.json에 병합"
+  ],
+  "必须写 type: streamableHttp，否则 Cline 会按旧 SSE 方式连接。timeout 单位为秒。": [
+    "必须写 type: streamableHttp，否则 Cline 会按旧 SSE 方式连接。timeout 单位为秒。",
+    "必須寫 type: streamableHttp，否則 Cline 會按舊 SSE 方式連線。timeout 單位為秒。",
+    "type: streamableHttp is required, otherwise Cline connects with legacy SSE. timeout is in seconds.",
+    "type: streamableHttp が必須です。ないと Cline は旧 SSE 方式で接続します。timeout の単位は秒です。",
+    "type: streamableHttp가 필요합니다. 없으면 Cline이 구형 SSE 방식으로 연결합니다. timeout 단위는 초입니다."
+  ],
+  "合并到 opencode.json（项目根目录或 ~/.config/opencode/）": [
+    "合并到 opencode.json（项目根目录或 ~/.config/opencode/）",
+    "合併到 opencode.json（專案根目錄或 ~/.config/opencode/）",
+    "Merge into opencode.json (project root or ~/.config/opencode/)",
+    "opencode.json（プロジェクト直下または ~/.config/opencode/）にマージ",
+    "opencode.json(프로젝트 루트 또는 ~/.config/opencode/)에 병합"
+  ],
+  "合并到 claude_desktop_config.json（设置 → 开发者 → 编辑配置）": [
+    "合并到 claude_desktop_config.json（设置 → 开发者 → 编辑配置）",
+    "合併到 claude_desktop_config.json（設定 → 開發者 → 編輯設定）",
+    "Merge into claude_desktop_config.json (Settings → Developer → Edit Config)",
+    "claude_desktop_config.json にマージ（設定 → 開発者 → 構成を編集）",
+    "claude_desktop_config.json에 병합 (설정 → 개발자 → 구성 편집)"
+  ],
+  "Claude Desktop 的配置文件只支持本地命令，这里用 mcp-remote 桥接（需要 Node.js）。--header 的冒号两侧不要加空格。": [
+    "Claude Desktop 的配置文件只支持本地命令，这里用 mcp-remote 桥接（需要 Node.js）。--header 的冒号两侧不要加空格。",
+    "Claude Desktop 的設定檔只支援本機命令，這裡用 mcp-remote 橋接（需要 Node.js）。--header 的冒號兩側不要加空格。",
+    "Claude Desktop's config file only supports local commands, so this bridges through mcp-remote (requires Node.js). Do not put spaces around the colon in --header.",
+    "Claude Desktop の設定ファイルはローカルコマンドのみ対応のため、mcp-remote で中継します（Node.js が必要）。--header のコロンの前後に空白を入れないでください。",
+    "Claude Desktop 설정 파일은 로컬 명령만 지원하므로 mcp-remote로 중계합니다(Node.js 필요). --header의 콜론 앞뒤에 공백을 넣지 마세요."
+  ],
+  "其他客户端": [
+    "其他客户端",
+    "其他用戶端",
+    "Other clients",
+    "その他のクライアント",
+    "기타 클라이언트"
+  ],
+  "Cherry Studio、Trae 等：选择 Streamable HTTP（可流式 HTTP）类型后填写": [
+    "Cherry Studio、Trae 等：选择 Streamable HTTP（可流式 HTTP）类型后填写",
+    "Cherry Studio、Trae 等：選擇 Streamable HTTP（可串流 HTTP）類型後填寫",
+    "Cherry Studio, Trae, etc.: choose the Streamable HTTP type and fill in",
+    "Cherry Studio、Trae など：Streamable HTTP タイプを選んで入力",
+    "Cherry Studio, Trae 등: Streamable HTTP 유형을 선택한 뒤 입력"
+  ],
+  "传输方式为 Streamable HTTP（无状态，不支持旧 SSE 端点）；协议版本 2024-11-05 ～ 2025-11-25。": [
+    "传输方式为 Streamable HTTP（无状态，不支持旧 SSE 端点）；协议版本 2024-11-05 ～ 2025-11-25。",
+    "傳輸方式為 Streamable HTTP（無狀態，不支援舊 SSE 端點）；協定版本 2024-11-05 ～ 2025-11-25。",
+    "Transport is Streamable HTTP (stateless, no legacy SSE endpoint); protocol versions 2024-11-05 to 2025-11-25.",
+    "トランスポートは Streamable HTTP（ステートレス、旧 SSE エンドポイント非対応）、プロトコルバージョンは 2024-11-05 ～ 2025-11-25 です。",
+    "전송 방식은 Streamable HTTP(상태 비저장, 구형 SSE 엔드포인트 미지원)이며 프로토콜 버전은 2024-11-05 ~ 2025-11-25입니다."
+  ],
+  "提示词知识库": [
+    "提示词知识库",
+    "提示詞知識庫",
+    "Prompt knowledge base",
+    "プロンプト知識ベース",
+    "프롬프트 지식 베이스"
+  ],
+  "按当前输入匹配参考；每次最多 5 条、正文合计 2,000 字符。": [
+    "按当前输入匹配参考；每次最多 5 条、正文合计 2,000 字符。",
+    "依目前輸入比對參考；每次最多 5 條，正文合計 2,000 字元。",
+    "Match references against the current input; up to 5 entries and 2,000 body characters per request.",
+    "現在の入力に合わせて参考情報を検索します。1回につき最大5件、本文合計2,000文字です。",
+    "현재 입력에 맞는 참고 자료를 찾습니다. 요청당 최대 5개 항목, 본문 총 2,000자입니다."
+  ],
+  "提示词版本": [
+    "提示词版本",
+    "提示詞版本",
+    "Prompting version",
+    "プロンプトのバージョン",
+    "프롬프트 버전"
+  ],
+  "知识库提示词版本": [
+    "知识库提示词版本",
+    "知識庫提示詞版本",
+    "Knowledge base prompting version",
+    "知識ベースのプロンプトバージョン",
+    "지식 베이스 프롬프트 버전"
+  ],
+  "V4.5 默认画风词": [
+    "V4.5 默认画风词",
+    "V4.5 預設畫風詞",
+    "V4.5 default style tags",
+    "V4.5 の既定スタイルタグ",
+    "V4.5 기본 스타일 태그"
+  ],
+  "V5 默认画风词": [
+    "V5 默认画风词",
+    "V5 預設畫風詞",
+    "V5 default style tags",
+    "V5 の既定スタイルタグ",
+    "V5 기본 스타일 태그"
+  ],
+  "外部知识库 JSON 路径": [
+    "外部知识库 JSON 路径",
+    "外部知識庫 JSON 路徑",
+    "External knowledge base JSON path",
+    "外部知識ベース JSON のパス",
+    "외부 지식 베이스 JSON 경로"
+  ],
+  "留空使用内置知识库": [
+    "留空使用内置知识库",
+    "留空以使用內建知識庫",
+    "Leave blank to use the built-in knowledge base",
+    "空欄の場合は内蔵の知識ベースを使用",
+    "비워 두면 기본 제공 지식 베이스 사용"
+  ],
+  "选择文件": [
+    "选择文件",
+    "選擇檔案",
+    "Choose file",
+    "ファイルを選択",
+    "파일 선택"
+  ],
+  "校验并保存": [
+    "校验并保存",
+    "驗證並儲存",
+    "Validate and save",
+    "検証して保存",
+    "검증 후 저장"
+  ],
+  "重新加载": [
+    "重新加载",
+    "重新載入",
+    "Reload",
+    "再読み込み",
+    "새로고침"
+  ],
+  "内置知识库": [
+    "内置知识库",
+    "內建知識庫",
+    "Built-in knowledge base",
+    "内蔵の知識ベース",
+    "기본 제공 지식 베이스"
+  ],
+  "外部知识库": [
+    "外部知识库",
+    "外部知識庫",
+    "External knowledge base",
+    "外部の知識ベース",
+    "외부 지식 베이스"
+  ],
+  "{count} 条": [
+    "{count} 条",
+    "{count} 條",
+    "{count} entries",
+    "{count}件",
+    "{count}개 항목"
+  ],
+  "来源与校验信息": [
+    "来源与校验信息",
+    "來源與驗證資訊",
+    "Source and validation details",
+    "出典と検証情報",
+    "출처 및 검증 정보"
+  ],
+  "SHA-256：{hash}": [
+    "SHA-256：{hash}",
+    "SHA-256：{hash}",
+    "SHA-256: {hash}",
+    "SHA-256：{hash}",
+    "SHA-256: {hash}"
+  ],
+  "知识库设置已保存，下次发送使用新设置。": [
+    "知识库设置已保存，下次发送使用新设置。",
+    "知識庫設定已儲存，下次送出時生效。",
+    "Knowledge settings saved. They will apply to the next message.",
+    "知識ベースの設定を保存しました。次回の送信から適用されます。",
+    "지식 베이스 설정을 저장했습니다. 다음 메시지부터 적용됩니다."
+  ],
+  "已按保存的路径重新加载。": [
+    "已按保存的路径重新加载。",
+    "已依儲存的路徑重新載入。",
+    "Reloaded from the saved path.",
+    "保存済みのパスから再読み込みしました。",
+    "저장된 경로에서 다시 불러왔습니다."
+  ],
+  "知识库设置无效。": [
+    "知识库设置无效。",
+    "知識庫設定無效。",
+    "Knowledge settings are invalid.",
+    "知識ベースの設定が無効です。",
+    "지식 베이스 설정이 올바르지 않습니다."
+  ],
+  "知识库设置版本或字段无效。": [
+    "知识库设置版本或字段无效。",
+    "知識庫設定版本或欄位無效。",
+    "The knowledge settings version or fields are invalid.",
+    "知識ベース設定のバージョンまたは項目が無効です。",
+    "지식 베이스 설정 버전 또는 필드가 올바르지 않습니다."
+  ],
+  "知识库设置文本无效或过长。": [
+    "知识库设置文本无效或过长。",
+    "知識庫設定文字無效或過長。",
+    "Knowledge settings contain invalid or oversized text.",
+    "知識ベース設定のテキストが無効か、長すぎます。",
+    "지식 베이스 설정 텍스트가 올바르지 않거나 너무 깁니다."
+  ],
+  "知识库超过 12 MiB。": [
+    "知识库超过 12 MiB。",
+    "知識庫超過 12 MiB。",
+    "The knowledge base exceeds 12 MiB.",
+    "知識ベースが12 MiBを超えています。",
+    "지식 베이스가 12MiB를 초과했습니다."
+  ],
+  "知识库需要包含 entries 的 JSON 对象。": [
+    "知识库需要包含 entries 的 JSON 对象。",
+    "知識庫必須是包含 entries 的 JSON 物件。",
+    "The knowledge base must be a JSON object containing entries.",
+    "知識ベースは entries を含む JSON オブジェクトである必要があります。",
+    "지식 베이스는 entries를 포함하는 JSON 객체여야 합니다."
+  ],
+  "知识库 entries 无效或超过 20000 条。": [
+    "知识库 entries 无效或超过 20000 条。",
+    "知識庫 entries 無效或超過 20,000 條。",
+    "Knowledge base entries are invalid or exceed 20,000 items.",
+    "知識ベースの entries が無効か、20,000件を超えています。",
+    "지식 베이스 entries가 올바르지 않거나 20,000개를 초과했습니다."
+  ],
+  "知识库 total 与实际条目数不一致。": [
+    "知识库 total 与实际条目数不一致。",
+    "知識庫 total 與實際項目數不一致。",
+    "The knowledge base total does not match the number of entries.",
+    "知識ベースの total と実際の項目数が一致しません。",
+    "지식 베이스 total이 실제 항목 수와 일치하지 않습니다."
+  ],
+  "知识库条目无效。": [
+    "知识库条目无效。",
+    "知識庫項目無效。",
+    "A knowledge base entry is invalid.",
+    "知識ベースの項目が無効です。",
+    "지식 베이스 항목이 올바르지 않습니다."
+  ],
+  "知识库条目 ID 无效或重复。": [
+    "知识库条目 ID 无效或重复。",
+    "知識庫項目 ID 無效或重複。",
+    "A knowledge base entry ID is invalid or duplicated.",
+    "知識ベース項目のIDが無効か、重複しています。",
+    "지식 베이스 항목 ID가 올바르지 않거나 중복되었습니다."
+  ],
+  "知识库条目文本无效。": [
+    "知识库条目文本无效。",
+    "知識庫項目文字無效。",
+    "Knowledge base entry text is invalid.",
+    "知識ベース項目のテキストが無効です。",
+    "지식 베이스 항목 텍스트가 올바르지 않습니다."
+  ],
+  "知识库条目标题和来源不能为空。": [
+    "知识库条目标题和来源不能为空。",
+    "知識庫項目的標題和來源不可空白。",
+    "Knowledge base entry titles and sources cannot be empty.",
+    "知識ベース項目のタイトルと出典は空欄にできません。",
+    "지식 베이스 항목의 제목과 출처는 비워 둘 수 없습니다."
+  ],
+  "知识库关键词无效。": [
+    "知识库关键词无效。",
+    "知識庫關鍵詞無效。",
+    "Knowledge base keywords are invalid.",
+    "知識ベースのキーワードが無効です。",
+    "지식 베이스 키워드가 올바르지 않습니다."
+  ],
+  "知识库设置读取失败，原设置已保留。": [
+    "知识库设置读取失败，原设置已保留。",
+    "讀取知識庫設定失敗，原設定已保留。",
+    "Could not read knowledge settings. The existing settings were preserved.",
+    "知識ベースの設定を読み込めませんでした。既存の設定は保持されています。",
+    "지식 베이스 설정을 읽지 못했습니다. 기존 설정은 보존되었습니다."
+  ],
+  "请选择本机 JSON 文件的完整路径。": [
+    "请选择本机 JSON 文件的完整路径。",
+    "請選擇本機 JSON 檔案的完整路徑。",
+    "Choose the full path to a local JSON file.",
+    "ローカル JSON ファイルのフルパスを選択してください。",
+    "로컬 JSON 파일의 전체 경로를 선택하세요."
+  ],
+  "知识库文件无效或超过 12 MiB。": [
+    "知识库文件无效或超过 12 MiB。",
+    "知識庫檔案無效或超過 12 MiB。",
+    "The knowledge base file is invalid or exceeds 12 MiB.",
+    "知識ベースのファイルが無効か、12 MiBを超えています。",
+    "지식 베이스 파일이 올바르지 않거나 12MiB를 초과했습니다."
+  ],
+  "外部知识库无法加载，当前使用内置知识库。请检查文件后重新加载；已保存路径仍保留。": [
+    "外部知识库无法加载，当前使用内置知识库。请检查文件后重新加载；已保存路径仍保留。",
+    "無法載入外部知識庫，目前改用內建知識庫。請檢查檔案後重新載入；已儲存的路徑會保留。",
+    "The external knowledge base could not be loaded, so the built-in one is active. Check the file and reload; the saved path is retained.",
+    "外部の知識ベースを読み込めないため、内蔵の知識ベースを使用しています。ファイルを確認して再読み込みしてください。保存済みのパスは保持されます。",
+    "외부 지식 베이스를 불러오지 못해 기본 제공 지식 베이스를 사용합니다. 파일을 확인한 뒤 다시 불러오세요. 저장된 경로는 유지됩니다."
+  ],
+  "导入旧版 Flutter PC 工作区": [
+    "导入旧版 Flutter PC 工作区",
+    "匯入舊版 Flutter PC 工作區",
+    "Import legacy Flutter PC workspace",
+    "旧版 Flutter PC ワークスペースをインポート",
+    "이전 Flutter PC 작업 공간 가져오기"
+  ],
+  "导入 Flutter PC 工作区": [
+    "导入 Flutter PC 工作区",
+    "匯入 Flutter PC 工作區",
+    "Import Flutter PC workspace",
+    "Flutter PC ワークスペースをインポート",
+    "Flutter PC 작업 공간 가져오기"
+  ],
+  "选择旧版 workspace.sqlite。先只读检查数据与图片，再由你确认追加到当前工作区。": [
+    "选择旧版 workspace.sqlite。先只读检查数据与图片，再由你确认追加到当前工作区。",
+    "選擇舊版 workspace.sqlite。先以唯讀方式檢查資料與圖片，再由你確認是否追加至目前工作區。",
+    "Select the legacy workspace.sqlite. Data and images are checked read-only first; you decide whether to append them to the current workspace.",
+    "旧版の workspace.sqlite を選択します。まずデータと画像を読み取り専用で確認し、現在のワークスペースに追加するかどうかを選べます。",
+    "이전 workspace.sqlite를 선택하세요. 먼저 데이터와 이미지를 읽기 전용으로 검사한 뒤 현재 작업 공간에 추가할지 확인합니다."
+  ],
+  "已取消选择，旧工作区未更改。": [
+    "已取消选择，旧工作区未更改。",
+    "已取消選擇，舊工作區未變更。",
+    "Selection canceled. The legacy workspace was not changed.",
+    "選択をキャンセルしました。旧ワークスペースは変更されていません。",
+    "선택을 취소했습니다. 이전 작업 공간은 변경되지 않았습니다."
+  ],
+  "正在处理…": [
+    "正在处理…",
+    "正在處理…",
+    "Working…",
+    "処理中…",
+    "처리 중…"
+  ],
+  "选择旧工作区并预览": [
+    "选择旧工作区并预览",
+    "選擇舊工作區並預覽",
+    "Choose legacy workspace and preview",
+    "旧ワークスペースを選択してプレビュー",
+    "이전 작업 공간 선택 및 미리보기"
+  ],
+  "取消预览": [
+    "取消预览",
+    "取消預覽",
+    "Cancel preview",
+    "プレビューをキャンセル",
+    "미리보기 취소"
+  ],
+  "已取消导入预览。": [
+    "已取消导入预览。",
+    "已取消匯入預覽。",
+    "Import preview canceled.",
+    "インポートのプレビューをキャンセルしました。",
+    "가져오기 미리보기를 취소했습니다."
+  ],
+  "操作失败：{message}": [
+    "操作失败：{message}",
+    "操作失敗：{message}",
+    "Operation failed: {message}",
+    "操作に失敗しました：{message}",
+    "작업 실패: {message}"
+  ],
+  "只读预览：": [
+    "只读预览：",
+    "唯讀預覽：",
+    "Read-only preview:",
+    "読み取り専用プレビュー：",
+    "읽기 전용 미리보기:"
+  ],
+  "生成草稿": [
+    "生成草稿",
+    "生成草稿",
+    "Draft",
+    "生成ドラフト",
+    "초안"
+  ],
+  "图库记录": [
+    "图库记录",
+    "圖庫記錄",
+    "Gallery records",
+    "ギャラリー項目",
+    "갤러리 항목"
+  ],
+  "图库": [
+    "图库",
+    "圖庫",
+    "Gallery",
+    "ギャラリー",
+    "갤러리"
+  ],
+  "风格": [
+    "风格",
+    "風格",
+    "Styles",
+    "スタイル",
+    "스타일"
+  ],
+  "画师": [
+    "画师",
+    "畫師",
+    "Artists",
+    "アーティスト",
+    "아티스트"
+  ],
+  "已采纳记忆": [
+    "已采纳记忆",
+    "已採納記憶",
+    "Approved memories",
+    "承認済みメモリー",
+    "승인된 기억"
+  ],
+  "待审核记忆": [
+    "待审核记忆",
+    "待審核記憶",
+    "Pending memories",
+    "審査待ちメモリー",
+    "검토 대기 기억"
+  ],
+  "Agent 会话": [
+    "Agent 会话",
+    "Agent 對話",
+    "Agent sessions",
+    "Agent セッション",
+    "Agent 세션"
+  ],
+  "已校验图片": [
+    "已校验图片",
+    "已驗證圖片",
+    "Validated images",
+    "検証済み画像",
+    "검증된 이미지"
+  ],
+  "可校验图片": [
+    "可校验图片",
+    "可驗證圖片",
+    "Images eligible for validation",
+    "検証可能な画像",
+    "검증 가능한 이미지"
+  ],
+  "归档字段/条目": [
+    "归档字段/条目",
+    "封存欄位／項目",
+    "Archived fields/items",
+    "アーカイブされたフィールド／項目",
+    "보관된 필드/항목"
+  ],
+  "无效记录": [
+    "无效记录",
+    "無效記錄",
+    "Invalid records",
+    "無効なレコード",
+    "잘못된 레코드"
+  ],
+  "重复记录": [
+    "重复记录",
+    "重複記錄",
+    "Duplicate records",
+    "重複レコード",
+    "중복 레코드"
+  ],
+  "缺失或校验失败的图片": [
+    "缺失或校验失败的图片",
+    "遺失或驗證失敗的圖片",
+    "Missing or invalid images",
+    "欠落または検証に失敗した画像",
+    "누락되었거나 검증에 실패한 이미지"
+  ],
+  "草稿：{model} · {width} × {height} · 正向提示词 {positive} 字 · 负向提示词 {negative} 字": [
+    "草稿：{model} · {width} × {height} · 正向提示词 {positive} 字 · 负向提示词 {negative} 字",
+    "草稿：{model} · {width} × {height} · 正向提示詞 {positive} 字元 · 負向提示詞 {negative} 字元",
+    "Draft: {model} · {width} × {height} · positive prompt {positive} chars · negative prompt {negative} chars",
+    "ドラフト：{model} · {width} × {height} · 正のプロンプト {positive} 文字 · 負のプロンプト {negative} 文字",
+    "초안: {model} · {width} × {height} · 긍정 프롬프트 {positive}자 · 부정 프롬프트 {negative}자"
+  ],
+  "查看名称样例": [
+    "查看名称样例",
+    "查看名稱範例",
+    "View name samples",
+    "名前のサンプルを表示",
+    "이름 샘플 보기"
+  ],
+  "：": [
+    "：",
+    "：",
+    ":",
+    "：",
+    ":"
+  ],
+  "记忆": [
+    "记忆",
+    "記憶",
+    "Memories",
+    "メモリー",
+    "기억"
+  ],
+  "会话": [
+    "会话",
+    "對話",
+    "Sessions",
+    "セッション",
+    "세션"
+  ],
+  "确认后会复制通过校验的图片并追加可转换数据；新端已有数据保留。不能映射的安全字段会写入本地导入归档。": [
+    "确认后会复制通过校验的图片并追加可转换数据；新端已有数据保留。不能映射的安全字段会写入本地导入归档。",
+    "確認後會複製通過驗證的圖片並追加可轉換資料；新端現有資料會保留。無法對應的安全欄位會寫入本機匯入封存。",
+    "After confirmation, validated images are copied and convertible data is appended; existing data is preserved. Unmapped safe fields are saved in a local import archive.",
+    "確認後、検証済みの画像をコピーし、変換可能なデータを追加します。新しい環境の既存データは保持されます。対応できない安全なフィールドはローカルのインポートアーカイブに保存されます。",
+    "확인하면 검증된 이미지를 복사하고 변환 가능한 데이터를 추가합니다. 새 작업 공간의 기존 데이터는 보존됩니다. 매핑할 수 없는 안전한 필드는 로컬 가져오기 보관 파일에 저장됩니다."
+  ],
+  "确认导入并追加": [
+    "确认导入并追加",
+    "確認匯入並追加",
+    "Confirm import and append",
+    "インポートして追加",
+    "가져와서 추가"
+  ],
+  "返回": [
+    "返回",
+    "返回",
+    "Back",
+    "戻る",
+    "뒤로"
+  ],
+  "导入完成：": [
+    "导入完成：",
+    "匯入完成：",
+    "Import complete:",
+    "インポート完了：",
+    "가져오기 완료:"
+  ],
+  "已追加 · {label}": [
+    "已追加 · {label}",
+    "已追加 · {label}",
+    "Added · {label}",
+    "追加済み · {label}",
+    "추가됨 · {label}"
+  ],
+  "跳过草稿": [
+    "跳过草稿",
+    "略過草稿",
+    "Skipped draft",
+    "スキップしたドラフト",
+    "건너뛴 초안"
+  ],
+  "无法直接映射的数据已保存到导入归档：": [
+    "无法直接映射的数据已保存到导入归档：",
+    "無法直接對應的資料已儲存至匯入封存：",
+    "Data that could not be mapped directly was saved to the import archive:",
+    "直接対応できないデータはインポートアーカイブに保存されました：",
+    "직접 매핑할 수 없는 데이터는 가져오기 보관 파일에 저장했습니다:"
+  ],
+  "刷新工作台并显示导入内容": [
+    "刷新工作台并显示导入内容",
+    "重新整理工作台並顯示匯入內容",
+    "Refresh workspace to show imported content",
+    "ワークスペースを更新してインポート内容を表示",
+    "작업 공간을 새로 고쳐 가져온 내용 표시"
+  ],
+  "预览只读取所选 SQLite 与受管图片，不会修改旧工作区。": [
+    "预览只读取所选 SQLite 与受管图片，不会修改旧工作区。",
+    "預覽只會讀取所選 SQLite 與受管理圖片，不會修改舊工作區。",
+    "The preview only reads the selected SQLite file and managed images; it does not modify the legacy workspace.",
+    "プレビューでは選択した SQLite と管理対象の画像のみを読み取り、旧ワークスペースは変更しません。",
+    "미리보기는 선택한 SQLite와 관리 이미지에 대한 읽기 전용이며 이전 작업 공간을 변경하지 않습니다."
+  ],
+  "旧连接、提供商配置、凭据和诊断内容不会导入或写入归档。": [
+    "旧连接、提供商配置、凭据和诊断内容不会导入或写入归档。",
+    "舊連線、提供者設定、憑證與診斷內容不會匯入或寫入封存。",
+    "Legacy connections, provider settings, credentials, and diagnostic content are not imported or archived.",
+    "旧接続、プロバイダー設定、認証情報、診断内容はインポートもアーカイブもされません。",
+    "이전 연결, 제공자 설정, 자격 증명 및 진단 내용은 가져오거나 보관하지 않습니다."
+  ],
+  "草稿仅在新端没有已保存草稿且草稿恢复开启时导入。": [
+    "草稿仅在新端没有已保存草稿且草稿恢复开启时导入。",
+    "只有新端沒有已儲存草稿且已啟用草稿還原時，才會匯入草稿。",
+    "A draft is imported only when no draft is saved in the new app and draft restoration is enabled.",
+    "新しい環境に保存済みのドラフトがなく、ドラフト復元が有効な場合のみインポートされます。",
+    "새 앱에 저장된 초안이 없고 초안 복원이 활성화된 경우에만 초안을 가져옵니다."
+  ],
+  "{count} 个图片引用缺失或未通过路径、格式、尺寸、哈希校验，将跳过。": [
+    "{count} 个图片引用缺失或未通过路径、格式、尺寸、哈希校验，将跳过。",
+    "有 {count} 個圖片引用遺失或未通過路徑、格式、尺寸、雜湊驗證，將略過。",
+    "{count} image references are missing or failed path, format, dimension, or hash checks and will be skipped.",
+    "{count}件の画像参照が見つからないか、パス・形式・サイズ・ハッシュ検証に失敗したためスキップされます。",
+    "이미지 참조 {count}개가 없거나 경로, 형식, 크기, 해시 검증에 실패해 건너뜁니다."
+  ],
+  "已追加": [
+    "已追加",
+    "已追加",
+    "Added",
+    "追加済み",
+    "추가됨"
+  ],
+  "图片引用不是受管 SHA-256 路径。": [
+    "图片引用不是受管 SHA-256 路径。",
+    "圖片參照不是受管理的 SHA-256 路徑。",
+    "The image reference is not a managed SHA-256 path.",
+    "画像参照が管理対象の SHA-256 パスではありません。",
+    "이미지 참조가 관리되는 SHA-256 경로가 아닙니다."
+  ],
+  "图片资产不存在或路径不安全。": [
+    "图片资产不存在或路径不安全。",
+    "圖片資產不存在或路徑不安全。",
+    "The image asset is missing or its path is unsafe.",
+    "画像アセットが存在しないか、パスが安全ではありません。",
+    "이미지 에셋이 없거나 경로가 안전하지 않습니다."
+  ],
+  "图片资产路径越出旧工作区。": [
+    "图片资产路径越出旧工作区。",
+    "圖片資產路徑超出舊工作區。",
+    "The image asset path escapes the legacy workspace.",
+    "画像アセットのパスが旧ワークスペースの外にあります。",
+    "이미지 에셋 경로가 이전 작업 공간을 벗어납니다."
+  ],
+  "图片引用格式无效。": [
+    "图片引用格式无效。",
+    "圖片參照格式無效。",
+    "The image reference format is invalid.",
+    "画像参照の形式が無効です。",
+    "이미지 참조 형식이 올바르지 않습니다."
+  ],
+  "图片资产为空或超过 64 MiB。": [
+    "图片资产为空或超过 64 MiB。",
+    "圖片資產為空或超過 64 MiB。",
+    "The image asset is empty or exceeds 64 MiB.",
+    "画像アセットが空か、64 MiBを超えています。",
+    "이미지 에셋이 비어 있거나 64MiB를 초과했습니다."
+  ],
+  "图片内容与 SHA-256 不匹配。": [
+    "图片内容与 SHA-256 不匹配。",
+    "圖片內容與 SHA-256 不符。",
+    "The image content does not match its SHA-256 hash.",
+    "画像の内容と SHA-256 ハッシュが一致しません。",
+    "이미지 내용이 SHA-256 해시와 일치하지 않습니다."
+  ],
+  "图片格式、扩展名或尺寸校验失败。": [
+    "图片格式、扩展名或尺寸校验失败。",
+    "圖片格式、副檔名或尺寸驗證失敗。",
+    "Image format, extension, or dimensions failed validation.",
+    "画像の形式、拡張子、またはサイズの検証に失敗しました。",
+    "이미지 형식, 확장자 또는 크기 검증에 실패했습니다."
+  ],
+  "旧工作区图片引用超过导入上限。": [
+    "旧工作区图片引用超过导入上限。",
+    "舊工作區圖片參照超過匯入上限。",
+    "The legacy workspace exceeds the image reference import limit.",
+    "旧ワークスペースの画像参照がインポート上限を超えています。",
+    "이전 작업 공간의 이미지 참조가 가져오기 한도를 초과했습니다."
+  ],
+  "目标图片已有同名但哈希不同的文件，已停止导入。": [
+    "目标图片已有同名但哈希不同的文件，已停止导入。",
+    "目標圖片已有同名但雜湊不同的檔案，已停止匯入。",
+    "An image with the same name but a different hash already exists. Import was stopped.",
+    "同名でハッシュが異なる画像が既にあります。インポートを中止しました。",
+    "같은 이름이지만 해시가 다른 이미지가 이미 있어 가져오기를 중단했습니다."
+  ],
+  "无法分配不覆盖的导入归档文件名。": [
+    "无法分配不覆盖的导入归档文件名。",
+    "無法配置不會覆寫的匯入封存檔名。",
+    "Could not allocate a non-overwriting import archive filename.",
+    "既存ファイルを上書きしないアーカイブ名を割り当てられませんでした。",
+    "기존 파일을 덮어쓰지 않는 가져오기 보관 파일 이름을 할당할 수 없습니다."
+  ],
+  "请先读取并检查旧工作区预览。": [
+    "请先读取并检查旧工作区预览。",
+    "請先讀取並檢查舊工作區預覽。",
+    "Read and inspect a legacy workspace preview first.",
+    "先に旧ワークスペースのプレビューを読み込んで確認してください。",
+    "먼저 이전 작업 공간 미리보기를 읽고 확인하세요."
+  ],
+  "导入预览已失效，请重新选择文件。": [
+    "导入预览已失效，请重新选择文件。",
+    "匯入預覽已失效，請重新選擇檔案。",
+    "The import preview has expired. Select the file again.",
+    "インポートのプレビューが期限切れです。ファイルを選択し直してください。",
+    "가져오기 미리보기가 만료되었습니다. 파일을 다시 선택하세요."
+  ],
+  "旧工作区在预览后发生变化，请重新预览再导入。": [
+    "旧工作区在预览后发生变化，请重新预览再导入。",
+    "舊工作區在預覽後有所變更，請重新預覽再匯入。",
+    "The legacy workspace changed after preview. Preview it again before importing.",
+    "プレビュー後に旧ワークスペースが変更されました。再度プレビューしてからインポートしてください。",
+    "미리보기 후 이전 작업 공간이 변경되었습니다. 다시 미리 본 뒤 가져오세요."
+  ],
+  "无法删除 {id}": [
+    "无法删除 {id}",
+    "無法刪除 {id}",
+    "Could not delete {id}",
+    "{id}を削除できませんでした",
+    "{id}을(를) 삭제할 수 없습니다"
+  ],
+  "绘世草稿或网关档案已变化；请重新预览本次参数计划。": [
+    "绘世草稿或网关档案已变化；请重新预览本次参数计划。",
+    "繪世草稿或閘道器檔案已變更；請重新預覽本次參數計畫。",
+    "The NAI draft or gateway profile changed. Preview the parameter plan again.",
+    "NovelAI の下書きまたはゲートウェイプロファイルが変更されました。パラメータ計画を再度プレビューしてください。",
+    "NAI 초안 또는 게이트웨이 프로필이 변경되었습니다. 매개변수 계획을 다시 미리 보세요."
+  ],
+  "网关档案已保存并选中；令牌由系统凭据加密保存。": [
+    "网关档案已保存并选中；令牌由系统凭据加密保存。",
+    "閘道器檔案已儲存並選取；權杖已透過系統憑證加密儲存。",
+    "Gateway profile saved and selected. The token is encrypted with system credentials.",
+    "ゲートウェイプロファイルを保存して選択しました。トークンはシステム資格情報で暗号化されています。",
+    "게이트웨이 프로필을 저장하고 선택했습니다. 토큰은 시스템 자격 증명으로 암호화됩니다."
+  ],
+  "请先添加并选择一个网关档案。": [
+    "请先添加并选择一个网关档案。",
+    "請先新增並選取閘道器檔案。",
+    "Add and select a gateway profile first.",
+    "先にゲートウェイプロファイルを追加して選択してください。",
+    "먼저 게이트웨이 프로필을 추가하고 선택하세요."
+  ],
+  "绘世没有传入当前生成模式；已阻止提交以避免把其他模式误发成文生图。": [
+    "绘世没有传入当前生成模式；已阻止提交以避免把其他模式误发成文生图。",
+    "繪世未傳入目前的生成模式；已阻止提交，避免將其他模式誤送為文生圖。",
+    "The current generation mode was not provided. Submission is blocked to prevent sending another mode as text-to-image.",
+    "現在の生成モードが渡されていません。他のモードをテキストから画像生成として送信しないよう、送信をブロックしました。",
+    "현재 생성 모드가 전달되지 않았습니다. 다른 모드를 텍스트-이미지로 잘못 보내지 않도록 제출을 차단했습니다."
+  ],
+  "参数计划已生成；核对请求地址、提示词和参数后，再明确确认提交。": [
+    "参数计划已生成；核对请求地址、提示词和参数后，再明确确认提交。",
+    "參數計畫已產生；請核對請求網址、提示詞與參數，再明確確認送出。",
+    "The parameter plan is ready. Review the endpoint, prompts, and parameters before confirming submission.",
+    "パラメータ計画を作成しました。送信を確定する前に、リクエスト先、プロンプト、パラメータを確認してください。",
+    "매개변수 계획이 준비되었습니다. 제출을 확인하기 전에 엔드포인트, 프롬프트, 매개변수를 검토하세요."
+  ],
+  "绘世网关工作台": [
+    "绘世网关工作台",
+    "繪世閘道器工作台",
+    "NAI Gateway Workbench",
+    "NovelAI ゲートウェイワークベンチ",
+    "NAI 게이트웨이 작업대"
+  ],
+  "独立管理 7877 / ikun 网关凭据；每次请求先预览、再确认。": [
+    "独立管理 7877 / ikun 网关凭据；每次请求先预览、再确认。",
+    "獨立管理 7877 / ikun 閘道器憑證；每次請求都先預覽，再確認。",
+    "Manage 7877 / ikun gateway credentials separately. Preview and confirm every request.",
+    "7877 / ikun ゲートウェイの資格情報を個別に管理します。リクエストごとにプレビューしてから確定します。",
+    "7877 / ikun 게이트웨이 자격 증명을 별도로 관리합니다. 요청마다 미리 보고 확인합니다."
+  ],
+  "当前：{name} · {protocol}": [
+    "当前：{name} · {protocol}",
+    "目前：{name} · {protocol}",
+    "Current: {name} · {protocol}",
+    "現在：{name} · {protocol}",
+    "현재: {name} · {protocol}"
+  ],
+  "当前支持范围": [
+    "当前支持范围",
+    "目前支援範圍",
+    "Current support",
+    "現在の対応範囲",
+    "현재 지원 범위"
+  ],
+  "此入口只发送纯文生图。图生图、局部重绘、Vibe、精准参考、角色提示、透明背景、SMEA 和 Variety+ 暂不支持；遇到这些当前草稿会阻止提交，不会静默省略。请在绘世主工作台完成这些操作。": [
+    "此入口只发送纯文生图。图生图、局部重绘、Vibe、精准参考、角色提示、透明背景、SMEA 和 Variety+ 暂不支持；遇到这些当前草稿会阻止提交，不会静默省略。请在绘世主工作台完成这些操作。",
+    "此入口僅送出純文生圖。目前不支援圖生圖、局部重繪、Vibe、精準參考、角色提示、透明背景、SMEA 與 Variety+；目前草稿包含這些項目時會阻止送出，不會靜默略過。請在繪世主工作台執行這些操作。",
+    "This entry sends text-to-image requests only. Image-to-image, inpainting, Vibe, precise references, character prompts, transparent backgrounds, SMEA, and Variety+ are not supported. Drafts using them are blocked rather than silently altered. Use the main NAI workbench for those operations.",
+    "この入口で送信できるのはテキストから画像生成のみです。画像から画像、インペイント、Vibe、精密参照、キャラクタープロンプト、透明背景、SMEA、Variety+ には対応していません。これらを含む下書きは黙って省略せず送信をブロックします。該当する操作は NovelAI のメインワークベンチを使用してください。",
+    "이 항목은 텍스트-이미지 요청만 보냅니다. 이미지-이미지, 인페인트, Vibe, 정밀 참조, 캐릭터 프롬프트, 투명 배경, SMEA 및 Variety+는 지원하지 않습니다. 해당 기능이 포함된 초안은 조용히 생략하지 않고 제출을 차단합니다. 해당 작업은 NAI 기본 작업대에서 진행하세요."
+  ],
+  "生成请求提交后不自动重试；取消只停止本地等待，服务端可能继续处理。失败、超时或返回格式不完整时，请先核对网关记录和绘世输出目录。": [
+    "生成请求提交后不自动重试；取消只停止本地等待，服务端可能继续处理。失败、超时或返回格式不完整时，请先核对网关记录和绘世输出目录。",
+    "生成請求送出後不會自動重試；取消只會停止本機等待，伺服器可能仍在處理。若失敗、逾時或回應格式不完整，請先核對閘道器記錄與繪世輸出目錄。",
+    "Generation requests are never retried automatically. Cancel stops local waiting only; the server may continue processing. For failures, timeouts, or incomplete responses, check the gateway log and NAI output folder first.",
+    "生成リクエストは自動再試行されません。キャンセルするとローカルの待機のみ停止し、サーバーは処理を続ける場合があります。失敗、タイムアウト、応答形式の不備がある場合は、まずゲートウェイの記録と NovelAI の出力フォルダーを確認してください。",
+    "생성 요청은 자동 재시도되지 않습니다. 취소는 로컬 대기만 중지하며 서버는 계속 처리할 수 있습니다. 실패, 시간 초과 또는 불완전한 응답이 발생하면 먼저 게이트웨이 기록과 NAI 출력 폴더를 확인하세요."
+  ],
+  "已保存的网关档案": [
+    "已保存的网关档案",
+    "已儲存的閘道器檔案",
+    "Saved gateway profiles",
+    "保存済みゲートウェイプロファイル",
+    "저장된 게이트웨이 프로필"
+  ],
+  "网关档案": [
+    "网关档案",
+    "閘道器檔案",
+    "Gateway profiles",
+    "ゲートウェイプロファイル",
+    "게이트웨이 프로필"
+  ],
+  "尚未保存网关凭据。": [
+    "尚未保存网关凭据。",
+    "尚未儲存閘道器憑證。",
+    "No gateway credentials saved yet.",
+    "ゲートウェイ資格情報はまだ保存されていません。",
+    "저장된 게이트웨이 자격 증명이 없습니다."
+  ],
+  "{protocol} 网关 · {baseUrl}": [
+    "{protocol} 网关 · {baseUrl}",
+    "{protocol} 閘道器 · {baseUrl}",
+    "{protocol} gateway · {baseUrl}",
+    "{protocol} ゲートウェイ · {baseUrl}",
+    "{protocol} 게이트웨이 · {baseUrl}"
+  ],
+  "确认删除此档案和令牌？": [
+    "确认删除此档案和令牌？",
+    "確定要刪除此檔案與權杖嗎？",
+    "Delete this profile and its token?",
+    "このプロファイルとトークンを削除しますか？",
+    "이 프로필과 토큰을 삭제할까요?"
+  ],
+  "确认删除": [
+    "确认删除",
+    "確認刪除",
+    "Confirm delete",
+    "削除を確定",
+    "삭제 확인"
+  ],
+  "添加或更新网关档案": [
+    "添加或更新网关档案",
+    "新增或更新閘道器檔案",
+    "Add or update a gateway profile",
+    "ゲートウェイプロファイルを追加または更新",
+    "게이트웨이 프로필 추가 또는 업데이트"
+  ],
+  "添加或更新档案": [
+    "添加或更新档案",
+    "新增或更新檔案",
+    "Add or update profile",
+    "プロファイルを追加または更新",
+    "프로필 추가 또는 업데이트"
+  ],
+  "7877 网关": [
+    "7877 网关",
+    "7877 閘道器",
+    "7877 gateway",
+    "7877 ゲートウェイ",
+    "7877 게이트웨이"
+  ],
+  "ikun 网关": [
+    "ikun 网关",
+    "ikun 閘道器",
+    "ikun gateway",
+    "ikun ゲートウェイ",
+    "ikun 게이트웨이"
+  ],
+  "绘世 7877 网关": [
+    "绘世 7877 网关",
+    "繪世 7877 閘道器",
+    "NAI 7877 gateway",
+    "NovelAI 7877 ゲートウェイ",
+    "NAI 7877 게이트웨이"
+  ],
+  "绘世 ikun 网关": [
+    "绘世 ikun 网关",
+    "繪世 ikun 閘道器",
+    "NAI ikun gateway",
+    "NovelAI ikun ゲートウェイ",
+    "NAI ikun 게이트웨이"
+  ],
+  "显示名称": [
+    "显示名称",
+    "顯示名稱",
+    "Display name",
+    "表示名",
+    "표시 이름"
+  ],
+  "服务根地址": [
+    "服务根地址",
+    "服務根網址",
+    "Service base URL",
+    "サービスのベース URL",
+    "서비스 기본 URL"
+  ],
+  "独立网关令牌": [
+    "独立网关令牌",
+    "獨立閘道器權杖",
+    "Separate gateway token",
+    "個別のゲートウェイトークン",
+    "별도 게이트웨이 토큰"
+  ],
+  "加密保存并选中": [
+    "加密保存并选中",
+    "加密儲存並選取",
+    "Save encrypted and select",
+    "暗号化して保存し選択",
+    "암호화하여 저장하고 선택"
+  ],
+  "令牌保存在独立的系统加密档案中，不进入官方账户列表或绘世历史。": [
+    "令牌保存在独立的系统加密档案中，不进入官方账户列表或绘世历史。",
+    "權杖會保存在獨立的系統加密檔案中，不會進入官方帳戶清單或繪世歷史記錄。",
+    "The token is stored in a separate system-encrypted profile. It is not added to the official account list or NAI history.",
+    "トークンは個別のシステム暗号化プロファイルに保存され、公式アカウント一覧や NovelAI の履歴には追加されません。",
+    "토큰은 별도의 시스템 암호화 프로필에 저장되며 공식 계정 목록이나 NAI 기록에는 추가되지 않습니다."
+  ],
+  "文生图参数计划": [
+    "文生图参数计划",
+    "文生圖參數計畫",
+    "Text-to-image parameter plan",
+    "テキストから画像生成のパラメータ計画",
+    "텍스트-이미지 매개변수 계획"
+  ],
+  "当前文生图草稿": [
+    "当前文生图草稿",
+    "目前文生圖草稿",
+    "Current text-to-image draft",
+    "現在のテキストから画像生成の下書き",
+    "현재 텍스트-이미지 초안"
+  ],
+  "读取绘世当前参数；预览后若草稿、协议或档案变化，需重新确认。": [
+    "读取绘世当前参数；预览后若草稿、协议或档案变化，需重新确认。",
+    "讀取繪世目前參數；預覽後若草稿、協定或檔案變更，必須重新確認。",
+    "Reads the current NAI parameters. Review again if the draft, protocol, or profile changes after preview.",
+    "NovelAI の現在のパラメータを読み取ります。プレビュー後に下書き、プロトコル、プロファイルが変わった場合は再確認が必要です。",
+    "현재 NAI 매개변수를 읽습니다. 미리보기 후 초안, 프로토콜 또는 프로필이 변경되면 다시 확인해야 합니다."
+  ],
+  "预览参数计划": [
+    "预览参数计划",
+    "預覽參數計畫",
+    "Preview parameter plan",
+    "パラメータ計画をプレビュー",
+    "매개변수 계획 미리보기"
+  ],
+  "{protocol} 网关": [
+    "{protocol} 网关",
+    "{protocol} 閘道器",
+    "{protocol} gateway",
+    "{protocol} ゲートウェイ",
+    "{protocol} 게이트웨이"
+  ],
+  "请求地址": [
+    "请求地址",
+    "請求網址",
+    "Request URL",
+    "リクエスト URL",
+    "요청 URL"
+  ],
+  "模型与画布": [
+    "模型与画布",
+    "模型與畫布",
+    "Model and canvas",
+    "モデルとキャンバス",
+    "모델 및 캔버스"
+  ],
+  "采样参数": [
+    "采样参数",
+    "取樣參數",
+    "Sampling parameters",
+    "サンプリングパラメータ",
+    "샘플링 매개변수"
+  ],
+  "{steps} steps · CFG {scale} · CFG Rescale {cfgRescale} · {sampler} · {noiseSchedule} · seed {seed}": [
+    "{steps} steps · CFG {scale} · CFG Rescale {cfgRescale} · {sampler} · {noiseSchedule} · seed {seed}",
+    "{steps} steps · CFG {scale} · CFG Rescale {cfgRescale} · {sampler} · {noiseSchedule} · seed {seed}",
+    "{steps} steps · CFG {scale} · CFG Rescale {cfgRescale} · {sampler} · {noiseSchedule} · seed {seed}",
+    "{steps} steps · CFG {scale} · CFG Rescale {cfgRescale} · {sampler} · {noiseSchedule} · seed {seed}",
+    "{steps} steps · CFG {scale} · CFG Rescale {cfgRescale} · {sampler} · {noiseSchedule} · seed {seed}"
+  ],
+  "正向提示词": [
+    "正向提示词",
+    "正向提示詞",
+    "Positive prompt",
+    "ポジティブプロンプト",
+    "긍정 프롬프트"
+  ],
+  "负向提示词": [
+    "负向提示词",
+    "負向提示詞",
+    "Negative prompt",
+    "ネガティブプロンプト",
+    "부정 프롬프트"
+  ],
+  "（空）": [
+    "（空）",
+    "（空）",
+    "(empty)",
+    "（空）",
+    "(비어 있음)"
+  ],
+  "查看将发送的完整网关参数": [
+    "查看将发送的完整网关参数",
+    "檢視即將送出的完整閘道器參數",
+    "View the complete gateway payload",
+    "送信するゲートウェイパラメータ全体を表示",
+    "전송할 전체 게이트웨이 매개변수 보기"
+  ],
+  "计划将在 {time} 过期。确认后绘世会向此地址提交一次请求；不查询余额、不自动重试。": [
+    "计划将在 {time} 过期。确认后绘世会向此地址提交一次请求；不查询余额、不自动重试。",
+    "計畫將於 {time} 到期。確認後繪世會向此網址送出一次請求；不查詢餘額，也不會自動重試。",
+    "The plan expires at {time}. After confirmation, NAI sends one request to this URL. It does not check balances or retry automatically.",
+    "計画は {time} に期限切れになります。確定後、NovelAI はこの URL にリクエストを 1 回送信します。残高確認や自動再試行は行いません。",
+    "계획은 {time}에 만료됩니다. 확인 후 NAI가 이 URL로 요청을 한 번 보냅니다. 잔액을 확인하거나 자동 재시도하지 않습니다."
+  ],
+  "我已核对计划，确认并生成": [
+    "我已核对计划，确认并生成",
+    "我已核對計畫，確認並生成",
+    "I reviewed the plan; confirm and generate",
+    "計画を確認しました。確定して生成",
+    "계획을 검토했습니다. 확인하고 생성"
+  ],
+  "读取当前草稿并预览": [
+    "读取当前草稿并预览",
+    "讀取目前草稿並預覽",
+    "Read current draft and preview",
+    "現在の下書きを読み込んでプレビュー",
+    "현재 초안을 읽고 미리보기"
+  ],
+  "当前主工作台为{mode}；此网关入口不会把它改发成文生图。": [
+    "当前主工作台为{mode}；此网关入口不会把它改发成文生图。",
+    "目前主工作台為{mode}；此閘道器入口不會將其改送為文生圖。",
+    "The main workbench is set to {mode}. This gateway entry will not convert it to text-to-image.",
+    "メインワークベンチは{mode}に設定されています。このゲートウェイ入口ではテキストから画像生成に変換しません。",
+    "기본 작업대가 {mode}(으)로 설정되어 있습니다. 이 게이트웨이 항목은 텍스트-이미지로 변환해 보내지 않습니다."
+  ],
+  "图生图": [
+    "图生图",
+    "圖生圖",
+    "Image-to-image",
+    "画像から画像",
+    "이미지-이미지"
+  ],
+  "局部重绘": [
+    "局部重绘",
+    "局部重繪",
+    "Inpainting",
+    "インペイント",
+    "인페인트"
+  ],
+  "没有收到当前生成模式，已禁用网关提交以防参数被降级。": [
+    "没有收到当前生成模式，已禁用网关提交以防参数被降级。",
+    "未收到目前的生成模式，已停用閘道器送出，以免參數遭降級。",
+    "The current generation mode is unavailable. Gateway submission is disabled to prevent parameter downgrade.",
+    "現在の生成モードを取得できません。パラメータのダウングレードを防ぐため、ゲートウェイ送信を無効にしました。",
+    "현재 생성 모드를 확인할 수 없습니다. 매개변수 다운그레이드를 방지하기 위해 게이트웨이 제출을 비활성화했습니다."
+  ],
+  "已提交网关请求，正在等待结果；不要重复提交。": [
+    "已提交网关请求，正在等待结果；不要重复提交。",
+    "閘道器請求已送出，正在等待結果；請勿重複送出。",
+    "Gateway request submitted; waiting for the result. Do not submit again.",
+    "ゲートウェイリクエストを送信し、結果を待っています。重複して送信しないでください。",
+    "게이트웨이 요청을 제출하고 결과를 기다리는 중입니다. 다시 제출하지 마세요."
+  ],
+  "停止本地等待": [
+    "停止本地等待",
+    "停止本機等待",
+    "Stop waiting locally",
+    "ローカルの待機を停止",
+    "로컬 대기 중지"
+  ],
+  "网关生成结果": [
+    "网关生成结果",
+    "閘道器生成結果",
+    "Gateway generation result",
+    "ゲートウェイ生成結果",
+    "게이트웨이 생성 결과"
+  ],
+  "已完成": [
+    "已完成",
+    "已完成",
+    "Completed",
+    "完了",
+    "완료"
+  ],
+  "请求失败": [
+    "请求失败",
+    "請求失敗",
+    "Request failed",
+    "リクエスト失敗",
+    "요청 실패"
+  ],
+  "完成状态不确定": [
+    "完成状态不确定",
+    "完成狀態不確定",
+    "Completion status is uncertain",
+    "完了状態が不明です",
+    "완료 상태를 확인할 수 없습니다"
+  ],
+  "选择": [
+    "选择",
+    "選取",
+    "Select",
+    "選択",
+    "선택"
+  ],
+  "删除": [
+    "删除",
+    "刪除",
+    "Delete",
+    "削除",
+    "삭제"
+  ],
+  "网关": [
+    "网关",
+    "閘道器",
+    "Gateway",
+    "ゲートウェイ",
+    "게이트웨이"
+  ]
+}

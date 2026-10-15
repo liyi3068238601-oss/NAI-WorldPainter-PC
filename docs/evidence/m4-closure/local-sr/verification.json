@@ -1,0 +1,33 @@
+{
+  "verifiedAt": "2026-10-15T10:16:02.255Z",
+  "runtimeRoot": "E:\\NAI-WorldPainter\\PC端\\.tmp\\sr-runtime",
+  "executable": "E:\\NAI-WorldPainter\\PC端\\.tmp\\sr-runtime\\realcugan\\realcugan-ncnn-vulkan.exe",
+  "modelId": "realcuganConservative2x",
+  "source": {
+    "fileName": "synthetic-source.png",
+    "width": 64,
+    "height": 64,
+    "bytes": 237,
+    "sha256": "91bac57fa0d4edcb17ba784fd9062eeaae98c7cc15c591296d7c4f612153dd44"
+  },
+  "output": {
+    "fileName": "synthetic-upscaled.png",
+    "width": 128,
+    "height": 128,
+    "bytes": 565,
+    "sha256": "132bdfda40233255711f3be5136f9d047d4c5f214f067d0af2121c98b008c317"
+  },
+  "progress": [
+    {
+      "message": "正在启动本地超分",
+      "percent": 0
+    },
+    {
+      "message": "本地超分完成",
+      "percent": 100
+    }
+  ],
+  "stdoutLog": "stdout.txt",
+  "stderrLog": "stderr.txt",
+  "networkUsed": false
+}

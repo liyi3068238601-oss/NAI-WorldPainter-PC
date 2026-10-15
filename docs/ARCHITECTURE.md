@@ -1,3 +1,15 @@
+# 绘世 PC 当前架构
+
+2026-10-15：用户明确授权直接迁移现有 Electron/React 源码。当前主实现位于 `desktop/`，不再以 Flutter 重写所有前端为后续路线。原 Flutter `lib/`、`windows/`、数据与历史证据保留，便于对照和回退。
+
+- Electron 主进程管理文件、凭据、模型调用与原生对话框；React 展示工作台。使用 contextIsolation 与受限 preload；源项目 preload 目前仍需 sandbox=false，不能宣称已完全沙箱化。
+- 默认开发数据 `data/electron`，打包数据 `%APPDATA%/NAI-WorldPainter-PC`；新存储 `worldpainter-desktop.json`。不自动迁移参考项目账号；原 Flutter SQLite 由用户选择、预览后追加，未映射字段归档。
+- 实际 Agent 链是 `PiAgentPage → agent-runtime → pi-agent-turn → pi-studio-tools → agent-tools`。记忆按类别和审核状态检索；知识文件校验后原子切换。旧 Tavern/Harness 模块保留兼容，不能误作当前 Agent 主链。
+- 本地超分与官方付费超分分开。7877/ikun 由独立 vault/计划/网络适配处理，不借用官方 token；第一版只开放已适配的纯文生图。
+- 迁移基线与版本、许可见 [迁移报告](M4_ELECTRON_MIGRATION.md)。以下是早期选型记录，不是当前决策。
+
+## 历史调研记录
+
 # 绘世 PC 技术路线比较
 
 方案版本：0.5。实施状态更新：2026-10-13。Flutter 三栏工作台、SQLite 自动保存、Windows 凭据、生成链路和图库资产能力已实现到部分业务路径；平台、全量业务及正式验收仍未完成。

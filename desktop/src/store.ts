@@ -1,0 +1,3139 @@
+import { normalizeHistoryWidth, readHistoryCollapsed, HISTORY_COLLAPSE_AT } from './workspace-history';
+import {favoritesText} from './favorites-text';
+import {naiAccountSummaryMatches} from './nai-accounts';
+import {type InpaintRegion} from './focused-inpaint';
+import {inpaintSizePlan,restoreInpaintSizeState,type InpaintSize,type InpaintSizeMode} from './inpaint-size';
+import {retainedPrompts} from "./retained-prompts";
+import { mergeImageSettings, mergeFullSettings } from "./compatible-image-settings-sync";
+import {localizedStoreText} from "./store-i18n";
+import {featureText} from "./feature-text";
+import {playCompletionSound} from "./completion-sound";
+import { restoreSavedStyle } from "./style-prompt-restore";
+import type {InputPreviewAnchor} from "./canvas-preview";
+import type { MetadataRestoreOptions } from "./metadata-selection";
+import {normalizeCharacterCaptions} from './character-presets';
+import { create } from "zustand";
+import type {
+  AccountSummary,
+  AnlasQuoteRequest,
+  AnlasQuoteResult,
+  AppSettings,
+  AugmentOptions,
+  BatchRedrawProject,
+  CharCaption,
+  CharCaptionItem,
+  DirectorTool,
+  GenerateExtras,
+  GenerateParams,
+  GenerateResult,
+  GenerationPreviewEvent,
+  HistoryGroup,
+  HistoryItem,
+  I2IParams,
+  ImageToImageSizeMode,
+  ImportedParams,
+  InpaintBrushShape,
+  LastGenerationState,
+  NAIInpaintModel,
+  PromptVariants,
+  ReversePromptMode,
+  ReversePromptScope,
+  TextToolHistoryItem,
+  TextToolJob,
+  UpdateInfo,
+  UpdateProgressEvent,
+  UpscaleScale,
+  VibeTransferImage,
+  PreciseReferenceImage,
+  WorkingImage,
+} from "./types";
+import { createDefaultBatchRedraw, DEFAULT_AUGMENT_OPTIONS, DEFAULT_I2I_PARAMS, DEFAULT_PARAMS, DIRECTOR_TOOLS, EMOTION_OPTIONS, isNAIV5Model, maxNAICharacterPrompts, NAI_INPAINT_MODELS, normalizeGenerateParams, seedForBatch } from "./types";
+import { normalizeAppLanguage } from "./i18n";
+import { expandWildcards } from "./wildcards";
+import { adaptiveNAIImageSize } from "./nai-dimensions";
+import { normalizeInpaintBrushSize } from "./inpaint-brush";
+import { compactRemoteErrorText } from "./error-message";
+import type { ActiveTab } from "./app/navigation";
+
+type PromptTab = "positive" | "negative";
+type BrushMode = "paint" | "erase";
+
+// Workspace column widths (left operations rail / right history rail) — persisted
+// in localStorage so the layout is identical on next launch. Center fills the rest.
+// A finished convert/reverse job is already reflected in the result box and
+// history — leaving it in the tracker list just forces a manual ✕ click.
+const TEXTTOOL_DONE_AUTO_DISMISS_MS = 1500;
+const WS_LEFT_DEFAULT = 380;
+const WS_RIGHT_DEFAULT = 340;
+const WS_LEFT_MIN = 260;
+const WS_LEFT_MAX = 560;
+const WS_RIGHT_MAX = 480;
+// Every async workbench load gets a revision. Starting a newer load, clearing
+// the workbench, deleting its selected history item, or starting generation
+// invalidates older responses so stale metadata cannot overwrite live prompts.
+let workbenchLoadRevision = 0;
+// Invalidates a slow post-generation balance refresh as soon as a newer run or
+// cancellation starts, so stale bookkeeping can never overwrite newer UI.
+let generationSettlementRevision = 0;
+const storeIpcListenerOwner = {};
+const storeIpcListenerRegistryKey = "__langbaiNovelAiStoreIpcListeners";
+
+type StoreIpcListenerRegistry = {
+  owner: object;
+  removeGenerationPreview?: () => void;
+  removeUpdateEvent?: () => void;
+  removeImageServiceChanged?: () => void;
+};
+
+function revokeInspectObjectUrl(url: string) {
+  if (!url.startsWith("blob:") || typeof URL?.revokeObjectURL !== "function") return;
+  URL.revokeObjectURL(url);
+}
+function readWsWidth(key: string, fallback: number): number {
+  try {
+    const v = Number(localStorage.getItem(key));
+    return Number.isFinite(v) && v > 0 ? v : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+
+function storeText(settings: AppSettings | null | undefined, key: string) {
+  const language = normalizeAppLanguage(settings?.language);
+  return localizedStoreText(language,key);
+}
+
+function storeFormat(settings: AppSettings | null | undefined, key: string, values: Record<string, unknown>) {
+  return storeText(settings, key).replace(/\{(\w+)\}/g, (_, name: string) => String(values[name] ?? ""));
+}
+
+function compactStoreError(
+  settings: AppSettings | null | undefined,
+  error: unknown,
+  fallback = storeText(settings, "error.requestFailed"),
+) {
+  return compactRemoteErrorText(error, {
+    fallback,
+    serviceLabel: "NovelAI API",
+    maxLength: 360,
+  });
+}
+
+export interface QueuedGenerationJob {
+  id: string;
+  params: GenerateParams;
+  extras: GenerateExtras;
+  quotedAnlas: number;
+  /** The job is visible in the queue immediately while its quote is resolved. */
+  quotePending: boolean;
+  addedAt: number;
+  /** Short prompt preview for the queue panel. */
+  label: string;
+}
+
+export type GenerationPhase = "idle" | "preparing" | "requesting" | "streaming" | "saving";
+
+export type CanvasSurface =
+  | "generate:t2i"
+  | "generate:i2i"
+  | "generate:enhance"
+  | "inpaint"
+  | "postprocess:upscale"
+  | "postprocess:director";
+
+interface AppState {
+  bootDone: boolean;
+  // Set only when a critical boot read (settings) fails outright — lets the
+  // splash screen show a retry instead of spinning forever with no feedback.
+  bootError: string | null;
+  showOnboarding: boolean;
+  showSettings: boolean;
+  activeTab: ActiveTab;
+  promptTab: PromptTab;
+  /** Workspace rail widths (px); center fills the rest. Persisted to localStorage. */
+  wsLeftWidth: number;
+  wsRightWidth: number;
+  wsHistoryCollapsed: boolean;
+  /** Transient reveal width: never persists or replaces the remembered expanded width. */
+  wsHistoryDragWidth: number | null;
+  params: GenerateParams;
+  settings: AppSettings | null;
+  account: AccountSummary;
+  history: HistoryItem[];
+  historyDates: string[];
+  historyGroups: HistoryGroup[];
+  selectedDate: string;
+  selectedGroupId: string;
+  generationGroupId: string;
+  currentImage: HistoryItem | null;
+  workbenchImage: WorkingImage | null;
+  inputPreviewAnchor: InputPreviewAnchor | null;
+  /** First image explicitly loaded by the user for the current img2img session. */
+  i2iOriginalImage: WorkingImage | null;
+  /** Choose whether the next redraw starts from the original or the latest result. */
+  i2iSourceMode: "original" | "latest";
+  /** Choose whether the next inpaint run starts from the original or latest result. */
+  inpaintSourceMode: "original" | "latest";
+  comparisonBeforeImage: WorkingImage | null;
+  /** The exact tool surface that owns comparisonBeforeImage. Comparisons stay
+   * cached while navigating, but render only when this surface is active. */
+  comparisonSurface: CanvasSurface | null;
+  comparisonAutoOpenRequest: string | null;
+  activeCanvasSurface: CanvasSurface;
+  i2iParams: I2IParams;
+  i2iSizeMode: ImageToImageSizeMode;
+  inpaintModel: NAIInpaintModel;
+  inpaintSizeMode: InpaintSizeMode;
+  inpaintCustomSize: InpaintSize;
+  inpaintStrength: number;
+  inpaintNoise: number;
+  /** Independent from params.positivePrompt — inpaint must not inherit the
+   * main generate/i2i prompt automatically. */
+  inpaintPositivePrompt: string;
+  /** Natural-language instruction for the OpenAI image-edit engine. */
+  openaiEditPrompt: string;
+  brushSize: number;
+  brushOpacity: number;
+  brushColor: string;
+  brushMode: BrushMode;
+  brushShape: InpaintBrushShape;
+  inpaintMask: string | null;
+  inpaintRegion: InpaintRegion | null;
+  setInpaintRegion: (region:InpaintRegion|null)=>void;
+  maskRevision: number;
+  upscaleScale: UpscaleScale;
+  directorTool: DirectorTool;
+  augmentOptions: AugmentOptions;
+  vibeImages: VibeTransferImage[];
+  preciseReferences: PreciseReferenceImage[];
+  charCaptions: CharCaption[];
+  /** 批量图生图 project — lives in the store so switching tools/tabs never loses it. */
+  batchRedraw: BatchRedrawProject;
+  /** Transient run state (not exported with the project). */
+  batchRunning: boolean;
+  batchProgress: { done: number; total: number } | null;
+  // Global (not component-local) so a remounted BatchRedraw instance — e.g. the
+  // user left the tab mid-run and came back — can still signal the ORIGINAL
+  // still-running loop to stop. A component-local ref can't: a fresh mount gets
+  // a fresh ref the old closure never sees.
+  batchCancelRequested: boolean;
+  batchCount: number;
+  batchIntervalSeconds: number;
+  inspectImageUrl: string;
+  inspectMeta: Record<string, string> | null;
+  inspectImageBase64: string;
+  /** Real filesystem path of the loaded reverse-source image, when known
+   * (drag/drop and the file picker both resolve one). Used only to drop a
+   * reverse history record once its source image is gone. */
+  inspectImagePath: string;
+  reversePromptText: string;
+  reversePromptMode: ReversePromptMode;
+  reversePromptScope: ReversePromptScope;
+  reversePromptHint: string;
+  reverseKnownCharacter: boolean;
+  reversePromptVariants: PromptVariants | null;
+  /** Concurrent job tracker for reverse requests — every submission fires
+   * immediately and updates its own entry in place; not a serial queue.
+   * Whether ANY reverse job is still processing is derived from this list
+   * (`reverseJobs.some(j => j.status === "processing")`) rather than kept
+   * as a separate flag. */
+  reverseJobs: TextToolJob[];
+  reverseQueueCollapsed: boolean;
+  reverseHistory: TextToolHistoryItem[];
+  convertInput: string;
+  convertResult: string;
+  convertResultWarnings: string[];
+  convertMode: ReversePromptMode;
+  convertKnownCharacter: boolean;
+  convertJobs: TextToolJob[];
+  convertQueueCollapsed: boolean;
+  convertHistory: TextToolHistoryItem[];
+  convertResultVariants: PromptVariants | null;
+  isGenerating: boolean;
+  isGenerateQueueRunning: boolean;
+  activeGenerationRunId: string | null;
+  generationPreview: GenerationPreviewEvent | null;
+  /** Explicit UI phase. Keeping this separate from localized status text avoids
+   * rendering the balance/quote preflight as if image sampling had started. */
+  generationPhase: GenerationPhase;
+  queueAdding: boolean;
+  generationQueue: QueuedGenerationJob[];
+  queueCollapsed: boolean;
+  /** Set by 清空排队 to also stop the remaining initial-batch images. */
+  clearQueueRequested: boolean;
+  /** Bumped whenever the queue is cleared/cancelled — invalidates in-flight enqueue quotes. */
+  queueVersion: number;
+  /** Vibe identity keys used by the active run, so duplicate queued refs aren't re-quoted for encoding. */
+  activeVibeKeys: string[];
+  queuePaused: boolean;
+  queueProgress: { done: number; failed: number; total: number } | null;
+  currentAnlasSpent: number | null;
+  lastAnlasSpent: number | null;
+  statusText: string;
+  lastError: string;
+  toast: string;
+  updateInfo: UpdateInfo | null;
+  isPortable: boolean;
+  updateProgress: UpdateProgressEvent | null;
+
+  load: () => Promise<void>;
+  setShowOnboarding: (value: boolean) => void;
+  setShowSettings: (value: boolean) => void;
+  setActiveTab: (tab: ActiveTab) => void;
+  setActiveCanvasSurface: (surface: CanvasSurface) => void;
+  setPromptTab: (tab: PromptTab) => void;
+  setWsWidth: (edge: "left" | "right", px: number) => void;
+  setWsHistoryCollapsed: (collapsed: boolean) => void;
+  setWsHistoryDragWidth: (width: number | null) => void;
+  commitWsHistoryDragWidth: () => void;
+  saveWsWidths: () => void;
+  resetWsWidths: () => void;
+  setParam: <K extends keyof GenerateParams>(key: K, value: GenerateParams[K]) => void;
+  applyParams: (patch: Partial<GenerateParams>) => void;
+  restoreImportedMetadata: (
+    patch: ImportedParams,
+    captions: CharCaptionItem[],
+    options?: MetadataRestoreOptions,
+  ) => void;
+  checkUpdate: () => Promise<void>;
+  dismissUpdate: () => void;
+  downloadUpdate: () => Promise<void>;
+  installUpdate: () => void;
+  setSelectedDate: (date: string) => Promise<void>;
+  setSelectedGroupId: (groupId: string) => Promise<void>;
+  setGenerationGroupId: (groupId: string) => Promise<void>;
+  createGenerationGroup: (name: string) => Promise<void>;
+  createHistoryGroup: (name: string) => Promise<void>;
+  renameHistoryGroup: (id: string, name: string) => Promise<void>;
+  deleteHistoryGroup: (id: string) => Promise<void>;
+  exportHistoryGroup: (groupId: string) => Promise<void>;
+  setHistoryItemGroup: (id: string, groupId?: string) => Promise<void>;
+  refreshHistory: (date?: string) => Promise<void>;
+  refreshSettings: () => Promise<void>;
+  refreshAccount: () => Promise<AccountSummary>;
+  loadWorkbenchImage: () => Promise<void>;
+  loadWorkbenchFromPath: (
+    filePath: string,
+    options?: { silent?: boolean; restoreMetadata?: boolean },
+  ) => Promise<void>;
+  clearWorkbenchImage: () => Promise<void>;
+  setI2IParam: <K extends keyof I2IParams>(key: K, value: I2IParams[K]) => void;
+  setI2ISizeMode: (mode: ImageToImageSizeMode) => void;
+  setI2ISourceMode: (mode: "original" | "latest") => void;
+  setInpaintSourceMode: (mode: "original" | "latest") => Promise<void>;
+  setInpaintModel: (model: NAIInpaintModel) => void;
+  setInpaintSizeMode: (mode: InpaintSizeMode) => void;
+  setInpaintCustomSize: (size: InpaintSize) => void;
+  setInpaintStrength: (value: number) => void;
+  setInpaintNoise: (value: number) => void;
+  setInpaintPositivePrompt: (value: string) => void;
+  setOpenaiEditPrompt: (value: string) => void;
+  setBrushSize: (size: number) => void;
+  setBrushOpacity: (opacity: number) => void;
+  setBrushColor: (color: string) => void;
+  setBrushMode: (mode: BrushMode) => void;
+  setBrushShape: (shape: InpaintBrushShape) => void;
+  setInpaintMask: (mask: string | null) => void;
+  clearInpaintMask: () => void;
+  setUpscaleScale: (scale: UpscaleScale) => void;
+  setDirectorTool: (tool: DirectorTool) => void;
+  setAugmentOption: <K extends keyof AugmentOptions>(key: K, value: AugmentOptions[K]) => void;
+  // Vibe Transfer / Precise Reference
+  addVibeImage: (image: VibeTransferImage) => boolean;
+  removeVibeImage: (id: string) => void;
+  updateVibeImage: (id: string, patch: Partial<Pick<VibeTransferImage, "infoExtracted" | "strength">>) => void;
+  clearVibeImages: () => void;
+  addPreciseReference: (image: PreciseReferenceImage) => void;
+  removePreciseReference: (id: string) => void;
+  updatePreciseReference: (id: string, patch: Partial<Pick<PreciseReferenceImage, "type" | "strength" | "fidelity" | "informationExtracted">>) => void;
+  clearPreciseReferences: () => void;
+  // Character Prompt
+  addCharCaption: () => void;
+  removeCharCaption: (id: string) => void;
+  updateCharCaption: (id: string, patch: Partial<Omit<CharCaption, "id">>) => void;
+  clearCharCaptions: () => void;
+  setCharCaptions: (captions: CharCaptionItem[]) => void;
+  // Batch img2img project
+  setBatchRedraw: (updater: (prev: BatchRedrawProject) => BatchRedrawProject) => void;
+  resetBatchRedraw: () => void;
+  setBatchRunning: (running: boolean, progress?: { done: number; total: number } | null) => void;
+  requestBatchCancel: () => void;
+  // Batch + Inspect + Convert
+  setBatchCount: (count: number) => void;
+  setBatchIntervalSeconds: (seconds: number) => void;
+  setInspectImage: (url: string, meta: Record<string, string>, base64?: string, path?: string) => void;
+  clearInspect: () => void;
+  setReversePromptText: (text: string) => void;
+  setReversePromptMode: (mode: ReversePromptMode) => void;
+  setReversePromptScope: (scope: ReversePromptScope) => void;
+  setReversePromptHint: (hint: string) => void;
+  setReverseKnownCharacter: (known: boolean) => void;
+  runReversePrompt: () => Promise<void>;
+  toggleReverseQueueCollapsed: () => void;
+  removeReverseJob: (id: string) => void;
+  loadReverseHistory: () => Promise<void>;
+  deleteReverseHistoryItem: (id: string) => Promise<void>;
+  clearReverseHistory: () => Promise<void>;
+  setConvertInput: (text: string) => void;
+  setConvertResult: (text: string, warnings?: string[]) => void;
+  setConvertMode: (mode: ReversePromptMode) => void;
+  setConvertKnownCharacter: (known: boolean) => void;
+  runConvertPrompt: () => Promise<void>;
+  toggleConvertQueueCollapsed: () => void;
+  removeConvertJob: (id: string) => void;
+  loadConvertHistory: () => Promise<void>;
+  deleteConvertHistoryItem: (id: string) => Promise<void>;
+  clearConvertHistory: () => Promise<void>;
+  setToast: (message: string) => void;
+  clearImageComparison: () => void;
+  // Core actions
+  generate: () => Promise<void>;
+  enqueueGeneration: () => Promise<void>;
+  removeQueueJob: (id: string) => void;
+  clearQueue: () => void;
+  toggleQueueCollapsed: () => void;
+  generateI2I: () => Promise<void>;
+  inpaint: () => Promise<void>;
+  /** Inpaint with OpenAI Images edits (provider billing, no Anlas). */
+  openaiInpaint: () => Promise<void>;
+  upscaleCurrentImage: () => Promise<void>;
+  runDirectorTool: () => Promise<void>;
+  cancel: () => Promise<void>;
+  togglePause: () => void;
+  selectImage: (item: HistoryItem) => void;
+  variationFromImage: (item: HistoryItem) => void;
+  deleteHistory: (id: string) => Promise<boolean>;
+  /** Apply only identities confirmed removed by native storage/reconciliation. */
+  forgetHistoryItems: (ids: readonly string[]) => void;
+  dropMissingImage: (id: string) => Promise<void>;
+  renameHistoryItem: (id: string, name: string) => Promise<void>;
+  clearToast: () => void;
+}
+
+function requireToken(set: (state: Partial<AppState>) => void, hasToken: boolean, settings?: AppSettings | null) {
+  if (hasToken) return true;
+  set({ showSettings: true, statusText: storeText(settings, "status.needApiToken"), toast: storeText(settings, "toast.needApiToken") });
+  return false;
+}
+
+type CompletedImageBridge = {
+  previewUrl: string;
+  sourceUrl: string;
+};
+
+// The stream already decoded the final pixels, while the freshly-saved local
+// URL still needs one disk read/decode. Keep those decoded pixels in both the
+// canvas and the first history card until Chromium has the durable URL ready;
+// otherwise <img> visibly falls back to the previous picture for a few frames.
+const completedImageBridges = new Map<string, CompletedImageBridge>();
+
+function withCompletedImageBridge(item: HistoryItem): HistoryItem {
+  const bridge = completedImageBridges.get(item.id);
+  return bridge ? { ...item, fileUrl: bridge.previewUrl } : item;
+}
+
+function preloadCompletedImage(sourceUrl: string): Promise<void> {
+  if (!sourceUrl || typeof globalThis.Image !== "function") return Promise.resolve();
+  return new Promise((resolve) => {
+    const image = new globalThis.Image();
+    let settled = false;
+    let timeoutId: ReturnType<typeof globalThis.setTimeout> | undefined;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      if (timeoutId !== undefined) globalThis.clearTimeout(timeoutId);
+      image.onload = null;
+      image.onerror = null;
+      resolve();
+    };
+    image.onload = () => {
+      if (typeof image.decode === "function") {
+        void image.decode().then(finish, finish);
+      } else {
+        finish();
+      }
+    };
+    image.onerror = finish;
+    image.src = sourceUrl;
+    timeoutId = globalThis.setTimeout(finish, 4_000);
+  });
+}
+
+function showCompletedImage(
+  set: (state: Partial<AppState> | ((state: AppState) => Partial<AppState>)) => void,
+  get: () => AppState,
+  item: HistoryItem,
+  options: { compareBefore?: WorkingImage | null; comparisonSurface?: CanvasSurface; autoCompare?: boolean; loadWorkbench?: boolean } = {},
+) {
+  const preview = get().generationPreview;
+  const canBridge = Boolean(
+    preview?.imageDataUrl
+      && preview.progress >= 1
+      && item.fileUrl
+      && preview.imageDataUrl !== item.fileUrl,
+  );
+  if (canBridge && preview) {
+    completedImageBridges.set(item.id, {
+      previewUrl: preview.imageDataUrl,
+      sourceUrl: item.fileUrl,
+    });
+  }
+  const visibleItem = withCompletedImageBridge(item);
+  set((state) => {
+    const selectedGroup = state.selectedGroupId;
+    const matchesGroup = !selectedGroup
+      || (selectedGroup === "__ungrouped" ? !item.groupId : item.groupId === selectedGroup);
+    const sameDateVisible = state.history.filter((candidate) => {
+      if (candidate.date !== item.date) return false;
+      if (!selectedGroup) return true;
+      if (selectedGroup === "__ungrouped") return !candidate.groupId;
+      return candidate.groupId === selectedGroup;
+    });
+    return {
+      currentImage: visibleItem,
+      comparisonBeforeImage: options.compareBefore ?? null,
+      comparisonSurface: options.compareBefore ? options.comparisonSurface ?? state.activeCanvasSurface : null,
+      comparisonAutoOpenRequest: options.autoCompare !== false && options.compareBefore && (options.comparisonSurface ?? state.activeCanvasSurface) !== "generate:t2i" && (options.comparisonSurface ?? state.activeCanvasSurface) === state.activeCanvasSurface ? `${options.comparisonSurface ?? state.activeCanvasSurface}|${item.id}` : null,
+      selectedDate: item.date,
+      historyDates: [item.date, ...state.historyDates.filter((date) => date !== item.date)].sort((a, b) => b.localeCompare(a)),
+      history: matchesGroup
+        ? [visibleItem, ...sameDateVisible.filter((candidate) => candidate.id !== item.id)]
+        : sameDateVisible,
+    };
+  });
+  if (canBridge) {
+    void preloadCompletedImage(item.fileUrl).then(() => {
+      const bridge = completedImageBridges.get(item.id);
+      if (!bridge || bridge.sourceUrl !== item.fileUrl) return;
+      completedImageBridges.delete(item.id);
+      set((state) => ({
+        currentImage: state.currentImage?.id === item.id
+          ? { ...state.currentImage, filePath: item.filePath, fileUrl: item.fileUrl }
+          : state.currentImage,
+        history: state.history.map((candidate) => candidate.id === item.id
+          ? { ...candidate, filePath: item.filePath, fileUrl: item.fileUrl }
+          : candidate),
+      }));
+    });
+  }
+}
+
+/** A failed save can still contain paid, durable outputs. Keep them visible
+ * without replacing them with an empty/stale history index or reporting success. */
+function showPartialImages(
+  set: (state: Partial<AppState> | ((state: AppState) => Partial<AppState>)) => void,
+  get: () => AppState,
+  result: GenerateResult,
+  options: { compareBefore?: WorkingImage | null; comparisonSurface?: CanvasSurface; autoCompare?: boolean } = {},
+) {
+  if (result.ok) return;
+  for (const item of [...result.items].reverse()) showCompletedImage(set, get, item, {...options,autoCompare:false});
+}
+
+async function runAfterImageRefresh(
+  get: () => AppState,
+  item: HistoryItem,
+  options: { compareBefore?: WorkingImage | null; comparisonSurface?: CanvasSurface; autoCompare?: boolean; loadWorkbench?: boolean } = {},
+) {
+  // The generation itself already succeeded (the caller only reaches here on a
+  // successful save) — a hiccup refreshing history/balance/workbench afterwards
+  // must not mask that success or leave isGenerating stuck true forever.
+  try {
+    await get().refreshHistory(item.date);
+  } catch {
+    /* history list will catch up on the next natural refresh */
+  }
+  try {
+    await get().refreshAccount();
+  } catch {
+    /* balance will catch up on the next natural refresh */
+  }
+  if (options.loadWorkbench) {
+    try {
+      await get().loadWorkbenchFromPath(item.filePath, { silent: true });
+    } catch {
+      /* workbench reload is best-effort */
+    }
+  }
+}
+
+function buildExtras(state: AppState): GenerateExtras {
+  return {
+    vibeImages: state.vibeImages.map(({ base64, infoExtracted, strength, encodings }) => ({
+      encodings,
+      base64,
+      infoExtracted,
+      strength,
+    })),
+    preciseReferences: state.preciseReferences.map(({ base64, type, strength, fidelity, informationExtracted }) => ({
+      base64,
+      type,
+      strength,
+      fidelity,
+      informationExtracted,
+    })),
+    charCaptions: state.charCaptions.map(({ enabled, prompt, negativePrompt, useCoords, x, y }) => ({
+      enabled,
+      prompt,
+      negativePrompt,
+      useCoords,
+      x,
+      y,
+    })),
+    historyGroupId: state.generationGroupId,
+    modelMode: state.settings?.modelMode ?? "anime",
+  };
+}
+
+// Identity of a vibe reference for encode-dedup, mirroring the main process cache
+// key (model + information_extracted + image bytes). Used so several queued jobs
+// sharing the same reference are only quoted for ONE encode.
+function vibeKeyOf(model: string, vibe: import("./types").VibeTransferItem): string {
+  return `${model}|${vibe.infoExtracted}|${vibe.base64}|${JSON.stringify(vibe.encodings ?? [])}`;
+}
+
+function extrasVibeKeys(model: string, extras: GenerateExtras): string[] {
+  return (extras.vibeImages ?? []).map((v) => vibeKeyOf(model, v));
+}
+
+function imageGenerationFailureMessage(settings: AppSettings | null | undefined, message?: string) {
+  const detail = compactStoreError(settings, message, storeText(settings, "error.unknown"));
+  return detail.includes("图片生成失败") || detail.includes("Image generation failed")
+    ? detail
+    : storeFormat(settings, "error.generationFailed", { detail });
+}
+
+function anlasSpent(before?: number, after?: number) {
+  if (typeof before !== "number" || typeof after !== "number") return null;
+  return Math.max(0, before - after);
+}
+
+function withAnlasSpent(settings: AppSettings | null | undefined, message: string, spent: number | null) {
+  const safeMessage = compactStoreError(settings, message);
+  if (spent == null) return storeFormat(settings, "anlas.spentFailed", { message: safeMessage });
+  return storeFormat(settings, "anlas.spent", { message: safeMessage, spent });
+}
+
+async function ensureAnlasBeforeRun(
+  set: (state: Partial<AppState>) => void,
+  request: AnlasQuoteRequest,
+  actionLabel: string,
+  settings?: AppSettings | null,
+): Promise<AnlasQuoteResult | null> {
+  const quote = await window.naiDesktop.quoteAnlas(request);
+  if (!quote.ok || typeof quote.amount !== "number") {
+    const fallbackMessage = storeFormat(settings, "quote.readFailedTry", { action: actionLabel });
+    const message = compactStoreError(settings, quote.message, fallbackMessage);
+    set({ statusText: fallbackMessage, toast: message, lastError: "" });
+    return {
+      ok: true,
+      amount: 0,
+      source: "unavailable",
+      balance: request.account?.anlasBalance,
+      insufficient: false,
+      message,
+      details: quote.details,
+    };
+  }
+  if (quote.insufficient) {
+    const balance = quote.balance ?? storeText(settings, "error.unknown");
+    const message = storeFormat(settings, "quote.insufficient", { action: actionLabel, amount: quote.amount, balance });
+    set({ statusText: message, toast: message, lastError: "" });
+    return quote;
+  }
+  set({ statusText: storeFormat(settings, "quote.deduct", { action: actionLabel, amount: quote.amount }), lastError: "" });
+  return quote;
+}
+
+async function preparePaidRun(
+  set: (state: Partial<AppState>) => void,
+  get: () => AppState,
+  request: (account: AccountSummary) => AnlasQuoteRequest,
+  actionLabel: string,
+  settings?: AppSettings | null,
+): Promise<{ account: AccountSummary; quote: AnlasQuoteResult } | null> {
+  try {
+    const account = await get().refreshAccount();
+    if (!get().isGenerating) return null;
+    const quote = await ensureAnlasBeforeRun(
+      set,
+      request(account),
+      actionLabel,
+      settings,
+    );
+    return quote ? { account, quote } : null;
+  } catch (error) {
+    const message = compactStoreError(settings, error);
+    set({
+      isGenerating: false,
+      generationPhase: "idle",
+      currentAnlasSpent: null,
+      statusText: message,
+      toast: message,
+      lastError: message,
+    });
+    return null;
+  }
+}
+
+async function refreshAfterImage(
+  set: (state: Partial<AppState> | ((state: AppState) => Partial<AppState>)) => void,
+  get: () => AppState,
+  item: HistoryItem,
+  options: { compareBefore?: WorkingImage | null; comparisonSurface?: CanvasSurface; autoCompare?: boolean; loadWorkbench?: boolean } = {},
+) {
+  if (!get().generationPreview?.imageDataUrl && item.fileUrl) {
+    set({ generationPhase: "saving" });
+    await preloadCompletedImage(item.fileUrl);
+  }
+  showCompletedImage(set, get, item, options);
+  await runAfterImageRefresh(get, item, options);
+}
+
+async function refreshAfterImageInBackground(
+  set: (state: Partial<AppState> | ((state: AppState) => Partial<AppState>)) => void,
+  get: () => AppState,
+  item: HistoryItem,
+  options: { compareBefore?: WorkingImage | null; comparisonSurface?: CanvasSurface; autoCompare?: boolean; loadWorkbench?: boolean } = {},
+) {
+  if (!get().generationPreview?.imageDataUrl && item.fileUrl) {
+    // With streaming disabled there is no decoded final frame to bridge the
+    // canvas. Keep the saving overlay mounted until the durable local image is
+    // decoded, then reveal canvas/history/idle controls in one paint.
+    set({ generationPhase: "saving" });
+    await preloadCompletedImage(item.fileUrl);
+  }
+  showCompletedImage(set, get, item, options);
+  // Disk reconciliation can finish later, and account balance is fetched only
+  // once after the whole run rather than once per image.
+  void get().refreshHistory(item.date).catch(() => undefined);
+  if (options.loadWorkbench) {
+    void get().loadWorkbenchFromPath(item.filePath, { silent: true }).catch(() => undefined);
+  }
+}
+
+async function refreshAccountBestEffort(get: () => AppState) {
+  try {
+    return await get().refreshAccount();
+  } catch {
+    return get().account;
+  }
+}
+
+async function invokePaidRequest<T>(
+  set: (state: Partial<AppState>) => void,
+  get: () => AppState,
+  request: () => Promise<T>,
+  anlasBefore: number | undefined,
+  failedStatusKey: string,
+): Promise<T | null> {
+  try {
+    return await request();
+  } catch (error) {
+    const finalAccount = await refreshAccountBestEffort(get);
+    const spent = anlasSpent(anlasBefore, finalAccount.anlasBalance);
+    const message = withAnlasSpent(
+      get().settings,
+      compactStoreError(get().settings, error),
+      spent,
+    );
+    set({
+      isGenerating: false,
+      generationPhase: "idle",
+      currentAnlasSpent: null,
+      lastAnlasSpent: spent,
+      lastError: message,
+      statusText: storeText(get().settings, failedStatusKey),
+      toast: message,
+    });
+    return null;
+  }
+}
+
+const PERSISTED_INPAINT_MODELS = new Set<string>(NAI_INPAINT_MODELS.map((item) => item.value));
+const PERSISTED_DIRECTOR_TOOLS = new Set<string>(DIRECTOR_TOOLS.map((item) => item.value));
+const PERSISTED_EMOTIONS = new Set<string>(EMOTION_OPTIONS.map((item) => item.value));
+
+function persistedNumber(value: unknown, fallback: number, min: number, max: number) {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
+}
+
+export function normalizeBatchIntervalSeconds(value: unknown) {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.min(3600, Math.round(parsed))) : 0;
+}
+
+export async function waitForBatchInterval(
+  seconds: number,
+  shouldContinue: () => boolean,
+  wait: (milliseconds: number) => Promise<unknown> = (milliseconds) =>
+    new Promise((resolve) => setTimeout(resolve, milliseconds)),
+) {
+  let remaining = normalizeBatchIntervalSeconds(seconds) * 1000;
+  while (remaining > 0) {
+    const slice = Math.min(250, remaining);
+    await wait(slice);
+    if (!shouldContinue()) return false;
+    remaining -= slice;
+  }
+  return shouldContinue();
+}
+
+function normalizedBrushColor(value: unknown, fallback = "#ffffff") {
+  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value)
+    ? value.toLowerCase()
+    : fallback;
+}
+
+function normalizedLastToolState(last: LastGenerationState, state: AppState) {
+  const i2i = last.i2iParams ?? state.i2iParams;
+  const augment = last.augmentOptions ?? state.augmentOptions;
+  const brushShape: InpaintBrushShape =
+    last.brushShape === "round" || last.brushShape === "square"
+      ? last.brushShape
+      : state.brushShape;
+  const restoredBrushSize = last.brushSizeUnit === "grid8"
+    ? persistedNumber(last.brushSize, state.brushSize, 1, 500)
+    : Number.isFinite(Number(last.brushSize))
+      ? Math.round(persistedNumber(last.brushSize, state.brushSize * 8, 1, 128) / 8)
+      : state.brushSize;
+  return {
+    i2iParams: {
+      strength: persistedNumber(i2i.strength, DEFAULT_I2I_PARAMS.strength, 0, 1),
+      noise: persistedNumber(i2i.noise, DEFAULT_I2I_PARAMS.noise, 0, 0.99),
+      extraNoiseSeed: Math.round(
+        persistedNumber(i2i.extraNoiseSeed, DEFAULT_I2I_PARAMS.extraNoiseSeed, 0, 2_147_483_647),
+      ),
+    },
+    inpaintModel: (PERSISTED_INPAINT_MODELS.has(String(last.inpaintModel))
+      ? last.inpaintModel
+      : state.inpaintModel) as NAIInpaintModel,
+    ...restoreInpaintSizeState(last),
+    inpaintStrength: persistedNumber(last.inpaintStrength, state.inpaintStrength, 0, 1),
+    inpaintNoise: persistedNumber(last.inpaintNoise, state.inpaintNoise, 0, 0.99),
+    inpaintPositivePrompt:
+      typeof last.inpaintPositivePrompt === "string" ? last.inpaintPositivePrompt : "",
+    brushSize: normalizeInpaintBrushSize(restoredBrushSize, brushShape),
+    brushOpacity: persistedNumber(last.brushOpacity, state.brushOpacity, 0.05, 1),
+    brushColor: normalizedBrushColor(last.brushColor, state.brushColor),
+    brushShape,
+    upscaleScale: (last.upscaleScale === 2 || last.upscaleScale === 4 || last.upscaleScale === "max"
+      ? last.upscaleScale
+      : state.upscaleScale) as UpscaleScale,
+    directorTool: (PERSISTED_DIRECTOR_TOOLS.has(String(last.directorTool))
+      ? last.directorTool
+      : state.directorTool) as DirectorTool,
+    augmentOptions: {
+      defry: persistedNumber(augment.defry, DEFAULT_AUGMENT_OPTIONS.defry, 0, 5),
+      colorizePrompt:
+        typeof augment.colorizePrompt === "string" ? augment.colorizePrompt : "",
+      emotion: (PERSISTED_EMOTIONS.has(String(augment.emotion))
+        ? augment.emotion
+        : DEFAULT_AUGMENT_OPTIONS.emotion) as AugmentOptions["emotion"],
+      emotionLevel: persistedNumber(
+        augment.emotionLevel,
+        DEFAULT_AUGMENT_OPTIONS.emotionLevel,
+        0,
+        5,
+      ),
+    },
+  };
+}
+
+function buildLastGenerationState(state: AppState): LastGenerationState {
+  return {
+    // positivePrompt is included so it survives a restart/crash, matching the
+    // mobile client (which already persists the full params unconditionally).
+    params: normalizeGenerateParams(state.params),
+    charCaptions: normalizeCharacterCaptions(state.charCaptions),
+    batchCount: state.batchCount,
+    batchIntervalSeconds: state.batchIntervalSeconds,
+    i2iParams: { ...state.i2iParams, upscaledEnhance: false },
+    inpaintModel: state.inpaintModel,
+    inpaintStrength: state.inpaintStrength,
+    inpaintNoise: state.inpaintNoise,
+    inpaintSizeMode: state.inpaintSizeMode,
+    inpaintCustomSize: { ...state.inpaintCustomSize },
+    inpaintPositivePrompt: state.inpaintPositivePrompt,
+    brushSize: state.brushSize,
+    brushOpacity: state.brushOpacity,
+    brushColor: state.brushColor,
+    brushShape: state.brushShape,
+    brushSizeUnit: "grid8",
+    upscaleScale: state.upscaleScale,
+    directorTool: state.directorTool,
+    augmentOptions: state.augmentOptions,
+  };
+}
+
+function persistGenerationState(get: () => AppState) {
+  const state = get();
+  if (!state.settings) return;
+  void window.naiDesktop.setSetting("lastGenerationState", buildLastGenerationState(state));
+}
+
+export const useAppStore = create<AppState>((set, get) => ({
+  bootDone: false,
+  bootError: null,
+  showOnboarding: false,
+  showSettings: false,
+  activeTab: "generate",
+  promptTab: "positive",
+  wsLeftWidth: readWsWidth("langbai.ws.left", WS_LEFT_DEFAULT),
+  wsRightWidth: normalizeHistoryWidth(readWsWidth("langbai.ws.right", WS_RIGHT_DEFAULT)),
+  wsHistoryCollapsed: readHistoryCollapsed(),
+  wsHistoryDragWidth: null,
+  params: { ...DEFAULT_PARAMS },
+  settings: null,
+  account: { hasToken: false },
+  history: [],
+  historyDates: [],
+  historyGroups: [],
+  selectedDate: "",
+  selectedGroupId: "",
+  generationGroupId: "",
+  currentImage: null,
+  workbenchImage: null,
+  inputPreviewAnchor: null,
+  i2iOriginalImage: null,
+  i2iSourceMode: "original",
+  inpaintSourceMode: "original",
+  comparisonBeforeImage: null, comparisonAutoOpenRequest: null,
+  comparisonSurface: null,
+  activeCanvasSurface: "generate:t2i",
+  i2iParams: { ...DEFAULT_I2I_PARAMS },
+  i2iSizeMode: "adaptive",
+  inpaintModel: "nai-diffusion-5-full-inpainting",
+  inpaintSizeMode: 'original',
+  inpaintCustomSize: { width: 1024, height: 1024 },
+  inpaintStrength: 1,
+  inpaintNoise: 0,
+  inpaintPositivePrompt: "",
+  openaiEditPrompt: "",
+  brushSize: 4,
+  brushOpacity: 0.55,
+  brushColor: "#ffffff",
+  brushMode: "paint",
+  brushShape: "round",
+  inpaintMask: null, inpaintRegion: null,
+  maskRevision: 0,
+  upscaleScale: 4,
+  directorTool: "bg-removal",
+  augmentOptions: { ...DEFAULT_AUGMENT_OPTIONS },
+  vibeImages: [],
+  preciseReferences: [],
+  charCaptions: [],
+  batchRedraw: createDefaultBatchRedraw(),
+  batchRunning: false,
+  batchProgress: null,
+    batchCancelRequested: false,
+    batchCount: 1,
+    batchIntervalSeconds: 0,
+  inspectImageUrl: "",
+  inspectMeta: null,
+  inspectImageBase64: "",
+  inspectImagePath: "",
+  reversePromptText: "",
+  reversePromptMode: "tags" as ReversePromptMode,
+  reversePromptScope: "full" as ReversePromptScope,
+  reversePromptHint: "",
+  reverseKnownCharacter: false,
+  reversePromptVariants: null,
+  reverseJobs: [],
+  reverseQueueCollapsed: true,
+  reverseHistory: [],
+  convertInput: "",
+  convertResult: "",
+  convertResultWarnings: [],
+  convertMode: "tags" as ReversePromptMode,
+  convertKnownCharacter: false,
+  convertResultVariants: null,
+  convertJobs: [],
+  convertQueueCollapsed: true,
+  convertHistory: [],
+  isGenerating: false,
+  isGenerateQueueRunning: false,
+  activeGenerationRunId: null,
+  generationPreview: null,
+  generationPhase: "idle",
+  queueAdding: false,
+  generationQueue: [],
+  queueCollapsed: false,
+  clearQueueRequested: false,
+  queueVersion: 0,
+  activeVibeKeys: [],
+  queuePaused: false,
+  queueProgress: null,
+  currentAnlasSpent: null,
+  lastAnlasSpent: null,
+  statusText: storeText(null, "status.ready"),
+  lastError: "",
+  toast: "",
+  updateInfo: null,
+  isPortable: false,
+  updateProgress: null,
+
+  async load() {
+    const listenerHost = window as typeof window & Record<string, unknown>;
+    const listenerRegistry = listenerHost[storeIpcListenerRegistryKey] as StoreIpcListenerRegistry | undefined;
+    if (listenerRegistry?.owner !== storeIpcListenerOwner) {
+      listenerRegistry?.removeGenerationPreview?.();
+      listenerRegistry?.removeUpdateEvent?.();
+      listenerRegistry?.removeImageServiceChanged?.();
+      const removeGenerationPreview = window.naiDesktop.onGenerationPreview((event) => {
+        const state = get();
+        if (
+          state.isGenerating &&
+          state.activeGenerationRunId === event.requestId
+        ) {
+          set({
+            generationPreview: event,
+            generationPhase: event.progress >= 1 ? "saving" : "streaming",
+          });
+        }
+      });
+      const removeUpdateEvent = window.naiDesktop.onUpdateEvent((event) => set({ updateProgress: event }));
+      const removeImageServiceChanged = window.naiDesktop.onImageServiceChanged?.(() => {
+        void window.naiDesktop.getSettings().then((incoming) => {
+          if ((listenerHost[storeIpcListenerRegistryKey] as StoreIpcListenerRegistry | undefined)?.owner !== storeIpcListenerOwner) return;
+          set((state) => ({ settings: mergeImageSettings(state.settings, incoming) }));
+        }).catch(() => { /* A failed refresh leaves drafts intact; host CAS still rejects stale writes. */ });
+      });
+      listenerHost[storeIpcListenerRegistryKey] = {
+        owner: storeIpcListenerOwner,
+        removeImageServiceChanged: typeof removeImageServiceChanged === "function" ? removeImageServiceChanged : undefined,
+        removeGenerationPreview: typeof removeGenerationPreview === "function" ? removeGenerationPreview : undefined,
+        removeUpdateEvent: typeof removeUpdateEvent === "function" ? removeUpdateEvent : undefined,
+      } satisfies StoreIpcListenerRegistry;
+    }
+
+    // Settings drive almost everything below (language, persisted params, lock
+    // state) — there's no safe fallback to fake, so a failure here surfaces a
+    // retriable error instead of the other reads' fire-and-forget defaults.
+    let settings: AppSettings;
+    try {
+      settings = await window.naiDesktop.getSettings();
+    } catch (error: any) {
+      set({ bootError: error?.message || "读取设置失败，请重试。" });
+      return;
+    }
+    set({ bootError: null });
+
+    // Each of these can independently fail (e.g. history/dates hit a removed
+    // network drive) without blocking boot — a single Promise.all would let
+    // any one rejection permanently strand the splash screen with bootDone
+    // never set. Each gets a safe default instead.
+    const [accountResult, firstRunResult, datesResult, groupsResult, portableResult] = await Promise.allSettled([
+      window.naiDesktop.accountCached(),
+      window.naiDesktop.isFirstRun(),
+      window.naiDesktop.getHistoryDates(),
+      window.naiDesktop.getHistoryGroups(),
+      window.naiDesktop.isPortable(),
+    ]);
+    const account: AccountSummary = accountResult.status === "fulfilled" ? accountResult.value : { hasToken: false };
+    const firstRun = firstRunResult.status === "fulfilled" ? firstRunResult.value : false;
+    const dates = datesResult.status === "fulfilled" ? datesResult.value : [];
+    const groups = groupsResult.status === "fulfilled" ? groupsResult.value : [];
+    const isPortable = portableResult.status === "fulfilled" ? portableResult.value : false;
+    set({ isPortable });
+
+    const selectedDate = dates[0] ?? "";
+    const selectedGroupId = settings.activeHistoryGroupId ?? "";
+    const generationGroupId = groups.some((group) => group.id === settings.generationGroupId)
+      ? settings.generationGroupId
+      : "";
+    let history: HistoryItem[] = [];
+    try {
+      history = await window.naiDesktop.getHistory(selectedDate || undefined, selectedGroupId || undefined);
+    } catch {
+      /* history list will catch up on the next natural refresh */
+    }
+    const last = settings.lastGenerationState;
+    if (last) {
+      const repairedTools = normalizedLastToolState(last, get());
+      set((state) => ({
+        params: settings.persistGenerateParams ? normalizeGenerateParams({ ...state.params, ...last.params }) : state.params,
+        charCaptions: settings.persistGenerateParams ? normalizeCharacterCaptions(last.charCaptions) : state.charCaptions,
+        batchCount: settings.persistGenerateParams
+          ? Math.max(1, Math.min(999, last.batchCount ?? state.batchCount))
+          : state.batchCount,
+        batchIntervalSeconds: settings.persistGenerateParams
+          ? normalizeBatchIntervalSeconds(last.batchIntervalSeconds ?? state.batchIntervalSeconds)
+          : state.batchIntervalSeconds,
+        i2iParams: settings.persistI2IParams ? repairedTools.i2iParams : state.i2iParams,
+        inpaintSizeMode: settings.persistInpaintParams ? repairedTools.inpaintSizeMode : state.inpaintSizeMode,
+        inpaintCustomSize: settings.persistInpaintParams ? repairedTools.inpaintCustomSize : state.inpaintCustomSize,
+        inpaintModel: settings.persistInpaintParams ? repairedTools.inpaintModel : state.inpaintModel,
+        inpaintStrength: settings.persistInpaintParams
+          ? repairedTools.inpaintStrength
+          : state.inpaintStrength,
+        inpaintNoise: settings.persistInpaintParams ? repairedTools.inpaintNoise : state.inpaintNoise,
+        inpaintPositivePrompt: settings.persistInpaintParams
+          ? repairedTools.inpaintPositivePrompt
+          : state.inpaintPositivePrompt,
+        brushSize: settings.persistInpaintParams ? repairedTools.brushSize : state.brushSize,
+        brushOpacity: settings.persistInpaintParams ? repairedTools.brushOpacity : state.brushOpacity,
+        brushColor: settings.persistInpaintParams ? repairedTools.brushColor : state.brushColor,
+        brushShape: settings.persistInpaintParams ? repairedTools.brushShape : state.brushShape,
+        upscaleScale: settings.persistUpscaleParams ? repairedTools.upscaleScale : state.upscaleScale,
+        directorTool: settings.persistDirectorParams ? repairedTools.directorTool : state.directorTool,
+        augmentOptions: settings.persistDirectorParams
+          ? repairedTools.augmentOptions
+          : state.augmentOptions,
+      }));
+    }
+    // Style/negative text persists independently of the numeric-parameter opt-out.
+    // Old lock snapshots must not overwrite a newer edit (including an empty one).
+    set((state) => ({ params: { ...state.params, ...retainedPrompts(settings, state.params) } }));
+    set({
+      bootDone: true,
+      settings: mergeFullSettings(get().settings, settings),
+      account,
+      // Never let a refresh-triggered load() (e.g. the onboarding output-dir
+      // step toggling a setting) close an onboarding wizard that's open: keep
+      // it visible if it already is, otherwise drive it from firstRun.
+      showOnboarding: firstRun || get().showOnboarding,
+      historyDates: dates,
+      historyGroups: groups,
+      selectedDate,
+      selectedGroupId,
+      generationGroupId,
+      history,
+      currentImage: history[0] ?? null,
+      statusText: account.hasToken ? storeText(settings, "status.apiConfigured") : storeText(settings, "status.needApiToken"),
+    });
+    // Refresh the live balance off the boot path so a slow network never delays
+    // the first frame (refreshAccount swallows network errors → cached/stale).
+    if (account.hasToken) void get().refreshAccount();
+  },
+
+  setShowOnboarding(value) {
+    set({ showOnboarding: value });
+  },
+
+  setShowSettings(value) {
+    set({ showSettings: value });
+  },
+
+  setActiveTab(tab) {
+    set({ activeTab: tab });
+    const state = get();
+    if (
+      (tab === "inpaint" || tab === "postprocess") &&
+      !state.workbenchImage &&
+      state.currentImage?.filePath
+    ) {
+      void get().loadWorkbenchFromPath(state.currentImage.filePath, { silent: true });
+    }
+  },
+
+  setPromptTab(tab) {
+    set({ promptTab: tab });
+  },
+
+  setWsWidth(edge, px) {
+    const clamped =
+      edge === "left"
+        ? Math.round(Math.max(WS_LEFT_MIN, Math.min(WS_LEFT_MAX, px)))
+        : normalizeHistoryWidth(px);
+    set(edge === "left" ? { wsLeftWidth: clamped } : { wsRightWidth: clamped });
+  },
+  setWsHistoryCollapsed(collapsed) {
+    set({ wsHistoryCollapsed: collapsed, wsHistoryDragWidth: null });
+    get().saveWsWidths();
+  },
+  setWsHistoryDragWidth(width) {
+    if (width !== null && !Number.isFinite(width)) return;
+    set({ wsHistoryDragWidth: width === null ? null : Math.max(0, Math.min(WS_RIGHT_MAX, width)) });
+  },
+  commitWsHistoryDragWidth() {
+    const width = get().wsHistoryDragWidth;
+    if (width === null) return;
+    if (width <= HISTORY_COLLAPSE_AT) set({ wsHistoryCollapsed: true, wsHistoryDragWidth: null });
+    else set({ wsRightWidth: normalizeHistoryWidth(width), wsHistoryCollapsed: false, wsHistoryDragWidth: null });
+    get().saveWsWidths();
+  },
+  saveWsWidths() {
+    const { wsLeftWidth, wsRightWidth, wsHistoryCollapsed } = get();
+    try {
+      localStorage.setItem("langbai.ws.left", String(wsLeftWidth));
+      localStorage.setItem("langbai.ws.right", String(wsRightWidth));
+      localStorage.setItem("langbai.ws.history-collapsed", String(wsHistoryCollapsed));
+    } catch {
+      /* ignore persistence failure */
+    }
+  },
+  resetWsWidths() {
+    set({ wsLeftWidth: WS_LEFT_DEFAULT, wsRightWidth: WS_RIGHT_DEFAULT, wsHistoryCollapsed: false, wsHistoryDragWidth: null });
+    try {
+      localStorage.setItem("langbai.ws.left", String(WS_LEFT_DEFAULT));
+      localStorage.setItem("langbai.ws.right", String(WS_RIGHT_DEFAULT));
+      localStorage.setItem("langbai.ws.history-collapsed", "false");
+    } catch {
+      /* ignore persistence failure */
+    }
+  },
+
+  setParam(key, value) {
+    set((state) => {
+      const next = { ...state.params, [key]: value } as GenerateParams;
+      if (key === "qualityPreset") {
+        next.qualityToggle = value !== "none";
+      } else if (key === "qualityToggle") {
+        next.qualityPreset = value
+          ? state.params.qualityPreset === "none"
+            ? "standard"
+            : state.params.qualityPreset
+          : "none";
+      } else if (key === "model" && !isNAIV5Model(String(value))) {
+        if (next.qualityPreset === "light") next.qualityPreset = "standard";
+        next.qualityToggle = next.qualityPreset !== "none";
+        next.transparentBackground = false;
+      }
+      return { params: next };
+    });
+    persistGenerationState(get);
+  },
+
+  setActiveCanvasSurface(surface) {
+    set({ activeCanvasSurface: surface });
+  },
+
+  applyParams(patch) {
+    set((state) => ({ params: normalizeGenerateParams({ ...state.params, ...patch }) }));
+    persistGenerationState(get);
+  },
+
+  restoreImportedMetadata(patch, captions, options) {
+    patch = restoreSavedStyle(patch, get().settings?.stylePromptPresets ?? []);
+    const restoredCaptions: CharCaption[] = captions
+      .slice(0, maxNAICharacterPrompts(patch.model ?? get().params.model))
+      .map((caption) => ({
+      ...caption,
+      id: crypto.randomUUID(),
+      }));
+    set((state) => ({
+      params: normalizeGenerateParams({ ...state.params, ...patch }),
+      charCaptions:
+        options?.restoreCharacters === false || (options?.restoreCharacters !== true && options?.preserveMissing && restoredCaptions.length === 0)
+          ? state.charCaptions
+          : restoredCaptions,
+      // Exact restore can start clean, while generation-workbench imports use
+      // preserveMissing so fields absent from the image keep their current value.
+      vibeImages: options?.resetReferences || !options?.preserveMissing ? [] : state.vibeImages,
+      preciseReferences: options?.resetReferences || !options?.preserveMissing ? [] : state.preciseReferences,
+      settings: options?.modelMode && state.settings ? { ...state.settings, modelMode: options.modelMode } : state.settings,
+    }));
+    if (options?.modelMode) void window.naiDesktop.setSetting("modelMode", options.modelMode).catch(() => undefined);
+    persistGenerationState(get);
+  },
+
+  async checkUpdate() {
+    try {
+      const info = await window.naiDesktop.checkUpdate();
+      set({ updateInfo: info });
+    } catch {
+      // silent — update check is best-effort
+    }
+  },
+
+  dismissUpdate() {
+    set({ updateInfo: null });
+  },
+
+  async downloadUpdate() {
+    set({ updateProgress: { kind: "checking" } });
+    const result = await window.naiDesktop.downloadUpdate();
+    if (!result.ok) set({ updateProgress: { kind: "error", message: result.message }, toast: result.message });
+  },
+
+  installUpdate() {
+    void window.naiDesktop.installUpdate();
+  },
+
+  async setSelectedDate(date) {
+    const history = await window.naiDesktop.getHistory(date || undefined, get().selectedGroupId || undefined);
+    set({ selectedDate: date, history, currentImage: history[0] ?? get().currentImage });
+  },
+
+  async setSelectedGroupId(groupId) {
+    const selectedDate = get().selectedDate;
+    await window.naiDesktop.setSetting("activeHistoryGroupId", groupId);
+    const history = await window.naiDesktop.getHistory(selectedDate || undefined, groupId || undefined);
+    set({ selectedGroupId: groupId, history, currentImage: history[0] ?? get().currentImage });
+  },
+
+  async setGenerationGroupId(groupId) {
+    const normalized = get().historyGroups.some((group) => group.id === groupId) ? groupId : "";
+    await window.naiDesktop.setSetting("generationGroupId", normalized);
+    set((state) => ({
+      generationGroupId: normalized,
+      settings: state.settings ? { ...state.settings, generationGroupId: normalized } : state.settings,
+    }));
+  },
+
+  async createGenerationGroup(name) {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      set({ toast: storeText(get().settings, "group.nameRequired") });
+      return;
+    }
+    const groups = await window.naiDesktop.createHistoryGroup(trimmed);
+    const group = groups.find((item) => item.name.toLowerCase() === trimmed.toLowerCase());
+    if (!group) return;
+    await window.naiDesktop.setSetting("generationGroupId", group.id);
+    set((state) => ({
+      historyGroups: groups,
+      generationGroupId: group.id,
+      settings: state.settings ? { ...state.settings, generationGroupId: group.id } : state.settings,
+      toast: storeFormat(state.settings, "group.created", { name: group.name }),
+    }));
+  },
+
+  async createHistoryGroup(name) {
+    const groups = await window.naiDesktop.createHistoryGroup(name);
+    const settings = get().settings;
+    set({
+      historyGroups: groups,
+      toast: name.trim()
+        ? storeFormat(settings, "group.created", { name: name.trim() })
+        : storeText(settings, "group.nameRequired"),
+    });
+  },
+
+  async renameHistoryGroup(id, name) {
+    if (!name.trim()) return;
+    const groups = await window.naiDesktop.renameHistoryGroup(id, name);
+    set({ historyGroups: groups, toast: storeFormat(get().settings, "group.renamed", { name: name.trim() }) });
+  },
+
+  async deleteHistoryGroup(id) {
+    const groups = await window.naiDesktop.deleteHistoryGroup(id);
+    const selectedGroupId = get().selectedGroupId === id ? "" : get().selectedGroupId;
+    const generationGroupId = get().generationGroupId === id ? "" : get().generationGroupId;
+    set((state) => ({
+      historyGroups: groups,
+      selectedGroupId,
+      generationGroupId,
+      settings: state.settings ? { ...state.settings, generationGroupId } : state.settings,
+    }));
+    await get().refreshHistory();
+    set({ toast: storeText(get().settings, "group.deleted") });
+  },
+
+  async exportHistoryGroup(groupId) {
+    set({ toast: storeText(get().settings, "group.packing") });
+    const result = await window.naiDesktop.exportHistoryGroup(groupId);
+    set({ toast: result.message });
+  },
+
+  async setHistoryItemGroup(id, groupId) {
+    const previous = get().history.find((item) => item.id === id);
+    set((state) => ({
+      history: state.history.map((item) =>
+        item.id === id ? { ...item, groupId: groupId || undefined } : item,
+      ),
+      currentImage: state.currentImage?.id === id
+        ? { ...state.currentImage, groupId: groupId || undefined }
+        : state.currentImage,
+    }));
+    try {
+      await window.naiDesktop.setHistoryGroup(id, groupId || undefined);
+    } catch (error: any) {
+      if (previous) {
+        set((state) => ({
+          history: state.history.map((item) => item.id === id ? previous : item),
+          currentImage: state.currentImage?.id === id ? previous : state.currentImage,
+          toast: error?.message ?? String(error),
+        }));
+      }
+    }
+  },
+
+  async refreshHistory(date) {
+    const [dates, groups] = await Promise.all([
+      window.naiDesktop.getHistoryDates(),
+      window.naiDesktop.getHistoryGroups(),
+    ]);
+    const selectedDate = date ?? get().selectedDate ?? dates[0] ?? "";
+    const selectedGroupId = get().selectedGroupId;
+    const history = (await window.naiDesktop.getHistory(selectedDate || undefined, selectedGroupId || undefined))
+      .map(withCompletedImageBridge);
+    set({ historyDates: dates, historyGroups: groups, selectedDate, history });
+  },
+
+  async refreshSettings() {
+    const settings = await window.naiDesktop.getSettings();
+    set((state) => ({ settings: mergeFullSettings(state.settings, settings) }));
+  },
+
+  async refreshAccount() {
+    const account = await window.naiDesktop.hasToken();
+    const settings = get().settings;
+    if(!naiAccountSummaryMatches(account,settings?.naiAccountId))return get().account;
+    set({ account, statusText: account.hasToken ? storeText(settings, "status.apiConfigured") : storeText(settings, "status.needApiToken") });
+    return account;
+  },
+
+  async loadWorkbenchImage() {
+    const loadRevision = ++workbenchLoadRevision;
+    const result = await window.naiDesktop.loadImage();
+    if (loadRevision !== workbenchLoadRevision) return;
+    if (result.ok && result.image) {
+      // Loading a source image is preview-only on every platform. Metadata is
+      // restored only by an explicit parameter action, never by the picker.
+      set({
+        workbenchImage: result.image,
+        i2iOriginalImage: result.image,
+        inputPreviewAnchor: {result: get().currentImage},
+        comparisonBeforeImage: null, comparisonAutoOpenRequest: null,
+        inpaintMask: null, inpaintRegion: null,
+        maskRevision: get().maskRevision + 1,
+        statusText: storeFormat(get().settings, "status.imageLoaded", { width: result.image.width, height: result.image.height }),
+      });
+    } else if (result.message) {
+      set({ toast: compactStoreError(get().settings, result.message), statusText: storeText(get().settings, "status.imageLoadFailed") });
+    }
+  },
+
+  async loadWorkbenchFromPath(filePath, options) {
+    const loadRevision = ++workbenchLoadRevision;
+    let result;
+    try {
+      result = await window.naiDesktop.loadImageFromPath(filePath);
+    } catch (error: any) {
+      if (loadRevision !== workbenchLoadRevision) return;
+      const message = compactStoreError(
+        get().settings,
+        error?.message,
+        storeText(get().settings, "status.imageLoadFailed"),
+      );
+      set({ toast: message, statusText: message });
+      return;
+    }
+    if (loadRevision !== workbenchLoadRevision) return;
+    if (result.ok && result.image) {
+      // History metadata may update prompts. Never let a delayed selection do
+      // that after generation has begun; the paid request already owns a fixed
+      // parameter snapshot and the editor must keep the user's current prompt.
+      if (options?.silent || get().isGenerating) {
+        set({
+          workbenchImage: result.image,
+          inpaintMask: null, inpaintRegion: null,
+          maskRevision: get().maskRevision + 1,
+        });
+        return;
+      }
+      const restoreMetadata =
+        options?.restoreMetadata === true &&
+        get().activeTab === "generate" &&
+        result.metadata;
+      set({
+        workbenchImage: result.image,
+        i2iOriginalImage: result.image,
+        inputPreviewAnchor: {result: get().currentImage},
+        comparisonBeforeImage: null, comparisonAutoOpenRequest: null,
+        inpaintMask: null, inpaintRegion: null,
+        maskRevision: get().maskRevision + 1,
+        statusText: storeFormat(get().settings, "status.imageLoaded", { width: result.image.width, height: result.image.height }),
+        toast: storeFormat(get().settings, "toast.imageLoaded", { width: result.image.width, height: result.image.height }),
+      });
+      if (restoreMetadata) {
+        get().restoreImportedMetadata(
+          restoreMetadata.imported,
+          restoreMetadata.characterCaptions,
+          { preserveMissing: true },
+        );
+        const seed = restoreMetadata.imported.seed ?? 0;
+        set({
+          toast: seed > 0
+            ? storeFormat(get().settings, "toast.paramsLoadedSeed", { seed })
+            : storeText(get().settings, "toast.paramsLoaded"),
+        });
+      } else if(options?.restoreMetadata===true && get().activeTab==='generate') {
+        set({toast:favoritesText(get().settings?.language).noMetadata});
+      }
+    } else if (result.message) {
+      set({ toast: compactStoreError(get().settings, result.message), statusText: storeText(get().settings, "status.imageLoadFailed") });
+    }
+  },
+
+  async clearWorkbenchImage() {
+    const loadRevision = ++workbenchLoadRevision;
+    await window.naiDesktop.clearWorkbenchImage();
+    if (loadRevision !== workbenchLoadRevision) return;
+    set({
+      workbenchImage: null,
+  inputPreviewAnchor: null,
+      i2iOriginalImage: null,
+      comparisonBeforeImage: null, comparisonAutoOpenRequest: null,
+      inpaintMask: null, inpaintRegion: null,
+      maskRevision: get().maskRevision + 1,
+      statusText: storeText(get().settings, "status.workbenchCleared"),
+    });
+  },
+
+  setI2IParam(key, value) {
+    set((state) => ({ i2iParams: { ...state.i2iParams, [key]: value } }));
+    persistGenerationState(get);
+  },
+
+  setI2ISizeMode(mode) {
+    set({ i2iSizeMode: mode });
+  },
+
+  setI2ISourceMode(mode) {
+    set({ i2iSourceMode: mode });
+  },
+
+  async setInpaintSourceMode(mode) {
+    const state = get();
+    const latestResult = state.comparisonBeforeImage ? state.currentImage : null;
+    const target = mode === "original"
+      ? state.i2iOriginalImage ?? state.workbenchImage
+      : latestResult ?? state.workbenchImage;
+    if (!target || target.filePath === state.workbenchImage?.filePath) {
+      set({ inpaintSourceMode: mode });
+      return;
+    }
+    let result;
+    try {
+      result = await window.naiDesktop.loadImageFromPath(target.filePath);
+    } catch (error: any) {
+      const message = compactStoreError(
+        state.settings,
+        error?.message,
+        storeText(state.settings, "status.imageLoadFailed"),
+      );
+      set({ toast: message, statusText: message });
+      return;
+    }
+    if (!result.ok || !result.image) {
+      const message = compactStoreError(
+        state.settings,
+        result.message,
+        storeText(state.settings, "status.imageLoadFailed"),
+      );
+      set({ toast: message, statusText: message });
+      return;
+    }
+    set((current) => ({
+      inpaintSourceMode: mode,
+      workbenchImage: result.image!,
+      inpaintMask: null, inpaintRegion: null,
+      maskRevision: current.maskRevision + 1,
+    }));
+  },
+
+  setInpaintModel(model) {
+    set({ inpaintModel: model });
+    persistGenerationState(get);
+  },
+
+  setInpaintSizeMode(mode) {
+    set({ inpaintSizeMode: mode === 'custom' ? 'custom' : 'original' });
+    persistGenerationState(get);
+  },
+  setInpaintCustomSize(size) {
+    set({ inpaintCustomSize: { ...size } });
+    persistGenerationState(get);
+  },
+
+  setInpaintStrength(value) {
+    set({ inpaintStrength: Math.max(0, Math.min(1, value)) });
+    persistGenerationState(get);
+  },
+
+  setInpaintNoise(value) {
+    set({ inpaintNoise: Math.max(0, Math.min(0.99, value)) });
+    persistGenerationState(get);
+  },
+
+  setOpenaiEditPrompt(value) {
+    set({ openaiEditPrompt: value });
+  },
+
+  setInpaintPositivePrompt(value) {
+    set({ inpaintPositivePrompt: value });
+    persistGenerationState(get);
+  },
+
+  setBrushSize(size) {
+    set((state) => ({
+      brushSize: normalizeInpaintBrushSize(size, state.brushShape),
+    }));
+    persistGenerationState(get);
+  },
+
+  setBrushOpacity(opacity) {
+    set({ brushOpacity: Math.max(0.05, Math.min(1, opacity)) });
+    persistGenerationState(get);
+  },
+
+  setBrushColor(color) {
+    set((state) => ({ brushColor: normalizedBrushColor(color, state.brushColor) }));
+    persistGenerationState(get);
+  },
+
+  setBrushMode(mode) {
+    set({ brushMode: mode });
+  },
+
+  setBrushShape(shape) {
+    set((state) => ({
+      brushShape: shape,
+      brushSize: normalizeInpaintBrushSize(state.brushSize, shape),
+    }));
+    persistGenerationState(get);
+  },
+
+  setInpaintRegion(region) {set({inpaintRegion:region});},
+  setInpaintMask(mask) {
+    set({ inpaintMask: mask });
+  },
+
+  clearInpaintMask() {
+    set({ inpaintMask: null, inpaintRegion: null, maskRevision: get().maskRevision + 1 });
+  },
+
+  setUpscaleScale(scale) {
+    set({ upscaleScale: scale });
+    persistGenerationState(get);
+  },
+
+  setDirectorTool(tool) {
+    set({ directorTool: tool });
+    persistGenerationState(get);
+  },
+
+  setAugmentOption(key, value) {
+    set((state) => ({ augmentOptions: { ...state.augmentOptions, [key]: value } }));
+    persistGenerationState(get);
+  },
+
+  // ── Vibe Transfer / Precise Reference ──────────────────────────────────────
+  addVibeImage(image) {
+    // Check the live state at the shared commit point, including delayed reads.
+    const state = get();
+    if (state.vibeImages.length >= 16) {
+      set({ toast: storeText(state.settings, "reference.vibeLimit") });
+      return false;
+    }
+    set({ vibeImages: [...state.vibeImages, image] });
+    return true;
+  },
+
+  removeVibeImage(id) {
+    set((state) => ({ vibeImages: state.vibeImages.filter((v) => v.id !== id) }));
+  },
+
+  updateVibeImage(id, patch) {
+    set((state) => ({
+      vibeImages: state.vibeImages.map((v) => (v.id === id ? { ...v, ...patch } : v)),
+    }));
+  },
+
+  clearVibeImages() {
+    set({ vibeImages: [] });
+  },
+
+  addPreciseReference(image) {
+    set((state) => ({ preciseReferences: [...state.preciseReferences, image] }));
+  },
+
+  removePreciseReference(id) {
+    set((state) => ({ preciseReferences: state.preciseReferences.filter((v) => v.id !== id) }));
+  },
+
+  updatePreciseReference(id, patch) {
+    set((state) => ({
+      preciseReferences: state.preciseReferences.map((v) => (v.id === id ? { ...v, ...patch } : v)),
+    }));
+  },
+
+  clearPreciseReferences() {
+    set({ preciseReferences: [] });
+  },
+
+  // ── Character Prompt ───────────────────────────────────────────────────────
+  addCharCaption() {
+    if (get().charCaptions.length >= maxNAICharacterPrompts(get().params.model)) return;
+    const id = crypto.randomUUID();
+    set((state) => ({
+      charCaptions: [
+        ...state.charCaptions,
+        {
+          id,
+          enabled: true,
+          prompt: "",
+          negativePrompt: "",
+          useCoords: state.charCaptions.some((caption) => caption.useCoords),
+          x: 0.5,
+          y: 0.5,
+        },
+      ],
+    }));
+    persistGenerationState(get);
+  },
+
+  removeCharCaption(id) {
+    set((state) => ({ charCaptions: state.charCaptions.filter((c) => c.id !== id) }));
+    persistGenerationState(get);
+  },
+
+  updateCharCaption(id, patch) {
+    set((state) => ({
+      charCaptions: state.charCaptions.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }));
+    persistGenerationState(get);
+  },
+
+  clearCharCaptions() {
+    set({ charCaptions: [] });
+    persistGenerationState(get);
+  },
+
+  setCharCaptions(captions) {
+    set({charCaptions: normalizeCharacterCaptions(captions)});
+    persistGenerationState(get);
+  },
+
+  // ── Batch img2img project ──────────────────────────────────────────────────
+  setBatchRedraw(updater) {
+    set({ batchRedraw: updater(get().batchRedraw) });
+  },
+  resetBatchRedraw() {
+    if(get().batchRunning)throw Error("批量重绘进行中，请先停止并等待结束");
+    set({
+      batchRedraw: createDefaultBatchRedraw(get().params),
+      batchRunning: false,
+      batchProgress: null,
+      batchCancelRequested: false,
+    });
+  },
+  setBatchRunning(running, progress) {
+    set({
+      batchRunning: running,
+      batchProgress: progress === undefined ? get().batchProgress : progress,
+      batchCancelRequested: running && !get().batchRunning ? false : get().batchCancelRequested,
+    });
+  },
+  requestBatchCancel() {
+    set({ batchCancelRequested: true });
+  },
+
+  // ── Batch + Inspect ────────────────────────────────────────────────────────
+  setBatchCount(count) {
+    set({ batchCount: Math.max(1, Math.min(999, count)) });
+    persistGenerationState(get);
+  },
+
+  setBatchIntervalSeconds(seconds) {
+    set({ batchIntervalSeconds: normalizeBatchIntervalSeconds(seconds) });
+    persistGenerationState(get);
+  },
+
+  setInspectImage(url, meta, base64 = "", path = "") {
+    const previousUrl = get().inspectImageUrl;
+    if (previousUrl && previousUrl !== url) revokeInspectObjectUrl(previousUrl);
+    set({
+      inspectImageUrl: url,
+      inspectMeta: meta,
+      inspectImageBase64: base64,
+      inspectImagePath: path,
+      reversePromptText: "",
+      reversePromptVariants: null,
+        });
+  },
+
+  clearInspect() {
+    revokeInspectObjectUrl(get().inspectImageUrl);
+    set({
+      inspectImageUrl: "",
+      inspectMeta: null,
+      inspectImageBase64: "",
+      inspectImagePath: "",
+      reversePromptText: "",
+      reversePromptVariants: null,
+        });
+  },
+
+  setReversePromptText(text) {
+    set({ reversePromptText: text });
+  },
+
+  setReversePromptMode(mode) {
+    set({ reversePromptMode: mode });
+  },
+
+  setReversePromptScope(scope) {
+    set({ reversePromptScope: scope });
+  },
+
+  setReversePromptHint(hint) {
+    set({ reversePromptHint: hint });
+  },
+
+  setReverseKnownCharacter(known) {
+    set({ reverseKnownCharacter: known, reversePromptVariants: known ? get().reversePromptVariants : null });
+  },
+
+  // Concurrent — every call fires its API request immediately and updates
+  // only its own job entry when it resolves, so multiple reverse requests
+  // can be in flight (and the button never disables while one runs).
+  async runReversePrompt() {
+    const { inspectImageBase64, inspectImagePath, reversePromptMode, reversePromptScope, reversePromptHint, reverseKnownCharacter } = get();
+    const templateVersion = get().settings?.reversePromptTemplateVersion ?? "v5";
+    if (!inspectImageBase64) {
+      set({ toast: storeText(get().settings, "toast.needImage") });
+      return;
+    }
+    const job: TextToolJob = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      label: reversePromptHint.trim() || storeText(get().settings, "inspect.run"),
+      mode: reversePromptMode,
+      knownCharacter: reverseKnownCharacter,
+      status: "processing",
+      addedAt: Date.now(),
+    };
+    set({ reverseJobs: [job, ...get().reverseJobs], reversePromptVariants: null });
+    let result;
+    try {
+      result = await window.naiDesktop.reversePrompt(
+        inspectImageBase64,
+        reversePromptMode,
+        reversePromptScope,
+        reversePromptHint,
+        reverseKnownCharacter,
+        templateVersion,
+      );
+    } catch (error) {
+      if (!get().reverseJobs.some((j) => j.id === job.id)) return;
+      const message = compactStoreError(get().settings, error);
+      set({
+        reverseJobs: get().reverseJobs.map((j) => (j.id === job.id ? { ...j, status: "failed", message } : j)),
+        toast: message,
+      });
+      return;
+    }
+    // "Cancel" just removes the job from the tracker (the in-flight HTTP
+    // request itself isn't aborted) — but once it resolves, treat a removed
+    // job as truly cancelled: no result overwrite, no toast, no history entry.
+    if (!get().reverseJobs.some((j) => j.id === job.id)) return;
+    if (result.ok && result.prompt) {
+      set({
+        reverseJobs: get().reverseJobs.map((j) =>
+          j.id === job.id ? { ...j, status: "done", result: result.prompt, variants: result.variants } : j,
+        ),
+        reversePromptText: result.prompt,
+        reversePromptVariants: result.variants ?? null,
+        toast: storeText(get().settings, "toast.inspectDone"),
+      });
+      const historyItem: TextToolHistoryItem = {
+        id: job.id,
+        mode: reversePromptMode,
+        knownCharacter: reverseKnownCharacter,
+        input: reversePromptHint,
+        sourceImagePath: inspectImagePath || undefined,
+        result: result.prompt,
+        variants: result.variants,
+        createdAt: new Date().toISOString(),
+      };
+      set({ reverseHistory: [historyItem, ...get().reverseHistory] });
+      void window.naiDesktop.addReverseHistoryItem(historyItem);
+      setTimeout(() => get().removeReverseJob(job.id), TEXTTOOL_DONE_AUTO_DISMISS_MS);
+    } else {
+      set({
+        reverseJobs: get().reverseJobs.map((j) => (j.id === job.id ? { ...j, status: "failed", message: result.message } : j)),
+        toast: result.message,
+      });
+    }
+  },
+
+  toggleReverseQueueCollapsed() {
+    set({ reverseQueueCollapsed: !get().reverseQueueCollapsed });
+  },
+
+  removeReverseJob(id) {
+    set({ reverseJobs: get().reverseJobs.filter((j) => j.id !== id) });
+  },
+
+  async loadReverseHistory() {
+    const history = await window.naiDesktop.getReverseHistory();
+    set({ reverseHistory: history });
+  },
+
+  async deleteReverseHistoryItem(id) {
+    set({ reverseHistory: get().reverseHistory.filter((item) => item.id !== id) });
+    await window.naiDesktop.deleteReverseHistoryItem(id);
+  },
+
+  async clearReverseHistory() {
+    set({ reverseHistory: [] });
+    await window.naiDesktop.clearReverseHistory();
+  },
+
+  setConvertInput(text) {
+    set({ convertInput: text });
+  },
+
+  setConvertResult(text, warnings) {
+    set({ convertResult: text, convertResultWarnings: warnings ? [...warnings] : [] });
+  },
+
+  setConvertMode(mode) {
+    set({ convertMode: mode });
+  },
+
+  setConvertKnownCharacter(known) {
+    set({ convertKnownCharacter: known, convertResultVariants: known ? get().convertResultVariants : null });
+  },
+
+  // Concurrent, same reasoning as runReversePrompt.
+  async runConvertPrompt() {
+    const { convertInput, convertMode, convertKnownCharacter } = get();
+    const templateVersion = get().settings?.convertPromptTemplateVersion ?? "v5";
+    if (!convertInput.trim()) {
+      set({ toast: storeText(get().settings, "toast.needConvertInput") });
+      return;
+    }
+    const job: TextToolJob = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      label: convertInput.trim().slice(0, 60),
+      mode: convertMode,
+      knownCharacter: convertKnownCharacter,
+      status: "processing",
+      addedAt: Date.now(),
+    };
+    set({ convertJobs: [job, ...get().convertJobs], convertResultVariants: null });
+    let result;
+    try {
+      result = await window.naiDesktop.convertPrompt(
+        convertInput,
+        convertMode,
+        convertKnownCharacter,
+        templateVersion,
+      );
+    } catch (error) {
+      if (!get().convertJobs.some((j) => j.id === job.id)) return;
+      const message = compactStoreError(get().settings, error);
+      set({
+        convertJobs: get().convertJobs.map((j) => (j.id === job.id ? { ...j, status: "failed", message } : j)),
+        toast: message,
+      });
+      return;
+    }
+    // See runReversePrompt: a removed job is treated as cancelled.
+    if (!get().convertJobs.some((j) => j.id === job.id)) return;
+    if (result.ok && result.result) {
+      set({
+        convertJobs: get().convertJobs.map((j) =>
+          j.id === job.id ? { ...j, status: "done", result: result.result, variants: result.variants, warnings: result.warnings ? [...result.warnings] : [] } : j,
+        ),
+        convertResult: result.result,
+        convertResultWarnings: result.warnings ? [...result.warnings] : [],
+        convertResultVariants: result.variants ?? null,
+        toast: storeText(get().settings, "toast.convertDone"),
+      });
+      const historyItem: TextToolHistoryItem = {
+        id: job.id,
+        mode: convertMode,
+        knownCharacter: convertKnownCharacter,
+        input: convertInput,
+        result: result.result,
+        variants: result.variants,
+        warnings: result.warnings ? [...result.warnings] : [],
+        createdAt: new Date().toISOString(),
+      };
+      set({ convertHistory: [historyItem, ...get().convertHistory] });
+      void window.naiDesktop.addConvertHistoryItem(historyItem);
+      setTimeout(() => get().removeConvertJob(job.id), TEXTTOOL_DONE_AUTO_DISMISS_MS);
+    } else {
+      set({
+        convertJobs: get().convertJobs.map((j) => (j.id === job.id ? { ...j, status: "failed", message: result.message } : j)),
+        toast: result.message,
+      });
+    }
+  },
+
+  toggleConvertQueueCollapsed() {
+    set({ convertQueueCollapsed: !get().convertQueueCollapsed });
+  },
+
+  removeConvertJob(id) {
+    set({ convertJobs: get().convertJobs.filter((j) => j.id !== id) });
+  },
+
+  async loadConvertHistory() {
+    const history = await window.naiDesktop.getConvertHistory();
+    set({ convertHistory: history });
+  },
+
+  async deleteConvertHistoryItem(id) {
+    set({ convertHistory: get().convertHistory.filter((item) => item.id !== id) });
+    await window.naiDesktop.deleteConvertHistoryItem(id);
+  },
+
+  async clearConvertHistory() {
+    set({ convertHistory: [] });
+    await window.naiDesktop.clearConvertHistory();
+  },
+
+  setToast(message) {
+    set({ toast: message });
+  },
+
+  clearImageComparison() {
+    set({ comparisonBeforeImage: null, comparisonAutoOpenRequest: null, comparisonSurface: null });
+  },
+
+  // ── Generation ─────────────────────────────────────────────────────────────
+  async enqueueGeneration() {
+    const state = get();
+    if (!state.isGenerating || !state.isGenerateQueueRunning) {
+      set({ toast: storeText(state.settings, "toast.noQueue") });
+      return;
+    }
+    if (state.queueAdding) return;
+    if (!state.params.positivePrompt.trim()) {
+      set({ toast: storeText(state.settings, "toast.queueNeedPrompt"), statusText: storeText(state.settings, "status.missingPrompt") });
+      return;
+    }
+
+    const params = { ...state.params };
+    const extras = buildExtras(state);
+    const runId = state.activeGenerationRunId;
+    const queueVersion = state.queueVersion;
+    // Vibes already covered by the active run or earlier queued jobs will only be
+    // encoded once, so don't quote their 2-Anlas encode fee again.
+    const coveredVibes = new Set<string>(state.activeVibeKeys);
+    for (const job of state.generationQueue) {
+      for (const key of extrasVibeKeys(job.params.model, job.extras)) coveredVibes.add(key);
+    }
+    let alreadyQueuedVibes = 0;
+    const newJobSeen = new Set<string>();
+    for (const key of extrasVibeKeys(params.model, extras)) {
+      if (coveredVibes.has(key) || newJobSeen.has(key)) alreadyQueuedVibes += 1;
+      newJobSeen.add(key);
+    }
+    const jobId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const pendingJob: QueuedGenerationJob = {
+      id: jobId,
+      params,
+      extras,
+      quotedAnlas: 0,
+      quotePending: true,
+      addedAt: Date.now(),
+      label: params.positivePrompt.trim().slice(0, 60) || storeText(state.settings, "queue.noPromptLabel"),
+    };
+    // Optimistic enqueue: render the snapshot before the account refresh and
+    // quote round-trips. The runner waits on quotePending, so this improves
+    // responsiveness without sending an unquoted request.
+    set((current) => ({
+      queueAdding: true,
+      generationQueue: [...current.generationQueue, pendingJob],
+      queueProgress: current.queueProgress
+        ? { ...current.queueProgress, total: current.queueProgress.total + 1 }
+        : { done: 0, failed: 0, total: 1 },
+      statusText: storeFormat(current.settings, "queue.addedStatus", { count: current.generationQueue.length + 1 }),
+      toast: storeText(current.settings, "toast.queuePricing"),
+      lastError: "",
+    }));
+    try {
+      const freshAccount = await get().refreshAccount();
+      const quote = await window.naiDesktop.quoteAnlas({
+        feature: "generate",
+        params,
+        extras,
+        batchCount: 1,
+        account: freshAccount,
+        alreadyQueuedVibes,
+      });
+      let quotedAnlas = 0;
+      let quoteWarning = "";
+      if (!quote.ok || typeof quote.amount !== "number") {
+        quoteWarning = quote.message || storeText(get().settings, "queue.itemQuoteFailed");
+      } else {
+        quotedAnlas = quote.amount;
+        if (quote.insufficient) {
+          quoteWarning = storeFormat(get().settings, "queue.itemInsufficient", { amount: quote.amount, balance: quote.balance ?? storeText(get().settings, "error.unknown") });
+        }
+        const pendingQuotedAnlas = get().generationQueue.reduce((sum, job) => sum + job.quotedAnlas, 0);
+        const knownBalance = quote.balance ?? freshAccount.anlasBalance;
+        if (typeof knownBalance === "number" && pendingQuotedAnlas + quote.amount > knownBalance) {
+          quoteWarning = storeFormat(get().settings, "queue.totalInsufficient", { pending: pendingQuotedAnlas, balance: knownBalance });
+        }
+      }
+      if (
+        !get().isGenerating ||
+        !get().isGenerateQueueRunning ||
+        !runId ||
+        get().activeGenerationRunId !== runId ||
+        get().queueVersion !== queueVersion
+      ) {
+        // Cancelled, superseded, or the queue was cleared while we were quoting.
+        set({ toast: storeText(get().settings, "toast.queueChanged") });
+        return;
+      }
+      if (!get().generationQueue.some((job) => job.id === jobId)) {
+        // The user removed this individual placeholder while the quote was in flight.
+        set({ toast: storeText(get().settings, "toast.queueChanged") });
+        return;
+      }
+      set((current) => ({
+        generationQueue: current.generationQueue.map((job) => job.id === jobId
+          ? { ...job, quotedAnlas, quotePending: false }
+          : job),
+        statusText: storeFormat(current.settings, "queue.addedStatus", { count: current.generationQueue.length }),
+        toast: quoteWarning || storeFormat(current.settings, "toast.queueAdded", { amount: quotedAnlas }),
+        lastError: "",
+      }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      set((current) => {
+        const stillQueued = current.generationQueue.some((job) => job.id === jobId);
+        return {
+          generationQueue: current.generationQueue.filter((job) => job.id !== jobId),
+          queueProgress: stillQueued && current.queueProgress
+            ? {
+                ...current.queueProgress,
+                total: Math.max(
+                  current.queueProgress.done + current.queueProgress.failed,
+                  current.queueProgress.total - 1,
+                ),
+              }
+            : current.queueProgress,
+          toast: storeFormat(current.settings, "toast.queueAddFailed", { message }),
+          lastError: message,
+        };
+      });
+    } finally {
+      set({ queueAdding: false });
+    }
+  },
+
+  removeQueueJob(id) {
+    set((current) => {
+      if (!current.generationQueue.some((job) => job.id === id)) return {};
+      const generationQueue = current.generationQueue.filter((job) => job.id !== id);
+      // Shrink the total so progress stays accurate, but never below what's done.
+      const queueProgress = current.queueProgress
+        ? {
+            ...current.queueProgress,
+            total: Math.max(
+              current.queueProgress.done + current.queueProgress.failed,
+              current.queueProgress.total - 1,
+            ),
+          }
+        : current.queueProgress;
+      return { generationQueue, queueProgress, toast: storeText(current.settings, "toast.queueRemoved") };
+    });
+  },
+
+  clearQueue() {
+    set((current) => {
+      // Drop all manually-queued jobs, and signal the run loop to skip the rest
+      // of the initial batch. Shrink total to "everything done + the running one"
+      // so the panel shows 0 排队.
+      const running = current.isGenerating ? 1 : 0;
+      const queueProgress = current.queueProgress
+        ? {
+            ...current.queueProgress,
+            total: current.queueProgress.done + current.queueProgress.failed + running,
+          }
+        : current.queueProgress;
+      return {
+        generationQueue: [],
+        queueAdding: false,
+        clearQueueRequested: current.isGenerating,
+        queueVersion: current.queueVersion + 1, // invalidate any in-flight enqueue quote
+        queueProgress,
+        toast: current.isGenerating ? storeText(current.settings, "toast.queueClearedStop") : storeText(current.settings, "toast.queueCleared"),
+      };
+    });
+  },
+
+  toggleQueueCollapsed() {
+    set((current) => ({ queueCollapsed: !current.queueCollapsed }));
+  },
+
+  async generate() {
+    const state = get();
+    if (state.settings?.imageProvider === 'openai-images') {
+      if(state.isGenerating || !state.params.positivePrompt.trim()) return;
+      const runId=`compatible-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      ++generationSettlementRevision; ++workbenchLoadRevision;
+      set({isGenerating:true,activeGenerationRunId:runId,generationPreview:null,generationPhase:'preparing',lastAnlasSpent:null,currentAnlasSpent:null});
+      try {
+        const result=await window.naiDesktop.generateCompatible({prompt:state.params.positivePrompt,n:state.batchCount,historyGroupId:state.generationGroupId,fileNamePrefix:state.params.fileNamePrefix,expectedImageServiceRevision:state.settings.imageServiceRevision});
+        if(get().activeGenerationRunId!==runId) return;
+        for(const item of [...result.items].reverse()) showCompletedImage(set,get,item);
+        set({statusText:result.message,toast:result.message,lastError:result.ok?'':result.message});
+      } catch { if(get().activeGenerationRunId===runId) set({statusText:'图片接口请求未完成；请核对服务端记录。没有自动重试。',lastError:'图片接口请求未完成。'}); }
+      finally { if(get().activeGenerationRunId===runId) set({isGenerating:false,activeGenerationRunId:null,generationPhase:'idle'}); }
+      return;
+    }
+    if (!requireToken(set, state.account.hasToken, state.settings)) return;
+    if (!state.params.positivePrompt.trim()) {
+      set({ toast: storeText(state.settings, "toast.needPrompt"), statusText: storeText(state.settings, "status.missingPrompt") });
+      return;
+    }
+    const initialTotal = Math.max(1, state.batchCount);
+    const initialBatchIntervalSeconds = initialTotal > 1
+      ? normalizeBatchIntervalSeconds(state.batchIntervalSeconds)
+      : 0;
+    const initialParams = { ...state.params };
+    const initialExtras = buildExtras(state);
+    const initialSeed = initialParams.seed;
+    // Instant feedback: enter the generating state BEFORE the balance refresh and
+    // price quote (two network round-trips). Without this the button looks frozen
+    // for a second or two after a click. A cancel during prep clears the run id,
+    // which we honor below so the click can still be aborted.
+    const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const settlementRevision = ++generationSettlementRevision;
+    // A history image selected just before Generate may still be decoding and
+    // carrying embedded parameters. Invalidate that stale load before locking
+    // this run's immutable prompt snapshot.
+    workbenchLoadRevision += 1;
+    set({
+      isGenerating: true,
+      isGenerateQueueRunning: true,
+      activeGenerationRunId: runId,
+      generationPreview: null,
+      generationPhase: "preparing",
+      statusText: storeText(state.settings, "status.preparing"),
+    });
+    let freshAccount: AccountSummary;
+    let quote: AnlasQuoteResult | null;
+    try {
+      freshAccount = await get().refreshAccount();
+      if (get().activeGenerationRunId !== runId) return; // cancelled during prep
+      quote = await ensureAnlasBeforeRun(
+        set,
+        {
+          feature: "generate",
+          params: initialParams,
+          extras: initialExtras,
+          batchCount: initialTotal,
+          account: freshAccount,
+        },
+        initialTotal > 1
+          ? storeFormat(state.settings, "action.batchGenerate", { count: initialTotal })
+          : storeText(state.settings, "action.generateImage"),
+        state.settings,
+      );
+    } catch (error) {
+      if (get().activeGenerationRunId === runId) {
+        const message = compactStoreError(state.settings, error);
+        set({
+          isGenerating: false,
+          isGenerateQueueRunning: false,
+          activeGenerationRunId: null,
+          generationPhase: "idle",
+          statusText: message,
+          toast: message,
+          lastError: message,
+        });
+      }
+      return;
+    }
+    if (!quote || get().activeGenerationRunId !== runId) {
+      if (get().activeGenerationRunId === runId) {
+        set({
+          isGenerating: false,
+          isGenerateQueueRunning: false,
+          activeGenerationRunId: null,
+          generationPhase: "idle",
+        });
+      }
+      return;
+    }
+    const anlasBefore = freshAccount.anlasBalance;
+    set({
+      isGenerating: true,
+      isGenerateQueueRunning: true,
+      activeGenerationRunId: runId,
+      generationPreview: null,
+      queueAdding: false,
+      generationQueue: [],
+      clearQueueRequested: false,
+      activeVibeKeys: extrasVibeKeys(initialParams.model, initialExtras),
+      queuePaused: false,
+      queueProgress: { done: 0, failed: 0, total: initialTotal },
+      comparisonBeforeImage: null, comparisonAutoOpenRequest: null,
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText:
+        initialTotal > 1
+          ? storeFormat(state.settings, "generate.batchQuoteStatus", { total: initialTotal, amount: quote.amount })
+          : storeFormat(state.settings, "generate.quoteStatus", { amount: quote.amount }),
+    });
+
+    let completed = 0;
+    let failed = 0;
+    let lastError = "";
+    let initialIndex = 0;
+    let skipInitial = false;
+    while ((!skipInitial && initialIndex < initialTotal) || get().generationQueue.length > 0 || get().queueAdding) {
+      if (!get().isGenerating || get().activeGenerationRunId !== runId) break; // cancelled or superseded
+      // 清空排队: stop pulling remaining initial-batch images (queue already cleared).
+      if (get().clearQueueRequested) {
+        skipInitial = true;
+        set({ clearQueueRequested: false });
+      }
+      // Honor pause: hold here until resumed or cancelled.
+      while (get().queuePaused && get().isGenerating && get().activeGenerationRunId === runId) {
+        const progressTotal = get().queueProgress?.total ?? initialTotal;
+        set({ statusText: storeFormat(get().settings, "status.paused", { done: completed + failed, total: progressTotal }) });
+        await new Promise((r) => setTimeout(r, 250));
+      }
+      if (!get().isGenerating || get().activeGenerationRunId !== runId) break;
+      if (
+        !skipInitial &&
+        initialIndex > 0 &&
+        initialIndex < initialTotal &&
+        initialBatchIntervalSeconds > 0
+      ) {
+        set({
+          statusText: storeFormat(get().settings, "status.batchInterval", {
+            seconds: initialBatchIntervalSeconds,
+            current: initialIndex + 1,
+            total: initialTotal,
+          }),
+        });
+        const shouldContinue = await waitForBatchInterval(
+          initialBatchIntervalSeconds,
+          () => get().isGenerating && get().activeGenerationRunId === runId,
+        );
+        if (!shouldContinue) break;
+        while (get().queuePaused && get().isGenerating && get().activeGenerationRunId === runId) {
+          const progressTotal = get().queueProgress?.total ?? initialTotal;
+          set({ statusText: storeFormat(get().settings, "status.paused", { done: completed + failed, total: progressTotal }) });
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+        if (!get().isGenerating || get().activeGenerationRunId !== runId) break;
+      }
+
+      let base: GenerateParams;
+      let extras: GenerateExtras;
+      if (!skipInitial && initialIndex < initialTotal) {
+        base = initialParams;
+        extras = initialExtras;
+        base = {
+          ...base,
+          seed: seedForBatch(initialSeed, initialIndex),
+        };
+        initialIndex++;
+      } else {
+        const queued = get().generationQueue[0];
+        if (!queued && get().queueAdding) {
+          set({ statusText: storeText(get().settings, "status.waitingQueueQuote") });
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          continue;
+        }
+        if (!queued) break;
+        if (queued.quotePending) {
+          set({ statusText: storeText(get().settings, "status.waitingQueueQuote") });
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          continue;
+        }
+        base = queued.params;
+        extras = queued.extras;
+        set((current) => ({ generationQueue: current.generationQueue.slice(1) }));
+      }
+
+      const progressTotal = get().queueProgress?.total ?? initialTotal;
+      const currentNumber = completed + failed + 1;
+      set({
+        statusText: storeFormat(get().settings, "status.generatingProgress", {
+          current: currentNumber,
+          total: progressTotal,
+          done: completed,
+          failed,
+          waiting: get().generationQueue.length,
+        }),
+      });
+      const currentParams = {
+        ...base,
+        // Expand {a|b|c} wildcards independently per image so batches vary.
+        positivePrompt: base.preservePromptText ? base.positivePrompt : expandWildcards(base.positivePrompt),
+        negativePrompt: base.preservePromptText ? base.negativePrompt : expandWildcards(base.negativePrompt),
+      };
+
+      // No renderer-side resend: a failed generate POST may already have produced
+      // and charged for an image on NovelAI's side, so resending here risked
+      // double-charging (up to 8 paid POSTs per image when stacked on the old
+      // main-process retry). The main process now retries only pre-charge 429s.
+      let result: GenerateResult;
+      try {
+        set({ generationPreview: null, generationPhase: "requesting" });
+        result = await window.naiDesktop.generate(currentParams, extras, runId);
+      } catch (error) {
+        // ipcRenderer.invoke can reject before the main handler returns its
+        // normal GenerateResult (process restart, serialization fault, etc.).
+        // Convert that rejection into a regular failed item so the queue always
+        // reaches its final state reset instead of hiding Generate until restart.
+        result = {
+          ok: false,
+          message: compactStoreError(get().settings, error),
+          items: [],
+          failureKind: "api",
+        };
+      }
+      if (get().activeGenerationRunId !== runId) return;
+
+      const comparisonOptions={compareBefore:state.currentImage,comparisonSurface:"generate:t2i" as const};
+      showPartialImages(set, get, result, comparisonOptions);
+      if (result.ok && result.items.length > 0) {
+        completed++;
+        const current = result.items[0];
+        set({ params: { ...get().params, seed: result.actualSeed ?? current.actualSeed } });
+        await refreshAfterImageInBackground(set, get, current, comparisonOptions);
+      } else {
+        // Keep transient failures isolated; deterministic auth/validation
+        // failures below stop only the requests known to share that cause.
+        failed++;
+        lastError = compactStoreError(get().settings, result.message);
+        if (result.failureKind === "storage" || result.statusCode === 401 || result.statusCode === 403) {
+          // The same credentials back every queued request; continuing would
+          // only repeat a deterministic authentication failure.
+          skipInitial = true;
+          set({ generationQueue: [], queueAdding: false });
+        } else if (result.statusCode === 400 || result.statusCode === 422) {
+          // Initial batch items share one payload shape. Stop that identical
+          // batch after the first validation failure, but leave explicitly
+          // queued jobs (which may have different parameters) intact.
+          skipInitial = true;
+        }
+      }
+      set((current) => ({
+        queueProgress: {
+          done: completed,
+          failed,
+          total: current.queueProgress?.total ?? initialTotal,
+        },
+      }));
+    }
+
+    const cancelled = !get().isGenerating;
+    if (get().activeGenerationRunId !== runId) return;
+    const settings = get().settings;
+    const finalMessage = (spentText: string) => cancelled
+      ? storeFormat(settings, "generate.cancelled", { spent: spentText })
+      : failed > 0 && completed === 0
+        ? imageGenerationFailureMessage(settings, lastError)
+        : failed > 0
+          ? storeFormat(settings, "generate.doneFailed", { done: completed, failed, spent: spentText, error: lastError || storeText(settings, "error.unknown") })
+          : completed > 1
+            ? storeFormat(settings, "generate.batchDone", { done: completed, spent: spentText })
+            : storeFormat(settings, "generate.singleDone", { spent: spentText });
+    const finalMsg = finalMessage(storeText(settings, "generate.spentPending"));
+    if (!cancelled && completed > 0) void playCompletionSound(settings?.completionSound);
+    set({
+      isGenerating: false,
+      isGenerateQueueRunning: false,
+      activeGenerationRunId: null,
+      generationPreview: null,
+      generationPhase: "idle",
+      queueAdding: false,
+      generationQueue: [],
+      queuePaused: false,
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: cancelled ? "" : failed > 0 ? lastError : "",
+      statusText: finalMsg,
+      toast: finalMsg,
+    });
+    // Do not hold the completed queue UI behind one final network round-trip.
+    // The balance label and exact-spend text settle in the background, guarded
+    // by a revision so this old run cannot overwrite a newer one.
+    void window.naiDesktop.hasToken().then((finalAccount) => {
+      if (generationSettlementRevision !== settlementRevision || get().isGenerating || !naiAccountSummaryMatches(finalAccount,get().settings?.naiAccountId)) return;
+      const spent = anlasSpent(anlasBefore, finalAccount.anlasBalance);
+      const spentText = spent != null
+        ? storeFormat(get().settings, "generate.spent", { spent })
+        : storeText(get().settings, "generate.spentFailed");
+      const settledMessage = finalMessage(spentText);
+      set({
+        account: finalAccount,
+        lastAnlasSpent: spent,
+        statusText: settledMessage,
+        toast: settledMessage,
+      });
+    }).catch(() => undefined);
+  },
+
+  async generateI2I() {
+    const state = get();
+    if (!requireToken(set, state.account.hasToken, state.settings)) return;
+    if (!state.workbenchImage) {
+      set({ toast: storeText(state.settings, "toast.needReference"), statusText: storeText(state.settings, "status.needImage") });
+      return;
+    }
+    if (!state.params.positivePrompt.trim()) {
+      set({ toast: storeText(state.settings, "toast.needPrompt"), statusText: storeText(state.settings, "status.missingPrompt") });
+      return;
+    }
+    const initialTotal = Math.max(1, state.batchCount);
+    const initialBatchIntervalSeconds = initialTotal > 1
+      ? normalizeBatchIntervalSeconds(state.batchIntervalSeconds)
+      : 0;
+    const sourceImage = state.i2iSourceMode === "original"
+      ? state.i2iOriginalImage ?? state.workbenchImage
+      : state.workbenchImage;
+    const initialExtras = buildExtras(state);
+    const initialI2IParams = { ...state.i2iParams };
+    const outputSize = state.i2iSizeMode === "adaptive"
+      ? adaptiveNAIImageSize(sourceImage.width, sourceImage.height, state.params)
+      : { width: state.params.width, height: state.params.height };
+    const initialParams: GenerateParams = { ...state.params, ...outputSize };
+    const initialSeed = initialParams.seed;
+    const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const settlementRevision = ++generationSettlementRevision;
+    // Enter the generating state before the balance refresh and quote so rapid
+    // clicks cannot start duplicate paid batches. Keep one immutable source and
+    // parameter snapshot for the whole run.
+    workbenchLoadRevision += 1;
+    set({
+      isGenerating: true,
+      activeGenerationRunId: runId,
+      generationPhase: "preparing",
+      generationPreview: null,
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: storeText(state.settings, "status.preparing"),
+    });
+    const prepared = await preparePaidRun(
+      set,
+      get,
+      (account) => ({
+        feature: "i2i",
+        params: initialParams,
+        extras: initialExtras,
+        batchCount: initialTotal,
+        i2iParams: initialI2IParams,
+        account,
+      }),
+      initialTotal > 1
+        ? storeFormat(state.settings, "action.batchGenerate", { count: initialTotal })
+        : storeText(state.settings, "action.i2i"),
+      state.settings,
+    );
+    if (!prepared || get().activeGenerationRunId !== runId) {
+      if (get().activeGenerationRunId === runId) {
+        set({ isGenerating: false, activeGenerationRunId: null, generationPhase: "idle" });
+      }
+      return;
+    }
+    const { account: freshAccount, quote } = prepared;
+    const anlasBefore = freshAccount.anlasBalance;
+    set({
+      isGenerating: true,
+      activeGenerationRunId: runId,
+      generationPhase: "requesting",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: storeFormat(state.settings, "i2i.status", { amount: quote.amount }),
+    });
+
+    let completed = 0;
+    let failed = 0;
+    let lastError = "";
+    for (let index = 0; index < initialTotal; index += 1) {
+      if (!get().isGenerating || get().activeGenerationRunId !== runId) return;
+      if (index > 0 && initialBatchIntervalSeconds > 0) {
+        set({
+          statusText: storeFormat(get().settings, "status.batchInterval", {
+            seconds: initialBatchIntervalSeconds,
+            current: index + 1,
+            total: initialTotal,
+          }),
+        });
+        const shouldContinue = await waitForBatchInterval(
+          initialBatchIntervalSeconds,
+          () => get().isGenerating && get().activeGenerationRunId === runId,
+        );
+        if (!shouldContinue) return;
+        while (get().queuePaused && get().isGenerating && get().activeGenerationRunId === runId) {
+          set({ statusText: storeFormat(get().settings, "status.paused", { done: completed + failed, total: initialTotal }) });
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+        if (!get().isGenerating || get().activeGenerationRunId !== runId) return;
+      }
+      const runParams: GenerateParams = {
+        ...initialParams,
+        seed: seedForBatch(initialSeed, index),
+        positivePrompt: initialParams.preservePromptText ? initialParams.positivePrompt : expandWildcards(initialParams.positivePrompt),
+        negativePrompt: initialParams.preservePromptText ? initialParams.negativePrompt : expandWildcards(initialParams.negativePrompt),
+      };
+      set({
+        generationPreview: null,
+        generationPhase: "requesting",
+        statusText: storeFormat(get().settings, "i2i.progress", {
+          current: index + 1,
+          total: initialTotal,
+          done: completed,
+          failed,
+        }),
+      });
+
+      let result: GenerateResult;
+      try {
+        result = await window.naiDesktop.generateI2I(
+          runParams,
+          initialI2IParams,
+          initialExtras,
+        );
+      } catch (error) {
+        result = {
+          ok: false,
+          message: compactStoreError(get().settings, error),
+          items: [],
+          failureKind: "api",
+        };
+      }
+      if (get().activeGenerationRunId !== runId) return;
+
+      showPartialImages(set, get, result, { compareBefore: sourceImage, comparisonSurface: state.activeCanvasSurface });
+      if (result.ok && result.items.length > 0) {
+        completed += 1;
+        await refreshAfterImageInBackground(set, get, result.items[0], {
+          compareBefore: sourceImage,
+          comparisonSurface: state.activeCanvasSurface,
+          loadWorkbench: state.i2iSourceMode === "latest",
+        });
+      } else {
+        failed += 1;
+        lastError = compactStoreError(get().settings, result.message);
+        if (
+          result.failureKind === "storage" ||
+          result.statusCode === 400 ||
+          result.statusCode === 401 ||
+          result.statusCode === 403 ||
+          result.statusCode === 422
+        ) {
+          break;
+        }
+      }
+    }
+
+    if (get().activeGenerationRunId !== runId) return;
+    const settings = get().settings;
+    const finalMessage = (spentText: string) => failed > 0
+      ? storeFormat(settings, "i2i.doneFailed", {
+          done: completed,
+          failed,
+          spent: spentText,
+          error: lastError || storeText(settings, "error.unknown"),
+        })
+      : completed > 1
+        ? storeFormat(settings, "i2i.batchDone", { done: completed, spent: spentText })
+        : storeFormat(settings, "i2i.singleDone", { spent: spentText });
+    const finalMsg = finalMessage(storeText(settings, "generate.spentPending"));
+    set({
+      isGenerating: false,
+      activeGenerationRunId: null,
+      generationPreview: null,
+      generationPhase: "idle",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: failed > 0 ? lastError : "",
+      statusText: finalMsg,
+      toast: finalMsg,
+    });
+    void window.naiDesktop.hasToken().then((finalAccount) => {
+      if (generationSettlementRevision !== settlementRevision || get().isGenerating || !naiAccountSummaryMatches(finalAccount,get().settings?.naiAccountId)) return;
+      const spent = anlasSpent(anlasBefore, finalAccount.anlasBalance);
+      const spentText = spent != null
+        ? storeFormat(get().settings, "generate.spent", { spent })
+        : storeText(get().settings, "generate.spentFailed");
+      const settledMessage = finalMessage(spentText);
+      set({
+        account: finalAccount,
+        lastAnlasSpent: spent,
+        statusText: settledMessage,
+        toast: settledMessage,
+      });
+    }).catch(() => undefined);
+  },
+
+  async inpaint() {
+    const state = get();
+    if(state.isGenerating)return;
+    if (!requireToken(set, state.account.hasToken, state.settings)) return;
+    if (!state.workbenchImage) {
+      set({ toast: storeText(state.settings, "toast.needOriginal"), statusText: storeText(state.settings, "status.needOriginal") });
+      return;
+    }
+    if (!state.inpaintMask) {
+      set({ toast: storeText(state.settings, "toast.needMask"), statusText: storeText(state.settings, "status.needMask") });
+      return;
+    }
+    const sourceImage = state.inpaintSourceMode === "original"
+      ? state.i2iOriginalImage ?? state.workbenchImage
+      : state.workbenchImage;
+    let sizePlan;
+    try { sizePlan = inpaintSizePlan(state.inpaintSizeMode, state.inpaintCustomSize, sourceImage, state.inpaintRegion, state.settings?.language); }
+    catch (error) { const message = (error as Error).message; set({ toast: message, statusText: message, lastError: message }); return; }
+    let loadedSource;
+    try {
+      loadedSource = await window.naiDesktop.loadImageFromPath(sourceImage.filePath);
+    } catch (error: any) {
+      const message = compactStoreError(
+        state.settings,
+        error?.message,
+        storeText(state.settings, "status.imageLoadFailed"),
+      );
+      set({ toast: message, statusText: message });
+      return;
+    }
+    if (!loadedSource.ok || !loadedSource.image) {
+      const message = compactStoreError(
+        state.settings,
+        loadedSource.message,
+        storeText(state.settings, "status.imageLoadFailed"),
+      );
+      set({ toast: message, statusText: message });
+      return;
+    }
+    // Keep the independent inpaint prompt and the user-selected output size.
+    // The main process scales source and mask together before local compositing.
+    const inpaintParams: GenerateParams = {
+      ...state.params,
+      positivePrompt: state.inpaintPositivePrompt,
+      ...sizePlan.outputSize,
+    };
+    // Enter the generating state BEFORE the balance refresh and price quote so a
+    // fast double-click can't sneak a second paid request in before the button
+    // disappears (isGenerating is what hides it — see AccountAndRunButton).
+    workbenchLoadRevision += 1;
+    set({
+      isGenerating: true,
+      generationPhase: "preparing",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: storeText(state.settings, "status.preparing"),
+    });
+    const prepared = await preparePaidRun(
+      set,
+      get,
+      (account) => ({
+        feature: "inpaint",
+        params: { ...inpaintParams, ...sizePlan.requestSize },
+        inpaintModel: state.inpaintModel,
+        inpaintStrength: state.inpaintStrength,
+        inpaintNoise: 0,
+        maskBase64: state.inpaintMask,
+        image: { width: sourceImage.width, height: sourceImage.height },
+        account,
+      }),
+      storeText(state.settings, "action.inpaint"),
+      state.settings,
+    );
+    if (!prepared || !get().isGenerating) {
+      if (get().isGenerating) set({ isGenerating: false, generationPhase: "idle" });
+      return;
+    }
+    const { account: freshAccount, quote } = prepared;
+    const anlasBefore = freshAccount.anlasBalance;
+    set({
+      isGenerating: true,
+      generationPhase: "requesting",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: storeFormat(state.settings, "inpaint.status", { amount: quote.amount }),
+    });
+    const result = await invokePaidRequest(
+      set,
+      get,
+      () => window.naiDesktop.inpaint(
+        inpaintParams,
+        state.inpaintModel,
+        state.inpaintMask!,
+        state.inpaintStrength,
+        0,
+        state.inpaintRegion ?? undefined,
+      ),
+      anlasBefore,
+      "status.inpaintFailed",
+    );
+    if (!result) return;
+    showPartialImages(set, get, result, { compareBefore: sourceImage, comparisonSurface: "inpaint" });
+    if (result.ok && result.items.length > 0) {
+      const current = result.items[0];
+      await refreshAfterImage(set, get, current, {
+        compareBefore: sourceImage,
+        comparisonSurface: "inpaint",
+        loadWorkbench: state.inpaintSourceMode === "latest",
+      });
+      const spent = anlasSpent(anlasBefore, get().account.anlasBalance);
+      const message = withAnlasSpent(get().settings, result.message, spent);
+      set({ isGenerating: false, generationPhase: "idle", currentAnlasSpent: null, lastAnlasSpent: spent, statusText: message, toast: message });
+    } else {
+      const finalAccount = await refreshAccountBestEffort(get);
+      const spent = anlasSpent(anlasBefore, finalAccount.anlasBalance);
+      const message = withAnlasSpent(get().settings, result.message, spent);
+      set({ isGenerating: false, generationPhase: "idle", currentAnlasSpent: null, lastAnlasSpent: spent, lastError: message, statusText: storeText(get().settings, "status.inpaintFailed"), toast: message });
+    }
+  },
+
+  async openaiInpaint() {
+    const state = get();
+    if (state.isGenerating) return;
+    const language = state.settings?.language;
+    if (!state.workbenchImage) {
+      set({ toast: storeText(state.settings, "toast.needOriginal"), statusText: storeText(state.settings, "status.needOriginal") });
+      return;
+    }
+    if (!state.inpaintMask) {
+      set({ toast: storeText(state.settings, "toast.needMask"), statusText: storeText(state.settings, "status.needMask") });
+      return;
+    }
+    const prompt = state.openaiEditPrompt.trim();
+    if (!prompt) {
+      const message = featureText(language, "请输入重绘指令。");
+      set({ toast: message, statusText: message });
+      return;
+    }
+    const sourceImage = state.inpaintSourceMode === "original"
+      ? state.i2iOriginalImage ?? state.workbenchImage
+      : state.workbenchImage;
+    const loadedSource = await window.naiDesktop.loadImageFromPath(sourceImage.filePath).catch(() => null);
+    if (!loadedSource?.ok || !loadedSource.image) {
+      const message = storeText(state.settings, "status.imageLoadFailed");
+      set({ toast: message, statusText: message });
+      return;
+    }
+    const runId = `openai-edit-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    workbenchLoadRevision += 1;
+    set({
+      isGenerating: true,
+      activeGenerationRunId: runId,
+      generationPreview: null,
+      generationPhase: "requesting",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: featureText(language, "正在请求 OpenAI 图像编辑…"),
+    });
+    let result: GenerateResult;
+    try {
+      result = await window.naiDesktop.openaiInpaint({
+        prompt,
+        maskBase64: state.inpaintMask,
+        region: state.inpaintRegion ?? undefined,
+        pasteBack: true,
+      });
+    } catch {
+      result = { ok: false, items: [], message: "请求未完成，请核对服务商记录；没有自动重新提交。" };
+    }
+    if (get().activeGenerationRunId !== runId) return;
+    const message = featureText(language, result.message);
+    showPartialImages(set, get, result, { compareBefore: sourceImage, comparisonSurface: "inpaint" });
+    if (result.ok && result.items.length > 0) {
+      await refreshAfterImage(set, get, result.items[0], {
+        compareBefore: sourceImage,
+        comparisonSurface: "inpaint",
+        loadWorkbench: state.inpaintSourceMode === "latest",
+      });
+      set({ isGenerating: false, activeGenerationRunId: null, generationPhase: "idle", statusText: message, toast: message });
+    } else {
+      set({ isGenerating: false, activeGenerationRunId: null, generationPhase: "idle", lastError: message, statusText: message, toast: message });
+    }
+  },
+
+  async upscaleCurrentImage() {
+    const state = get();
+    if (!requireToken(set, state.account.hasToken, state.settings)) return;
+    if (!state.workbenchImage) {
+      set({ toast: storeText(state.settings, "toast.needLoadedImage"), statusText: storeText(state.settings, "status.needImage") });
+      return;
+    }
+    // Enter the generating state BEFORE the balance refresh and price quote so a
+    // fast double-click can't sneak a second paid request in before the button
+    // disappears (isGenerating is what hides it — see AccountAndRunButton).
+    workbenchLoadRevision += 1;
+    set({
+      isGenerating: true,
+      generationPhase: "preparing",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: storeText(state.settings, "status.preparing"),
+    });
+    const prepared = await preparePaidRun(
+      set,
+      get,
+      (account) => ({
+        feature: "upscale",
+        upscaleScale: state.upscaleScale,
+        image: { width: state.workbenchImage!.width, height: state.workbenchImage!.height },
+        account,
+      }),
+      storeFormat(state.settings, "action.upscale", { scale: state.upscaleScale }),
+      state.settings,
+    );
+    if (!prepared || !get().isGenerating) {
+      if (get().isGenerating) set({ isGenerating: false, generationPhase: "idle" });
+      return;
+    }
+    const { account: freshAccount, quote } = prepared;
+    const anlasBefore = freshAccount.anlasBalance;
+    set({
+      isGenerating: true,
+      generationPhase: "requesting",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: storeFormat(state.settings, "upscale.status", { scale: state.upscaleScale, amount: quote.amount }),
+    });
+    const result = await invokePaidRequest(
+      set,
+      get,
+      () => window.naiDesktop.upscaleImage(state.upscaleScale, state.params.model),
+      anlasBefore,
+      "status.upscaleFailed",
+    );
+    if (!result) return;
+    if (result.ok && result.item) {
+      await refreshAfterImage(set, get, result.item, {
+        compareBefore: state.workbenchImage,
+        comparisonSurface: "postprocess:upscale",
+      });
+      const spent = anlasSpent(anlasBefore, get().account.anlasBalance);
+      const message = withAnlasSpent(get().settings, result.message, spent);
+      set({ isGenerating: false, generationPhase: "idle", currentAnlasSpent: null, lastAnlasSpent: spent, statusText: message, toast: message });
+    } else {
+      const finalAccount = await refreshAccountBestEffort(get);
+      const spent = anlasSpent(anlasBefore, finalAccount.anlasBalance);
+      const message = withAnlasSpent(get().settings, result.message, spent);
+      set({ isGenerating: false, generationPhase: "idle", currentAnlasSpent: null, lastAnlasSpent: spent, lastError: message, statusText: storeText(get().settings, "status.upscaleFailed"), toast: message });
+    }
+  },
+
+  async runDirectorTool() {
+    const state = get();
+    if (!requireToken(set, state.account.hasToken, state.settings)) return;
+    if (!state.workbenchImage) {
+      set({ toast: storeText(state.settings, "toast.needLoadedImage"), statusText: storeText(state.settings, "status.needImage") });
+      return;
+    }
+    // Enter the generating state BEFORE the balance refresh and price quote so a
+    // fast double-click can't sneak a second paid request in before the button
+    // disappears (isGenerating is what hides it — see AccountAndRunButton).
+    workbenchLoadRevision += 1;
+    set({
+      isGenerating: true,
+      generationPhase: "preparing",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: storeText(state.settings, "status.preparing"),
+    });
+    const prepared = await preparePaidRun(
+      set,
+      get,
+      (account) => ({
+        feature: "director",
+        directorTool: state.directorTool,
+        image: { width: state.workbenchImage!.width, height: state.workbenchImage!.height },
+        account,
+      }),
+      storeText(state.settings, "action.postprocess"),
+      state.settings,
+    );
+    if (!prepared || !get().isGenerating) {
+      if (get().isGenerating) set({ isGenerating: false, generationPhase: "idle" });
+      return;
+    }
+    const { account: freshAccount, quote } = prepared;
+    const anlasBefore = freshAccount.anlasBalance;
+    set({
+      isGenerating: true,
+      generationPhase: "requesting",
+      currentAnlasSpent: null,
+      lastAnlasSpent: null,
+      lastError: "",
+      statusText: storeFormat(state.settings, "post.status", { tool: state.directorTool, amount: quote.amount }),
+    });
+    const result = await invokePaidRequest(
+      set,
+      get,
+      () => window.naiDesktop.augmentImage(state.directorTool, state.augmentOptions),
+      anlasBefore,
+      "status.postFailed",
+    );
+    if (!result) return;
+    showPartialImages(set, get, result, { compareBefore: state.workbenchImage, comparisonSurface: "postprocess:director" });
+    if (result.ok && result.items.length > 0) {
+      const current = result.items[0];
+      await refreshAfterImage(set, get, current, {
+        compareBefore: state.workbenchImage,
+        comparisonSurface: "postprocess:director",
+      });
+      const spent = anlasSpent(anlasBefore, get().account.anlasBalance);
+      const message = withAnlasSpent(get().settings, result.message, spent);
+      set({ isGenerating: false, generationPhase: "idle", currentAnlasSpent: null, lastAnlasSpent: spent, statusText: message, toast: message });
+    } else {
+      const finalAccount = await refreshAccountBestEffort(get);
+      const spent = anlasSpent(anlasBefore, finalAccount.anlasBalance);
+      const message = withAnlasSpent(get().settings, result.message, spent);
+      set({ isGenerating: false, generationPhase: "idle", currentAnlasSpent: null, lastAnlasSpent: spent, lastError: message, statusText: storeText(get().settings, "status.postFailed"), toast: message });
+    }
+  },
+
+  async cancel() {
+    generationSettlementRevision += 1;
+    const wasGenerateQueue = get().isGenerateQueueRunning;
+    set((current) => ({
+      isGenerating: false,
+      isGenerateQueueRunning: false,
+      activeGenerationRunId: null,
+      generationPreview: null,
+      generationPhase: "idle",
+      queueAdding: false,
+      generationQueue: [],
+      queueVersion: current.queueVersion + 1, // invalidate any in-flight enqueue quote
+      queuePaused: false,
+      queueProgress: null,
+      currentAnlasSpent: null,
+      statusText: wasGenerateQueue ? storeText(current.settings, "status.cancelGenerate") : storeText(current.settings, "status.cancelOperation"),
+    }));
+    await window.naiDesktop.cancel();
+    if (!get().isGenerating) {
+      set({ statusText: wasGenerateQueue ? storeText(get().settings, "status.cancelGenerateDone") : storeText(get().settings, "status.cancelOperationDone") });
+    }
+  },
+
+  togglePause() {
+    if (!get().isGenerating) return;
+    set({ queuePaused: !get().queuePaused });
+  },
+
+  selectImage(item) {
+    const generating = get().isGenerating;
+    set({ currentImage: item, inputPreviewAnchor: null, comparisonBeforeImage: null, comparisonAutoOpenRequest: null, statusText: storeFormat(get().settings, "status.historySelected", { date: item.date }) });
+    // A history thumbnail is always a preview-only action. Embedded PNG
+    // metadata must never replace the user's current prompt or generation
+    // parameters implicitly; explicit parameter/variation actions own that job.
+    void get().loadWorkbenchFromPath(item.filePath, {
+      silent: generating,
+      restoreMetadata: false,
+    });
+  },
+
+  variationFromImage(item) {
+    // Load this image's exact params and LOCK its seed, then jump to generate so
+    // the user can tweak one tag and reroll a variation on the same seed.
+    const seed = item.actualSeed || item.params?.seed || 0;
+    set((state) => ({
+      params: normalizeGenerateParams({ ...state.params, ...item.params, seed }),
+      activeTab: "generate",
+      currentImage: item,
+      comparisonBeforeImage: null, comparisonAutoOpenRequest: null,
+      toast: seed > 0
+        ? storeFormat(state.settings, "toast.paramsLoadedSeed", { seed })
+        : storeText(state.settings, "toast.paramsLoaded"),
+    }));
+  },
+
+  async deleteHistory(id) {
+    const previousHistory = get().history;
+    const removedIndex = previousHistory.findIndex((item) => item.id === id);
+    const removedItem = removedIndex >= 0 ? previousHistory[removedIndex] : undefined;
+    const previousCurrent = get().currentImage;
+    const previousComparison = get().comparisonBeforeImage;
+    const nextHistory = previousHistory.filter((item) => item.id !== id);
+    const deletingCurrent = previousCurrent?.id === id;
+    if (deletingCurrent) workbenchLoadRevision += 1;
+    const deletionRevision = workbenchLoadRevision;
+    const optimisticCurrent = deletingCurrent
+      ? get().isGenerating ? null : nextHistory[0] ?? null
+      : previousCurrent;
+    set({
+      history: nextHistory,
+      // Do not swap an arbitrary old thumbnail into the canvas underneath an
+      // active generating overlay. It looked like the running request had
+      // changed to the deleted record. The successful result will become the
+      // current image naturally; a failed run leaves an honest empty canvas.
+      currentImage: optimisticCurrent,
+      comparisonBeforeImage: deletingCurrent ? null : get().comparisonBeforeImage,
+    });
+    try {
+      const result = await window.naiDesktop.deleteHistory(id);
+      if (!result?.ok) throw new Error("Delete failed");
+      return true;
+    } catch (error: any) {
+      // Reinsert only this item. Restoring the complete previous array here
+      // races with a second concurrent deletion and can resurrect images that
+      // were successfully removed after this request started.
+      set((state) => {
+        const restoreSelection = deletingCurrent
+          && workbenchLoadRevision === deletionRevision
+          && state.currentImage === optimisticCurrent;
+        const history = !removedItem || state.history.some((item) => item.id === id)
+          ? state.history
+          : [
+              ...state.history.slice(0, Math.min(removedIndex, state.history.length)),
+              removedItem,
+              ...state.history.slice(Math.min(removedIndex, state.history.length)),
+            ];
+        return {
+          history,
+          currentImage: restoreSelection ? previousCurrent : state.currentImage,
+          comparisonBeforeImage: restoreSelection ? previousComparison : state.comparisonBeforeImage,
+          toast: compactStoreError(state.settings, error),
+        };
+      });
+      return false;
+    }
+  },
+
+  // Called when a thumbnail/preview fails to load because its file was deleted
+  // or moved on disk. The main process re-checks existence before dropping the
+  // record (never deletes a present file), so this is safe to fire on any load
+  // error — the image simply disappears from the library instead of showing
+  // a broken placeholder.
+  forgetHistoryItems(ids) {
+    const removed = new Set(ids), state = get();
+    const history = state.history.filter(item => !removed.has(item.id));
+    const currentRemoved = !!state.currentImage && removed.has(state.currentImage.id);
+    const beforeRemoved = !!state.comparisonBeforeImage && state.history.some(item =>
+      removed.has(item.id) && item.filePath === state.comparisonBeforeImage?.filePath);
+    if (currentRemoved) workbenchLoadRevision += 1;
+    set({ history, currentImage: currentRemoved ? state.isGenerating ? null : history[0] ?? null : state.currentImage,
+      ...(currentRemoved || beforeRemoved ? {comparisonBeforeImage:null,comparisonAutoOpenRequest:null,comparisonSurface:null} : {}) });
+  },
+
+  async dropMissingImage(id) {
+    const removed = await window.naiDesktop.pruneMissingHistoryItem(id);
+    if (!removed) return;
+    get().forgetHistoryItems([id]);
+    await get().refreshHistory();
+    const current = get().currentImage;
+    if (current?.id === id) set({ currentImage: get().history[0] ?? null, comparisonBeforeImage: null });
+  },
+
+  async renameHistoryItem(id, name) {
+    const res = await window.naiDesktop.renameHistoryItem(id, name);
+    if (!res.ok) {
+      set({ toast: res.message ?? storeText(get().settings, "toast.renameFailed") });
+      return;
+    }
+    await get().refreshHistory();
+    const current = get().currentImage;
+    if (current?.id === id && res.item) set({ currentImage: res.item });
+    set({ toast: storeText(get().settings, "toast.renamed") });
+  },
+
+  clearToast() {
+    set({ toast: "" });
+  },
+}));

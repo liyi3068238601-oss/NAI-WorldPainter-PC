@@ -1,5 +1,17 @@
 # 绘世 PC 调查与复用清单
 
+2026-10-15 直接迁移基线：用户指定 `E:\NAI-WorldPainter\novelai-image-desktop`，固定提交 `7bc76ded4f539949a52f29fba32e2d896d2f89b7`，MIT。主代码、测试和必要资源进入 `desktop/`；源文件 SHA-256 见 [源码清单](evidence/electron-migration/upstream-source-manifest.json)，跨平台回归依赖的只读快照见 [测试参考清单](evidence/electron-migration/upstream-test-reference-manifest.json)。不读取或复制参考项目账号、私有图像和未跟踪文件。
+
+`novelai_local_web` 固定提交 `aa0fcbe477eae0a703ec47740785f9419d7d5cbe` 仍作为视觉/交互参考。其 AGPL 页面代码未在本批直接复制。
+
+选择：成熟生成/编辑/素材/Agent/漫画模块直接复用并适配；绘世记忆生命周期、知识库切换、旧 SQLite 导入、本地 SR 与两种网关由原 PC/手机行为补齐。源码审查确认上游官方超分不等于本地 SR，通用 relay 不等于 7877/ikun 协议；这些差异明确保留。
+
+以下是早期只读调研记录；其中“没有导入”“Flutter 当前主线”等描述按历史日期理解。
+
+## 历史调研记录
+
+# 绘世 PC 调查与复用清单
+
 调查日期：2026-10-11。以下区分本轮源码检查、既有审计结论和后续待验证项。
 
 用户确定：PC 界面、布局、动画与流畅感优先参考 NovelAI Local Web，其次浪白。手机端决定最低功能范围，绘世现有主题决定视觉风格，参考项目不自动决定后端架构。

@@ -1,0 +1,54 @@
+{
+  "provenance": "Copied unchanged from existing PC assets/assistant/mobile; original license files retained.",
+  "files": [
+    {
+      "path": "desktop/public/worldpainter/mobile/nai5-prompting/LICENSE",
+      "bytes": 35825,
+      "sha256": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db",
+      "sourcePath": "assets/assistant/mobile/nai5-prompting/LICENSE",
+      "sourceSha256": "bfde1fd94c3b17b89fbbfa6321660c8284f631bf126db1e0a32c897944a842db"
+    },
+    {
+      "path": "desktop/public/worldpainter/mobile/nai5-prompting/NAI5_All_Prompting.md",
+      "bytes": 103948,
+      "sha256": "a0b35a51169c66bbf139a074a742e957d782b0927a7c4bd323804a5369f402e3",
+      "sourcePath": "assets/assistant/mobile/nai5-prompting/NAI5_All_Prompting.md",
+      "sourceSha256": "a0b35a51169c66bbf139a074a742e957d782b0927a7c4bd323804a5369f402e3"
+    },
+    {
+      "path": "desktop/public/worldpainter/mobile/nai5-prompting/references/通用写法.md",
+      "bytes": 85427,
+      "sha256": "494dc7526c99c353e29f0786861a465f1581aef042b3fda298c63197e66e0426",
+      "sourcePath": "assets/assistant/mobile/nai5-prompting/references/通用写法.md",
+      "sourceSha256": "494dc7526c99c353e29f0786861a465f1581aef042b3fda298c63197e66e0426"
+    },
+    {
+      "path": "desktop/public/worldpainter/mobile/nai5-prompting/references/通用构思.md",
+      "bytes": 18065,
+      "sha256": "9fdc8cce237496737d016ffee42a76a68d2689f00f280835abff1318437fec63",
+      "sourcePath": "assets/assistant/mobile/nai5-prompting/references/通用构思.md",
+      "sourceSha256": "9fdc8cce237496737d016ffee42a76a68d2689f00f280835abff1318437fec63"
+    },
+    {
+      "path": "desktop/public/worldpainter/mobile/nai5-prompting/SKILL.md",
+      "bytes": 2392,
+      "sha256": "c2461185579f280f4db68266dd9bee4f83604e48233074a095c95bee3455c360",
+      "sourcePath": "assets/assistant/mobile/nai5-prompting/SKILL.md",
+      "sourceSha256": "c2461185579f280f4db68266dd9bee4f83604e48233074a095c95bee3455c360"
+    },
+    {
+      "path": "desktop/public/worldpainter/mobile/nsfw_knowledge.json",
+      "bytes": 8882911,
+      "sha256": "fe8788cb82dd8a6ef7ebf5bd11b39d7fa7b1dec4f912835d5bf525bb7d9ac66c",
+      "sourcePath": "assets/assistant/mobile/nsfw_knowledge.json",
+      "sourceSha256": "fe8788cb82dd8a6ef7ebf5bd11b39d7fa7b1dec4f912835d5bf525bb7d9ac66c"
+    },
+    {
+      "path": "desktop/public/worldpainter/mobile/system_prompt.txt",
+      "bytes": 9098,
+      "sha256": "644fef0d802ee47aa61893054e59520181cdc087feda0bcc197ba29cb7e36c77",
+      "sourcePath": "assets/assistant/mobile/system_prompt.txt",
+      "sourceSha256": "644fef0d802ee47aa61893054e59520181cdc087feda0bcc197ba29cb7e36c77"
+    }
+  ]
+}

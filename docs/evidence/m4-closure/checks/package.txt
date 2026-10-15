@@ -1,0 +1,15 @@
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • loaded configuration  file=package.json ("build" field)
+LIBRARY BUILD PASS: native Harness UI module created.
+RESPONSIVE CLIENT BUILT
+BRAND BUILD PASS: WorldPainter icon embedded; sidebar and hero slots composed without renaming upstream packages.
+  • executing @electron/rebuild  electronVersion=42.11.0 arch=x64 buildFromSource=false workspaceRoot=E:\NAI-WorldPainter\PC端\desktop projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=42.11.0 appOutDir=E:\NAI-WorldPainter\PC端\build\WorldPainter-0.1.0-preview\win-unpacked
+  • using custom unpacked Electron distribution  electronDist=node_modules\electron\dist
+  • copying unpacked Electron  source=E:\NAI-WorldPainter\PC端\desktop\node_modules\electron\dist destination=E:\NAI-WorldPainter\PC端\build\WorldPainter-0.1.0-preview\win-unpacked
+  • searching for node modules  pm=npm searchDir=E:\NAI-WorldPainter\PC端\desktop
+  • updating asar integrity executable resource  executablePath=E:\NAI-WorldPainter\PC端\build\WorldPainter-0.1.0-preview\win-unpacked\NAI WorldPainter PC.exe
+HARNESS ON-DEMAND: no bundled runtime
+  • signing with signtool.exe  path=E:\NAI-WorldPainter\PC端\build\WorldPainter-0.1.0-preview\win-unpacked\NAI WorldPainter PC.exe

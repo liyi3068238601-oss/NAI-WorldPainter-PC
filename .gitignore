@@ -48,3 +48,11 @@ models/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Migrated desktop source resources (not generated builds or runtime data)
+!desktop/build/
+!desktop/build/**
+!desktop/data/
+!desktop/data/reference-catalog-name-overrides.json
+!desktop/data/reference-catalog-locales.json
+desktop/dist-electron/

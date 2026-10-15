@@ -1,44 +1,51 @@
-# NAI WorldPainter PC 绘世桌面端
+# 绘世 · NAI WorldPainter PC
 
-面向 Windows 的绘世创作客户端。**先完整移植手机端全部现有功能，再增加其他功能**，包括 NovelAI 官方与现有兼容网关、其他已接入生图服务、提示词助手、图库后期、漫画、本地超分和 Pixiv 工作流。
+Windows 图像创作工作台。当前主实现为 **Electron + React 迁移预览版**，位于 `desktop/`；原 Flutter 源码与数据继续保留，作为迁移基线和回退版本。
 
-**最新批次：小助手记忆与素材已接入**，包括候选审核、冲突处理、检索命中、清理预览、Agent 记忆工具、聊天素材插入、助手模型列表选择和全部会话清空。全量 301 项测试、静态分析、Windows/Web Release 构建及 Windows 存储/凭据探针通过；桌面/高 DPI 界面采用 Flutter 自动化截图复核。真实模型、付费行为和 Windows 助手人工交互仍未验收。按用户安排暂不增加生图渠道，详见 [本批说明](docs/ASSISTANT_KNOWLEDGE_REVIEW.md)。在线标签、专用提示词技能和剩余工具继续迁移。
+2026-10-15，按用户最新安排，直接适配 `novelai-image-desktop` 的成熟功能代码，再参照 `novelai_local_web` 整理界面与交互。产品保持绘世近黑暖金 / 浅色蓝的配色，使用独立名称、图标、欢迎图、数据目录和项目信息。上游署名保留在许可证与第三方说明中。
 
-前一批 [小助手与内置 Agent 主体](docs/ASSISTANT_REVIEW.md) 已支持持久化会话、多模型/识图绑定、流式工具循环、写词差异确认、工具时间线和独立调用诊断。
+本批完成情况和 Windows 验收证据见 [迁移与 M4 报告](docs/M4_ELECTRON_MIGRATION.md)。参考项目功能更多不代表手机全量 parity 已通过；原 Flutter 的验证结论也不能直接继承给 Electron。
 
-上一批 [提示词素材管理](docs/PROMPT_LIBRARY_REVIEW.md) 支持自建风格、预览图、画师多分组/加权组合、JSON 复制及 4,121 条 MIT 离线胶囊；完整内置风格/画师素材与手机词库对齐尚未完成。
+本地可运行预览：`build/WorldPainter-0.1.0-preview/win-unpacked/NAI WorldPainter PC.exe`。请保留同目录内全部文件；这是未签名的解包开发版本。
 
-已有基础：**Flutter 三栏工作台已接入 NovelAI 官方/7877/ikun 请求链路、Windows 凭据保护、持久化图库、PNG 元数据选择性回填和 Vibe 编码库/缓存**。图库移除记录只更新索引；资产审计只读，恢复和清理需要显式操作。真实服务调用当前暂停，接口测试只使用 mock，未验收真实账号或费用行为。生图连接的在线模型发现界面仍未实现；本地超分运行包及模型已通过独立脚本部署。上一资产批次记录为 190 项测试通过，最新结果见上文。上次内置浏览器检查缺少 `26.1007.21434` runtime；本批未重试浏览器交互，Web 构建不代表手动浏览器 QA 通过。GPT/Nano、WD-Tagger、M4 剩余能力/M5 与其余完整手机端移植仍未完成。这不是全量移植完成版或正式安装包。
+## 启动与开发
 
-- [图生图与局部重绘](docs/IMAGE_EDITING_REVIEW.md)：裁切、蒙版绘制擦除、区域生成、结果图层、合成和回填。
-- [报告核验与修复](docs/QA_REPAIR_REVIEW.md)：合成草稿、分块 Seed、PNG 导出和采样四项修复，145 项回归及浏览器/Windows 验证。
-- [生成链路与凭据验证](docs/GENERATION_REVIEW.md)：本轮参数、凭据、图库、模拟接口与剩余边界。
-- [图库资产生命周期与元数据审计](docs/ASSET_LIBRARY_REVIEW.md)：图库索引、受管文件恢复/清理、PNG 参数选择和 Vibe 库/缓存的当前边界。
-- [原型验收记录](docs/PROTOTYPE_REVIEW.md)：实际交互、截图、自动化检查与明确限制。
-- [持久化与 Windows 验证](docs/PERSISTENCE_REVIEW.md)：数据库重开、关闭前保存、中文路径与实际发布 exe 探针。
-- [手机端逐项迁移顺序](docs/MOBILE_MIGRATION_NEXT.md)：下一批实现及仍需适配的平台能力。
-- 开发环境：在 PC端 目录的 PowerShell 先设置 `$env:PUB_CACHE = Join-Path (Get-Location) '.tmp/pub-cache'`，再解析依赖或运行测试；避免缓存写到项目外。
-- 浏览器预览：在本目录执行 `pwsh -File scripts/preview.ps1 -Build`，然后在内置浏览器打开 `http://127.0.0.1:5080/`。已构建时可省略 `-Build`；端口被占用可传 `-Port 5081`。
-- Windows 构建：先运行 `flutter pub get`，再执行 `pwsh -File scripts/build-windows.ps1`（可传 `-FlutterPath`）；脚本解决当前 Flutter 工具链的中文构建路径问题。产物在 `build/windows/x64/runner/Release/worldpainter_pc.exe`，运行时保留完整 Release 目录，不能只复制 exe。
-- Windows 凭据验证：构建后执行 `pwsh -File scripts/probe-credentials.ps1`，使用合成凭据跨两个隐藏进程验证写入、读取和删除，不触碰真实账号。
-- Windows 存储验证：构建后执行 `pwsh -File scripts/probe-windows.ps1`，在本目录 `.tmp` 下启动两个隐藏的实际 exe 进程完成写入与重开校验。测试与构建串行运行，避免 SQLite DLL 占用。
-- 本地开发数据：构建脚本将默认数据目录固定为本仓库 `data/desktop`（Git 忽略）；可用 `WORLDPAINTER_DATA_DIR` 覆盖。浏览器预览使用当前站点的 IndexedDB，与 exe 相互独立；清理站点数据会删除预览记录，请固定使用 5080 端口。
-- Web SQLite 资产已锁定并纳入仓库；更新时执行 `pwsh -File scripts/setup-web-storage.ps1`，核对 [依赖与许可](docs/THIRD_PARTY.md) 后重新构建。
-- 验证：`flutter test --no-pub`、`dart analyze lib test`。本机 `flutter analyze` 的分析服务器在中文目录触发 JSON 解析异常，Dart 分析器可正常完成检查。
-- 工具链：Flutter 3.47.7 / Dart 3.13.5；本机 SDK 在父目录 `.tools/flutter`。依赖缓存、日志和构建产物分别放在本目录 `.tmp`、`build`，不提交到 Git。
+需要 Node.js 22.12 以上（本机使用 24）和 Windows x64。在本仓库执行：
 
-- GitHub：<https://github.com/liyi3068238601-oss/NAI-WorldPainter-PC>（私有）
-- 唯一工作目录：`E:\NAI-WorldPainter\PC端`
-- [PC 端规划](docs/PC_PLAN.md)：目标、首版范围、交互、里程碑与验收。
-- [手机端功能对照](docs/MOBILE_PARITY.md)：按功能记录来源、PC 等价行为和验收标准。
-- [图片工具与后期审计](docs/IMAGE_TOOLS_REVIEW.md)：分块、Director、官方 Enhance/Upscale、本地超分的手机可达行为、协议和本轮 PC 进展。
-- [设计方向](docs/DESIGN_DIRECTION.md)：界面、布局、动画与流畅感优先参考 NovelAI Local Web，其次浪白；保留绘世主色和风格。
-- [实机交互调查](docs/REFERENCE_UI_REVIEW.md)：内置浏览器中的真实界面操作、模拟服务边界、截图与借鉴结论。
-- [技术路线](docs/ARCHITECTURE.md)：Flutter Windows 为当前路线；SQLite、凭据及 Release 构建已验证，其他原生平台能力继续逐项验收。
-- [调查与复用清单](docs/RESEARCH.md)：现有代码、官方资料、来源和复用边界。
+```powershell
+cd desktop
+npm ci
+node node_modules/electron/install.js
+npm run dev
+```
 
-NovelAI Local Web 与浪白同时是功能实现代码参考：逐项评估成熟模块的复用/适配，不从零重复实现已有可靠方案。新增功能仍在全量移植验收后开展。
+Electron 42 的运行时需单独安装；下载失败时使用官方固定版本归档并核对 `node_modules/electron/checksums.json`，不要跳过校验。开发数据默认写入 `PC端/data/electron`；可用 `WORLDPAINTER_DATA_DIR` 指定项目内隔离目录。打包版本默认使用 `%APPDATA%/NAI-WorldPainter-PC`。旧版与上游账户不会自动迁入。
 
-全量移植首版完成应意味着：手机端现有能力逐项在 PC 上可达、可用、可持久化并经过验收。仅完成生图流程属于中间开发版本，不能称为移植完成；模拟接口通过不能代替真实服务兼容性验证。
+```powershell
+npm run typecheck
+npm test -- --retry=0
+npm run build
+npm run pack:dir
+```
 
-当前包含自行实现的 PC 界面、业务与平台适配、调查证据和本地预览工具；未直接导入手机端或参考项目的业务实现。主工作区示意风景是程序绘制的占位画面，不是 AI 生成结果。首要参考克隆在用户指定的 `E:\NAI-WorldPainter\novelai_local_web`，浪白克隆在被忽略的 `.tmp/` 内。项目发行许可证待确定；字体、脚手架和图标来源见 [第三方记录](docs/THIRD_PARTY.md)。
+验收日志、缓存和临时数据放本仓库 `.tmp/`。当前为本地预览，不是正式发布；自动更新尚未启用。
+
+## 本批入口
+
+- **生图智能体 → 资源 → 记忆**：分类记忆、候选审核、冲突合并/替换/并存、有界检索与清理预览。
+- **设置 → 绘世资料**：旧 Flutter 工作区只读预览后追加导入、风格/画师 JSON 与预览图导入、本地超分、V4.5/V5 风格词和外部知识库。
+- **设置 → 兼容网关**：7877/ikun 独立凭据和纯文生图计划；不支持的参考/编辑参数会明确阻止，不回退官方账户。
+- 迁入基线还包含生成、局部重绘、后期、元数据、标签、参考图与漫画等功能；以逐项验收记录为准。
+
+本轮工作区、导入和知识库数据使用合成数据，账户/网关流程使用本地模拟服务；本地超分另以真实 Windows Vulkan CUGAN 后端验收，未联网。初始打包候选的超分 GUI 流程，以及最终包的冷启动、深浅主题与产品身份检查已通过，详细边界见 [M4 迁移报告](docs/M4_ELECTRON_MIGRATION.md)。未发送真实付费 API 请求。手机内置风格/画师图片未随包分发；用户可自行导入。网关编辑能力、Agent 本地超分接线、Pixiv 和其他未验收 parity 项仍在后续范围。
+
+## 项目文档
+
+- [阶段与范围](docs/PC_PLAN.md) · [手机功能矩阵](docs/MOBILE_PARITY.md)
+- [当前技术路线](docs/ARCHITECTURE.md) · [绘世视觉方向](docs/DESIGN_DIRECTION.md)
+- [源码来源与复用](docs/RESEARCH.md) · [第三方许可](docs/THIRD_PARTY.md)
+- [旧 Flutter 最后工作流验收](docs/ASSISTANT_EDIT_WORKFLOW_REVIEW.md)
+
+旧 Flutter 仍可按 `scripts/build-windows.ps1` 构建；其开发数据位于 `data/desktop`，与新端分离。不要把 Electron 的 `desktop/mobile/` 上游测试参考快照当成绘世手机项目。
+
+本项目：[NAI-WorldPainter-PC](https://github.com/liyi3068238601-oss/NAI-WorldPainter-PC)。唯一开发目录为 `E:\NAI-WorldPainter\PC端`。

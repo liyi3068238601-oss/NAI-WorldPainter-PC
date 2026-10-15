@@ -1,0 +1,56 @@
+import {LocalFavorites} from './LocalFavorites';
+import {favoritesText} from '../favorites-text';
+import {PreviewImageViewer} from "./PreviewImageViewer";
+import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {AppPortal,SelectMenu} from './ui';
+import {Icon} from './icons';
+import {useAppStore} from '../store';
+import {GALLERY_FAVORITES_KEY,changeFavorite,favoriteKey,parseFavorites,orderFavorites,type GalleryFavorite,type FavoriteSort} from '../gallery-favorites';
+import {onlineGallerySourceInfo} from '../online-gallery';
+import {galleryLibraryText,localizedGalleryTag} from '../gallery-labels';
+let snapshot:GalleryFavorite[]=[];let lastRaw:string|null|undefined;let readError='';const listeners=new Set<()=>void>();
+function getSnapshot(){try{const raw=localStorage.getItem(GALLERY_FAVORITES_KEY);if(raw!==lastRaw){snapshot=parseFavorites(raw);lastRaw=raw;}readError='';}catch(e){readError=String(e);}return snapshot;}
+function subscribe(fn:()=>void){listeners.add(fn);const refresh=()=>{lastRaw=undefined;fn();};const onStorage=(e:StorageEvent)=>{if(e.key===GALLERY_FAVORITES_KEY)refresh();};window.addEventListener('storage',onStorage);window.addEventListener('studio:collections-changed',refresh);return()=>{listeners.delete(fn);window.removeEventListener('storage',onStorage);window.removeEventListener('studio:collections-changed',refresh);};}
+function toggle(item:GalleryFavorite){const current=parseFavorites(localStorage.getItem(GALLERY_FAVORITES_KEY));const next=changeFavorite(current,item);localStorage.setItem(GALLERY_FAVORITES_KEY,JSON.stringify({version:1,items:next}));lastRaw=undefined;listeners.forEach(fn=>fn());}
+export function GalleryFavoriteButton({item,prepare}:{item:GalleryFavorite;prepare?:()=>Promise<GalleryFavorite>}){
+ const items=useSyncExternalStore(subscribe,getSnapshot,()=>snapshot),language=useAppStore(s=>s.settings?.language),text=galleryLibraryText(language),toast=useAppStore(s=>s.setToast);const [busy,setBusy]=useState(false);
+ const saved=items.some(x=>favoriteKey(x)===favoriteKey(item));
+ return <button type="button" className={'btn gallery-heart '+(saved?'is-saved':'')} aria-label={saved?text.remove:text.add} title={saved?text.remove:text.add} aria-pressed={saved} disabled={busy} onClick={async e=>{e.stopPropagation();if(busy)return;setBusy(true);try{toggle(!saved&&prepare?await prepare():item);toast(saved?text.removed:text.added);}catch{toast(text.failed);}finally{setBusy(false);}}}>{busy?'…':saved?'♥':'♡'}</button>;
+}
+export function GalleryFavoritesButton(){const [open,setOpen]=useState(false),language=useAppStore(s=>s.settings?.language);return <><button className="btn secondary" type="button" onClick={()=>setOpen(true)}>♥ {galleryLibraryText(language).library}</button>{open&&<GalleryFavoritesLibrary onClose={()=>setOpen(false)}/>}</>;}
+function FavoriteImage({item,url}:{item:GalleryFavorite;url:string}){
+ const [src,setSrc]=useState('');useEffect(()=>{let active=true;setSrc('');if(!url)return;
+ const task=item.source==='aitag'?window.naiDesktop.aitagCacheImage(url):window.naiDesktop.onlineGalleryCacheImage(item.source==='artist-ranking'?'danbooru':item.source,url,30,false);
+ void task.then(v=>{if(active)setSrc(v);}).catch(()=>{});return()=>{active=false;};},[item.source,url]);
+ return src?<img src={src} alt={item.title}/>:<span>{item.title}</span>;
+}
+export function GalleryFavoritesLibrary({onClose,embedded=false}:{onClose:()=>void;embedded?:boolean}){
+ const rootRef=useRef<HTMLDivElement>(null);
+ const previewPress=useRef<{x:number;y:number}|null>(null);
+ const items=useSyncExternalStore(subscribe,getSnapshot,()=>snapshot),language=useAppStore(s=>s.settings?.language)||'zh-CN',text=galleryLibraryText(language);
+ const [sort,setSort]=useState<FavoriteSort>('newest'),[query,setQuery]=useState(''),[source,setSource]=useState('all'),[page,setPage]=useState(1),[size,setSize]=useState(12),[selected,setSelected]=useState<GalleryFavorite|null>(null),[index,setIndex]=useState(0);
+ const availableSource=source==='all'||items.some(item=>item.source===source)?source:'all';
+ useEffect(()=>{if(source!==availableSource){setSource(availableSource);setPage(1);}},[availableSource,source]);
+ const filtered=orderFavorites(items.filter(i=>(availableSource==='all'||i.source===availableSource)&&`${i.title} ${localizedGalleryTag(i.title,language)} ${i.author} ${i.prompt}`.toLocaleLowerCase().includes(query.toLocaleLowerCase())),sort,language);
+ const pages=Math.max(1,Math.ceil(filtered.length/size)),shownPage=Math.min(page,pages);const toast=useAppStore(s=>s.setToast);
+ useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){if(embedded&&(!selected||!rootRef.current?.getClientRects().length))return;if(e.target instanceof Element&&e.target.closest('.favorite-caption form'))return;if(document.querySelector('.favorite-preview-overlay,.image-preview-dialog'))return;if(document.querySelector('.select-menu-popover[data-disclosure-open="true"]'))return;e.stopPropagation();if(selected)setSelected(null);else if(!embedded)onClose();}};window.addEventListener('keydown',key,true);return()=>window.removeEventListener('keydown',key,true);},[selected,onClose,embedded]);
+ const unified=favoritesText(language);
+ const promptLabel:Record<string,string>={'zh-CN':'提示词','zh-TW':'提示詞','en-US':'Prompt','ja-JP':'プロンプト','ko-KR':'프롬프트'};
+ const content=<div ref={rootRef} className={embedded?"favorites-workspace":"modal-backdrop gallery-favorites-backdrop"} onClick={embedded?undefined:onClose}><section className="modal gallery-favorites-modal" role={embedded?"region":"dialog"} aria-modal={embedded?undefined:true} aria-label={unified.title} onClick={e=>e.stopPropagation()}>
+ <header><h2>{unified.title}</h2>{!embedded&&<button className="btn" aria-label={text.close} onClick={onClose}>×</button>}</header>
+ {embedded?<LocalFavorites/>:<>
+ <div className="gallery-favorites-body"><div className="gallery-favorites-filters"><input className="gallery-favorites-search" aria-label={text.search} placeholder={text.search} value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}}/>
+ <SelectMenu ariaLabel={text.sort} label={text.sort} value={sort} onChange={v=>{setSort(v as FavoriteSort);setPage(1);}} options={text.sorts.map((label,i)=>({label,value:['newest','oldest','name','name-desc','author','source','score'][i]}))}/>
+ <SelectMenu ariaLabel={text.source} value={availableSource} onChange={v=>{setSource(v);setPage(1);}} options={[{value:'all',label:text.all},...Array.from(new Set(items.map(i=>i.source))).map(s=>({value:s,label:onlineGallerySourceInfo(s).label}))]}/>
+ <SelectMenu ariaLabel={text.pageSize} label={text.pageSize} value={String(size)} onChange={v=>{setSize(Number(v));setPage(1);}} options={[12,24,48,60].map(n=>({value:String(n),label:String(n)}))}/></div>
+ {readError?<p role="alert">{text.failed}</p>:null}{!filtered.length?<p>{text.empty}</p>:null}<div className="gallery-favorites-grid">{filtered.slice((shownPage-1)*size,shownPage*size).map(item=><article key={favoriteKey(item)}><button className="gallery-favorite-preview" aria-label={item.title} onClick={()=>{setSelected(item);setIndex(0);}}><FavoriteImage item={item} url={item.images[0]?.thumb||item.images[0]?.url||''}/></button><div><b>{item.source==='tags-gallery'?localizedGalleryTag(item.title,language):item.title}</b><small>{onlineGallerySourceInfo(item.source).label} · {item.author}</small><GalleryFavoriteButton item={item}/></div></article>)}</div></div>
+ <footer><button className="btn" disabled={shownPage<=1} onClick={()=>setPage(shownPage-1)}>‹</button><input className="gallery-favorites-page" aria-label={text.page} type="number" min={1} max={pages} value={shownPage} onChange={e=>setPage(Math.max(1,Math.min(pages,Number(e.target.value)||1)))}/><span>/ {pages} · {filtered.length}</span><button className="btn" disabled={shownPage>=pages} onClick={()=>setPage(shownPage+1)}>›</button></footer></>}
+ </section>{selected&&<AppPortal><div className="modal-backdrop gallery-favorite-lightbox" onPointerDownCapture={e=>{previewPress.current=e.button===0?{x:e.clientX,y:e.clientY}:null;}} onPointerCancel={()=>{previewPress.current=null;}} onClick={e=>{e.stopPropagation();const start=previewPress.current;if(e.target===e.currentTarget&&start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<=4)setSelected(null);}}><section role="dialog" aria-modal="true" aria-label={selected.title} onClick={e=>{e.stopPropagation();const start=previewPress.current;if(e.target===e.currentTarget&&start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<=4)setSelected(null);}}>
+ <button type="button" className="image-preview-close" aria-label={text.close} title={text.close} onClick={()=>setSelected(null)}><Icon name="close"/></button>
+ <h3 className="gallery-preview-title">{selected.source==='tags-gallery'?localizedGalleryTag(selected.title,language):selected.title}</h3>
+ <PreviewImageViewer images={selected.images.map(im=>({src:im.url||'',alt:selected.title}))} index={index} onIndex={setIndex} onBackgroundClick={()=>setSelected(null)} favoriteAction={<GalleryFavoriteButton item={selected}/>} renderImage={<FavoriteImage item={selected} url={selected.images[index]?.url||''}/>}/>
+ <nav className="gallery-preview-actions"><button className="btn" disabled={!selected.sourceUrl} onClick={()=>void window.naiDesktop.openExternal(selected.sourceUrl)}>{text.open}</button><button className="btn" disabled={!selected.prompt} onClick={()=>{void navigator.clipboard.writeText(selected.prompt).then(()=>toast(text.copied)).catch(()=>toast(text.failed));}}>{text.copy}</button></nav>
+ {selected.prompt&&<details className="gallery-preview-prompt"><summary>{promptLabel[language]??'Prompt'}</summary><p>{selected.prompt}</p></details>}
+ </section></div></AppPortal>}</div>;
+ return embedded?content:<AppPortal>{content}</AppPortal>;
+}

@@ -29,5 +29,10 @@ docs/evidence/assistant-live/* -text whitespace=blank-at-eol,blank-at-eof,space-
 
 # Original mobile resources are verified by exact-byte SHA-256 checks.
 assets/assistant/mobile/** -text -whitespace
+
+# Verbatim assistant resources copied into the Electron bundle keep source hashes.
+desktop/public/worldpainter/mobile/** -text -whitespace
+# Upstream audit inventory records this fixture's original CRLF bytes.
+desktop/mobile/test/fixtures/agent_question_options.json -text -whitespace
 docs/evidence/assistant-edit-workflow/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/evidence/assistant-tag-knowledge/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

@@ -1,0 +1,5469 @@
+import {localGenerationTime} from "./history-generation-time";
+import {extractEmbeddedImageMetadata} from '../image-metadata';
+import {prepareGooglePromptTranslation} from '../../src/google-prompt-translation';
+import {resolveTranslationTarget,baiduTranslationTarget,translationLanguageName,normalizeTranslationSource,parseTranslationReply} from '../../src/translation';
+import {prepareFocusedInpaintInput,compositeFocusedPatch} from './focused-inpaint';
+import {parseNaiAccountSummary} from './nai-account-summary';
+import {validateNaiAccountReadOnly,requireNaiAccountValidation} from './nai-accounts-validation';
+import { currentNaiAccount, getNaiAccountSummary } from './nai-accounts-runtime';
+import {preparePromptAssistance,isSparsePromptEditSource,type PromptEditRequest} from "../../src/prompt-assistant.js";
+import {authorizeAgentBatchRequest} from './batch-run-authorization';
+import {currentBatchImageBinding,assertBatchImageBinding,prepareBatchImageService} from './batch-image-service';
+import {compatibleComicInput} from '../../src/comic/compatible-comic';
+import {currentComicImageBinding,assertComicImageBinding} from './comic-image-service';
+import {generateConfiguredImages} from './compatible-generation';
+import {bindAgentImageProvider} from './agent-image-provider';
+import {authorizeAgentComicRequest} from './comic-run-authorization';
+import {readComicImage,readComicReferences,buildComicSelectedZip,writeComicZip} from './comic-assets';
+import {reverseTemplateProtocol} from "../../src/reverse-template";
+import { planUpscale } from "../../src/upscale-plan";
+import {matchingVibeEncoding, validateVibeModel} from "../../src/vibe-file";
+import {normalizeNovelAiEndpoint} from '../../src/nai-endpoint';
+import { processableImage, validateImage, MAX_IMAGE_BYTES, isWebp } from "./image-codec";
+import { writeUniqueImageFile } from "./image-output";
+import { app, dialog, nativeImage } from "electron";
+import { Readable } from "node:stream";
+import axios from "axios";
+import FormData from "form-data";
+import JSZip from "jszip";
+import { PNG } from "pngjs";
+import crypto from "crypto";
+import fs from "fs/promises";
+import path from "path";
+import sharp from "sharp";
+import { toLocalMediaUrl } from "./local-media-protocol";
+import {
+  DEFAULT_PARAMS,
+  isNAIV4PlusModel,
+  isNAIV5Model,
+  maxNAICharacterPrompts,
+  MAX_NAI_SEED,
+  normalizeGenerateParams,
+  effectiveNAIEffortParams,
+  isNAIMediumEffort,
+  normalizeNAIBaseModel,
+  NAI_INPAINT_MODELS,
+  supportsNAIPreciseReference,
+  supportsNAIVibeTransfer,
+  supportsNAIVariety,
+  MAX_NAI_DIRECTOR_INPUT_PIXELS,
+  MAX_NAI_UPSCALE_OUTPUT_DIMENSION,
+  type AccountSummary,
+  type AnlasQuoteRequest,
+  type AnlasQuoteResult,
+  type AiCallLogEntry,
+  type AugmentOptions,
+  type AiModelListResult,
+  type ComicConsistencyRequest,
+  type ComicConsistencyResult,
+  type ComicConvertRequest,
+  type ComicConvertResult,
+  type ComicGeneratePanelRequest,
+  type ComicReferenceKind,
+  type TagComicExportZipRequest,
+  type TagComicGenerateRequest,
+  type TagComicReferenceImportRequest,
+  type TagComicReferenceImportResult,
+  type BatchRedrawRequest,
+  type DirectorTool,
+  type GenerateExtras,
+  type GenerateParams,
+  type GenerateResult,
+  type GenerationPreviewEvent,
+  type HistoryItem,
+  type I2IParams,
+  type LoadImageResult,
+  type NAIInpaintModel,
+  type PreciseReferenceItem,
+  type PreciseReferenceType,
+  type ReversePromptScope,
+  type VibeTransferItem,
+  type SingleImageResult,
+  type TagSuggestion,
+  type TokenStatus,
+  type UpscaleScale,
+  type WorkingImage,
+} from "../../src/types";
+import { inspectImageMetadata, parseImageMeta } from "../../src/png-meta";
+import { calculateFeatureAnlasQuote } from "../../src/anlas";
+import { compactRemoteErrorText } from "../../src/error-message";
+import { buildComicLocalPrompt, isComicPromptRefusal } from "../../src/comic/prompt-fallback";
+import {
+  addHistory,
+  ensureHistoryGroup,
+  getAccountSummary,
+  getHistoryGroups,
+  getSettings,
+  getToken,
+  setAccountSummary,
+  setToken,
+  updateHistoryItem,
+} from "./store";
+import { TAG_DICTIONARY } from "../data/tag-dictionary";
+import { mcpSearch, mcpListTools } from "./mcp-client";
+import {configuredMcpTagTools} from "../../src/mcp-tools";
+import { searchDanbooru } from "./danbooru-tags";
+import { logError, logInfo, appendLog } from "./logger";
+import { zhForTag } from "../../src/prompt-data";
+import { proxyConfig, proxyConfigForUrl } from "./proxy";
+import { injectDshImageAiSystemPrompt } from "./dsh-reverse-convert";
+import { selectedImageTaskPromptPreset } from "../../src/tavern/image-task-preset";
+import {
+  CONVERT_SYSTEM_PROMPTS,
+  REVERSE_SYSTEM_PROMPTS,
+  SCOPED_REVERSE_SYSTEM_PROMPTS,
+} from "../../src/data/prompt-templates";
+import {
+  V45_CONVERT_SYSTEM_PROMPTS,
+  V45_REVERSE_SYSTEM_PROMPTS,
+  V45_SCOPED_REVERSE_SYSTEM_PROMPTS,
+} from "../../src/data/prompt-templates-v45";
+import {
+  buildConvertUserText,
+  buildModeRepairUserText,
+  cleanPromptOutput,
+  knownCharacterRuntimeInstruction,
+  modeNeedsRepair,
+  modeUserInstruction,
+  modeRepairSystemPrompt,
+  parsePromptVariantResponse,
+  resolveModePrompt,
+} from "../../src/prompt-mode";
+import {cameraIntentSource,auditMixedEnvelope,mixedTemplateContract,mixedEnvelopeInstruction,patchMixedEnvelope,normalizeMixedEnvelope,promptUnitIdentity} from '../../src/prompt-template-audit';
+import { beginJob, cancelAllJobs } from "./job-registry";
+import { NaiSseFrameDecoder, NaiStreamFrameDecoder, type NaiStreamFrame } from "./nai-stream";
+
+let workbenchImagePath: string | null = null;
+
+function normalizeBaseUrl(url: string, fallback: string) {
+  return normalizeNovelAiEndpoint(url || "", fallback);
+}
+
+// Only official NovelAI hosts (and localhost, for local proxies/mirrors a user
+// runs themselves) may receive the Bearer token unless the user explicitly opts
+// into a custom endpoint. Prevents a mistyped/hostile endpoint from exfiltrating
+// the token.
+export function isOfficialNaiHost(baseUrl: string): boolean {
+  try {
+    const { hostname, protocol } = new URL(baseUrl);
+    const host = hostname.toLowerCase();
+    const isNovelAi = host === "novelai.net" || host.endsWith(".novelai.net");
+    // The real API only ever runs on HTTPS — matching the hostname alone would
+    // let a plain http:// URL (e.g. a misconfigured or malicious proxy) still
+    // count as "official" and carry the Bearer token in the clear.
+    if (isNovelAi) return protocol === "https:";
+    // Loopback stays allowed over plain HTTP: it's for local dev/reverse-proxy
+    // setups where the traffic never leaves the machine.
+    return host === "localhost" || host === "127.0.0.1" || host === "::1";
+  } catch {
+    return false;
+  }
+}
+
+// Returns a token-safe base URL: the configured endpoint when it is trusted (or
+// the user opted into custom endpoints), otherwise the official fallback.
+function tokenSafeBaseUrl(rawUrl: string, fallback: string): string {
+  const selected=currentNaiAccount();
+  if(selected) {
+    const expected=fallback==='https://api.novelai.net'?selected.apiBaseUrl:selected.imageBaseUrl;
+    if(normalizeBaseUrl(rawUrl, '')!==normalizeBaseUrl(expected, '')) throw Error('账户绑定接口不匹配；未回退到其他主机。');
+    return expected.replace(/\/+$/,'');
+  }
+  const resolved = normalizeBaseUrl(rawUrl, fallback);
+  if (isOfficialNaiHost(resolved)) {
+    try {
+      const resolvedHost = new URL(resolved).hostname.toLowerCase();
+      const fallbackHost = new URL(fallback).hostname.toLowerCase();
+      const loopback = resolvedHost === "localhost" || resolvedHost === "127.0.0.1" || resolvedHost === "::1";
+      if (loopback || resolvedHost === fallbackHost) return resolved;
+      // A custom-endpoint opt-in must not turn an accidentally swapped official
+      // NovelAI subdomain into a valid target. api.novelai.net and
+      // image.novelai.net are not interchangeable and stale settings here can
+      // surface as opaque generation HTTP 500 responses.
+      const isNovelAi = resolvedHost === "novelai.net" || resolvedHost.endsWith(".novelai.net");
+      if (isNovelAi) return fallback;
+    } catch {
+      /* fall through to the configured custom-endpoint policy */
+    }
+  }
+  if (getSettings().allowCustomEndpoint) return resolved;
+  appendLog(
+    "WARN",
+    `[security] refusing to send token to non-official endpoint ${resolved}; using ${fallback}.`,
+  );
+  return fallback;
+}
+
+/** Resolve the dedicated upscaler endpoint.
+ *
+ * NovelAI currently serves POST /ai/upscale from image.novelai.net.  Keeping
+ * this separate from the account API endpoint prevents the deterministic
+ * `Cannot POST /ai/upscale` response returned by api.novelai.net.
+ */
+export function resolveUpscaleBaseUrl(rawImageBaseUrl: string): string {
+  return tokenSafeBaseUrl(rawImageBaseUrl, "https://image.novelai.net");
+}
+
+/** Bind external generation workers to the same account/endpoint policy as
+ * the workbench. This resolves locally; it never probes or submits a request. */
+export function resolveNovelAiGenerationBaseUrl(): string {
+  return tokenSafeBaseUrl(getSettings().imageBaseUrl, "https://image.novelai.net");
+}
+
+const UPSCALE_MODEL = "nai-diffusion-5-curated";
+const UPSCALE_DECLARED_BLUR_SIGMA = 0;
+
+/** Normalize the current generation model for the dedicated upscale API.
+ *
+ * The official web client uses the dedicated V5 Curated upscaler regardless of
+ * the model that produced the source image. Generation model IDs such as V4.5
+ * Full/Curated are rejected by this endpoint and must not reach the request.
+ */
+export function resolveUpscaleModel(_rawModel: string): string {
+  return UPSCALE_MODEL;
+}
+
+export function buildUpscalePayload(image: Buffer, rawModel: string) {
+  const { width, height } = readImageDimensions(image);
+  if (![width, height].every(v => Number.isSafeInteger(v) && v > 0)) {
+    throw new Error("超分输入图片尺寸必须是正整数，请重新加载有效图片。");
+  }
+  return {
+    image: image.toString("base64"),
+    width,
+    height,
+    scale: 2,
+    model: resolveUpscaleModel(rawModel),
+    declared_blur_sigma: UPSCALE_DECLARED_BLUR_SIGMA,
+  };
+}
+
+/** Only bounded, non-secret fields: never include URL, token or image data. */
+export function describeUpscaleRequest(baseUrl: string, width: number, height: number, pass: number) {
+  let endpoint = "自定义";
+  try {
+    const url = new URL(baseUrl);
+    if (url.protocol === "https:" && (url.hostname === "novelai.net" || url.hostname.endsWith(".novelai.net"))) endpoint = "官方域名";
+    else if (["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)) endpoint = "本机代理";
+  } catch { endpoint = "地址无效"; }
+  const integerFields = Number.isSafeInteger(width) && width > 0 && Number.isSafeInteger(height) && height > 0;
+  return `upscale-contract-v2；接口=${endpoint}；width=${width}；height=${height}；正整数字段=${integerFields}；scale=2；pass=${pass}`;
+}
+
+export function resolveUpscaleOutputSize(
+  width: number,
+  height: number,
+  scale: UpscaleScale,
+) {
+  if (scale === "max") { const p = planUpscale(width, height, scale); return { width: p.width, height: p.height, exceedsLimit: p.exceedsLimit }; }
+  const outputWidth = width * scale;
+  const outputHeight = height * scale;
+  return {
+    width: outputWidth,
+    height: outputHeight,
+    exceedsLimit:
+      outputWidth > MAX_NAI_UPSCALE_OUTPUT_DIMENSION ||
+      outputHeight > MAX_NAI_UPSCALE_OUTPUT_DIMENSION,
+  };
+}
+
+export function parseAccount(data: any): Omit<AccountSummary, "hasToken"> {
+  return parseNaiAccountSummary(data);
+}
+
+async function fetchAccount(
+  token: string,
+): Promise<Omit<AccountSummary, "hasToken">> {
+  const selected=currentNaiAccount();
+  if(selected){const result=await validateNaiAccountReadOnly(selected,true);requireNaiAccountValidation(result);return result.account??{};}
+  const settings = getSettings();
+  // NovelAI now rejects /user/data on api.novelai.net for at least some accounts
+  // with a 400 telling third-party tools to "update to the image URL" — confirmed
+  // live that image.novelai.net serves the identical payload successfully.
+  const imageBaseUrl = tokenSafeBaseUrl(
+    settings.imageBaseUrl,
+    "https://image.novelai.net",
+  );
+  const res = await axios.get(`${imageBaseUrl}/user/data`, {
+    headers: { Authorization: `Bearer ${token}` },
+    timeout: 15_000,
+    ...await proxyConfigForUrl("nai", `${imageBaseUrl}/user/data`, settings),
+      maxRedirects: currentNaiAccount() ? 0 : undefined,
+  });
+  return parseAccount(res.data);
+}
+
+export async function verifyToken(token: string): Promise<TokenStatus> {
+  if(currentNaiAccount()) return {valid:false,message:'请在账户管理中新增或验证所选账户；旧设置页不会覆盖该账户。'};
+  const normalized = token.trim();
+  if (!normalized) {
+    return { valid: false, message: "请输入 NovelAI API Token。" };
+  }
+
+  try {
+    // This is the account route used by the official image web client. It may
+    // wrap the subscription payload differently across deployments, which is
+    // why parseAccount accepts all observed wrappers above.
+    const account = await fetchAccount(normalized);
+
+    setToken(normalized);
+    setAccountSummary(account);
+    return { valid: true, message: "API Token 验证成功。", ...account };
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const text = responseErrorText(error);
+    return {
+      valid: false,
+      message:
+        status === 401
+          ? "Token 无效或已过期。"
+          : `Token 验证失败：${text || "网络错误"}`,
+    };
+  }
+}
+
+export async function refreshStoredAccount(): Promise<AccountSummary> {
+  const token = getToken();
+  if (!token) return { hasToken: false };
+
+  try {
+    const account = await fetchAccount(token);
+    setAccountSummary(account);
+    return currentNaiAccount()?getAccountSummary():{ hasToken: true, ...account };
+  } catch {
+    // Live refresh failed — return the last known summary but flag it as stale so
+    // the UI can show "缓存余额" instead of presenting an outdated number as current.
+    if(currentNaiAccount())setAccountSummary({});
+    return { ...getAccountSummary(), stale: true };
+  }
+}
+
+function isV4Plus(model: string) {
+  return isNAIV4PlusModel(model);
+}
+
+function usesModernStructuredPrompt(model: string) {
+  return isNAIV4PlusModel(model);
+}
+
+function normalizeModel(model: string) {
+  return model.endsWith("-inpainting")
+    ? model.slice(0, -"-inpainting".length)
+    : model;
+}
+
+function inpaintSizeHint(image: Pick<WorkingImage, "width" | "height">) {
+  const width = image.width || 0;
+  const height = image.height || 0;
+  if (!width || !height) return "无法读取原图尺寸，请重新加载原图后再试。";
+  if (width % 64 === 0 && height % 64 === 0) return "";
+  return `当前原图尺寸为 ${width}×${height}，不是 64 的整数倍；NovelAI 重绘接口对非 64 倍数尺寸经常返回 HTTP 500。请先换用 64 倍数尺寸的原图，例如宽高都能被 64 整除。`;
+}
+
+function inpaintModelCandidates(model: NAIInpaintModel) {
+  const candidates = [model];
+  if (model === "nai-diffusion-5-curated-inpainting") {
+    candidates.push("nai-diffusion-5-full-inpainting");
+  } else if (model === "nai-diffusion-4-5-curated-inpainting") {
+    candidates.push("nai-diffusion-4-5-full-inpainting");
+  } else if (model === "nai-diffusion-4-curated-inpainting") {
+    candidates.push("nai-diffusion-4-full-inpainting");
+  }
+  return [...new Set(candidates)];
+}
+
+function isInpaintModelCompatibilityError(error: any): boolean {
+  const status = error?.response?.status;
+  if (status !== 400 && status !== 422) return false;
+  const detail = responseErrorText(error) || error?.message || "";
+  return /(?:doesn'?t|does not|not)\s+support|unsupported|invalid\s+model|action\s+infill/i.test(
+    detail,
+  );
+}
+
+function qualityTags(
+  model: string,
+  preset: GenerateParams["qualityPreset"] = "standard",
+  positivePrompt = "",
+) {
+  if (preset === "none") return "";
+  let tags = "";
+  if (preset === "light" && isNAIV5Model(model)) {
+    tags = "very aesthetic, amazing quality, no text";
+  } else {
+    tags = switchQualityTags(model);
+  }
+
+  // NovelAI's official quality presets contain `no text`. Keeping it beside
+  // V5's explicit `Text:` directive makes the request contradict itself and
+  // measurably suppresses requested lettering.
+  if (/(?:^|[\s,;|])Text\s*:\s*\S/i.test(positivePrompt)) {
+    tags = tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => !/^no text$/i.test(tag))
+      .join(", ");
+  }
+  return tags;
+}
+
+function switchQualityTags(model: string) {
+  switch (normalizeModel(model)) {
+    case "nai-diffusion-5-full":
+    case "nai-diffusion-5-curated":
+      return "very aesthetic, masterpiece, no text";
+    case "nai-diffusion-4-5-full":
+      return "very aesthetic, masterpiece, no text";
+    case "nai-diffusion-4-5-curated":
+      return "very aesthetic, masterpiece, no text, -0.8::feet::, rating:general";
+    case "nai-diffusion-4-full":
+      return "no text, best quality, very aesthetic, absurdres";
+    case "nai-diffusion-4-curated":
+      return "rating:general, best quality, very aesthetic, absurdres";
+    case "nai-diffusion-3":
+      return "best quality, amazing quality, very aesthetic, absurdres";
+    default:
+      return "";
+  }
+}
+
+function ucPresetText(model: string, preset: number) {
+  if (preset === 3) return "";
+  const normalized = normalizeModel(model);
+  // NovelAI's V5 frontend intentionally reuses the corresponding V4.5 Full /
+  // Curated undesired-content presets.
+  const key = normalized === "nai-diffusion-5-full"
+    ? "nai-diffusion-4-5-full"
+    : normalized === "nai-diffusion-5-curated"
+      ? "nai-diffusion-4-5-curated"
+      : normalized;
+  if (preset === 2) {
+    if (key === "nai-diffusion-4-5-full") {
+      return "lowres, artistic error, film grain, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, chromatic aberration, dithering, halftone, screentone, multiple views, logo, too many watermarks, negative space, blank page, @_@, mismatched pupils, glowing eyes, bad anatomy";
+    }
+    if (key === "nai-diffusion-4-5-curated") {
+      return "blurry, lowres, upscaled, artistic error, film grain, scan artifacts, bad anatomy, bad hands, worst quality, bad quality, jpeg artifacts, very displeasing, chromatic aberration, halftone, multiple views, logo, too many watermarks, @_@, mismatched pupils, glowing eyes, negative space, blank page";
+    }
+    if (key === "nai-diffusion-3") {
+      return "lowres, {bad}, error, fewer, extra, missing, worst quality, jpeg artifacts, bad quality, watermark, unfinished, displeasing, chromatic aberration, signature, extra digits, artistic error, username, scan, [abstract], bad anatomy, bad hands, @_@, mismatched pupils, heart-shaped pupils, glowing eyes";
+    }
+    return "";
+  }
+  if (key === "nai-diffusion-4-5-full") {
+    return preset === 0
+      ? "lowres, artistic error, film grain, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, chromatic aberration, dithering, halftone, screentone, multiple views, logo, too many watermarks, negative space, blank page"
+      : "lowres, artistic error, scan artifacts, worst quality, bad quality, jpeg artifacts, multiple views, very displeasing, too many watermarks, negative space, blank page";
+  }
+  if (key === "nai-diffusion-4-5-curated") {
+    return preset === 0
+      ? "blurry, lowres, upscaled, artistic error, film grain, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, chromatic aberration, halftone, multiple views, logo, too many watermarks, negative space, blank page"
+      : "blurry, lowres, upscaled, artistic error, scan artifacts, jpeg artifacts, logo, too many watermarks, negative space, blank page";
+  }
+  if (key === "nai-diffusion-4-full") {
+    return preset === 0
+      ? "blurry, lowres, error, film grain, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, chromatic aberration, multiple views, logo, too many watermarks"
+      : "blurry, lowres, error, worst quality, bad quality, jpeg artifacts, very displeasing";
+  }
+  if (key === "nai-diffusion-4-curated") {
+    return preset === 0
+      ? "blurry, lowres, error, film grain, scan artifacts, worst quality, bad quality, jpeg artifacts, very displeasing, chromatic aberration, logo, dated, signature, multiple views, gigantic breasts"
+      : "blurry, lowres, error, worst quality, bad quality, jpeg artifacts, very displeasing, logo, dated, signature";
+  }
+  if (key === "nai-diffusion-3") {
+    return preset === 0
+      ? "lowres, {bad}, error, fewer, extra, missing, worst quality, jpeg artifacts, bad quality, watermark, unfinished, displeasing, chromatic aberration, signature, extra digits, artistic error, username, scan, [abstract]"
+      : "lowres, jpeg artifacts, worst quality, watermark, blurry, very displeasing";
+  }
+  return "";
+}
+
+function mergePrompt(...segments: string[]) {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const segment of segments) {
+    for (const part of segment
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean)) {
+      const key = part.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(part);
+      }
+    }
+  }
+  return result.join(", ");
+}
+
+type CharCaptionMode = "structured" | "pipe";
+
+function finiteClamped(value: number, fallback: number) {
+  return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : fallback;
+}
+
+function normalizedCharCaptions(extras: GenerateExtras | undefined, model: string, preserveText = false) {
+  return (extras?.charCaptions ?? [])
+    // Filter before truncation so paused characters consume no API slots and
+    // never leak their positive/negative text or coordinates to any transport.
+    .filter((c) => c.enabled !== false)
+    .map((c) => ({
+      prompt: preserveText ? c.prompt : c.prompt.trim(),
+      negativePrompt: preserveText ? c.negativePrompt ?? "" : c.negativePrompt?.trim() ?? "",
+      useCoords: Boolean(c.useCoords),
+      x: finiteClamped(Number(c.x), 0.5),
+      y: finiteClamped(Number(c.y), 0.5),
+    }))
+    .filter((c) => c.prompt.length > 0)
+    .slice(0, maxNAICharacterPrompts(model));
+}
+
+function hasCharCaptions(extras: GenerateExtras | undefined, model: string) {
+  return normalizedCharCaptions(extras, model).length > 0;
+}
+
+function shouldRetryCharCaptionsAsPipe(
+  error: any,
+  params: GenerateParams,
+  extras?: GenerateExtras,
+) {
+  if(currentNaiAccount()) return false;
+  const status = error?.response?.status;
+  return (
+    !params.preservePromptText &&
+    isV4Plus(params.model) &&
+    hasCharCaptions(extras, params.model) &&
+    (status === 400 || status === 422)
+  );
+}
+
+function withPipeCharCaptions(
+  basePrompt: string,
+  captions: ReturnType<typeof normalizedCharCaptions>,
+) {
+  if (captions.length === 0) return basePrompt;
+  return [basePrompt, ...captions.map((c) => c.prompt)]
+    .filter(Boolean)
+    .join(" | ");
+}
+
+type PayloadParams = Omit<GenerateParams, "model"> & { model: string };
+
+export function buildPayload(
+  params: PayloadParams,
+  actualSeed: number,
+  extras?: GenerateExtras,
+  charCaptionMode: CharCaptionMode = "structured",
+) {
+  // Persisted/imported JSON is untrusted at the process boundary. Keep the one
+  // intentional inpaint model override while normalizing every other field.
+  const inpaintModel = NAI_INPAINT_MODELS.some((item) => item.value === params.model)
+    ? params.model
+    : null;
+  params = {
+    ...normalizeGenerateParams({ ...params, model: normalizeNAIBaseModel(params.model).replace(/-medium$/, "") as GenerateParams["model"] }),
+    ...(inpaintModel ? { model: inpaintModel } : {}),
+  } as PayloadParams;
+  params = effectiveNAIEffortParams(params);
+  const mediumEffort = isNAIMediumEffort(params);
+  actualSeed = Math.min(MAX_NAI_SEED, Math.max(0, Math.round(Number.isFinite(Number(actualSeed)) && Number(actualSeed) >= 0 ? Number(actualSeed) : 1)));
+  const merge = params.preservePromptText
+    ? (...segments: string[]) => segments.filter(segment => segment !== "").join(", ")
+    : mergePrompt;
+  const replay = !mediumEffort && params.metadataReplay?.model === params.model ? params.metadataReplay : undefined;
+  const basePrompt = merge(params.stylePrompt, params.positivePrompt);
+  // In the official client, Furry is a mode for every V4+ checkpoint rather
+  // than a separate V4/V5 model. It is represented by placing `fur dataset,`
+  // at the very start of the prompt. Keep the dedicated Furry V3 unchanged.
+  const modePrompt =
+    extras?.modelMode === "furry" && isV4Plus(params.model) &&
+    !/(?:^|,\s*)fur dataset(?:\s*,|$)/i.test(basePrompt)
+      ? merge("fur dataset", basePrompt)
+      : basePrompt;
+  const qualityPreset = params.qualityPreset ?? (params.qualityToggle ? "standard" : "none");
+  const transparentBackground = isNAIV5Model(params.model) && params.transparentBackground;
+  const qualityPrompt = merge(
+    modePrompt,
+    qualityTags(params.model, qualityPreset, modePrompt),
+  );
+  const effectivePrompt = transparentBackground
+    ? merge(qualityPrompt, "transparent background")
+    : qualityPrompt;
+  const effectiveNegative = merge(
+    params.negativePrompt,
+    ucPresetText(params.model, params.ucPreset),
+  );
+  const v4Plus = isV4Plus(params.model);
+  const cleanedCharCaptions = normalizedCharCaptions(extras, params.model, params.preservePromptText).map(c => mediumEffort ? { ...c, negativePrompt: "" } : c);
+  const inputPrompt =
+    charCaptionMode === "pipe"
+      ? withPipeCharCaptions(effectivePrompt, cleanedCharCaptions)
+      : effectivePrompt;
+
+  // Defensive clamp: NovelAI rejects CFG above its supported range. Dimensions
+  // are snapped in the UI (img2img/inpaint override them with image-matched
+  // sizes, so we must not re-snap here).
+  const safeScale = Math.min(10, Math.max(0, Number(params.cfgScale) || 0));
+
+  const v5 = isNAIV5Model(params.model);
+  // The official V5 frontend does not expose a noise-schedule control and
+  // normalizes every V5 request to Karras.  Do not derive it from the sampler:
+  // doing so made DPM++ requests silently use Exponential and diverge from the
+  // website even when every visible parameter matched.
+  const effectiveNoiseSchedule = v5
+    ? "karras"
+    : params.noiseSchedule || "native";
+  const parameters: Record<string, unknown> = {
+    params_version: 4,
+    width: params.width,
+    height: params.height,
+    scale: safeScale,
+    sampler: params.sampler,
+    steps: params.steps,
+    n_samples: 1,
+    seed: actualSeed,
+    noise_schedule: effectiveNoiseSchedule,
+    uc: effectiveNegative,
+    negative_prompt: effectiveNegative,
+    ucPreset: params.ucPreset,
+    uc_preset: params.ucPreset,
+    cfg_rescale: params.cfgRescale,
+    legacy: false,
+    legacy_v3_extend: false,
+    dynamic_thresholding: v5 ? false : params.cfgRescale > 0,
+    skip_cfg_above_sigma: null,
+    qualityPresetId: qualityPreset,
+    qualityToggle: qualityPreset !== "none",
+    quality_toggle: qualityPreset !== "none",
+    tag_hint_qt: qualityPreset === "standard" ? 1 : qualityPreset === "light" ? 3 : 0,
+  };
+
+  if (v5) {
+    parameters.tag_hint_transparent_background = transparentBackground;
+    parameters.straight_alpha = transparentBackground;
+  }
+
+  // "Variety+" is implemented by skipping CFG above a sigma threshold — NovelAI
+  // has no boolean `variety` field, so the previous `variety: true` was a no-op.
+  if (params.variety && supportsNAIVariety(params.model)) {
+    parameters.skip_cfg_above_sigma = 58;
+  }
+
+  if (
+    params.sampler === "k_euler_ancestral" &&
+    effectiveNoiseSchedule !== "native"
+  ) {
+    parameters.deliberate_euler_ancestral_bug = false;
+    parameters.prefer_brownian = true;
+  }
+
+  if (v4Plus) {
+    const charCaptionsPayload = cleanedCharCaptions.map((c) => ({
+      char_caption: c.prompt,
+      // NovelAI still requires one center for AI-choice placement. An empty
+      // centers array causes the V4/V4.5 endpoint to return HTTP 500 even when
+      // use_coords is false. (0.5, 0.5) is the protocol's AI-choice sentinel.
+      centers: [{ x: c.useCoords ? c.x : 0.5, y: c.useCoords ? c.y : 0.5 }],
+    }));
+    const negativeCharCaptionsPayload = (replay?.keepEmptyNegativeCharacters || cleanedCharCaptions.some((c) => c.negativePrompt))
+      ? cleanedCharCaptions.map((c) => ({
+          char_caption: c.negativePrompt,
+          centers: [{ x: c.useCoords ? c.x : 0.5, y: c.useCoords ? c.y : 0.5 }],
+        }))
+      : [];
+    const useStructuredChars = charCaptionMode === "structured";
+    const useCoords =
+      useStructuredChars && cleanedCharCaptions.some((c) => c.useCoords);
+
+    parameters.use_coords = useCoords;
+    parameters.v4_prompt = {
+      caption: {
+        base_caption:
+          charCaptionMode === "pipe" ? inputPrompt : effectivePrompt,
+        char_captions: useStructuredChars ? charCaptionsPayload : [],
+      },
+      use_coords: useCoords,
+      use_order: true,
+      ...replay?.positive,
+    };
+    parameters.v4_negative_prompt = {
+      caption: {
+        base_caption: effectiveNegative,
+        char_captions: useStructuredChars ? negativeCharCaptionsPayload : [],
+      },
+      use_coords: useCoords && negativeCharCaptionsPayload.length > 0,
+      use_order: false,
+      legacy_uc: !usesModernStructuredPrompt(params.model),
+      ...replay?.negative,
+    };
+  } else {
+    parameters.sm = params.smea;
+    parameters.sm_dyn = params.smea && params.smeaDyn;
+  }
+
+  if (replay) Object.assign(parameters, replay.parameters);
+
+  // Vibe Transfer (reference_image_multiple) — legacy reference conditioning.
+  if (supportsNAIVibeTransfer(params.model) && extras?.vibeImages && extras.vibeImages.length > 0) {
+    parameters.reference_image_multiple = extras.vibeImages.map(
+      (v) => v.base64,
+    );
+    parameters.reference_information_extracted_multiple = extras.vibeImages.map(
+      (v) => v.infoExtracted,
+    );
+    parameters.reference_strength_multiple = extras.vibeImages.map(
+      (v) => v.strength,
+    );
+  }
+
+  // Precise / Director Reference — V4.5 only. Distinct from Vibe Transfer: uses
+  // the director_reference_* fields with a type (character/style/character&style),
+  // strength, and secondary strength derived from fidelity (1 - fidelity).
+  const preciseRefs = extras?.preciseReferences ?? [];
+  if (v4Plus && supportsNAIPreciseReference(params.model) && preciseRefs.length > 0) {
+    // Confirmed against the official client's real request (F12 HAR): V4.5 precise
+    // references are uploaded as multipart BINARY parts named director_ref_N (done
+    // in postGenerateImage); the JSON references them via
+    // director_reference_images_cached = [{cache_secret_key: sha256(bytes), data}],
+    // and base_caption carries the TYPE. Our old director_reference_images:[base64]
+    // in a JSON POST is silently ignored by the API — which is exactly why precise
+    // reference had no effect regardless of base_caption. We keep the (preprocessed)
+    // base64 here only as the byte source for the multipart parts.
+    parameters.director_reference_images = preciseRefs.map((r) =>
+      stripBase64Prefix(r.base64),
+    );
+    parameters.director_reference_images_cached = preciseRefs.map(
+      (r, index) => ({
+        cache_secret_key: crypto
+          .createHash("sha256")
+          .update(Buffer.from(stripBase64Prefix(r.base64), "base64"))
+          .digest("hex"),
+        data: `director_ref_${index}`,
+      }),
+    );
+    parameters.normalize_reference_strength_multiple = true;
+    parameters.director_reference_descriptions = preciseRefs.map((r) => ({
+      caption: { base_caption: r.type || "character&style", char_captions: [] },
+      legacy_uc: false,
+    }));
+    parameters.director_reference_strength_values = preciseRefs.map((r) =>
+      round2(clamp01(r.strength, 1)),
+    );
+    parameters.director_reference_secondary_strength_values = preciseRefs.map(
+      (r) => round2(clamp01(1 - r.fidelity, 0)),
+    );
+    // NovelAI's Precise Reference UI exposes only Strength and Fidelity.
+    // Keep this compatibility transport field fixed instead of presenting a
+    // third user-facing control or replaying stale values from older presets.
+    parameters.director_reference_information_extracted = preciseRefs.map(() => 1);
+    // Log the EXACT precise-reference fields we send (sans base64) so it can be
+    // diffed against the official client's F12 "Copy request payload". This is an
+    // unverified reverse-engineered shape — the log is how we confirm/correct it.
+    logInfo(
+      "precise-ref payload → " +
+        JSON.stringify({
+          model: params.model,
+          director_reference_descriptions:
+            parameters.director_reference_descriptions,
+          director_reference_strength_values:
+            parameters.director_reference_strength_values,
+          director_reference_secondary_strength_values:
+            parameters.director_reference_secondary_strength_values,
+          director_reference_information_extracted:
+            parameters.director_reference_information_extracted,
+          director_reference_images: preciseRefs.map(
+            (r) => `<base64 ${r.base64.length} chars>`,
+          ),
+        }),
+    );
+  }
+
+  return {
+    input: inputPrompt,
+    model: params.model,
+    action: "generate",
+    parameters,
+  };
+}
+
+/**
+ * Cache of encode-vibe results. encode-vibe is a paid, deterministic endpoint:
+ * the same raw image + model + information_extracted always yields the same vibe
+ * encoding, so we cache by their hash to avoid re-encoding (and re-charging) the
+ * same reference for every panel in a comic batch.
+ */
+const vibeEncodeCache = new Map<string, string>();
+
+function clamp01(value: number, fallback = 0): number {
+  if (!Number.isFinite(value)) return fallback;
+  return Math.min(1, Math.max(0, value));
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+// Precise/Director reference: accept ANY size and replicate the OFFICIAL client
+// preprocessing (per https://docs.novelai.net/en/image/precisereference): the
+// feature "always uses one of those three image sizes" — 1024×1536 / 1472×1472 /
+// 1536×1024 — and a smaller/bigger image is "upscaled/downscaled AND padded" to
+// reach one of them. We pick the size whose ASPECT RATIO is closest to the
+// source (so padding is minimal — the earlier grid artifacts came from forcing
+// every image into 1024×1536, which over-padded landscapes), scale to fit, then
+// black-pad the remainder. No cropping.
+const DIRECTOR_REFERENCE_SIZES: Array<{ width: number; height: number }> = [
+  { width: 1024, height: 1536 },
+  { width: 1472, height: 1472 },
+  { width: 1536, height: 1024 },
+];
+
+function prepareDirectorReferenceImage(
+  rawBase64: string,
+  index: number,
+): string {
+  const image = nativeImage.createFromBuffer(Buffer.from(rawBase64, "base64"));
+  if (image.isEmpty()) {
+    throw new Error(
+      `精准参考图 #${index + 1} 无法解码，请换用有效的 PNG、JPG 或 WebP 图片。`,
+    );
+  }
+  const { width, height } = image.getSize();
+  if (!width || !height) {
+    throw new Error(
+      `精准参考图 #${index + 1} 尺寸无效，请换用有效的 PNG、JPG 或 WebP 图片。`,
+    );
+  }
+
+  // Pick the official target whose aspect ratio best matches the source.
+  const sourceAspect = width / height;
+  const target = DIRECTOR_REFERENCE_SIZES.reduce((best, candidate) => {
+    const bestDiff = Math.abs(best.width / best.height - sourceAspect);
+    const candidateDiff = Math.abs(
+      candidate.width / candidate.height - sourceAspect,
+    );
+    return candidateDiff < bestDiff ? candidate : best;
+  }, DIRECTOR_REFERENCE_SIZES[0]);
+
+  // Scale to FIT inside the target (preserve aspect), then center on a black canvas.
+  const scale = Math.min(target.width / width, target.height / height);
+  const fitW = Math.max(1, Math.round(width * scale));
+  const fitH = Math.max(1, Math.round(height * scale));
+  const fg = PNG.sync.read(
+    image.resize({ width: fitW, height: fitH, quality: "best" }).toPNG(),
+  );
+  // Flatten any alpha onto WHITE and pad with WHITE. The reference encoder is fed
+  // RGB only; transparent pixels in an RGBA PNG otherwise carry undefined/black
+  // RGB that bleeds in as dark blotches, and a BLACK letterbox reads as image
+  // content (the source of the earlier grid/line artifacts). White is the neutral
+  // choice. (Hypothesis for the halftone/cross-hatch overlay — verify against the
+  // official F12 payload before treating as settled.)
+  let alphaPresent = false;
+  const canvas = new PNG({ width: target.width, height: target.height });
+  canvas.data.fill(255); // white, fully opaque
+  const offsetX = Math.floor((target.width - fg.width) / 2);
+  const offsetY = Math.floor((target.height - fg.height) / 2);
+  for (let y = 0; y < fg.height; y += 1) {
+    for (let x = 0; x < fg.width; x += 1) {
+      const src = (y * fg.width + x) * 4;
+      const dst = ((y + offsetY) * target.width + (x + offsetX)) * 4;
+      const a = fg.data[src + 3] / 255;
+      if (a < 1) alphaPresent = true;
+      canvas.data[dst] = Math.round(fg.data[src] * a + 255 * (1 - a));
+      canvas.data[dst + 1] = Math.round(fg.data[src + 1] * a + 255 * (1 - a));
+      canvas.data[dst + 2] = Math.round(fg.data[src + 2] * a + 255 * (1 - a));
+      canvas.data[dst + 3] = 255;
+    }
+  }
+  logInfo(
+    `precise-ref image #${index + 1}: src ${width}x${height}` +
+      `${alphaPresent ? " RGBA→RGB(white-flattened)" : " RGB"} → ${target.width}x${target.height}` +
+      ` (fit ${fitW}x${fitH}, white pad)`,
+  );
+  return PNG.sync.write(canvas).toString("base64");
+}
+
+function vibeCacheKey(
+  rawBase64: string,
+  model: string,
+  infoExtracted: number,
+): string {
+  const hash = crypto.createHash("sha256").update(rawBase64).digest("hex");
+  return `${model}|${infoExtracted}|${hash}`;
+}
+
+// How many of the request's vibe references are already encoded+cached this
+// session (so they incur NO further encode charge). Used to make the pre-run
+// quote accurate — re-generating with the same references won't re-encode.
+export function countCachedVibes(
+  extras: GenerateExtras | undefined,
+  params: GenerateParams | undefined,
+): number {
+  if (!extras?.vibeImages?.length || !params) return 0;
+  let cached = 0;
+  for (const vibe of extras.vibeImages) {
+    if (matchingVibeEncoding(vibe, params.model)) { cached += 1; continue; }
+    const key = vibeCacheKey(
+      stripBase64Prefix(vibe.base64),
+      params.model,
+      vibe.infoExtracted,
+    );
+    if (vibeEncodeCache.has(key)) cached += 1;
+  }
+  return cached;
+}
+
+/**
+ * V4/V4.5 Vibe Transfer requires reference images to be pre-encoded through the
+ * /ai/encode-vibe endpoint (legacy V3 accepted raw image bytes directly). For
+ * V4+ models we encode each vibe and cache the result. If the endpoint fails we
+ * now abort with a clear error instead of silently sending the raw image bytes —
+ * the raw fallback produced a second downstream failure (or a silently wrong /
+ * reference-less result) rather than a usable image.
+ *
+ * NOTE: needs verification against a live V4.5 token — the encode-vibe payload
+ * shape is based on the NovelAI web client and may need adjustment.
+ */
+type NativeSubmissionGuard = () => void | Promise<void>;
+
+async function checkNativeSubmission(signal?: AbortSignal, beforeSubmit?: NativeSubmissionGuard) {
+  signal?.throwIfAborted();
+  await beforeSubmit?.();
+  signal?.throwIfAborted();
+}
+
+export async function prepareExtras(
+  params: GenerateParams,
+  extras?: GenerateExtras,
+  signal?: AbortSignal,
+  beforeSubmit?: NativeSubmissionGuard,
+): Promise<GenerateExtras | undefined> {
+  if (!extras) return extras;
+  // Validate the entire bundle before image decoding or any paid encoding call.
+  if (extras.vibeImages?.length) {
+    if (!supportsNAIVibeTransfer(params.model)) throw new Error("Vibe Transfer requires V4/V4.5 or V3, not V5.");
+    for (const ref of extras.vibeImages) validateVibeModel(ref, params.model);
+    extras = {...extras, vibeImages: await Promise.all(extras.vibeImages.map(async ref => matchingVibeEncoding(ref, params.model) ? ref : ({...ref, base64:(await processableImage(Buffer.from(stripBase64Prefix(ref.base64), "base64"))).toString("base64")})))};
+  }
+
+  // Precise/director references: any size accepted, preprocessed to the nearest
+  // of NovelAI's three official sizes (scale-to-fit + black pad), matching the
+  // official client.
+  let preciseReferences = extras.preciseReferences;
+  if (preciseReferences && preciseReferences.length > 0) {
+    if (!supportsNAIPreciseReference(params.model)) {
+      throw new Error(
+        "精准参考当前仅支持 NovelAI V4.5；V5 首发尚未开放该功能。请切换到 V4.5 Full/Curated，或移除精准参考图。",
+      );
+    }
+    preciseReferences = await Promise.all(preciseReferences.map(async (ref, index) => ({
+      ...ref,
+      base64: prepareDirectorReferenceImage(
+        (await processableImage(Buffer.from(stripBase64Prefix(ref.base64), "base64"))).toString("base64"),
+        index,
+      ),
+    })));
+  }
+
+  if (!extras.vibeImages || extras.vibeImages.length === 0) {
+    return { ...extras, preciseReferences };
+  }
+  if (!supportsNAIVibeTransfer(params.model)) {
+    throw new Error(
+      "NovelAI V5 当前不支持氛围迁移（Vibe Transfer）；请切换到 V4.5，或移除氛围图。",
+    );
+  }
+  if (!isV4Plus(params.model)) return { ...extras, preciseReferences }; // V3 path unchanged
+
+  const needsEncoding = extras.vibeImages.some(vibe => !matchingVibeEncoding(vibe, params.model));
+  const token = needsEncoding ? getToken() : "";
+  const settings = needsEncoding ? getSettings() : null;
+  // Imported matching encodings need no encode request, credential, or endpoint lookup.
+  // Keep the account-bound host guard intact for references that actually need encoding.
+  const imageBaseUrl = needsEncoding ? tokenSafeBaseUrl(settings!.imageBaseUrl, "https://image.novelai.net") : "";
+
+  const encoded = await Promise.all(
+    extras.vibeImages.map(async (vibe) => {
+      const imported = matchingVibeEncoding(vibe, params.model);
+      if (imported) return {...vibe, base64: imported};
+      const rawBase64 = stripBase64Prefix(vibe.base64);
+      const cacheKey = vibeCacheKey(
+        rawBase64,
+        params.model,
+        vibe.infoExtracted,
+      );
+      const cached = vibeEncodeCache.get(cacheKey);
+      if (cached) return { ...vibe, base64: cached };
+      try {
+        const res = await requestWithRetry(
+          async () => {
+            await checkNativeSubmission(signal, beforeSubmit);
+            return axios.post(
+              `${imageBaseUrl}/ai/encode-vibe`,
+              {
+                image: rawBase64,
+                information_extracted: vibe.infoExtracted,
+                model: params.model,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                responseType: "arraybuffer",
+                timeout: 60_000,
+                signal,
+                ...proxyConfig("nai"),
+      maxRedirects: currentNaiAccount() ? 0 : undefined,
+              },
+            );
+          },
+          // encode-vibe is a paid endpoint; only retry pre-charge 429s.
+          { retries: 2, signal, retryStatuses: [429] },
+        );
+        const encodedBase64 = Buffer.from(res.data).toString("base64");
+        vibeEncodeCache.set(cacheKey, encodedBase64);
+        return { ...vibe, base64: encodedBase64 };
+      } catch (error: any) {
+        if (signal?.aborted) throw error;
+        const detail = responseErrorText(error) || "未知错误";
+        logError("[vibe] encode-vibe failed", detail);
+        // Abort rather than send raw bytes — a failed encode cannot produce a
+        // correct vibe-transfer result, so surface it instead of charging for
+        // a wrong (or reference-less) image.
+        throw new Error(`参考图编码失败（encode-vibe）：${detail}`);
+      }
+    }),
+  );
+
+  return { ...extras, vibeImages: encoded, preciseReferences };
+}
+
+function nativeImageBytes(bytes: Buffer) {
+  return bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) ||
+    bytes.subarray(0, 3).equals(Buffer.from([255, 216, 255])) || isWebp(bytes);
+}
+
+async function validateNativeNaiImage(bytes: Buffer, signal?: AbortSignal) {
+  try {
+    signal?.throwIfAborted();
+    if (!nativeImageBytes(bytes)) throw new Error("Invalid image");
+    const meta = await validateImage(bytes);
+    if (!["png", "jpg", "webp"].includes(meta.extension)) throw new Error("Invalid image");
+    signal?.throwIfAborted();
+    // Keep original bytes and embedded metadata, not a re-encoded thumbnail.
+    return bytes;
+  } catch {
+    signal?.throwIfAborted();
+    throw new Error("服务未返回有效图片；为避免重复扣费，未自动重发请求。");
+  }
+}
+
+async function extractImages(
+  zipBytes: ArrayBuffer | Buffer,
+  signal?: AbortSignal,
+): Promise<Buffer[]> {
+  const invalid = () => new Error("服务未返回有效图片；为避免重复扣费，未自动重发请求。");
+  try {
+    signal?.throwIfAborted();
+    const body = Buffer.isBuffer(zipBytes) ? zipBytes : Buffer.from(zipBytes);
+    if (!body.length || body.length > MAX_NAI_GENERATION_RESPONSE_BYTES) throw invalid();
+    if (nativeImageBytes(body)) return [await validateNativeNaiImage(body, signal)];
+    // JSON/HTML is not a native image response. Never guess a relay wrapper or
+    // fetch a URL from it using the selected account's credentials.
+    if (!body.subarray(0, 4).equals(Buffer.from([80, 75, 3, 4]))) throw invalid();
+    const zip = await JSZip.loadAsync(body);
+    const files = Object.values(zip.files).filter((file) => !file.dir);
+    if (files.length > 1024) throw invalid();
+    const images: Buffer[] = [];
+    let total = 0;
+    for (const file of files) {
+      signal?.throwIfAborted();
+      if (typeof file.unixPermissions === "number" && (file.unixPermissions & 0xf000) === 0xa000) throw invalid();
+      const chunks: Buffer[] = [];
+      let length = 0;
+      // JSZip uses readable-stream v2, which has no async iterator. Wrap its
+      // event source in Node's Readable while retaining chunked backpressure.
+      const source = file.nodeStream("nodebuffer");
+      const stream = new Readable().wrap(source);
+      const abort = () => stream.destroy(new Error("已取消"));
+      signal?.addEventListener("abort", abort, {once: true});
+      try {
+        // Bound actual inflated bytes, not an untrusted ZIP size declaration.
+        for await (const chunk of stream) {
+          signal?.throwIfAborted();
+          length += chunk.length;
+          total += chunk.length;
+          if (length > MAX_IMAGE_BYTES || total > MAX_NAI_GENERATION_RESPONSE_BYTES) throw invalid();
+          chunks.push(chunk);
+        }
+      } finally {
+        signal?.removeEventListener("abort", abort);
+        stream.destroy();
+        source.pause();
+      }
+      const bytes = Buffer.concat(chunks, length);
+      if (nativeImageBytes(bytes)) images.push(await validateNativeNaiImage(bytes, signal));
+      else if (/\.(png|jpe?g|webp)$/i.test(file.name)) throw invalid();
+    }
+    if (!images.length) throw invalid();
+    return images;
+  } catch {
+    signal?.throwIfAborted();
+    // Decoder/remote content is deliberately not echoed to the user.
+    throw invalid();
+  }
+}
+
+function dateStamp(date = new Date()) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function detectExt(buffer: Buffer) {
+  if (
+    buffer
+      .subarray(0, 8)
+      .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  )
+    return "png";
+  if (buffer.subarray(0, 4).toString("ascii") === "RIFF") return "webp";
+  if (buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])))
+    return "jpg";
+  return "png";
+}
+
+function responseErrorText(error: any) {
+  const data = error?.response?.data;
+  const status = Number(error?.response?.status);
+  const source = Buffer.isBuffer(data)
+    ? data.toString("utf8")
+    : data instanceof ArrayBuffer
+      ? Buffer.from(data).toString("utf8")
+      : data ?? error?.message ?? "";
+  return compactRemoteErrorText(source, {
+    status: Number.isInteger(status) ? status : undefined,
+    fallback: "网络错误",
+    serviceLabel: "NovelAI API 源",
+  });
+}
+
+function stripBase64Prefix(value: string) {
+  const idx = value.indexOf(",");
+  return idx >= 0 ? value.slice(idx + 1) : value;
+}
+
+const INPAINT_SIZE_MULTIPLE = 64;
+const INPAINT_MASK_GRID_SIZE = 8;
+const INPAINT_BLEND_DILATE_CELLS = 4;
+const INPAINT_BLEND_BLUR_RADIUS = 20;
+const INPAINT_BLEND_BLUR_PASSES = 2;
+
+export interface PreparedInpaintAssets {
+  imageBase64: string;
+  maskBase64: string;
+  width: number;
+  height: number;
+  originalWidth: number;
+  originalHeight: number;
+  resized: boolean;
+  /** Normalized source resized to the request dimensions, as in NovelAI's editor. */
+  sourcePng: Buffer;
+  /** Official-client-style feathered mask, one alpha byte per request pixel. */
+  blendAlpha: Uint8Array;
+}
+
+interface PreparedLimitedImage {
+  base64: string;
+  width: number;
+  height: number;
+  originalWidth: number;
+  originalHeight: number;
+  resized: boolean;
+}
+
+function ceilToMultiple(value: number, multiple: number) {
+  return Math.max(multiple, Math.ceil(value / multiple) * multiple);
+}
+
+function fitWithinPixels(width: number, height: number, maxPixels: number) {
+  const pixels = width * height;
+  if (!width || !height || pixels <= maxPixels)
+    return { width, height, resized: false };
+  const ratio = Math.sqrt(maxPixels / pixels);
+  return {
+    width: Math.max(1, Math.floor(width * ratio)),
+    height: Math.max(1, Math.floor(height * ratio)),
+    resized: true,
+  };
+}
+
+function bufferToPng(buffer: Buffer) {
+  if (
+    buffer.length >= 8 &&
+    buffer
+      .subarray(0, 8)
+      .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  ) {
+    return buffer;
+  }
+  const image = nativeImage.createFromBuffer(buffer);
+  if (image.isEmpty())
+    throw new Error("无法解码原图，请换用 PNG/JPG/WebP 图片。");
+  return image.toPNG();
+}
+
+function flattenPngAlpha(
+  buffer: Buffer,
+  background = { r: 255, g: 255, b: 255 },
+) {
+  const png = PNG.sync.read(buffer);
+  for (let idx = 0; idx < png.data.length; idx += 4) {
+    const alpha = png.data[idx + 3] / 255;
+    if (alpha >= 1) continue;
+    png.data[idx] = Math.round(
+      png.data[idx] * alpha + background.r * (1 - alpha),
+    );
+    png.data[idx + 1] = Math.round(
+      png.data[idx + 1] * alpha + background.g * (1 - alpha),
+    );
+    png.data[idx + 2] = Math.round(
+      png.data[idx + 2] * alpha + background.b * (1 - alpha),
+    );
+    png.data[idx + 3] = 255;
+  }
+  return PNG.sync.write(png);
+}
+
+function prepareLimitedImage(
+  buffer: Buffer,
+  maxPixels: number,
+  options: { flattenAlpha?: boolean; forcePng?: boolean } = {},
+): PreparedLimitedImage {
+  const source = nativeImage.createFromBuffer(buffer);
+  if (source.isEmpty())
+    throw new Error("无法解码图片，请换用 PNG/JPG/WebP 图片。");
+  const size = source.getSize();
+  const fitted = fitWithinPixels(size.width, size.height, maxPixels);
+  let output = buffer;
+  if (fitted.resized) {
+    output = source
+      .resize({ width: fitted.width, height: fitted.height, quality: "best" })
+      .toPNG();
+  } else if (options.forcePng || options.flattenAlpha) {
+    output = source.toPNG();
+  }
+  if (options.flattenAlpha) output = flattenPngAlpha(output);
+  return {
+    base64: output.toString("base64"),
+    width: fitted.width,
+    height: fitted.height,
+    originalWidth: size.width,
+    originalHeight: size.height,
+    resized: fitted.resized,
+  };
+}
+
+function resizeImageBufferToPng(buffer: Buffer, width: number, height: number) {
+  if (nativeImage?.createFromBuffer) {
+    const image = nativeImage.createFromBuffer(buffer);
+    if (!image.isEmpty()) {
+      return image.resize({ width, height, quality: "best" }).toPNG();
+    }
+  }
+  // Vitest and a few headless Electron contexts do not expose nativeImage.
+  // Keep the official resize behavior available instead of falling back to
+  // edge padding; the 64-alignment resize is normally only a few percent.
+  const source = PNG.sync.read(bufferToPng(buffer));
+  if (source.width === width && source.height === height) return PNG.sync.write(source);
+  const target = new PNG({ width, height });
+  for (let y = 0; y < height; y += 1) {
+    const sourceY = Math.max(
+      0,
+      Math.min(source.height - 1, ((y + 0.5) * source.height) / height - 0.5),
+    );
+    const y0 = Math.floor(sourceY);
+    const y1 = Math.min(source.height - 1, y0 + 1);
+    const fy = sourceY - y0;
+    for (let x = 0; x < width; x += 1) {
+      const sourceX = Math.max(
+        0,
+        Math.min(source.width - 1, ((x + 0.5) * source.width) / width - 0.5),
+      );
+      const x0 = Math.floor(sourceX);
+      const x1 = Math.min(source.width - 1, x0 + 1);
+      const fx = sourceX - x0;
+      const dst = (y * width + x) * 4;
+      for (let channel = 0; channel < 4; channel += 1) {
+        const top =
+          source.data[(y0 * source.width + x0) * 4 + channel] * (1 - fx) +
+          source.data[(y0 * source.width + x1) * 4 + channel] * fx;
+        const bottom =
+          source.data[(y1 * source.width + x0) * 4 + channel] * (1 - fx) +
+          source.data[(y1 * source.width + x1) * 4 + channel] * fx;
+        target.data[dst + channel] = Math.round(top * (1 - fy) + bottom * fy);
+      }
+    }
+  }
+  return PNG.sync.write(target);
+}
+
+function prepareLatentInpaintMask(
+  mask: PNG,
+  targetWidth: number,
+  targetHeight: number,
+) {
+  const width = targetWidth / INPAINT_MASK_GRID_SIZE;
+  const height = targetHeight / INPAINT_MASK_GRID_SIZE;
+  const selected = new Uint8Array(width * height);
+  let any = false;
+  // New editor masks encode selection in alpha. Keep a brightness fallback for
+  // masks exported by older Langbai builds, where every pixel was opaque.
+  let usesAlpha = false;
+  for (let index = 3; index < mask.data.length; index += 4) {
+    if (mask.data[index] !== 255) {
+      usesAlpha = true;
+      break;
+    }
+  }
+
+  for (let cellY = 0; cellY < height; cellY += 1) {
+    for (let cellX = 0; cellX < width; cellX += 1) {
+      // The official client first resizes to the 1/8 latent grid with nearest
+      // sampling, then thresholds alpha at 155. Sampling one source pixel per
+      // destination cell avoids the over-wide "any painted pixel in 8x8" mask.
+      const sourceX = Math.min(
+        mask.width - 1,
+        Math.floor(((cellX + 0.5) * mask.width) / width),
+      );
+      const sourceY = Math.min(
+        mask.height - 1,
+        Math.floor(((cellY + 0.5) * mask.height) / height),
+      );
+      const sourceIndex = (sourceY * mask.width + sourceX) * 4;
+      const alpha = mask.data[sourceIndex + 3];
+      const brightest = Math.max(
+        mask.data[sourceIndex],
+        mask.data[sourceIndex + 1],
+        mask.data[sourceIndex + 2],
+      );
+      const active = usesAlpha ? alpha > 155 : alpha > 0 && brightest > 155;
+
+      const latentIndex = cellY * width + cellX;
+      selected[latentIndex] = active ? 1 : 0;
+      any ||= active;
+    }
+  }
+
+  if (!any) throw new Error("蒙版为空，请先涂抹需要重绘的区域。");
+  // The official editor quantizes on a 1/8-resolution canvas, but its request
+  // pipeline expands that binary grid back to the requested image dimensions
+  // with nearest-neighbour sampling before upload. Sending the tiny latent PNG
+  // itself makes the API reinterpret/resize the mask and can severely degrade
+  // the inpainted region (large flat blobs, text, or unrelated content).
+  const requestMask = new PNG({ width: targetWidth, height: targetHeight });
+  for (let y = 0; y < targetHeight; y += 1) {
+    const cellY = Math.min(height - 1, Math.floor(y / INPAINT_MASK_GRID_SIZE));
+    for (let x = 0; x < targetWidth; x += 1) {
+      const cellX = Math.min(width - 1, Math.floor(x / INPAINT_MASK_GRID_SIZE));
+      const value = selected[cellY * width + cellX] ? 255 : 0;
+      const rgbaIndex = (y * targetWidth + x) * 4;
+      requestMask.data[rgbaIndex] = value;
+      requestMask.data[rgbaIndex + 1] = value;
+      requestMask.data[rgbaIndex + 2] = value;
+      requestMask.data[rgbaIndex + 3] = 255;
+    }
+  }
+  return { png: PNG.sync.write(requestMask), selected, width, height };
+}
+
+function dilateLatentMask(
+  source: Uint8Array,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  const output = new Uint8Array(source.length);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      let active = false;
+      for (let dy = -radius; dy <= radius && !active; dy += 1) {
+        const sy = y + dy;
+        if (sy < 0 || sy >= height) continue;
+        for (let dx = -radius; dx <= radius; dx += 1) {
+          const sx = x + dx;
+          if (sx >= 0 && sx < width && source[sy * width + sx] !== 0) {
+            active = true;
+            break;
+          }
+        }
+      }
+      output[y * width + x] = active ? 1 : 0;
+    }
+  }
+  return output;
+}
+
+function officialBoxBlurAlpha(
+  source: Uint8Array,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  const horizontal = new Int32Array(source.length);
+  const output = new Uint8Array(source.length);
+
+  for (let y = 0; y < height; y += 1) {
+    const row = y * width;
+    let sum = source[row] * radius;
+    for (let x = 0; x <= radius && x < width; x += 1) sum += source[row + x];
+    for (let x = 0; x < width; x += 1) {
+      horizontal[row + x] = sum;
+      const removeX = Math.max(0, x - radius);
+      const addX = Math.min(width - 1, x + radius + 1);
+      sum -= source[row + removeX];
+      sum += source[row + addX];
+    }
+  }
+
+  for (let x = 0; x < width; x += 1) {
+    let sum = horizontal[x] * radius;
+    for (let y = 0; y <= radius && y < height; y += 1) {
+      sum += horizontal[y * width + x];
+    }
+    for (let y = 0; y < height; y += 1) {
+      // NovelAI's worker uses the integer approximation 39 / 65536 for the
+      // 41x41 (radius 20) box average. Preserve that result byte-for-byte.
+      output[y * width + x] = Math.max(
+        0,
+        Math.min(255, (sum * 39) >> 16),
+      );
+      const removeY = Math.max(0, y - radius);
+      const addY = Math.min(height - 1, y + radius + 1);
+      sum -= horizontal[removeY * width + x];
+      sum += horizontal[addY * width + x];
+    }
+  }
+  return output;
+}
+
+function buildInpaintBlendAlpha(
+  latentMask: Uint8Array,
+  latentWidth: number,
+  latentHeight: number,
+  width: number,
+  height: number,
+) {
+  const dilated = dilateLatentMask(
+    latentMask,
+    latentWidth,
+    latentHeight,
+    INPAINT_BLEND_DILATE_CELLS,
+  );
+  let alpha = new Uint8Array(width * height);
+  for (let y = 0; y < height; y += 1) {
+    const cellY = Math.min(latentHeight - 1, Math.floor(y / INPAINT_MASK_GRID_SIZE));
+    for (let x = 0; x < width; x += 1) {
+      const cellX = Math.min(latentWidth - 1, Math.floor(x / INPAINT_MASK_GRID_SIZE));
+      alpha[y * width + x] = dilated[cellY * latentWidth + cellX] ? 255 : 0;
+    }
+  }
+  for (let pass = 0; pass < INPAINT_BLEND_BLUR_PASSES; pass += 1) {
+    alpha = officialBoxBlurAlpha(
+      alpha,
+      width,
+      height,
+      INPAINT_BLEND_BLUR_RADIUS,
+    );
+  }
+  return alpha;
+}
+
+function extractOfficialAnlasPrice(data: unknown): number | undefined {
+  if (typeof data === "number" && Number.isFinite(data))
+    return Math.max(0, Math.ceil(data));
+  if (typeof data === "string" && Number.isFinite(Number(data)))
+    return Math.max(0, Math.ceil(Number(data)));
+  if (!data || typeof data !== "object") return undefined;
+  const record = data as Record<string, unknown>;
+  const directKeys = [
+    "price",
+    "cost",
+    "amount",
+    "anlas",
+    "requestPrice",
+    "trainingSteps",
+    "trainingStepsCost",
+  ];
+  for (const key of directKeys) {
+    const value = record[key];
+    const parsed =
+      typeof value === "number"
+        ? value
+        : typeof value === "string"
+          ? Number(value)
+          : NaN;
+    if (Number.isFinite(parsed)) return Math.max(0, Math.ceil(parsed));
+  }
+  for (const key of ["data", "result", "subscription"]) {
+    const nested = extractOfficialAnlasPrice(record[key]);
+    if (nested != null) return nested;
+  }
+  return undefined;
+}
+
+async function requestOfficialGenerationPrice(
+  params: GenerateParams,
+  extras?: GenerateExtras,
+) {
+  if(currentNaiAccount()?.method==='relay') return undefined; // Relay quote route and billing are not publicly verified.
+  const token = getToken();
+  if (!token) return undefined;
+  const settings = getSettings();
+  const imageBaseUrl = tokenSafeBaseUrl(
+    settings.imageBaseUrl,
+    "https://image.novelai.net",
+  );
+  const quoteParams: GenerateParams = {
+    ...params,
+    stylePrompt: params.stylePrompt || "",
+    positivePrompt: params.positivePrompt.trim() || "quote",
+    negativePrompt: params.negativePrompt || "",
+  };
+  const payload = buildPayload(quoteParams, 1, {
+    vibeImages: [],
+    charCaptions: [],
+    modelMode: extras?.modelMode,
+  });
+  try {
+    const response = await axios.post(
+      `${imageBaseUrl}/ai/generate-image/request-price`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 12_000,
+        ...proxyConfig("nai"),
+      maxRedirects: currentNaiAccount() ? 0 : undefined,
+      },
+    );
+    return extractOfficialAnlasPrice(response.data);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function quoteAnlasCost(
+  request: AnlasQuoteRequest,
+): Promise<AnlasQuoteResult> {
+  const boundAccount = currentNaiAccount();
+  const isIndependentRelay = boundAccount?.method === "relay";
+  const token = getToken();
+  if (!token) {
+    return {
+      accountId: boundAccount?.id,
+      ...(isIndependentRelay ? { billingContext: "independent-relay" as const } : {}),
+      ok: false,
+      source: "unavailable",
+      reason: "missing-token",
+      message: "请先配置 NovelAI Token，才能读取生成前扣费。",
+    };
+  }
+
+  // Managed account metadata comes only from its bound snapshot. A renderer
+  // summary (even with hasToken) must not inherit another account's Opus/balance.
+  const account = boundAccount
+    ? getNaiAccountSummary(boundAccount)
+    : request.account?.hasToken ? request.account : await refreshStoredAccount();
+  let image: Pick<WorkingImage, "width" | "height"> | null =
+    request.image ?? null;
+  if (request.feature === "upscale" || request.feature === "inpaint") {
+    if (!image) {
+      try {
+        image = (await readWorkbenchImage()).image;
+      } catch {
+        image = null;
+      }
+    }
+  }
+
+  const quoteInput = {
+    feature: request.feature,
+    params: request.params,
+    extras: request.extras,
+    batchCount: request.batchCount,
+    i2iParams: request.i2iParams,
+    inpaintModel: request.inpaintModel,
+    inpaintStrength: request.inpaintStrength,
+    image,
+    upscaleScale: request.upscaleScale,
+    directorTool: request.directorTool,
+    // Encoded = already in the session cache, OR already covered by an earlier
+    // queued job / the active run (the renderer's hint). Take the larger of the
+    // two (they refer to the same references) and cap at the vibe count.
+    alreadyEncodedVibes: Math.min(
+      request.extras?.vibeImages?.length ?? 0,
+      Math.max(
+        countCachedVibes(request.extras, request.params),
+        request.alreadyQueuedVibes ?? 0,
+      ),
+    ),
+  };
+  const paidReferenceAccount: AccountSummary = {
+    hasToken: account.hasToken, accountId: account.accountId,
+    anlasBalance: account.anlasBalance, hasActiveSubscription: false,
+  };
+  const reference = calculateFeatureAnlasQuote({ ...quoteInput, account: paidReferenceAccount });
+  const calculated = isIndependentRelay ? reference : calculateFeatureAnlasQuote({ ...quoteInput, account });
+  const contextResult = (value: AnlasQuoteResult): AnlasQuoteResult => ({
+    ...value, accountId: boundAccount?.id ?? account.accountId,
+    referenceAmount: reference.ok ? reference.amount : undefined,
+    ...(isIndependentRelay ? {
+      billingContext: "independent-relay" as const,
+      message: reference.ok && typeof reference.amount === "number"
+        ? `Actual fee is unknown. Official no-subscription formula reference: approximately ${reference.amount} Anlas; not a relay quote or actual debit. This relay account does not inherit official Opus benefits.`
+        : "Actual fee is unknown. Official no-subscription formula reference is unavailable; not a relay quote or actual debit. This relay account does not inherit official Opus benefits.",
+    } : {}),
+  });
+  if (!calculated.ok) return contextResult(calculated);
+
+  const hasVibes = (request.extras?.vibeImages?.length ?? 0) > 0;
+  if (isIndependentRelay || request.feature !== "generate" || !request.params || hasVibes)
+    return contextResult(calculated);
+
+  const officialPerRequest = await requestOfficialGenerationPrice(
+    request.params,
+    request.extras,
+  );
+  if (officialPerRequest == null) return contextResult(calculated);
+
+  const amount =
+    officialPerRequest * Math.max(1, Math.floor(request.batchCount ?? 1));
+  const balance = account.anlasBalance;
+  return contextResult({
+    ok: true,
+    amount,
+    source: "official-api",
+    balance,
+    insufficient: typeof balance === "number" && amount > balance,
+    message: `生成前官方报价：${amount} Anlas。`,
+    details: [
+      `NovelAI request-price returned ${officialPerRequest} Anlas per request.`,
+      request.batchCount && request.batchCount > 1
+        ? `The desktop app sends ${Math.floor(request.batchCount)} single-image requests: ${officialPerRequest} x ${Math.floor(request.batchCount)}.`
+        : "The desktop app sends one single-image request.",
+    ],
+  });
+}
+
+export function prepareInpaintAssets(
+  imageBuffer: Buffer,
+  maskBase64: string,
+  targetSize?: Pick<GenerateParams, "width" | "height">,
+): PreparedInpaintAssets {
+  const sourcePng = PNG.sync.read(bufferToPng(imageBuffer));
+  const originalWidth = sourcePng.width;
+  const originalHeight = sourcePng.height;
+  const requestedWidth = targetSize?.width ?? originalWidth;
+  const requestedHeight = targetSize?.height ?? originalHeight;
+  if (!Number.isFinite(requestedWidth) || !Number.isFinite(requestedHeight) || requestedWidth <= 0 || requestedHeight <= 0) {
+    throw new Error("请选择有效的重绘输出尺寸。");
+  }
+  const width = ceilToMultiple(requestedWidth, INPAINT_SIZE_MULTIPLE);
+  const height = ceilToMultiple(requestedHeight, INPAINT_SIZE_MULTIPLE);
+  if (width > 1600 || height > 1600) {
+    throw new Error(
+      `重绘输出尺寸 ${width}×${height} 超出 NovelAI 允许范围；请在尺寸选择中缩小到不超过 1600×1600。`,
+    );
+  }
+  const maskPng = PNG.sync.read(
+    Buffer.from(stripBase64Prefix(maskBase64), "base64"),
+  );
+  const resized = width !== originalWidth || height !== originalHeight;
+  const normalizedSource = resized
+    ? resizeImageBufferToPng(PNG.sync.write(sourcePng), width, height)
+    : PNG.sync.write(sourcePng);
+  // Match the official two-stage mask path: quantize to the model's 1/8 grid,
+  // then upload a full-size nearest-neighbour expansion of that binary grid.
+  // A separately grown and feathered copy is used for local compositing.
+  const latentMask = prepareLatentInpaintMask(maskPng, width, height);
+  return {
+    imageBase64: normalizedSource.toString("base64"),
+    maskBase64: latentMask.png.toString("base64"),
+    width,
+    height,
+    originalWidth,
+    originalHeight,
+    resized,
+    sourcePng: normalizedSource,
+    blendAlpha: buildInpaintBlendAlpha(
+      latentMask.selected,
+      latentMask.width,
+      latentMask.height,
+      width,
+      height,
+    ),
+  };
+}
+
+export function compositeInpaintBuffers(
+  buffers: Buffer[],
+  assets: PreparedInpaintAssets,
+) {
+  const source = PNG.sync.read(assets.sourcePng);
+  return buffers.map((buffer) => {
+    let generatedBuffer = buffer;
+    let generated = PNG.sync.read(bufferToPng(generatedBuffer));
+    if (generated.width !== assets.width || generated.height !== assets.height) {
+      generatedBuffer = resizeImageBufferToPng(
+        generatedBuffer,
+        assets.width,
+        assets.height,
+      );
+      generated = PNG.sync.read(generatedBuffer);
+    }
+
+    const composited = new PNG({ width: assets.width, height: assets.height });
+    for (let pixel = 0; pixel < assets.width * assets.height; pixel += 1) {
+      const alpha = assets.blendAlpha[pixel] / 255;
+      const rgba = pixel * 4;
+      for (let channel = 0; channel < 4; channel += 1) {
+        composited.data[rgba + channel] = Math.round(
+          generated.data[rgba + channel] * alpha +
+            source.data[rgba + channel] * (1 - alpha),
+        );
+      }
+    }
+
+    // The official editor keeps the 64-aligned request dimensions instead of
+    // cropping back to the imported file. Restore NovelAI's prompt/seed chunks
+    // after local compositing re-encodes the pixels.
+    return copyPngMetadataChunks(buffer, PNG.sync.write(composited));
+  });
+}
+
+/** Apply the current official frontend's infill transport fields. */
+export function applyOfficialInpaintParameters(
+  parameters: Record<string, unknown>,
+  assets: PreparedInpaintAssets,
+  strength: number,
+  noise: number,
+  seed: number,
+) {
+  const normalizedStrength = Math.max(
+    0,
+    Math.min(1, Number.isFinite(strength) ? strength : 1),
+  );
+  // Keep the argument and transport field for compatibility after removing
+  // the ineffective control, but never forward a stale persisted value.
+  void noise;
+  const normalizedNoise = 0;
+  parameters.image = assets.imageBase64;
+  parameters.mask = assets.maskBase64;
+  parameters.add_original_image = false;
+  parameters.inpaintImg2ImgStrength = normalizedStrength;
+  // The official payload retains the generic img2img default even for infill;
+  // inpaintImg2ImgStrength/nested img2img control the editor's strength UI.
+  parameters.strength = 0.7;
+  if (normalizedStrength !== 1) {
+    parameters.img2img = {
+      strength: normalizedStrength,
+      color_correct: true,
+    };
+  } else {
+    delete parameters.img2img;
+  }
+  parameters.noise = normalizedNoise;
+  parameters.extra_noise_seed = Math.max(0, Math.round(seed) - 1);
+  return parameters;
+}
+
+function annotateInpaintError(
+  error: any,
+  assets: PreparedInpaintAssets,
+  model: string,
+) {
+  if (!assets.resized || error?.response?.status !== 500) return;
+  const message =
+    `重绘失败（HTTP 500）：程序已按官网规则将原图 ${assets.originalWidth}×${assets.originalHeight} ` +
+    `自适应到 ${assets.width}×${assets.height} 后发送，但 NovelAI 重绘接口仍返回内部错误。` +
+    `请尝试重新加载原图、重画蒙版、缩小重绘区域，或稍后再试。模型：${model}。`;
+  if (error.response) error.response.data = message;
+  error.langbaiMessage = message;
+}
+
+function readImageDimensions(buf: Buffer): { width: number; height: number } {
+  if (
+    buf
+      .subarray(0, 8)
+      .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  ) {
+    return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+  }
+
+  if (buf[0] === 0xff && buf[1] === 0xd8) {
+    let offset = 2;
+    while (offset < buf.length - 9) {
+      if (buf[offset] !== 0xff) {
+        offset += 1;
+        continue;
+      }
+      const marker = buf[offset + 1];
+      const len = buf.readUInt16BE(offset + 2);
+      if (
+        marker === 0xc0 ||
+        marker === 0xc1 ||
+        marker === 0xc2 ||
+        marker === 0xc3
+      ) {
+        return {
+          height: buf.readUInt16BE(offset + 5),
+          width: buf.readUInt16BE(offset + 7),
+        };
+      }
+      offset += 2 + len;
+    }
+  }
+
+  if (
+    buf.subarray(0, 4).toString("ascii") === "RIFF" &&
+    buf.subarray(8, 12).toString("ascii") === "WEBP"
+  ) {
+    const chunk = buf.subarray(12, 16).toString("ascii");
+    if (chunk === "VP8 " && buf.length > 29) {
+      return {
+        width: buf.readUInt16LE(26) & 0x3fff,
+        height: buf.readUInt16LE(28) & 0x3fff,
+      };
+    }
+    if (chunk === "VP8L" && buf.length > 25) {
+      const bits = buf.readUInt32LE(21);
+      return {
+        width: (bits & 0x3fff) + 1,
+        height: ((bits >> 14) & 0x3fff) + 1,
+      };
+    }
+    if (chunk === "VP8X" && buf.length > 29) {
+      const width = 1 + buf.readUIntLE(24, 3);
+      const height = 1 + buf.readUIntLE(27, 3);
+      return { width, height };
+    }
+  }
+
+  return { width: 0, height: 0 };
+}
+
+export async function readWorkbenchImage(): Promise<{
+  base64: string;
+  buffer: Buffer;
+  image: WorkingImage;
+}> {
+  if (!workbenchImagePath) throw new Error("请先加载图片。");
+  const buffer = await processableImage(await fs.readFile(workbenchImagePath));
+  const dims = readImageDimensions(buffer);
+  return {
+    base64: buffer.toString("base64"),
+    buffer,
+    image: {
+      filePath: workbenchImagePath,
+      fileUrl: toLocalMediaUrl(workbenchImagePath),
+      width: dims.width,
+      height: dims.height,
+    },
+  };
+}
+
+/** Render a save filename (without extension) from the user template. */
+function buildImageFileName(
+  template: string,
+  ctx: {
+    date: string;
+    now: Date;
+    seq: number;
+    seed: number;
+    model: string;
+    prefix: string;
+    name?: string;
+  },
+): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const time = `${pad(ctx.now.getHours())}${pad(ctx.now.getMinutes())}${pad(ctx.now.getSeconds())}`;
+  const custom = (ctx.name ?? "").trim();
+  const tokens: Record<string, string> = {
+    date: ctx.date,
+    time,
+    seq: pad(ctx.seq),
+    seed: String(ctx.seed),
+    model: ctx.model,
+    type: ctx.prefix,
+    name: custom,
+    ts: String(ctx.now.getTime()),
+  };
+  let name = (template && template.trim()) || "{date}_{seq}_{model}";
+  name = name.replace(/\{(\w+)\}/g, (_m, key: string) => tokens[key] ?? "");
+  // If the user typed a custom name but the template has no {name} slot, prepend it
+  // so the custom name always takes effect without forcing a template edit.
+  if (custom && !/\{name\}/.test(template || "")) {
+    const safeCustom = custom
+      .replace(/[\\/:*?"<>|]+/g, "-")
+      .replace(/\s+/g, "_");
+    name = `${safeCustom}_${name}`;
+  }
+  name = name
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, "_")
+    .slice(0, 100);
+  return name || `${ctx.now.getTime()}-${ctx.seq}`;
+}
+
+// Sanitize a user group name into a safe folder segment (strip path-illegal
+// characters, collapse whitespace, drop leading dots so we never produce a
+// hidden/`..`-like folder, cap length).
+function sanitizeGroupFolderName(name: string): string {
+  const cleaned = name
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, "_")
+    .replace(/^\.+/, "")
+    .trim()
+    .slice(0, 80);
+  return cleaned || "group";
+}
+
+// The generation destination is independent from the history panel's filter.
+// A request may carry a snapshot so changing the selector while a queued image
+// is running cannot redirect that image midway through the request.
+function resolveGenerationSaveGroup(requestedId?: string):
+  { groupId: string; folderName: string } | undefined {
+  const activeId = requestedId === undefined
+    ? getSettings().generationGroupId
+    : requestedId;
+  if (!activeId || activeId === "__ungrouped") return undefined;
+  const group = getHistoryGroups().find((g) => g.id === activeId);
+  if (!group) return undefined;
+  return { groupId: group.id, folderName: sanitizeGroupFolderName(group.name) };
+}
+
+const PNG_SIGNATURE = Buffer.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+]);
+// PNG chunk types that carry human-readable / embedded generation metadata.
+const PNG_METADATA_CHUNKS = new Set(["tEXt", "iTXt", "zTXt", "eXIf"]);
+
+/**
+ * Copy already checksummed metadata chunks from one PNG into another without
+ * touching either image's pixel stream. This is used after local inpaint
+ * compositing, which necessarily re-encodes pixels through pngjs.
+ */
+export function copyPngMetadataChunks(source: Buffer, target: Buffer): Buffer {
+  if (
+    source.length < 8 ||
+    target.length < 8 ||
+    !source.subarray(0, 8).equals(PNG_SIGNATURE) ||
+    !target.subarray(0, 8).equals(PNG_SIGNATURE)
+  ) {
+    return target;
+  }
+
+  const metadata: Buffer[] = [];
+  let sourceOffset = 8;
+  while (sourceOffset + 12 <= source.length) {
+    const length = source.readUInt32BE(sourceOffset);
+    const type = source.toString("ascii", sourceOffset + 4, sourceOffset + 8);
+    const end = sourceOffset + 12 + length;
+    if (end > source.length) break;
+    if (PNG_METADATA_CHUNKS.has(type)) metadata.push(source.subarray(sourceOffset, end));
+    sourceOffset = end;
+    if (type === "IEND") break;
+  }
+  if (metadata.length === 0) return target;
+
+  const cleanTarget = stripPngMetadata(target);
+  let insertAt = 8;
+  while (insertAt + 12 <= cleanTarget.length) {
+    const length = cleanTarget.readUInt32BE(insertAt);
+    const type = cleanTarget.toString("ascii", insertAt + 4, insertAt + 8);
+    if (type === "IDAT" || type === "IEND") break;
+    const end = insertAt + 12 + length;
+    if (end > cleanTarget.length) return target;
+    insertAt = end;
+  }
+  return Buffer.concat([
+    cleanTarget.subarray(0, insertAt),
+    ...metadata,
+    cleanTarget.subarray(insertAt),
+  ]);
+}
+
+/**
+ * Remove embedded metadata (tEXt/iTXt/zTXt/eXIf — where NovelAI stores the
+ * prompt / seed / parameters JSON) from a PNG WITHOUT re-encoding the pixels, so
+ * it stays lossless. Non-PNG buffers are returned untouched.
+ */
+export function stripPngMetadata(buffer: Buffer): Buffer {
+  if (buffer.length < 8 || !buffer.subarray(0, 8).equals(PNG_SIGNATURE))
+    return buffer;
+  const out: Buffer[] = [buffer.subarray(0, 8)];
+  let offset = 8;
+  while (offset + 12 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.toString("ascii", offset + 4, offset + 8);
+    const chunkEnd = offset + 12 + length; // length(4) + type(4) + data + crc(4)
+    if (chunkEnd > buffer.length) break; // malformed — keep the rest as-is
+    if (!PNG_METADATA_CHUNKS.has(type))
+      out.push(buffer.subarray(offset, chunkEnd));
+    offset = chunkEnd;
+    if (type === "IEND") break;
+  }
+  return Buffer.concat(out);
+}
+
+/** Apply the user's metadata preference at every image save boundary. */
+export function prepareImageBufferForSave(
+  buffer: Buffer,
+  keepImageMetadata: boolean,
+): Buffer {
+  return keepImageMetadata ? buffer : stripPngMetadata(buffer);
+}
+
+/** A paid response may already have durable files even though the batch failed. */
+class ImageSaveError extends Error {
+  constructor(
+    readonly items: HistoryItem[],
+    readonly actualSeed: number,
+    readonly expected: number,
+    readonly fileError: boolean,
+    readonly historyError: boolean,
+  ) {
+    super(`结果保存未全部完成，已落盘 ${items.length}/${expected} 张。${fileError ? "请检查输出目录和剩余空间。" : ""}${historyError ? "历史记录未保存，请检查历史存储；已落盘文件仍保留。" : ""}没有自动重新生成。`);
+    this.name = "ImageSaveError";
+  }
+}
+
+async function saveBuffers(
+  buffers: Buffer[],
+  params: GenerateParams,
+  actualSeed: number,
+  prefix: string,
+  modelOverride?: string,
+  saveOptions?: {
+    ignoreActiveGroup?: boolean;
+    groupOverride?: { groupId: string; folderName: string };
+    temporary?: boolean;
+    actualImageSize?: boolean;
+  },
+): Promise<HistoryItem[]> {
+  const settings = getSettings();
+  const now = new Date();
+  const date = dateStamp(now);
+  // An explicit groupOverride (batch redraw / comic / snapshotted ordinary
+  // generation) wins; otherwise use the persisted generation destination.
+  const activeGroup = saveOptions?.temporary
+    ? undefined
+    : saveOptions?.groupOverride ??
+      (saveOptions?.ignoreActiveGroup ? undefined : resolveGenerationSaveGroup());
+  const dir = saveOptions?.temporary
+    ? artistLabTemporaryRoot()
+    : activeGroup
+      ? path.join(settings.outputDir, date, activeGroup.folderName)
+      : path.join(settings.outputDir, date);
+  const items: HistoryItem[] = [];
+  let fileError = false;
+  let historyError = false;
+  try {
+    await fs.mkdir(dir, { recursive: true });
+    for (let index = 0; index < buffers.length; index += 1) {
+      const id = crypto.randomUUID();
+      const ext = detectExt(buffers[index]);
+      const safeModel = (modelOverride ?? params.model).replace(/[^\w.-]+/g, "-");
+      const base = buildImageFileName(settings.imageNameTemplate, {
+        date,
+        now,
+        seq: index + 1,
+        seed: actualSeed,
+        model: safeModel,
+        prefix,
+        name: params.fileNamePrefix,
+      });
+      // Optionally strip embedded generation metadata before writing to disk.
+      const outBuffer = prepareImageBufferForSave(
+        buffers[index],
+        settings.keepImageMetadata !== false,
+      );
+      const actualSize = saveOptions?.actualImageSize ? readImageDimensions(outBuffer) : params;
+      const filePath = await writeUniqueImageFile(dir, base, ext, outBuffer);
+      items.push({
+        id,
+        filePath,
+        fileUrl: toLocalMediaUrl(filePath, id),
+        date,
+        createdAt: now.toISOString(),
+        ...localGenerationTime(outBuffer, now),
+        params: { ...params, seed: actualSeed },
+        actualSeed,
+        model: modelOverride ?? params.model,
+        width: actualSize.width,
+        height: actualSize.height,
+        groupId: activeGroup?.groupId,
+      });
+    }
+  } catch {
+    fileError = true;
+  }
+  // Index the successfully committed prefix even if a later file failed. Never
+  // retry a paid generation or a potentially partially committed history write.
+  if (!saveOptions?.temporary && items.length) {
+    try { addHistory(items); } catch { historyError = true; }
+  }
+  if (fileError || historyError) {
+    throw new ImageSaveError(items, actualSeed, buffers.length, fileError, historyError);
+  }
+  return items;
+}
+
+function sleep(ms: number, signal?: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) return reject(new Error("已取消"));
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new Error("已取消"));
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+export function isPreflightNetworkFailure(error: any): boolean {
+  if (error?.response) return false;
+  const message = String(error?.message ?? "").toLowerCase();
+  return (
+    error?.code === "ECONNRESET" &&
+    message.includes("before secure tls connection was established")
+  );
+}
+
+/** Retry only the explicitly permitted statuses/errors with exponential backoff. */
+async function requestWithRetry<T>(
+  fn: () => Promise<T>,
+  {
+    retries = 3,
+    baseDelay = 2_000,
+    signal,
+    retryStatuses = [429],
+    retryPreflightNetworkFailures = false,
+  }: {
+    retries?: number;
+    baseDelay?: number;
+    signal?: AbortSignal;
+    retryStatuses?: number[];
+    retryPreflightNetworkFailures?: boolean;
+  } = {},
+): Promise<T> {
+  const selectedAccount = !!currentNaiAccount(); // Only a proven pre-submission disconnect may retry a selected account.
+  let attempt = 0;
+  for (;;) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (
+        signal?.aborted ||
+        axios.isCancel?.(error) ||
+        error?.code === "ERR_CANCELED"
+      )
+        throw error;
+      const status = error?.response?.status;
+      const retryable =
+        (!selectedAccount && typeof status === "number" && retryStatuses.includes(status)) ||
+        (retryPreflightNetworkFailures && isPreflightNetworkFailure(error));
+      if (!retryable || attempt >= retries) throw error;
+
+      const retryAfter = Number(error?.response?.headers?.["retry-after"]);
+      const wait =
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : baseDelay * 2 ** attempt;
+      attempt += 1;
+      await sleep(Math.min(wait, 30_000), signal);
+    }
+  }
+}
+
+export function buildGenerateImageHttpBody(
+  payload: ReturnType<typeof buildPayload>,
+) {
+  const params = payload.parameters as Record<string, unknown>;
+  const cached = params?.director_reference_images_cached;
+  const useMultipart = Array.isArray(cached) && cached.length > 0;
+  let body: unknown = payload;
+  let bodyHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (useMultipart) {
+    const images = Array.isArray(params.director_reference_images)
+      ? (params.director_reference_images as string[])
+      : [];
+    // In multipart mode NovelAI treats image-bearing JSON fields as the NAME of a
+    // binary form part, not as base64. Director references ride as director_ref_N
+    // (referenced via director_reference_images_cached). The img2img / inpaint
+    // source image + mask must ALSO be uploaded as parts and referenced by name —
+    // otherwise the API rejects with "image field references unknown form part".
+    const requestJson = { ...payload, parameters: { ...params } };
+    const rp = requestJson.parameters as Record<string, unknown>;
+    delete rp.director_reference_images;
+    const form = new FormData();
+    const attachImagePart = (field: "image" | "mask") => {
+      const b64 = rp[field];
+      if (typeof b64 === "string" && b64) {
+        form.append(field, Buffer.from(stripBase64Prefix(b64), "base64"), {
+          filename: field,
+          contentType: "image/png",
+        });
+        rp[field] = field; // reference the binary part by name
+      }
+    };
+    attachImagePart("image");
+    attachImagePart("mask");
+    form.append("request", JSON.stringify(requestJson), {
+      contentType: "application/json",
+    });
+    images.forEach((b64, index) => {
+      form.append(
+        `director_ref_${index}`,
+        Buffer.from(stripBase64Prefix(b64), "base64"),
+        {
+          filename: "blob",
+          contentType: "image/png",
+        },
+      );
+    });
+    body = form;
+    bodyHeaders = form.getHeaders();
+  }
+
+  return { body, bodyHeaders, useMultipart };
+}
+
+// Match the shared mobile final-response bound. This is a transport limit,
+// not a quota, and does not trigger another paid submission on overflow.
+const MAX_NAI_GENERATION_RESPONSE_BYTES = 128 * 1024 * 1024;
+
+async function postGenerateImage(
+  payload: ReturnType<typeof buildPayload>,
+  signal?: AbortSignal,
+  beforeSubmit?: NativeSubmissionGuard,
+) {
+  const token = getToken();
+  if (!token) throw new Error("请先配置 API Token。");
+  const settings = getSettings();
+  const imageBaseUrl = tokenSafeBaseUrl(
+    settings.imageBaseUrl,
+    "https://image.novelai.net",
+  );
+
+  const postTo = (baseUrl: string) =>
+    requestWithRetry(
+      async () => {
+        await checkNativeSubmission(signal, beforeSubmit);
+        // FormData is a one-shot stream. Rebuild it for every 429 attempt or
+        // custom-endpoint fallback; reusing the consumed stream produces an
+        // empty/partial multipart request and misleading server errors.
+        const { body, bodyHeaders } = buildGenerateImageHttpBody(payload);
+        return axios.post(`${baseUrl}/ai/generate-image`, body, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            ...bodyHeaders,
+            Accept: "application/zip, application/octet-stream",
+          },
+          responseType: "arraybuffer",
+          timeout: 180_000,
+          maxBodyLength: Infinity,
+          maxContentLength: MAX_NAI_GENERATION_RESPONSE_BYTES,
+          signal,
+          ...await proxyConfigForUrl("nai", `${baseUrl}/ai/generate-image`, settings),
+      maxRedirects: currentNaiAccount() ? 0 : undefined,
+        });
+      },
+      // A paid generate POST may have already produced (and charged for) an image
+      // even when the gateway reports a 5xx, so we never auto-retry server errors
+      // here — only 429 rate-limits, which are rejected before any work is done.
+      {
+        signal,
+        retryStatuses: [429],
+        retryPreflightNetworkFailures: true,
+      },
+    );
+  let res;
+  try {
+    res = await postTo(imageBaseUrl);
+  } catch (error: any) {
+    const defaultImageBaseUrl = "https://image.novelai.net";
+    const status = error?.response?.status;
+    if (
+      (status === 401 || status === 403) &&
+      imageBaseUrl !== defaultImageBaseUrl &&
+      settings.allowCustomEndpointFallback
+    ) {
+      res = await postTo(defaultImageBaseUrl);
+    } else {
+      if (error?.response?.status === 500 && payload.action === "infill") {
+        const width = Number(payload.parameters?.width);
+        const height = Number(payload.parameters?.height);
+        const sizeHint = inpaintSizeHint({ width, height });
+        error.langbaiMessage =
+          `重绘失败（HTTP 500）：NovelAI 重绘接口返回内部错误。` +
+          (sizeHint ||
+            "未自动重试，以避免重复生成或重复扣费；请尝试切换重绘模型、重新加载原图并重画蒙版，或稍后再试。") +
+          ` 模型：${String(payload.model)}。`;
+        if (error.response) error.response.data = error.langbaiMessage;
+      }
+      throw error;
+    }
+  }
+  return extractImages(res.data, signal);
+}
+
+type GenerationPreviewCallback = (
+  event: Omit<GenerationPreviewEvent, "requestId">,
+) => void;
+
+function buildGenerateImageStreamHttpBody(
+  payload: ReturnType<typeof buildPayload>,
+) {
+  // The streaming endpoint follows the official multipart shape even for a
+  // plain text-to-image request: one JSON file part named `request`. Reference
+  // images use a more involved cached-part protocol, so those requests stay on
+  // the proven ZIP path below instead of risking a silently ignored reference.
+  const form = new FormData();
+  form.append("request", JSON.stringify(payload), {
+    filename: "blob",
+    contentType: "application/json",
+  });
+  return form;
+}
+
+function supportsSafeStreamTransport(
+  payload: ReturnType<typeof buildPayload>,
+) {
+  const parameters = payload.parameters as Record<string, unknown>;
+  return (
+    payload.action === "generate" &&
+    !parameters.image &&
+    !parameters.mask &&
+    !parameters.reference_image &&
+    !(Array.isArray(parameters.reference_image_multiple) && parameters.reference_image_multiple.length > 0) &&
+    !(Array.isArray(parameters.director_reference_images) && parameters.director_reference_images.length > 0) &&
+    !(Array.isArray(parameters.director_reference_images_cached) && parameters.director_reference_images_cached.length > 0)
+  );
+}
+
+function isStreamingNotAllowedMessage(value: unknown) {
+  const text = String(value ?? "").toLowerCase();
+  return (
+    text.includes("streaming is not allowed") ||
+    text.includes("streaming not allowed") ||
+    text.includes("stream is not allowed") ||
+    text.includes("stream not allowed")
+  );
+}
+
+function imageDataUrl(buffer: Buffer) {
+  const mime =
+    buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+      ? "image/png"
+      : buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff
+        ? "image/jpeg"
+        : buffer.length >= 12 && buffer.subarray(0, 4).toString("ascii") === "RIFF" && buffer.subarray(8, 12).toString("ascii") === "WEBP"
+          ? "image/webp"
+          : "image/png";
+  return `data:${mime};base64,${buffer.toString("base64")}`;
+}
+
+async function readStreamErrorText(error: any): Promise<string> {
+  const data = error?.response?.data;
+  if (typeof data === "string") return data.slice(0, 65_536);
+  if (Buffer.isBuffer(data) || data instanceof Uint8Array) {
+    return Buffer.from(data).subarray(0, 65_536).toString("utf8");
+  }
+  if (!data || typeof data[Symbol.asyncIterator] !== "function") {
+    return String(error?.message ?? "");
+  }
+  const chunks: Buffer[] = [];
+  let length = 0;
+  try {
+    for await (const chunk of data as AsyncIterable<Uint8Array>) {
+      if (length >= 65_536) break;
+      const bytes = Buffer.from(chunk);
+      const kept = bytes.subarray(0, 65_536 - length);
+      chunks.push(kept);
+      length += kept.length;
+    }
+  } catch {
+    return String(error?.message ?? "");
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function orderedFinalImages(finals: Map<number, Buffer>): Buffer[] {
+  return Array.from(finals.entries())
+    .sort(([left], [right]) => left - right)
+    .map(([, image]) => image);
+}
+
+function isRecoverableCompletedStreamClose(error: any): boolean {
+  if (
+    error?.naiStreamFrameError ||
+    axios.isCancel(error) ||
+    error?.code === "ERR_CANCELED" ||
+    error?.code === "ABORT_ERR" ||
+    error?.name === "AbortError"
+  ) {
+    return false;
+  }
+  const code = String(error?.code ?? "").toUpperCase();
+  if (code === "ECONNRESET" || code === "ERR_STREAM_PREMATURE_CLOSE") return true;
+  const message = String(error?.message ?? error ?? "").trim().toLowerCase();
+  return (
+    message === "aborted" ||
+    message.includes("premature close") ||
+    message.includes("socket hang up") ||
+    message.includes("connection reset") ||
+    message.includes("stream closed") ||
+    message === "terminated"
+  );
+}
+
+export async function consumeGenerateImageStream(
+  responseStream: AsyncIterable<Uint8Array>,
+  totalSteps: number,
+  onPreview: GenerationPreviewCallback,
+  contentType = "",
+  signal?: AbortSignal,
+): Promise<Buffer[]> {
+  const msgpackDecoder = new NaiStreamFrameDecoder();
+  const sseDecoder = new NaiSseFrameDecoder();
+  const finals = new Map<number, Buffer>();
+  let mode: "unknown" | "msgpack" | "sse" | "zip" = contentType.toLowerCase().includes("text/event-stream")
+    ? "sse"
+    : "unknown";
+  let prefix = Buffer.alloc(0);
+  const zipChunks: Buffer[] = [];
+  let previewStarted = false;
+  let lastPreviewAt = 0;
+  let finalBytes = 0;
+
+  const invalidFinal = () => Object.assign(
+    new Error("流式服务未返回有效图片；为避免重复扣费，未自动重发请求。"),
+    {naiStreamFrameError: true},
+  );
+  const complete = () => {
+    signal?.throwIfAborted();
+    const images = orderedFinalImages(finals);
+    for (const [sampleIndex, image] of [...finals.entries()].sort(([a], [b]) => a - b)) {
+      onPreview({progress: 1, currentStep: totalSteps, totalSteps,
+        sampleIndex, imageDataUrl: imageDataUrl(image)});
+    }
+    return images;
+  };
+  const consumeFrames = async (frames: NaiStreamFrame[]) => {
+    for (const frame of frames) {
+      signal?.throwIfAborted();
+      if (frame.error) {
+        const frameError: Error & { naiStreamFrameError?: boolean } = new Error(frame.error);
+        frameError.naiStreamFrameError = true;
+        throw frameError;
+      }
+      if (!frame.image?.length) {
+        if (frame.eventType === "final") throw invalidFinal();
+        continue;
+      }
+      previewStarted = true;
+      const currentStep = (frame.stepIndex ?? 0) + 1;
+      if (frame.eventType === "final") {
+        if (!Number.isSafeInteger(frame.sampleIndex) || frame.sampleIndex < 0) throw invalidFinal();
+        try { await validateNativeNaiImage(frame.image, signal); }
+        catch { signal?.throwIfAborted(); throw invalidFinal(); }
+        const bytes = finalBytes - (finals.get(frame.sampleIndex)?.length ?? 0) + frame.image.length;
+        if (bytes > MAX_NAI_GENERATION_RESPONSE_BYTES || (!finals.has(frame.sampleIndex) && finals.size >= 1024)) throw invalidFinal();
+        finalBytes = bytes;
+        finals.set(frame.sampleIndex, frame.image);
+        // A valid sample may be previewed immediately, but 100% is only sent
+        // after the response has finished without an invalid sample/error.
+        onPreview({
+          progress: 0.99,
+          currentStep: totalSteps,
+          totalSteps,
+          sampleIndex: frame.sampleIndex,
+          imageDataUrl: imageDataUrl(frame.image),
+        });
+      } else {
+        const now = Date.now();
+        if (now - lastPreviewAt >= 110 || currentStep >= totalSteps) {
+          try { await validateNativeNaiImage(frame.image, signal); }
+          catch { signal?.throwIfAborted(); continue; }
+          lastPreviewAt = now;
+          onPreview({
+            progress: Math.min(0.99, Math.max(0, currentStep / Math.max(1, totalSteps))),
+            currentStep,
+            totalSteps,
+            sampleIndex: frame.sampleIndex,
+            imageDataUrl: imageDataUrl(frame.image),
+          });
+        }
+      }
+    }
+  };
+
+  try {
+    for await (const rawChunk of responseStream) {
+      signal?.throwIfAborted();
+      const chunk = Buffer.from(rawChunk);
+      if (mode === "unknown") {
+        prefix = prefix.length ? Buffer.concat([prefix, chunk]) : chunk;
+        if (prefix.length < 4) continue;
+        const textualPrefix = prefix.subarray(0, Math.min(prefix.length, 32)).toString("utf8").replace(/^\uFEFF/, "").trimStart();
+        const framedLength = prefix.readUInt32BE(0);
+        mode = prefix[0] === 0x50 && prefix[1] === 0x4b
+          ? "zip"
+          : /^(?:event|data|id|retry)\s*:|^:/.test(textualPrefix)
+            ? "sse"
+            : framedLength > 0 && framedLength <= 128 * 1024 * 1024
+              ? "msgpack"
+              : "sse";
+        if (mode === "zip") zipChunks.push(prefix);
+        else if (mode === "sse") await consumeFrames(sseDecoder.push(prefix));
+        else await consumeFrames(msgpackDecoder.push(prefix));
+        prefix = Buffer.alloc(0);
+        continue;
+      }
+
+      if (mode === "zip") {
+        zipChunks.push(chunk);
+        continue;
+      }
+      if (mode === "sse") await consumeFrames(sseDecoder.push(chunk));
+      else await consumeFrames(msgpackDecoder.push(chunk));
+    }
+
+    if (mode === "zip") return extractImages(Buffer.concat(zipChunks), signal);
+    if (mode === "sse") await consumeFrames(sseDecoder.finish());
+    if (finals.size === 0) {
+      throw new Error("流式生成结束，但没有收到最终图片。为避免重复扣费，未自动重发请求。");
+    }
+    return complete();
+  } catch (error: any) {
+    signal?.throwIfAborted();
+    if (isRecoverableCompletedStreamClose(error)) {
+      // Some Node/Axios transports emit `aborted`/ECONNRESET after the server's
+      // complete final frame has already been decoded. The generation is paid
+      // and valid at this point: preserve it instead of turning 100% into a
+      // failure and discarding the image.
+      if (mode === "sse") {
+        try {
+          await consumeFrames(sseDecoder.finish());
+        } catch (frameError: any) {
+          if (previewStarted) frameError.streamPreviewStarted = true;
+          throw frameError;
+        }
+      }
+      if (mode === "zip" && zipChunks.length > 0) {
+        try {
+          const images = await extractImages(Buffer.concat(zipChunks), signal);
+          if (images.length > 0) {
+            logInfo(`stream transport closed after complete ZIP; recovered ${images.length} image(s)`);
+            return images;
+          }
+        } catch {
+          // An incomplete archive is not recoverable; keep the original error.
+        }
+      }
+      if (finals.size > 0) {
+        logInfo(`stream transport closed after final frame; recovered ${finals.size} image(s)`);
+        return complete();
+      }
+    }
+    if (previewStarted) error.streamPreviewStarted = true;
+    throw error;
+  }
+}
+
+/** Returns null only when the server explicitly rejects/doesn't implement
+ * streaming before generation starts, allowing a safe one-time ZIP fallback. */
+async function postGenerateImageStream(
+  payload: ReturnType<typeof buildPayload>,
+  signal: AbortSignal | undefined,
+  onPreview: GenerationPreviewCallback,
+  beforeSubmit?: NativeSubmissionGuard,
+): Promise<Buffer[] | null> {
+  const token = getToken();
+  if (!token) throw new Error("请先配置 API Token。");
+  const settings = getSettings();
+  const configuredBaseUrl = tokenSafeBaseUrl(
+    settings.imageBaseUrl,
+    "https://image.novelai.net",
+  );
+  const postTo = async (baseUrl: string): Promise<Buffer[] | null> => {
+    let response;
+    try {
+      response = await requestWithRetry(
+        async () => {
+          await checkNativeSubmission(signal, beforeSubmit);
+          const form = buildGenerateImageStreamHttpBody(payload);
+          return axios.post(`${baseUrl}/ai/generate-image-stream`, form, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              ...form.getHeaders(),
+              Accept: "application/x-msgpack, text/event-stream, application/zip",
+              "x-correlation-id": crypto.randomBytes(8).toString("base64url").slice(0, 6),
+              "x-initiated-at": new Date().toISOString(),
+            },
+            responseType: "stream",
+            timeout: 180_000,
+            maxBodyLength: Infinity,
+            maxContentLength: Infinity,
+            signal,
+            ...await proxyConfigForUrl("nai", `${baseUrl}/ai/generate-image-stream`, settings),
+      maxRedirects: currentNaiAccount() ? 0 : undefined,
+          });
+        },
+        {
+          signal,
+          retryStatuses: [429],
+          retryPreflightNetworkFailures: true,
+        },
+      );
+    } catch (error: any) {
+      const status = Number(error?.response?.status);
+      const body = await readStreamErrorText(error);
+      if (
+        [404, 405, 415, 501].includes(status) ||
+        isStreamingNotAllowedMessage(body) ||
+        isStreamingNotAllowedMessage(error?.message)
+      ) {
+        logInfo(`stream preview unavailable; using ZIP response (HTTP ${status || "n/a"})`);
+        return null;
+      }
+      if (body) {
+        error.langbaiMessage = compactRemoteErrorText(body, {
+          serviceLabel: "NovelAI 流式生成",
+          maxLength: 420,
+        });
+        if (error.response) error.response.data = error.langbaiMessage;
+      }
+      throw error;
+    }
+    return consumeGenerateImageStream(
+      response.data as AsyncIterable<Uint8Array>,
+      Math.max(1, Number(payload.parameters?.steps) || 1),
+      onPreview,
+      String(response.headers?.["content-type"] ?? ""),
+      signal,
+    ).catch((error: any) => {
+      if (!error?.streamPreviewStarted && isStreamingNotAllowedMessage(error?.message)) return null;
+      throw error;
+    });
+  };
+
+  try {
+    return await postTo(configuredBaseUrl);
+  } catch (error: any) {
+    const officialBaseUrl = "https://image.novelai.net";
+    const status = error?.response?.status;
+    if (
+      (status === 401 || status === 403) &&
+      configuredBaseUrl !== officialBaseUrl &&
+      settings.allowCustomEndpointFallback
+    ) {
+      return postTo(officialBaseUrl);
+    }
+    throw error;
+  }
+}
+
+async function postGenerateImageWithOptionalPreview(
+  payload: ReturnType<typeof buildPayload>,
+  signal: AbortSignal | undefined,
+  onPreview?: GenerationPreviewCallback,
+  beforeSubmit?: NativeSubmissionGuard,
+) {
+  const settings = getSettings();
+  if (
+    onPreview &&
+    settings.streamPreviewEnabled !== false &&
+    supportsSafeStreamTransport(payload)
+  ) {
+    const streamed = await postGenerateImageStream(payload, signal, onPreview, beforeSubmit);
+    if (streamed) return streamed;
+  }
+  return postGenerateImage(payload, signal, beforeSubmit);
+}
+
+export function extractEmbeddedGenerationMetadata(buffer: Buffer): LoadImageResult["metadata"] | undefined {
+  try {
+    const bytes = Uint8Array.from(buffer);
+    const report = inspectImageMetadata(parseImageMeta(bytes.buffer));
+    if (!Object.keys(report.imported).length && !report.characterCaptions.length) return undefined;
+    return {
+      imported: report.imported,
+      characterCaptions: report.characterCaptions,
+    };
+  } catch {
+    // Metadata is optional. A malformed metadata block must not prevent the
+    // image itself from loading into the workbench.
+    return undefined;
+  }
+}
+
+export async function loadImageFile(): Promise<LoadImageResult> {
+  const result = await dialog.showOpenDialog({
+    title: "选择图片",
+    filters: [{ name: "图片文件", extensions: ["png", "jpg", "jpeg", "webp"] }],
+    properties: ["openFile"],
+  });
+  if (result.canceled || result.filePaths.length === 0) return { ok: false };
+
+  try {
+    const filePath = result.filePaths[0];
+    const buffer = await fs.readFile(filePath);
+    const dims = readImageDimensions(buffer);
+    workbenchImagePath = filePath;
+    return {
+      ok: true,
+      image: {
+        filePath,
+        fileUrl: toLocalMediaUrl(filePath),
+        width: dims.width,
+        height: dims.height,
+      },
+      metadata: await extractEmbeddedImageMetadata(buffer),
+    };
+  } catch (error: any) {
+    return {
+      ok: false,
+      message: `加载图片失败：${error?.message ?? "未知错误"}`,
+    };
+  }
+}
+
+export function clearWorkbenchImage() {
+  workbenchImagePath = null;
+  return { ok: true };
+}
+
+// ── AI call log ───────────────────────────────────────────────────────────────
+// Ring buffer of every text LLM request the app makes (反推 / 转换 / 拆分镜 /
+// 一致性检测 …). Captures the exact system + user content we send and the raw
+// response, so the user can inspect what was sent and what came back. Kept in
+// the main process and surfaced to the renderer via the `ai:getLog` IPC.
+const aiCallLog: AiCallLogEntry[] = [];
+const AI_LOG_LIMIT = 200;
+
+function summarizeUserContent(
+  userContent: Array<{ type: string; [k: string]: any }>,
+): string {
+  return userContent
+    .map((part) =>
+      part.type === "text"
+        ? String(part.text ?? "")
+        : `[${part.type === "image_url" ? "图片" : part.type}]`,
+    )
+    .join("\n");
+}
+
+function recordAiCall(entry: Omit<AiCallLogEntry, "id" | "time">): void {
+  aiCallLog.push({ ...entry, id: crypto.randomUUID(), time: Date.now() });
+  if (aiCallLog.length > AI_LOG_LIMIT) aiCallLog.shift();
+}
+
+export function getAiCallLog(): AiCallLogEntry[] {
+  return [...aiCallLog].reverse();
+}
+
+export function clearAiCallLog(): { ok: boolean } {
+  aiCallLog.length = 0;
+  return { ok: true };
+}
+
+function shouldDisableDeepSeekThinking(apiUrl: string, model: string): boolean {
+  try {
+    const host = new URL(apiUrl).hostname.toLowerCase();
+    return host === "api.deepseek.com" && /^deepseek-v4(?:-|$)/i.test(model.trim());
+  } catch {
+    return false;
+  }
+}
+
+// Enable the documented transport guarantee only for the confirmed provider;
+// unknown compatible gateways retain their existing request format.
+export function supportsPromptJsonOutput(apiUrl:string){
+  try{return new URL(apiUrl).hostname.toLowerCase()==='api.deepseek.com';}catch{return false;}
+}
+async function callVisionApi(
+  systemPrompt: string,
+  userContent: Array<{ type: string; [k: string]: any }>,
+  maxTokens = 800,
+  label = "AI 反推",
+  record = true,
+  jsonRequired = false,
+): Promise<{ ok: boolean; content?: string; message: string }> {
+  const settings = getSettings();
+  const { visionApiUrl, visionApiKey, visionApiModel } = settings;
+
+  if (!visionApiKey.trim())
+    return {
+      ok: false,
+      message: "请先在 设置 › AI 反推 中填写视觉模型 API Key。",
+    };
+  if (!visionApiUrl.trim())
+    return { ok: false, message: "请先在 设置 › AI 反推 中填写 API 地址。" };
+
+  const base = visionApiUrl.replace(/\/+$/, "");
+  const model = visionApiModel || "gpt-4o";
+  const body = {
+    model,
+    max_tokens: maxTokens,
+    ...(jsonRequired && supportsPromptJsonOutput(base) ? {response_format:{type:'json_object'}} : {}),
+    ...(shouldDisableDeepSeekThinking(base, model)
+      ? { thinking: { type: "disabled" as const } }
+      : {}),
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userContent },
+    ],
+  };
+
+  // Resolve the actual endpoint before the first request, not the startup cache
+  // shared with other AI providers (which may still be empty or use another PAC rule).
+  const post = async (tokens: number) =>
+    axios.post(
+      `${base}/chat/completions`,
+      { ...body, max_tokens: tokens },
+      {
+        headers: {
+          Authorization: `Bearer ${visionApiKey}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 180_000,
+        ...await proxyConfigForUrl("ai", `${base}/chat/completions`, settings),
+      },
+    );
+
+  try {
+    let resp = await post(maxTokens);
+    let content: string = resp.data?.choices?.[0]?.message?.content ?? "";
+    let fin = resp.data?.choices?.[0]?.finish_reason;
+    // Reasoning models burn the whole budget on hidden reasoning → empty content
+    // with finish_reason "length". Retry once with a much larger budget.
+    if (!content.trim() && fin === "length") {
+      resp = await post(Math.max(maxTokens * 8, 32000));
+      content = resp.data?.choices?.[0]?.message?.content ?? "";
+      fin = resp.data?.choices?.[0]?.finish_reason;
+    }
+    if (!content.trim()) {
+      const message =
+        fin === "length"
+          ? "API 返回被长度截断（内容为空）：该模型把配额全用在了推理上，请改用非推理模型，或在该服务调高最大输出长度。"
+          : "API 返回内容为空：请确认「模型」填的是该服务支持的模型名（例如 xAI 用 grok-4.3，而非默认 gpt-4o-mini），可点「检测模型」选择。";
+      if (record) {
+        recordAiCall({
+          label,
+          api: "vision",
+          model,
+          systemPrompt,
+          userText: summarizeUserContent(userContent),
+          ok: false,
+          response: message,
+        });
+      }
+      return { ok: false, message };
+    }
+    const cleaned = cleanPromptOutput(content);
+    if (record) {
+      recordAiCall({
+        label,
+        api: "vision",
+        model,
+        systemPrompt,
+        userText: summarizeUserContent(userContent),
+        ok: true,
+        response: cleaned,
+      });
+    }
+    return { ok: true, content: cleaned, message: "成功" };
+  } catch (error: any) {
+    const msg =
+      error?.response?.data?.error?.message ??
+      error?.response?.data?.message ??
+      error?.message ??
+      "未知错误";
+    if (record) {
+      recordAiCall({
+        label,
+        api: "vision",
+        model,
+        systemPrompt,
+        userText: summarizeUserContent(userContent),
+        ok: false,
+        response: String(msg),
+      });
+    }
+    return { ok: false, message: msg };
+  }
+}
+
+/** Keep vision requests responsive without throwing away pose/composition.
+ * Large phone/ComfyUI PNGs otherwise become multi-megabyte JSON payloads and
+ * make compatible vision endpoints spend most of their time uploading and
+ * preprocessing pixels the tagger cannot use. */
+async function prepareVisionImage(imageBase64: string): Promise<{ mime: string; base64: string }> {
+  try {
+    const input = Buffer.from(imageBase64.replace(/^data:image\/[^;]+;base64,/, ""), "base64");
+    const metadata = await sharp(input).metadata();
+    const longest = Math.max(metadata.width ?? 0, metadata.height ?? 0);
+    if (longest <= 1280 && input.length <= 1_500_000) {
+      return { mime: metadata.format === "jpeg" ? "image/jpeg" : "image/png", base64: input.toString("base64") };
+    }
+    const output = await sharp(input)
+      .rotate()
+      .resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true })
+      .flatten({ background: "#ffffff" })
+      .jpeg({ quality: 86, chromaSubsampling: "4:2:0" })
+      .toBuffer();
+    return { mime: "image/jpeg", base64: output.toString("base64") };
+  } catch {
+    return { mime: "image/png", base64: imageBase64.replace(/^data:image\/[^;]+;base64,/, "") };
+  }
+}
+
+async function callConvertApi(
+  systemPrompt: string,
+  userText: string,
+  maxTokens = 2000,
+  label = "提示词转换",
+  record = true,
+  retryEmpty = true,
+  jsonRequired = false,
+): Promise<{ ok: boolean; content?: string; message: string }> {
+  const settings = getSettings();
+  const apiUrl = settings.convertApiUrl.trim();
+  const apiKey = settings.convertApiKey.trim();
+  const model = settings.convertApiModel.trim() || "gpt-4o-mini";
+
+  if (!apiKey)
+    return { ok: false, message: "请先在 设置 > 转换 API 中填写 API Key。" };
+  if (!apiUrl)
+    return { ok: false, message: "请先在 设置 > 转换 API 中填写 API 地址。" };
+
+  const base = apiUrl.replace(/\/+$/, "");
+  const body = {
+    model,
+    max_tokens: maxTokens,
+    ...(jsonRequired && supportsPromptJsonOutput(base) ? {response_format:{type:'json_object'}} : {}),
+    ...(shouldDisableDeepSeekThinking(base, model)
+      ? { thinking: { type: "disabled" as const } }
+      : {}),
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userText },
+    ],
+  };
+
+  const post = async (tokens: number) =>
+    axios.post(
+      `${base}/chat/completions`,
+      { ...body, max_tokens: tokens },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 180_000,
+        ...await proxyConfigForUrl("ai", `${base}/chat/completions`, settings),
+      },
+    );
+
+  try {
+    let resp = await post(maxTokens);
+    let content: string = resp.data?.choices?.[0]?.message?.content ?? "";
+    let fin = resp.data?.choices?.[0]?.finish_reason;
+    // Reasoning models spend the whole token budget on hidden reasoning tokens
+    // and return empty content with finish_reason "length". Retry once with a
+    // much larger budget so the actual answer has room (billed per real token,
+    // so this only costs more on the genuinely-reasoning case).
+    if (retryEmpty && !content.trim() && fin === "length") {
+      resp = await post(Math.max(maxTokens * 8, 32000));
+      content = resp.data?.choices?.[0]?.message?.content ?? "";
+      fin = resp.data?.choices?.[0]?.finish_reason;
+    }
+    if (!content.trim()) {
+      const message =
+        fin === "length"
+          ? "API 返回被长度截断（内容为空）：该模型把配额全用在了推理上，请改用非推理模型，或在该服务调高最大输出长度。"
+          : "API 返回内容为空：请确认「模型」填的是该服务支持的模型名（例如 xAI 用 grok-4.3，而非默认 gpt-4o-mini），可点「检测模型」选择。";
+      if (record) {
+        recordAiCall({
+          label,
+          api: "convert",
+          model,
+          systemPrompt,
+          userText,
+          ok: false,
+          response: message,
+        });
+      }
+      return { ok: false, message };
+    }
+    if (fin === "length") return {ok:false,message:"提示词响应被截断，未交给生图；请缩短描述或提高转换服务输出上限。"};
+    const cleaned = cleanPromptOutput(content);
+    if (record) {
+      recordAiCall({
+        label,
+        api: "convert",
+        model,
+        systemPrompt,
+        userText,
+        ok: true,
+        response: cleaned,
+      });
+    }
+    return { ok: true, content: cleaned, message: "成功" };
+  } catch (error: any) {
+    const msg =
+      error?.response?.data?.error?.message ??
+      error?.response?.data?.message ??
+      error?.message ??
+      "未知错误";
+    if (record) {
+      recordAiCall({
+        label,
+        api: "convert",
+        model,
+        systemPrompt,
+        userText,
+        ok: false,
+        response: String(msg),
+      });
+    }
+    return { ok: false, message: msg };
+  }
+}
+
+export async function listAiModels(
+  kind: "reverse" | "convert" | "translate",
+): Promise<AiModelListResult> {
+  const settings = getSettings();
+  const apiUrl = (kind === "reverse"
+    ? settings.visionApiUrl
+    : kind === "convert"
+      ? settings.convertApiUrl
+      : settings.translateAiApiUrl).trim();
+  const apiKey = (kind === "reverse"
+    ? settings.visionApiKey
+    : kind === "convert"
+      ? settings.convertApiKey
+      : settings.translateAiApiKey).trim();
+  if (!apiUrl) return { ok: false, message: "请先填写 API 地址。", models: [] };
+  if (!apiKey) return { ok: false, message: "请先填写 API Key。", models: [] };
+
+  try {
+    const base = apiUrl.replace(/\/+$/, "");
+    const resp = await axios.get(`${base}/models`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      timeout: 20_000,
+      ...proxyConfig("ai"),
+    });
+    const raw = Array.isArray(resp.data?.data)
+      ? resp.data.data
+      : Array.isArray(resp.data)
+        ? resp.data
+        : [];
+    const models = raw
+      .map((item: any) => (typeof item === "string" ? item : item?.id))
+      .filter(
+        (id: unknown): id is string => typeof id === "string" && id.length > 0,
+      )
+      .sort();
+    return {
+      ok: true,
+      message: models.length
+        ? `检测到 ${models.length} 个模型。`
+        : "接口可用，但未返回模型列表。",
+      models,
+    };
+  } catch (error: any) {
+    const msg =
+      error?.response?.data?.error?.message ??
+      error?.response?.data?.message ??
+      error?.message ??
+      "未知错误";
+    return { ok: false, message: `模型检测失败：${msg}`, models: [] };
+  }
+}
+
+function normalizeTagServerItem(item: unknown): TagSuggestion | null {
+  if (typeof item === "string") {
+    const tag = item.trim();
+    return tag ? { tag, count: 0, category: 0 } : null;
+  }
+  if (!item || typeof item !== "object") return null;
+  const row = item as Record<string, unknown>;
+  const rawTag = row.tag ?? row.name ?? row.value ?? row.label ?? row.text;
+  if (typeof rawTag !== "string" || !rawTag.trim()) return null;
+  const rawCount = row.count ?? row.post_count ?? row.posts ?? row.total;
+  const count =
+    typeof rawCount === "number"
+      ? rawCount
+      : typeof rawCount === "string" && Number.isFinite(Number(rawCount))
+        ? Number(rawCount)
+        : 0;
+  const rawCategory = row.category ?? row.type;
+  const category =
+    typeof rawCategory === "number"
+      ? rawCategory
+      : rawCategory === "artist"
+        ? 1
+        : rawCategory === "copyright"
+          ? 3
+          : rawCategory === "character"
+            ? 4
+            : rawCategory === "meta"
+              ? 5
+              : 0;
+  const description =
+    typeof row.description === "string"
+      ? row.description
+      : typeof row.translation === "string"
+        ? row.translation
+        : typeof row.zh === "string"
+          ? row.zh
+          : undefined;
+  return {
+    tag: rawTag.trim(),
+    count: Math.round(count),
+    category,
+    description,
+  };
+}
+
+function parseTagServerPayload(payload: unknown): TagSuggestion[] {
+  if (!payload) return [];
+  if (Array.isArray(payload))
+    return payload
+      .map(normalizeTagServerItem)
+      .filter((x): x is TagSuggestion => Boolean(x));
+  if (typeof payload === "string") {
+    try {
+      return parseTagServerPayload(JSON.parse(payload));
+    } catch {
+      return payload
+        .split(/[\n,]/)
+        .map((tag) => normalizeTagServerItem(tag))
+        .filter((x): x is TagSuggestion => Boolean(x));
+    }
+  }
+  if (typeof payload !== "object") return [];
+  const obj = payload as Record<string, unknown>;
+  const content = obj.content;
+  if (Array.isArray(content)) {
+    const parts = content
+      .map((entry) => {
+        if (typeof entry === "string") return entry;
+        if (entry && typeof entry === "object") {
+          const text = (entry as Record<string, unknown>).text;
+          return typeof text === "string" ? text : "";
+        }
+        return "";
+      })
+      .filter(Boolean)
+      .join("\n");
+    const parsed = parseTagServerPayload(parts);
+    if (parsed.length > 0) return parsed;
+  }
+  for (const key of ["tags", "results", "data", "items", "result"]) {
+    const parsed = parseTagServerPayload(obj[key]);
+    if (parsed.length > 0) return parsed;
+  }
+  return [];
+}
+
+async function queryTagServer(
+  query: string,
+  limit = 12,
+): Promise<TagSuggestion[]> {
+  const settings = getSettings();
+  if (!settings.tagServerEnabled || !query.trim()) return [];
+  const type = settings.tagServerType ?? "rest";
+  // MCP transports (Streamable HTTP / SSE / stdio) go through the MCP client.
+  if (type === "http" || type === "sse" || type === "stdio") {
+    if (type !== "stdio" && !settings.tagServerUrl.trim()) return [];
+    try {
+      const tags: TagSuggestion[] = [];
+      for (const tool of configuredMcpTagTools(settings)) {
+        try { const text = await mcpSearch({type, url:settings.tagServerUrl, apiKey:settings.tagServerApiKey, tool, command:settings.tagServerCommand, args:settings.tagServerArgs}, query, limit);
+        tags.push(...parseTagServerPayload(text)); } catch { /* Each independent slot may fail without discarding other results. */ }
+      }
+      return [...new Map(tags.map(t=>[t.tag,t])).values()].slice(0,limit);
+    } catch {
+      return [];
+    }
+  }
+  if (!settings.tagServerUrl.trim()) return [];
+  const base = settings.tagServerUrl.trim().replace(/\/+$/, "");
+  const headers: Record<string, string> = {};
+  if (settings.tagServerApiKey.trim())
+    headers.Authorization = `Bearer ${settings.tagServerApiKey.trim()}`;
+
+  const px = proxyConfig("mcp");
+  const attempts = [
+    () =>
+      axios.get(`${base}/search`, {
+        params: { q: query, query, limit },
+        headers,
+        timeout: 8_000,
+        ...px,
+      }),
+    () =>
+      axios.get(`${base}/tags`, {
+        params: { q: query, query, limit },
+        headers,
+        timeout: 8_000,
+        ...px,
+      }),
+    () =>
+      axios.post(
+        `${base}/search`,
+        { query, limit },
+        { headers, timeout: 8_000, ...px },
+      ),
+    () =>
+      axios.post(
+        base,
+        {
+          jsonrpc: "2.0",
+          id: `tag-${Date.now()}`,
+          method: "tools/call",
+          params: { name: "search_tags", arguments: { query, limit } },
+        },
+        {
+          headers: { ...headers, "Content-Type": "application/json" },
+          timeout: 8_000,
+          ...px,
+        },
+      ),
+  ];
+
+  for (const attempt of attempts) {
+    try {
+      const response = await attempt();
+      const tags = parseTagServerPayload(response.data).slice(0, limit);
+      if (tags.length > 0) return tags;
+    } catch {
+      // Try the next common tag-server shape.
+    }
+  }
+  return [];
+}
+
+function mergeTagHints(prompt: string, hints: TagSuggestion[]) {
+  const hintTags = hints
+    .map((hint) => hint.tag)
+    .filter(Boolean)
+    .join(", ");
+  return hintTags ? mergePrompt(prompt, hintTags) : prompt;
+}
+
+
+export async function testTagServer(
+  query: string,
+): Promise<{ ok: boolean; message: string; tags: TagSuggestion[] }> {
+  const settings = getSettings();
+  const type = settings.tagServerType ?? "rest";
+  const q = query || "蓝眼白发的少女";
+  // For MCP transports, call directly so we can surface the real error message.
+  if (type === "http" || type === "sse" || type === "stdio") {
+    try {
+      const all: TagSuggestion[] = [];
+      for (const tool of configuredMcpTagTools(settings)) {
+        const text = await mcpSearch({type,url:settings.tagServerUrl,apiKey:settings.tagServerApiKey,tool,command:settings.tagServerCommand,args:settings.tagServerArgs},q,12);
+        all.push(...parseTagServerPayload(text));
+      }
+      const tags=[...new Map(all.map(t=>[t.tag,t])).values()].slice(0,36);
+      const label =
+        type === "stdio"
+          ? "stdio MCP"
+          : type === "sse"
+            ? "SSE MCP"
+            : "Streamable HTTP MCP";
+      return tags.length > 0
+        ? {
+            ok: true,
+            message: `${label} 可用，工具「${settings.tagServerTool || "search_tags"}」返回 ${tags.length} 个标签。`,
+            tags,
+          }
+        : {
+            ok: false,
+            message: `${label} 已连接，但所选工具未返回可解析的标签。`,
+            tags: [],
+          };
+    } catch (error: any) {
+      return {
+        ok: false,
+        message: `MCP 连接失败：${error?.message ?? "未知错误"}`,
+        tags: [],
+      };
+    }
+  }
+  const tags = await queryTagServer(q, 12);
+  return tags.length > 0
+    ? { ok: true, message: `Tag 服务可用，返回 ${tags.length} 个结果。`, tags }
+    : {
+        ok: false,
+        message: "Tag 服务没有返回结果，请检查地址、鉴权或接口路径。",
+        tags: [],
+      };
+}
+
+function stripIdentityTagsForFeaturePrompt(prompt: string): string {
+  return prompt
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => {
+      const core = part.replace(/^[-+]?\d+(?:\.\d+)?::/, "").replace(/::$/, "").trim();
+      return !/^(?:character|copyright)\s*:/i.test(core) && !/^[a-z0-9_.'-]+_\([^)]+\)$/i.test(core);
+    })
+    .join(", ");
+}
+
+export async function reversePromptImage(
+  imageBase64: string,
+  mode: "tags" | "natural" | "mixed" = "tags",
+  scope: string = "full",
+  hint: string = "",
+  knownCharacter = false,
+  templateVersion?: "v4.5" | "v5",
+): Promise<{
+  ok: boolean;
+  prompt?: string;
+  variants?: { namePrompt: string; featurePrompt: string };
+  message: string;
+}> {
+  const settings = getSettings();
+  const safeScope = (
+    ["full", "character", "object", "scene"].includes(scope) ? scope : "full"
+  ) as ReversePromptScope;
+  const scopeLabel =
+    safeScope === "character"
+      ? "角色"
+      : safeScope === "object"
+        ? "物品"
+        : safeScope === "scene"
+          ? "场景"
+          : "整张图片";
+  const userScopeText = [
+    `反推范围：${scopeLabel}`,
+    hint.trim() ? `目标/角色提示：${hint.trim()}` : "",
+    `请严格只围绕“${scopeLabel}”输出结果。`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const safeTemplateVersion = (templateVersion ?? settings.reversePromptTemplateVersion) === "v4.5" ? "v4.5" : "v5";
+  const builtInTemplates =
+    safeTemplateVersion === "v4.5"
+      ? safeScope === "full"
+        ? V45_REVERSE_SYSTEM_PROMPTS
+        : V45_SCOPED_REVERSE_SYSTEM_PROMPTS
+      : safeScope === "full"
+        ? REVERSE_SYSTEM_PROMPTS
+        : SCOPED_REVERSE_SYSTEM_PROMPTS;
+  const reconstructionInstruction = `\n反推必须以“可复现画面”为目标，而不是只做粗略识别。输出前逐项核对：主体数量与身份、背景颜色/复杂度、全身或半身取景、视角、人物在画面中的大小与位置、双腿姿势、左右手臂各自的方向/弯曲/指向、手势、头部朝向、注视和表情。\nTag 模式按“人数与构图 → 身份 → 外貌服装 → 姿势动作 → 背景”排序。优先输出图中能直接观察到、能稳定复现构图的成熟 Danbooru Tag，不要用“电影感”“精美光影”等主观修饰替代白色背景、全身、站立、分腿、伸臂、指向等事实。单人全身图不得只写 pointing：若可见，必须同时保留 1girl、solo、white background/simple background、full body、standing、spread legs/legs apart、outstretched arm、pointing、looking at viewer、smile 等互不冲突的成熟 Tag；已知角色必须保留准确的 Danbooru 身份 Tag。左右关系没有可靠 Tag 时可用最短英文短语补足。不要把 standing wide stance 误写成坐姿语义，也不要臆造图中不存在的背景、动作或光照。`;
+  const systemPrompt = injectDshImageAiSystemPrompt({
+    task: "reverse",
+    // Task output templates and imported system presets are separate layers.
+    // A custom template must not silently disable the selected system preset.
+    enabled: settings.reverseConvertDshEnabled,
+    mode: settings.reverseConvertDshMode,
+    sharedPreset: selectedImageTaskPromptPreset(
+      settings.reverseConvertPromptPresets,
+      settings.reverseSystemPromptPresetId ?? settings.reverseConvertPromptPresetId,
+      "reverse",
+    ),
+    systemPrompt: [
+    resolveModePrompt(
+      mode,
+      safeTemplateVersion === "v5"
+        ? settings.reversePromptTemplates
+        : settings.reversePromptTemplatesV45,
+      settings.visionSystemPrompt,
+      builtInTemplates,
+    )
+      .replace(/\{\{input\}\}/g, userScopeText)
+      .replace(/\{\{image\}\}/g, "<uploaded image>"),
+    knownCharacterRuntimeInstruction(
+      mode,
+      "reverse",
+      knownCharacter,
+      safeTemplateVersion,
+    ),
+    reconstructionInstruction,
+    ].join("\n\n"),
+  });
+
+  const preparedVisionImage = await prepareVisionImage(imageBase64);
+  const firstUserContent = [
+    {
+      type: "image_url",
+      image_url: {
+        url: `data:${preparedVisionImage.mime};base64,${preparedVisionImage.base64}`,
+        detail: "high",
+      },
+    },
+    {
+      type: "text",
+      text: [
+        userScopeText,
+        "",
+        "Generate the prompt for this image.",
+        "",
+        modeUserInstruction(
+          mode,
+          "reverse",
+          knownCharacter,
+          safeTemplateVersion,
+        ),
+      ].join("\n"),
+    },
+  ];
+
+  // Read the saved template, not a hard-coded abbreviated character caption.
+  const selectedTemplate = resolveModePrompt(mode,
+    safeTemplateVersion === "v5" ? settings.reversePromptTemplates : settings.reversePromptTemplatesV45,
+    settings.visionSystemPrompt, builtInTemplates);
+  const protocol = reverseTemplateProtocol(selectedTemplate, mode, knownCharacter);
+  const effectiveSystem = systemPrompt + (protocol ? "\n\n" + protocol.instruction : "");
+  let feedback = "";
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const contentForAttempt = feedback ? [...firstUserContent, {type:"text", text:
+      `上次结果未通过模板校验：${feedback}。请重新对照同一图片输出完整结果。仅修正格式、数量和比例；不要新增图中不可见内容。`}] : firstUserContent;
+    const result = await callVisionApi(effectiveSystem, contentForAttempt,
+      knownCharacter ? 7000 : 4000,
+      `AI 反推 · ${safeTemplateVersion} · ${mode} · ${scopeLabel}`, true, !!protocol);
+    if (!result.ok) return {ok:false,message:`反推失败：${result.message}`};
+    try {
+      if (protocol) return {ok:true,...protocol.parse(result.content ?? ""),message:"反推成功"};
+      const parsed = parsePromptVariantResponse(result.content ?? "", knownCharacter);
+      const outputs = knownCharacter ? [parsed.variants?.namePrompt,parsed.variants?.featurePrompt] : [parsed.primary];
+      if(outputs.some(value=>!value?.trim() || modeNeedsRepair(mode,value)))
+        throw Error("输出缺少完整结果或不符合所选模式；网络角色的两个版本均需符合模板");
+      return {ok:true,prompt:parsed.primary,variants:parsed.variants,message:"反推成功"};
+    } catch(error) {feedback=error instanceof Error ? error.message : String(error);}
+  }
+  return {ok:false,message:`反推未通过模板校验，已保留原提示词：${feedback}`};
+}
+
+const CJK_RE = /[一-鿿぀-ゟ゠-ヿ]/;
+// English-tag -> Chinese gloss cache, so we only translate a given tag once.
+const tagZhCache = new Map<string, string>();
+
+/**
+ * Make sure every tag carries a Chinese gloss in `description`. Resolution
+ * order: existing CJK description → offline dictionary → translation cache →
+ * batch online translation (EN→中文) for whatever is still missing. Results are
+ * cached so repeat searches stay instant.
+ */
+async function enrichTagsWithChinese(
+  tags: TagSuggestion[],
+): Promise<TagSuggestion[]> {
+  if (tags.length === 0) return tags;
+  const misses: string[] = [];
+  for (const t of tags) {
+    const existing = (t.description ?? "").trim();
+    if (existing && CJK_RE.test(existing)) continue;
+    const local = zhForTag(t.tag);
+    if (local) {
+      t.description = local;
+      continue;
+    }
+    const cached = tagZhCache.get(t.tag.toLowerCase());
+    if (cached) {
+      t.description = cached;
+      continue;
+    }
+    misses.push(t.tag);
+  }
+  // Translate the leftovers in ONE batched request (newline-delimited) so we
+  // stay fast and avoid rate-limiting the translation endpoint.
+  const todo = [...new Set(misses)].slice(0, 24);
+  if (todo.length > 0) {
+    try {
+      const res = await translateText(
+        todo.map((t) => t.replace(/_/g, " ")).join("\n"),
+        "zh",
+      );
+      if (res.ok && res.text) {
+        const lines = res.text.split("\n").map((l) => l.trim());
+        // Only trust a clean 1:1 mapping; otherwise leave the English tags.
+        if (lines.length === todo.length) {
+          todo.forEach((tag, i) => {
+            const zh = lines[i];
+            if (zh && CJK_RE.test(zh)) tagZhCache.set(tag.toLowerCase(), zh);
+          });
+        }
+      }
+    } catch {
+      // leave untranslated; the English tag still shows.
+    }
+    for (const t of tags) {
+      if ((t.description ?? "").trim() && CJK_RE.test(t.description ?? ""))
+        continue;
+      const zh = tagZhCache.get(t.tag.toLowerCase());
+      if (zh) t.description = zh;
+    }
+  }
+  return tags;
+}
+
+/**
+ * Tag/MCP search used by the inspiration capsule. Returns server suggestions
+ * only when the service is enabled AND the capsule is allowed to use it. Every
+ * returned tag is annotated with a Chinese gloss.
+ */
+export async function searchTagServer(
+  query: string,
+  limit = 16,
+): Promise<TagSuggestion[]> {
+  const settings = getSettings();
+  if (!settings.mcpForCapsule) return [];
+  const tags = await queryTagServer(query, limit);
+  return enrichTagsWithChinese(tags);
+}
+
+function extractJsonObject(text: string): any | null {
+  const cleaned = (text ?? "")
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "");
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    try {
+      return JSON.parse(match[0]);
+    } catch {
+      return null;
+    }
+  }
+}
+
+export async function convertComicPanels(
+  request: ComicConvertRequest,
+): Promise<ComicConvertResult> {
+  if (!request.panels.length)
+    return { ok: false, message: "没有需要转换的分镜。", panels: [] };
+  const settings = getSettings();
+  if (!settings.convertApiKey.trim() || !settings.convertApiUrl.trim()) {
+    return {
+      ok: true,
+      message: `未配置转换 API，已使用本地模板兜底生成 ${request.panels.length} 镜英文提示词；建议配置宽松的转换模型以获得更精确的剧情画面。`,
+      panels: request.panels.map((panel) => ({
+        panelId: panel.panelId,
+        enPrompt: buildComicLocalPrompt(request, panel),
+      })),
+    };
+  }
+  const mode = request.mode;
+  const systemPrompt = [
+    resolveModePrompt(
+      mode,
+      settings.convertPromptTemplates,
+      settings.convertSystemPrompt,
+      CONVERT_SYSTEM_PROMPTS,
+    ),
+    "",
+    "你正在为连续漫画生成 NovelAI 生图提示词。必须保持角色、服装、地点、时间线和关键道具前后一致。",
+    "每次只输出当前分镜的最终英文提示词，不要解释，不要 Markdown。",
+    "必须参考全局设定、参考图反推描述、上一个/当前/下一个中文分镜描述，保持同一角色、场景、物品的英文表达一致。",
+    "避免色情、裸露、夸张身体特写。",
+  ].join("\n");
+
+  const out: ComicConvertResult["panels"] = [];
+  let fallbackCount = 0;
+  for (const panel of request.panels) {
+    const tagHints =
+      mode === "natural" || !settings.mcpForConvert
+        ? []
+        : await queryTagServer(panel.cnPrompt, 16);
+    const userText = [
+      `Output mode: ${mode}`,
+      "Global story prompt:",
+      request.globalPrompt || "(empty)",
+      "Global character setting:",
+      request.globalCharacterSetting || "(empty)",
+      "Global style prompt:",
+      request.globalStylePrompt || "(empty)",
+      "Reference image reverse prompts:",
+      request.referencePrompts.length
+        ? request.referencePrompts.join("\n")
+        : "(none)",
+      "Previous Chinese panel:",
+      panel.previousCnPrompt || "(none)",
+      "Current panel Chinese description:",
+      panel.cnPrompt,
+      "Next Chinese panel:",
+      panel.nextCnPrompt || "(none)",
+      "Previous panel summaries:",
+      panel.previousSummaries.length
+        ? panel.previousSummaries.join("\n")
+        : "(none)",
+      "Next panel summaries:",
+      panel.nextSummaries.length ? panel.nextSummaries.join("\n") : "(none)",
+      "Previous final prompts:",
+      panel.previousPrompts.length
+        ? panel.previousPrompts.join("\n")
+        : "(none)",
+      modeUserInstruction(mode, "convert"),
+      tagHints.length
+        ? `Candidate tags: ${tagHints.map((x) => x.tag).join(", ")}`
+        : "",
+    ].join("\n\n");
+    const result = await callConvertApi(
+      systemPrompt,
+      userText,
+      4096,
+      `漫画分镜转换 #${panel.index}`,
+    );
+    if (!result.ok) {
+      fallbackCount += 1;
+      out.push({
+        panelId: panel.panelId,
+        enPrompt: buildComicLocalPrompt(request, panel),
+        error: undefined,
+      });
+      continue;
+    }
+    let content = cleanPromptOutput(result.content ?? "");
+    if (modeNeedsRepair(mode, content)) {
+      const repaired = await callConvertApi(
+        modeRepairSystemPrompt(mode),
+        buildModeRepairUserText(mode, panel.cnPrompt, content),
+        900,
+        `漫画分镜转换修复 #${panel.index}`,
+      );
+      if (repaired.ok && repaired.content)
+        content = cleanPromptOutput(repaired.content);
+    }
+    if (!content.trim() || isComicPromptRefusal(content)) {
+      fallbackCount += 1;
+      content = buildComicLocalPrompt(request, panel);
+    }
+    out.push({
+      panelId: panel.panelId,
+      enPrompt: mode === "natural" ? content : mergeTagHints(content, tagHints),
+    });
+  }
+  const failed = out.filter((p) => p.error).length;
+  return {
+    ok: failed < out.length,
+    message: `转换完成：成功 ${out.length - failed}，失败 ${failed}${fallbackCount ? `；其中 ${fallbackCount} 镜使用本地模板兜底` : ""}。`,
+    panels: out,
+  };
+}
+
+const COMIC_CONSISTENCY_CHUNK_SIZE = 6;
+type ConsistencyPanelInput = ComicConsistencyRequest["panels"][number];
+type ConsistencyChunkResult = {
+  ok: boolean;
+  message: string;
+  panels: ComicConsistencyResult["panels"];
+};
+
+function chunkPanels<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size)
+    chunks.push(items.slice(i, i + size));
+  return chunks;
+}
+
+async function checkComicConsistencyChunk(
+  request: ComicConsistencyRequest,
+  chunk: ConsistencyPanelInput[],
+  allPanels: ConsistencyPanelInput[],
+  labelSuffix: string,
+): Promise<ConsistencyChunkResult> {
+  const systemPrompt = [
+    "你是连续漫画提示词的一致性审校。下面会给出全部分镜的简要上下文，以及本次需要修正的一小组英文提示词。",
+    "检查同一角色、场景、物品、发色、服装、配饰、时间线和关键道具是否前后一致。",
+    "只修正不一致之处：补齐缺失的角色/服装特征、统一命名与风格，但不要改变每个分镜本身的镜头、动作与剧情。",
+    `保持原有提示词模式（${request.mode}），不要新增解释，不要 Markdown。`,
+    '严格只返回 JSON：{"panels":[{"panelId":"...","enPrompt":"修正后的完整英文提示词","note":"中文说明本次改动，没改动则留空"}]}。',
+    "panelId 必须与输入完全一致；未改动的分镜也要原样返回完整 enPrompt。",
+  ].join("\n");
+
+  const userText = [
+    `Output mode: ${request.mode}`,
+    "Global story prompt:",
+    request.globalPrompt || "(empty)",
+    "Global character setting:",
+    request.globalCharacterSetting || "(empty)",
+    "Reference image reverse prompts:",
+    request.referencePrompts.length
+      ? request.referencePrompts.join("\n")
+      : "(none)",
+    "All panel outline:",
+    JSON.stringify(
+      allPanels.map((panel) => ({
+        panelId: panel.id,
+        index: panel.index,
+        cnPrompt: panel.cnPrompt,
+      })),
+      null,
+      2,
+    ),
+    "Target panels to review in this call:",
+    JSON.stringify(
+      chunk.map((panel) => ({
+        panelId: panel.id,
+        index: panel.index,
+        cnPrompt: panel.cnPrompt,
+        enPrompt: panel.enPrompt,
+      })),
+      null,
+      2,
+    ),
+    "请只返回 JSON。",
+  ].join("\n\n");
+
+  const maxTokens = Math.min(3200, Math.max(1400, 700 + chunk.length * 420));
+  const result = await callConvertApi(
+    systemPrompt,
+    userText,
+    maxTokens,
+    `漫画一致性检测 ${labelSuffix}`,
+  );
+  if (!result.ok) return { ok: false, message: result.message, panels: [] };
+
+  const parsed = extractJsonObject(result.content ?? "");
+  const items = Array.isArray(parsed?.panels) ? parsed.panels : [];
+  const byId = new Map<string, string>();
+  const notes = new Map<string, string>();
+  for (const item of items) {
+    const panelId = String(item?.panelId ?? "").trim();
+    if (!panelId) continue;
+    const enPrompt = cleanPromptOutput(String(item?.enPrompt ?? "").trim());
+    if (!enPrompt) continue;
+    byId.set(panelId, enPrompt);
+    const note = String(item?.note ?? "").trim();
+    if (note) notes.set(panelId, note);
+  }
+  if (!byId.size)
+    return {
+      ok: false,
+      message: "模型未返回可解析的 panels JSON。",
+      panels: [],
+    };
+
+  return {
+    ok: true,
+    message: "ok",
+    panels: chunk.map((panel) => ({
+      panelId: panel.id,
+      enPrompt: byId.get(panel.id) ?? panel.enPrompt,
+      note: notes.get(panel.id),
+    })),
+  };
+}
+
+async function checkComicConsistencyWithFallback(
+  request: ComicConsistencyRequest,
+  chunk: ConsistencyPanelInput[],
+  allPanels: ConsistencyPanelInput[],
+  labelSuffix: string,
+): Promise<ConsistencyChunkResult> {
+  const direct = await checkComicConsistencyChunk(
+    request,
+    chunk,
+    allPanels,
+    labelSuffix,
+  );
+  if (direct.ok || chunk.length === 1) return direct;
+  const mid = Math.ceil(chunk.length / 2);
+  const left = await checkComicConsistencyWithFallback(
+    request,
+    chunk.slice(0, mid),
+    allPanels,
+    `${labelSuffix}-a`,
+  );
+  if (!left.ok) return left;
+  const right = await checkComicConsistencyWithFallback(
+    request,
+    chunk.slice(mid),
+    allPanels,
+    `${labelSuffix}-b`,
+  );
+  if (!right.ok) return right;
+  return { ok: true, message: "ok", panels: [...left.panels, ...right.panels] };
+}
+
+export async function checkComicConsistency(
+  request: ComicConsistencyRequest,
+): Promise<ComicConsistencyResult> {
+  const reviewable = request.panels.filter((panel) => panel.enPrompt.trim());
+  if (!reviewable.length) {
+    return {
+      ok: false,
+      message: "没有可检测的分镜英文提示词，请先转换。",
+      panels: [],
+    };
+  }
+  const settings = getSettings();
+  if (!settings.convertApiKey.trim() || !settings.convertApiUrl.trim()) {
+    return {
+      ok: false,
+      message: "请先在设置 > 转换 API 中填写 API 地址、模型和 Key。",
+      panels: [],
+    };
+  }
+
+  const panels: ComicConsistencyResult["panels"] = [];
+  for (const [chunkIndex, chunk] of chunkPanels(
+    reviewable,
+    COMIC_CONSISTENCY_CHUNK_SIZE,
+  ).entries()) {
+    const checked = await checkComicConsistencyWithFallback(
+      request,
+      chunk,
+      reviewable,
+      `#${chunkIndex + 1}`,
+    );
+    if (!checked.ok) {
+      return {
+        ok: false,
+        message: `一致性检测失败：${checked.message}。已保留原英文提示词，未覆盖任何分镜。`,
+        panels: [],
+      };
+    }
+    panels.push(...checked.panels);
+  }
+  const originalById = new Map(
+    reviewable.map((panel) => [panel.id, panel.enPrompt.trim()]),
+  );
+  const changed = panels.filter(
+    (panel) =>
+      panel.enPrompt.trim() !== (originalById.get(panel.panelId) ?? ""),
+  ).length;
+  return {
+    ok: true,
+    message: `一致性检测完成：复核 ${panels.length} 个分镜，调整 ${changed} 个。`,
+    panels,
+  };
+}
+
+// Map a comic reference kind to a NovelAI V4.5 Precise (Director) Reference type.
+// "vibe" stays Vibe Transfer; the others are precise references on V4.5.
+function preciseTypeForKind(
+  kind: ComicReferenceKind,
+): PreciseReferenceType | null {
+  switch (kind) {
+    case "character":
+      return "character";
+    case "scene":
+    case "object":
+      return "style";
+    case "precise":
+      return "character&style";
+    default:
+      return null; // "vibe" -> Vibe Transfer
+  }
+}
+
+function comicReferencesToExtras(
+  request: ComicGeneratePanelRequest,
+): GenerateExtras {
+  const usable = request.references.filter(
+    (ref) => ref.base64 && ref.useForGeneration !== false,
+  );
+  // Precise/Director references are only available on V4.5 models. V5 also
+  // lacks Vibe Transfer at launch, so never convert a V5 precise reference into
+  // another unsupported transport.
+  const supportsPrecise = supportsNAIPreciseReference(request.params.model);
+  if (
+    usable.length > 0 &&
+    isNAIV5Model(request.params.model)
+  ) {
+    throw new Error(
+      "精准参考当前仅支持 NovelAI V4.5；V5 首发尚未开放该功能。请切换漫画项目模型到 V4.5，或移除参考图。",
+    );
+  }
+
+  const vibeImages: VibeTransferItem[] = [];
+  const preciseReferences: PreciseReferenceItem[] = [];
+
+  for (const ref of usable) {
+    const base64 = stripBase64Prefix(ref.base64);
+    const preciseType = supportsPrecise ? preciseTypeForKind(ref.kind) : null;
+    if (preciseType) {
+      preciseReferences.push({
+        base64,
+        type: preciseType,
+        strength: clamp01(Number(ref.strength) || 1, 1),
+        fidelity: clamp01(Number(ref.infoExtracted) || 1, 1),
+      });
+    } else {
+      vibeImages.push({
+        base64,
+        infoExtracted: clamp01(
+          Number(ref.infoExtracted) || (ref.kind === "precise" ? 1 : 0.7),
+          0.7,
+        ),
+        strength: clamp01(
+          Number(ref.strength) || (ref.kind === "precise" ? 0.65 : 0.45),
+          0.45,
+        ),
+      });
+    }
+  }
+
+  return { vibeImages, charCaptions: [], preciseReferences };
+}
+
+export async function generateComicPanel(
+  request: ComicGeneratePanelRequest,
+): Promise<GenerateResult> {
+  const params: GenerateParams = {
+    ...request.params,
+    fileNamePrefix:
+      request.params.fileNamePrefix || `comic-${request.panelIndex}`,
+    positivePrompt: mergePrompt(request.globalStylePrompt, request.panelPrompt),
+    stylePrompt: "",
+    negativePrompt:
+      request.negativeMode === "override"
+        ? request.localNegativePrompt
+        : mergePrompt(
+            request.globalNegativePrompt,
+            request.localNegativePrompt,
+          ),
+  };
+  if (getSettings().imageProvider === 'openai-images') {
+    if (request.inheritPreviousFrame || request.references.some(ref=>ref.useForGeneration!==false && Boolean(ref.base64)))
+      return {ok:false,items:[],message:'兼容漫画接口未接入参考图与前帧继承；请先取消这些输入，未发送生成请求。'};
+    try {
+      return await generateCompatibleComicCandidate({...request,preciseReferences:[]}, new AbortController().signal);
+    } catch(error) { return {ok:false,items:[],message:error instanceof Error?error.message:String(error)}; }
+  }
+  const extras = comicReferencesToExtras(request);
+  // Ensure the comic's history group UP FRONT so panels are saved INTO its disk
+  // subfolder (outputDir/<date>/<group>/) and tagged with its groupId at save
+  // time — previously they landed in the flat date folder and only got the
+  // groupId reassigned afterwards (disk folder didn't match the group).
+  const historyGroup = ensureHistoryGroup(
+    request.projectTitle,
+    request.historyGroupId,
+  );
+  const groupOverride = {
+    groupId: historyGroup.id,
+    folderName: sanitizeGroupFolderName(historyGroup.name),
+  };
+  const result = await generateImage(params, extras, { groupOverride });
+  if (result.ok && result.items.length > 0) {
+    result.items = result.items.map((item) => {
+      const updated = updateHistoryItem(item.id, {
+        feature: "comic",
+        groupId: historyGroup.id,
+        comicProjectId: request.projectId,
+        comicPanelNo: request.panelIndex,
+      });
+      return (
+        updated ?? {
+          ...item,
+          feature: "comic",
+          groupId: historyGroup.id,
+          comicProjectId: request.projectId,
+          comicPanelNo: request.panelIndex,
+        }
+      );
+    });
+  }
+  return result;
+}
+
+const comicRuns=new Map<string,{controller:AbortController;done:Promise<void>}>();
+export async function waitTagComicGeneration(runId:string){await comicRuns.get(runId)?.done;}
+export function cancelTagComicGeneration(runId:string){
+  const owned=comicRuns.get(runId);owned?.controller.abort(Error('漫画任务已停止'));
+  return {ok:true,requested:Boolean(owned)};
+}
+export async function generateTagComicCandidate(request:TagComicGenerateRequest):Promise<GenerateResult>{
+  const runId=request.runId??crypto.randomUUID();
+  if(typeof runId!=='string'||!/^[a-zA-Z0-9_-]{1,160}$/.test(runId)||comicRuns.has(runId))return {ok:false,items:[],message:'漫画任务标识无效或该任务已有请求进行中'};
+  const controller=new AbortController();let settled!:()=>void;const done=new Promise<void>(resolve=>settled=resolve);comicRuns.set(runId,{controller,done});
+  try{return await generateTagComicCandidateRequest(request,controller.signal);}
+  catch(error){return {ok:false,items:[],message:error instanceof Error?error.message:String(error)};}
+  finally{if(comicRuns.get(runId)?.controller===controller)comicRuns.delete(runId);settled();}
+}
+async function generateTagComicCandidateRequest(
+  request: TagComicGenerateRequest, signal:AbortSignal,
+): Promise<GenerateResult> {
+  // Bind the selected provider before asynchronous file preparation or authorization.
+  if (request.imageServiceBinding) assertComicImageBinding(request.imageServiceBinding);
+  if (getSettings().imageProvider === 'openai-images') return generateCompatibleComicCandidate(request,signal);
+  const params: GenerateParams = {
+    ...request.params,
+    fileNamePrefix:
+      request.params.fileNamePrefix || `comic-${request.panelIndex}`,
+    positivePrompt: mergePrompt(request.globalStylePrompt, request.panelPrompt),
+    stylePrompt: "",
+    negativePrompt: request.globalNegativePrompt,
+  };
+  let preciseReferences: PreciseReferenceItem[];
+  try { preciseReferences = await readComicReferences(request, tagComicReferenceRoot(request.projectId)); }
+  catch(error) { return {ok:false,items:[],message:error instanceof Error?error.message:String(error)}; }
+  signal.throwIfAborted();
+  const beforeSubmit=await authorizeAgentComicRequest(request);signal.throwIfAborted();
+  const historyGroup = ensureHistoryGroup(
+    request.projectTitle,
+    request.historyGroupId,
+  );
+  const groupOverride = {
+    groupId: historyGroup.id,
+    folderName: sanitizeGroupFolderName(historyGroup.name),
+  };
+  const result = await generateImage(
+    params,
+    { vibeImages: [], charCaptions: [], preciseReferences },
+    { groupOverride,signal,beforeSubmit:async()=>{
+      if(request.imageServiceBinding)assertComicImageBinding(request.imageServiceBinding);
+      await beforeSubmit?.();
+      if(request.imageServiceBinding)assertComicImageBinding(request.imageServiceBinding);
+    } },
+  );
+  annotateComicImages(result,request,historyGroup.id);
+  return result;
+}
+
+/** Preserve durable outputs even when metadata annotation fails or upstream returns partial success. */
+function annotateComicImages(result:GenerateResult,request:TagComicGenerateRequest,groupId:string){
+  let failed=false;
+  result.items=result.items.map(item=>{
+    const fields={feature:'comic' as const,groupId,comicProjectId:request.projectId,comicPanelNo:request.panelIndex};
+    try {return updateHistoryItem(item.id,fields)??{...item,...fields};}
+    catch {failed=true;return {...item,...fields};}
+  });
+  if(failed){result.ok=false;result.message='漫画图片已保存，历史标注未完成；请检查历史存储。没有自动重新生成。';}
+}
+async function generateCompatibleComicCandidate(request:TagComicGenerateRequest,signal:AbortSignal):Promise<GenerateResult>{
+  const settings=structuredClone(getSettings());
+  const binding=request.imageServiceBinding??currentComicImageBinding();
+  assertComicImageBinding(binding);
+  const input=compatibleComicInput(settings,request);signal.throwIfAborted();
+  const guard=await authorizeAgentComicRequest(request);signal.throwIfAborted();
+  assertComicImageBinding(binding);
+  const group=ensureHistoryGroup(request.projectTitle,request.historyGroupId);
+  const result=await generateConfiguredImages({prompt:input.prompt,n:1,historyGroupId:group.id,fileNamePrefix:request.params.fileNamePrefix||`comic-${request.panelIndex}`},{
+    signal,size:input.size,expectedProvider:bindAgentImageProvider(settings),
+    beforeSubmit:async()=>{signal.throwIfAborted();assertComicImageBinding(binding);await guard?.();signal.throwIfAborted();assertComicImageBinding(binding);},
+  });
+  annotateComicImages(result,request,group.id);return result;
+}
+
+function safeComicProjectId(projectId: unknown): string {
+  const value = String(projectId ?? "").trim();
+  if (!/^[a-zA-Z0-9_-]{1,100}$/.test(value)) {
+    throw new Error("Invalid comic project id");
+  }
+  return value;
+}
+
+function tagComicReferenceRoot(projectId: unknown): string {
+  return path.join(
+    app.getPath("userData"),
+    "comic-projects",
+    safeComicProjectId(projectId),
+    "references",
+  );
+}
+
+export async function importTagComicReference(
+  request: TagComicReferenceImportRequest,
+): Promise<TagComicReferenceImportResult> {
+  try {
+    const sourcePath = path.resolve(String(request?.sourcePath ?? ""));
+    const {bytes:buffer,extension:ext} = await readComicImage(sourcePath);
+    const root = tagComicReferenceRoot(request.projectId);
+    await fs.mkdir(root, { recursive: true });
+    const id = crypto.randomUUID();
+    const filePath = path.join(root, `${id}.${ext}`);
+    await fs.writeFile(filePath, buffer, {flag:'wx'});
+    if(!(await fs.readFile(filePath)).equals(buffer))throw Error('参考图写入读回不一致');
+    return {
+      ok: true,
+      message: "Reference imported.",
+      asset: {
+        id,
+        name: path.basename(sourcePath),
+        filePath,
+        fileUrl: toLocalMediaUrl(filePath),
+        type: "character",
+        strength: 1,
+        fidelity: 1,
+        informationExtracted: 1,
+        scope: "all",
+        scopePanelIds: [],
+      },
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+export async function deleteTagComicReference(
+  projectId: string,
+  referenceId: string,
+): Promise<{ ok: boolean }> {
+  try {
+    if (!/^[a-f0-9-]{20,}$/i.test(referenceId)) return { ok: false };
+    const root = tagComicReferenceRoot(projectId);
+    const realRoot=await fs.realpath(root).catch(error=>{if(error.code==='ENOENT')return null;throw error;});
+    if(!realRoot)return {ok:true};
+    if(!isInsideDir(realRoot,await fs.realpath(app.getPath('userData'))))return {ok:false};
+    const names = await fs.readdir(realRoot);
+    await Promise.all(
+      names
+        .filter((name) => name.startsWith(`${referenceId}.`))
+        .map((name) => fs.unlink(path.join(realRoot!, name)).catch(error=>{if(error.code!=='ENOENT')throw error;})),
+    );
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export async function generateArtistLabImage(
+  params: GenerateParams,
+  extras: GenerateExtras,
+  rawMode: unknown,
+): Promise<GenerateResult> {
+  const mode = rawMode === "target" ? "target" : "random";
+  // The old target-search renderer and Artist Detective are 4.5-only;
+  // never apply this constraint to random gacha or weight-repair requests.
+  if (mode === "target" && params.model !== "nai-diffusion-4-5-full") {
+    throw new Error("目标画风自动迭代仅支持 NAI 4.5 Full。");
+  }
+  const group = mode === "target" ? ensureHistoryGroup("画风实验室-目标迭代") : null;
+  const result = await generateImage(
+    {
+      ...params,
+      fileNamePrefix: params.fileNamePrefix || `artist-lab-${mode}`,
+    },
+    extras,
+    mode === "random"
+      ? { temporary: true }
+      : {
+          groupOverride: {
+            groupId: group!.id,
+            folderName: sanitizeGroupFolderName(group!.name),
+          },
+        },
+  );
+  if (result.ok && mode === "target") {
+    result.items = result.items.map((item) =>
+      updateHistoryItem(item.id, {
+        feature: "artist-lab",
+        groupId: group!.id,
+      }) ?? { ...item, feature: "artist-lab", groupId: group!.id },
+    );
+  }
+  return result;
+}
+
+function artistLabTemporaryRoot(): string {
+  return path.join(app.getPath("temp"), "langbai-novelai-studio", "artist-lab-random");
+}
+
+export async function promoteArtistLabFavorite(rawItem: HistoryItem): Promise<HistoryItem> {
+  if (!rawItem?.filePath || !isInsideDir(rawItem.filePath, artistLabTemporaryRoot())) {
+    throw new Error("无效的画风实验室临时图片。");
+  }
+  const source = path.resolve(rawItem.filePath);
+  await fs.access(source);
+  const settings = getSettings();
+  const group = ensureHistoryGroup("画风实验室-随机抽卡");
+  const date = rawItem.date || dateStamp(new Date());
+  const dir = path.join(settings.outputDir, date, sanitizeGroupFolderName(group.name));
+  await fs.mkdir(dir, { recursive: true });
+  const parsed = path.parse(source);
+  const destination = await writeUniqueImageFile(
+    dir, parsed.name, parsed.ext.replace(/^\./, "") || "png", await fs.readFile(source),
+  );
+  await fs.unlink(source).catch(() => undefined);
+  const promoted: HistoryItem = {
+    ...rawItem,
+    filePath: destination,
+    fileUrl: toLocalMediaUrl(destination, rawItem.id),
+    feature: "artist-lab",
+    groupId: group.id,
+  };
+  addHistory([promoted]);
+  return promoted;
+}
+
+export async function deleteArtistLabTemporary(filePath: unknown): Promise<{ ok: boolean }> {
+  if (typeof filePath !== "string" || !isInsideDir(filePath, artistLabTemporaryRoot())) {
+    return { ok: false };
+  }
+  await fs.unlink(filePath).catch(() => undefined);
+  return { ok: true };
+}
+
+export async function clearArtistLabTemporary(): Promise<{ ok: boolean }> {
+  await fs.rm(artistLabTemporaryRoot(), { recursive: true, force: true });
+  return { ok: true };
+}
+
+export async function exportTagComicSelectedZip(request:TagComicExportZipRequest):Promise<{ok:boolean;message:string;path?:string}>{
+ try{
+  const built=await buildComicSelectedZip(request?.project,path.resolve(getSettings().outputDir));
+  const result=await dialog.showSaveDialog({title:'导出漫画主图 ZIP',defaultPath:`${safeZipName(request.project.title)}.zip`,filters:[{name:'ZIP 压缩包',extensions:['zip']}]});
+  if(result.canceled||!result.filePath)return {ok:false,message:'已取消导出。'};
+  await writeComicZip(result.filePath,built.bytes,true);
+  return {ok:true,message:`已导出 ${built.imageCount} 张当前主图。`,path:result.filePath};
+ }catch(error){return {ok:false,message:error instanceof Error?error.message:String(error)};}
+}
+
+function safeZipName(name: string) {
+  return (
+    (name || "comic-project")
+      .replace(/[\\/:*?"<>|]+/g, "-")
+      .replace(/\s+/g, "_")
+      .slice(0, 80) || "comic-project"
+  );
+}
+
+// True only when `child` resolves to a path inside `parent` (blocks `..`
+// traversal and absolute paths pointing elsewhere).
+function isInsideDir(child: string, parent: string): boolean {
+  const rel = path.relative(path.resolve(parent), path.resolve(child));
+  return rel.length > 0 && !rel.startsWith("..") && !path.isAbsolute(rel);
+}
+
+export async function convertPromptText(
+  chineseText: string,
+  mode: "tags" | "natural" | "mixed" = "tags",
+  knownCharacter = false,
+  templateVersion: "v4.5" | "v5" = "v5",
+  assistant?: PromptEditRequest,
+): Promise<{
+  ok: boolean;
+  result?: string;
+  validation?: {total:number;tags:number;natural:number;tagPercent:number};
+  warnings?: string[];
+  variants?: { namePrompt: string; featurePrompt: string };
+  message: string;
+}> {
+  const settings = getSettings();
+  let assistance: ReturnType<typeof preparePromptAssistance> | undefined;
+  if (assistant !== undefined) {
+    try { assistance=preparePromptAssistance(chineseText,assistant,settings); }
+    catch(error) {return {ok:false,message:error instanceof Error?error.message:String(error)};}
+    // A single edited positive prompt, not the dual-character variant route.
+    knownCharacter=false;
+  }
+  const auditText=assistance?.auditText ?? chineseText;
+  const safeTemplateVersion = templateVersion === "v4.5" ? "v4.5" : "v5";
+  const baseSystemPrompt = resolveModePrompt(
+    mode,
+    safeTemplateVersion === "v5"
+      ? settings.convertPromptTemplates
+      : settings.convertPromptTemplatesV45,
+    settings.convertSystemPrompt,
+    safeTemplateVersion === "v5"
+      ? CONVERT_SYSTEM_PROMPTS
+      : V45_CONVERT_SYSTEM_PROMPTS,
+  ).replace(/\{\{input\}\}/g, "<provided in the user message>");
+  const systemPrompt = injectDshImageAiSystemPrompt({
+    task: "convert",
+    // Preserve the explicit on/off switch, not a hidden cross-mode template gate.
+    enabled: settings.reverseConvertDshEnabled,
+    mode: settings.reverseConvertDshMode,
+    sharedPreset: selectedImageTaskPromptPreset(
+      settings.reverseConvertPromptPresets,
+      settings.convertSystemPromptPresetId ?? settings.reverseConvertPromptPresetId,
+      "convert",
+    ),
+    systemPrompt: [
+      baseSystemPrompt,
+      assistance?.systemSuffix,
+      knownCharacterRuntimeInstruction(
+        mode,
+        "convert",
+        knownCharacter,
+        safeTemplateVersion,
+      ),
+    ]
+      .filter(Boolean)
+      .join("\n\n"),
+  });
+  const userText = buildConvertUserText(
+    assistance?.userText ?? chineseText,
+    mode,
+    "",
+    knownCharacter,
+    safeTemplateVersion,
+  );
+  const tagProtocol=mode==='tags'?reverseTemplateProtocol(baseSystemPrompt,mode,knownCharacter,'convert'):null;
+  if(tagProtocol){
+    let feedback='';
+    for(let attempt=0;attempt<3;attempt++){
+      const reply=await callConvertApi(systemPrompt+'\n\n'+tagProtocol.instruction,userText+(feedback?'\n上次模板校验问题：'+feedback+'。返回完整合格的JSON；保留明确事实，按所选模板允许的边界补足未限定细节，不堆重复词、不违背原输入。':''),5000,`提示词转换 · tags · 模板验收${attempt}`,true,false,true);
+      if(!reply.ok)return {ok:false,message:'转换失败：'+reply.message};
+      try{const parsed=tagProtocol.parse(reply.content??'',auditText);return {ok:true,result:parsed.prompt,variants:parsed.variants,message:'转换成功：纯Tag模板验收通过'};}
+      catch(error){feedback=error instanceof Error?error.message:String(error);}
+    }
+    return {ok:false,message:'提示词未满足纯Tag模板，已保留原提示词，未提交生图：'+feedback};
+  }
+  const contract=!knownCharacter?mixedTemplateContract(baseSystemPrompt,mode,!assistance||isSparsePromptEditSource(chineseText)):null;
+  if(contract){
+    // V5 mixed template diagnostics are advisory. Return the usable prompt on
+    // the first response; do not spend extra model calls to satisfy soft rules.
+    // Transport/API errors still fail rather than becoming applicable results.
+    if(safeTemplateVersion==='v5'){
+      const reply=await callConvertApi(systemPrompt+'\n\n'+mixedEnvelopeInstruction,userText,7000,'提示词转换 · mixed · 模板提示',true,false,true);
+      if(!reply.ok)return {ok:false,message:'转换失败：'+reply.message};
+      try{
+        const candidate=normalizeMixedEnvelope(reply.content??'',{repairMetadata:true});
+        const audit=auditMixedEnvelope(candidate,auditText,contract);
+        if(!audit.prompt.trim())return {ok:false,message:'转换失败：模型未返回可用提示词'};
+        return {ok:true,result:audit.prompt,validation:audit.stats,warnings:audit.issues,
+          message:audit.issues.length?'转换完成：模板问题仅供参考，不阻止应用或复用':`转换成功：${audit.stats.total}单元，Tag ${audit.stats.tags} / 自然语言 ${audit.stats.natural}`};
+      }catch(error){return {ok:false,message:'转换失败：内部提示词数据无法解析：'+(error instanceof Error?error.message:String(error))};}
+    }
+    let previous='',problems:string[]=[],stats:{total:number;tags:number;natural:number;tagPercent:number}|undefined;
+    let structureRepairUsed=false;
+    const structural=(issue:string)=>/角色段必须以|角色首词|base 人数|角色段数量|缺少有效段落|段落没有有效单元|保留用户指定的(?:单人|人物|多人)数量/.test(issue);
+    const deltaInstruction=`软件内部本轮输出协议：只返回一个 JSON 增量对象 {"replace":[{"segment":0,"index":0,"unit":{"kind":"tag","text":"..."}}],"append":[{"segment":0,"units":[{"kind":"natural","text":"..."}]}],"remove":[{"segment":0,"index":1}]}。根字段仅 replace/append/remove；索引从0开始，对应下方上一版的 segments[i].units[j]。没有改动的项不要返回，不返回完整提示词或 segments 根对象。unit 只能包含 kind 与 text，kind 只能 tag 或 natural。每个单元通常无逗号；引号内画面文字允许逗号和中文，不能拆开。成熟 Tag 用 tag；明确位置、身体侧、关系和层次短语用 natural，不假改 kind 凑比例。每个索引最多修改或删除一次，不改已合格事实，不新增人物或情节；含逗号的短语可 replace 成保持原意的无逗号短语。`;
+    // A full structure repair may reorder facts within a role, not swap owners.
+    // Role/count markers are structural; a misplaced first hair/clothing fact is not.
+    const preserveFacts=(before:string,after:string,issues:string[])=>{
+      const badUnits=new Set<string>();
+      for(const issue of issues.filter(issue=>!structural(issue)&&!issue.includes('校正丢失已合格单元')))for(const match of issue.matchAll(/segments\[(\d+)\]\.units\[(\d+)\]/g))badUnits.add(match[1]+':'+match[2]);
+      const original=JSON.parse(before),repaired=JSON.parse(after);
+      if(original.segments.length!==repaired.segments.length)throw Error('结构校正改变段落数量，无法可靠映射已有角色事实，未提交生图');
+      const available=new Map<string,number>();
+      for(const [segmentIndex,segment] of repaired.segments.entries())for(const unit of segment.units??[]){
+        if(!['tag','natural'].includes(unit?.kind)||typeof unit.text!=='string')continue;
+        const key=segmentIndex+'\n'+promptUnitIdentity(unit.kind,unit.text);available.set(key,(available.get(key)??0)+1);
+      }
+      for(const [segmentIndex,segment] of original.segments.entries())for(const [unitIndex,unit] of segment.units.entries()){
+        if(badUnits.has(segmentIndex+':'+unitIndex))continue;
+        const literal=unit.text.trim(),weighted=literal.match(/^(-?\d+(?:\.\d+)?)::\s*(.*?)\s*::$/),body=(weighted?weighted[2]:literal).trim();
+        if(issues.some(structural)&&unit.kind==='tag'&&((segmentIndex===0&&(!weighted||Number(weighted[1])>0)&&/^\d+\s*(?:girls?|boys?|others?)$/i.test(body))||(segmentIndex>0&&unitIndex===0&&/^(?:girl|boy|other|1girl|1boy|1other)$/i.test(literal))))continue;
+        const key=segmentIndex+'\n'+promptUnitIdentity(unit.kind,unit.text),count=available.get(key)??0;
+        if(!count)throw Error(`校正丢失已合格单元 segments[${segmentIndex}].units[${unitIndex}]：${unit.text}`);
+        available.set(key,count-1);
+      }
+    };
+    for(let attempt=0;attempt<3;attempt++){
+      const structureRepair=!!(attempt&&stats&&!structureRepairUsed&&problems.some(structural));
+      if(structureRepair)structureRepairUsed=true;
+      const delta=!!(attempt&&stats&&!structureRepair);
+      const additions=stats?Math.max(0,contract.min-stats.total,Math.ceil(stats.tags/.7)-stats.total):0;
+      const correction=delta?`\n现有 ${stats!.total} 单元，${stats!.tags} Tag，${stats!.natural} 自然短语；模板上限还可容纳 ${Math.max(0,contract.max-stats!.total)} 个单元。比例补足参考值为 ${Math.max(0,Math.min(additions,contract.max-stats!.total))} 个自然单元，这不是硬配额；优先修正具体 kind/索引问题，角色缺关系时可按明确输入补足关系。仍须满足上下限与比例，不为凑数增添事实。` : structureRepair?'\n本轮允许一次完整 segments 对象的结构修复：修正 base 人数或角色首词，只在同一角色段内重排已有单元，保留所有未指出错误的外貌、服装、道具、动作、关系和文字。不对调人物归属，不凭空增减源要求的人数；不能可靠映射原角色事实时保留原稿并失败，之后仍完整复验。不要返回增量根对象。':'';
+      const reply=await callConvertApi(systemPrompt+'\n\n'+(delta?deltaInstruction:mixedEnvelopeInstruction)+correction,userText+(attempt?`\n上次验收问题：${problems.join('；')}。只修正这些问题并保留用户明确要求及已合格单元。不得删除事实换取凑数。\n上一版：${previous}`:''),7000,`提示词转换 · mixed · ${attempt?'校正'+attempt:'模板验收'}`,true,false,true);
+      if(!reply.ok)return {ok:false,message:'转换失败：'+reply.message};
+      try{
+        const candidate=normalizeMixedEnvelope(delta?patchMixedEnvelope(previous,reply.content??''):reply.content??'',{repairMetadata:true});
+        const audit=auditMixedEnvelope(candidate,auditText,contract);
+        if(attempt&&stats)preserveFacts(previous,candidate,problems);
+        previous=candidate;
+        problems=audit.issues;stats=audit.stats;
+        if(!problems.length)return {ok:true,result:audit.prompt,validation:audit.stats,message:`转换成功：${audit.stats.total}单元，Tag ${audit.stats.tags} / 自然语言 ${audit.stats.natural}`};
+      }catch(e){problems=[...new Set([...problems,e instanceof Error?e.message:String(e)])];}
+    }
+    return {ok:false,message:'提示词未满足所选模板：'+problems.join('；')+'。本次校正已结束，未提交生图；不要自动重复同一任务。'};
+  }
+  let conversionWarnings:string[]=[];
+  let result = await callConvertApi(
+    systemPrompt,
+    userText,
+    knownCharacter ? 5000 : 3000,
+    `提示词转换 · ${mode}`,
+    true,
+  );
+  if (!result.ok) return { ok: false, message: `转换失败：${result.message}` };
+
+  // A selected template may state a hard comma-unit range. Validate the
+  // measurable contract and known mutually-exclusive camera tags before use.
+  const range = baseSystemPrompt.match(/有效语义单元[\s\S]{0,80}?(\d{1,3})\s*[–—-]\s*(\d{1,3})/);
+  const countUnits = (value:string) => value.split(/[,，]/).map(s=>s.trim()).filter(Boolean).length;
+  if (range && mode!=="natural" && !(baseSystemPrompt.includes("当前模式：纯 Tag")&&isSparsePromptEditSource(auditText)) && !knownCharacter && Number(range[1]) <= Number(range[2])) {
+    const min = Number(range[1]), max = Number(range[2]);
+    const issues = () => {
+      const value=result.content ?? '', count=countUnits(value), base=value.split('|')[0].toLowerCase().replaceAll('_',' ');
+      const problems:string[]=[];
+      if(count<min||count>max)problems.push(`有 ${count} 个逗号分隔单元，模板要求 ${min}–${max} 个`);
+      if(/[\u4e00-\u9fff]/.test(value))problems.push('只输出英文提示词，删除中文前言、说明和标题');
+      if(/俯视(?:机位|视角|镜头)|从上(?:方|往下)|from above/i.test(cameraIntentSource(auditText))&&(!/\bfrom above\b/.test(base)||/\b(?:from below|low angle)\b/.test(base)))problems.push('用户指定俯视机位：必须是 from above，删除 from below 和 low angle；人物仰视镜头只用 looking up，不改变机位');
+      if(/holding (?:the )?umbrella with one hand/i.test(value)&&/both hands (?:gripping|holding)/i.test(value))problems.push('一只手持伞与双手握伞互斥，请只保留一种不违背用户要求的握持方式');
+
+      if(/\b(?:from above|high angle|overhead view)\b/.test(base)&&/\b(?:from below|low angle|worm.s eye)\b/.test(base))problems.push('俯视机位与仰视机位互斥；角色抬头 looking up 不等于镜头 from below，请保留用户要求的机位');
+      if(/\bText\s*:/i.test(value)&&!/文字|字样|写着|写上|字幕|标语|牌上|text|lettering|saying|reads/i.test(auditText))problems.push('用户未要求画面文字，请去掉 Text: 与新增文字内容，不要添加标语');
+      return problems;
+    };
+    let problems=issues();
+    if(safeTemplateVersion==='v5'&&mode==='mixed')conversionWarnings=problems;
+    else if(problems.length){
+      result=await callConvertApi(systemPrompt,
+        `${userText}\n\n模板格式校正：${problems.join('；')}。请按同一模板重新输出完整提示词；保留明确主体、人数、外貌、场景和排除项，只允许模板和用户许可的合理细节。不要凑重复词，不要解释或计数。\n上一版：${result.content ?? ''}`,
+        3000, `提示词转换 · ${mode} · 模板格式校正`, true);
+      if(!result.ok)return {ok:false,message:`转换失败：${result.message}`};
+      problems=issues();
+      if(problems.length)return {ok:false,message:`提示词未满足所选模板：${problems.join('；')}。自动校正一次后仍未通过；未提交生图。`};
+    }
+  }
+
+  const parsed = parsePromptVariantResponse(result.content ?? "", knownCharacter);
+  let content = parsed.primary;
+  let variants = parsed.variants;
+  if (
+    knownCharacter &&
+    (!variants?.namePrompt.trim() || !variants.featurePrompt.trim())
+  ) {
+    const fallback = content.trim();
+    const namePrompt =
+      variants?.namePrompt.trim() || fallback || variants?.featurePrompt.trim() || "";
+    const featurePrompt =
+      variants?.featurePrompt.trim() ||
+      stripIdentityTagsForFeaturePrompt(fallback) ||
+      fallback ||
+      namePrompt;
+    variants = { namePrompt, featurePrompt };
+    content = namePrompt;
+  }
+  if(safeTemplateVersion==='v5'&&mode==='mixed'&&!content.trim())return {ok:false,message:'转换失败：模型未返回可用提示词'};
+  return { ok: true, result: content, variants, warnings:conversionWarnings,
+    message:conversionWarnings.length?'转换完成：模板问题仅供参考，不阻止应用或复用':"转换成功" };
+}
+
+export async function loadImageFromPath(
+  filePath: string,
+): Promise<LoadImageResult> {
+  try {
+    const buffer = await fs.readFile(filePath);
+    const dims = readImageDimensions(buffer);
+    workbenchImagePath = filePath;
+    return {
+      ok: true,
+      image: {
+        filePath,
+        fileUrl: toLocalMediaUrl(filePath),
+        width: dims.width,
+        height: dims.height,
+      },
+      metadata: await extractEmbeddedImageMetadata(buffer),
+    };
+  } catch (error: any) {
+    return {
+      ok: false,
+      message: `加载图片失败：${error?.message ?? "未知错误"}`,
+    };
+  }
+}
+
+export async function generateImage(
+  params: GenerateParams,
+  extras?: GenerateExtras,
+  saveOptions?: {
+    ignoreActiveGroup?: boolean;
+    groupOverride?: { groupId: string; folderName: string };
+    temporary?: boolean;
+    signal?: AbortSignal;
+    beforeSubmit?: NativeSubmissionGuard;
+    onPreview?: GenerationPreviewCallback;
+  },
+): Promise<GenerateResult> {
+  params = normalizeGenerateParams(params);
+  const token = getToken();
+  if (!token)
+    return {
+      ok: false,
+      message: "请先在账户管理中配置 NovelAI API Token。",
+      items: [],
+    };
+  if (!params.positivePrompt.trim())
+    return { ok: false, message: "请输入正面提示词。", items: [] };
+
+  logInfo(
+    `generate: model=${params.model} size=${params.width}x${params.height} steps=${params.steps} ` +
+      `cfg=${params.cfgScale} vibe=${extras?.vibeImages?.length ?? 0} precise=${extras?.preciseReferences?.length ?? 0}`,
+  );
+  const job = beginJob();
+  const abortOwned=()=>job.controller.abort(saveOptions?.signal?.reason);
+  saveOptions?.signal?.addEventListener('abort',abortOwned,{once:true});
+  if(saveOptions?.signal?.aborted)abortOwned();
+
+  // "fixed" mode honors the chosen seed; "random" (or seed<=0) rolls a new one.
+  const useFixedSeed = params.seedMode !== "random" && params.seed >= 0;
+  const actualSeed = useFixedSeed
+    ? params.seed
+    : crypto.randomInt(1, 2_147_483_647);
+
+  try {
+    job.controller.signal.throwIfAborted();
+    const preparedExtras = await prepareExtras(
+      params,
+      extras,
+      job.controller.signal,
+      saveOptions?.beforeSubmit,
+    );
+    const payload = buildPayload(params, actualSeed, preparedExtras);
+    let buffers: Buffer[];
+    try {
+      buffers = await postGenerateImageWithOptionalPreview(
+        payload,
+        job.controller.signal,
+        saveOptions?.onPreview,
+        saveOptions?.beforeSubmit,
+      );
+    } catch (error: any) {
+      if (
+        error?.streamPreviewStarted ||
+        !shouldRetryCharCaptionsAsPipe(error, params, preparedExtras)
+      )
+        throw error;
+      const pipePayload = buildPayload(
+        params,
+        actualSeed,
+        preparedExtras,
+        "pipe",
+      );
+      buffers = await postGenerateImageWithOptionalPreview(
+        pipePayload,
+        job.controller.signal,
+        saveOptions?.onPreview,
+        saveOptions?.beforeSubmit,
+      );
+    }
+    if (buffers.length === 0)
+      return {
+        ok: false,
+        message: "API 返回成功，但压缩包中没有图片。",
+        items: [],
+      };
+    const requestedGroup = resolveGenerationSaveGroup(extras?.historyGroupId);
+    const ordinarySaveOptions = saveOptions?.groupOverride || saveOptions?.temporary
+      ? saveOptions
+      : {
+          ...saveOptions,
+          ignoreActiveGroup: !requestedGroup,
+          groupOverride: requestedGroup,
+        };
+    const items = await saveBuffers(
+      buffers,
+      params,
+      actualSeed,
+      "t2i",
+      undefined,
+      ordinarySaveOptions,
+    );
+    void refreshStoredAccount();
+    return {
+      ok: true,
+      message: `生成完成，已保存 ${items.length} 张图片。`,
+      items,
+      actualSeed,
+    };
+  } catch (error: any) {
+    return handleGenerateError(error, "图片生成失败");
+  } finally {
+    saveOptions?.signal?.removeEventListener('abort',abortOwned);
+    job.end();
+  }
+}
+
+export async function generateI2I(
+  params: GenerateParams,
+  i2i: I2IParams,
+  extras?: GenerateExtras,
+): Promise<GenerateResult> {
+  params = normalizeGenerateParams(params);
+  const token = getToken();
+  if (!token) return { ok: false, message: "请先配置 API Token。", items: [] };
+  if (!params.positivePrompt.trim())
+    return { ok: false, message: "请输入正面提示词。", items: [] };
+  if (!workbenchImagePath)
+    return { ok: false, message: "请先加载参考图片。", items: [] };
+  logInfo(
+    `img2img: model=${params.model} size=${params.width}x${params.height} strength=${i2i?.strength}`,
+  );
+
+  const job = beginJob();
+
+  const actualSeed =
+    params.seedMode !== "random" && params.seed >= 0
+      ? params.seed
+      : crypto.randomInt(1, 2_147_483_647);
+  try {
+    const preparedExtras = await prepareExtras(
+      params,
+      extras,
+      job.controller.signal,
+    );
+    // Resize the source to the requested output dimensions — NovelAI's img2img
+    // expects the input image to match width×height; sending an arbitrary size
+    // risks a 400/500 or a misaligned composition.
+    const { buffer: workbenchBuffer } = await readWorkbenchImage();
+    const base64Image = resizeImageBufferToPng(
+      workbenchBuffer,
+      params.width,
+      params.height,
+    ).toString("base64");
+    const strength = clamp01(i2i.strength, 0.7);
+    const applyI2I = (payload: ReturnType<typeof buildPayload>) => {
+      payload.action = "img2img";
+      payload.parameters.image = base64Image;
+      payload.parameters.strength = strength;
+      if (i2i.upscaledEnhance && params.model.startsWith("nai-diffusion-5-")) {
+        payload.parameters.upscaled_enhance = true;
+      }
+      // The UI no longer exposes this ineffective control. Keep the field for
+      // API compatibility, but always send the official/default value.
+      payload.parameters.noise = 0;
+      // NOTE: the unofficial SDK's nested `img2img` descriptor was dropped — it
+      // is unverified and the same change regressed inpaint. We keep the standard
+      // flat strength/noise img2img payload plus the source-resize fix above.
+      payload.parameters.extra_noise_seed =
+        i2i.extraNoiseSeed > 0
+          ? i2i.extraNoiseSeed
+          : crypto.randomInt(1, 2_147_483_647);
+      return payload;
+    };
+
+    let buffers: Buffer[];
+    try {
+      buffers = await postGenerateImage(
+        applyI2I(buildPayload(params, actualSeed, preparedExtras)),
+        job.controller.signal,
+      );
+    } catch (error: any) {
+      if (!shouldRetryCharCaptionsAsPipe(error, params, preparedExtras))
+        throw error;
+      buffers = await postGenerateImage(
+        applyI2I(buildPayload(params, actualSeed, preparedExtras, "pipe")),
+        job.controller.signal,
+      );
+    }
+    if (buffers.length === 0)
+      return { ok: false, message: "图生图成功但无图片返回。", items: [] };
+    const items = await saveBuffers(buffers, params, actualSeed, "i2i", undefined, { actualImageSize: i2i.upscaledEnhance });
+    void refreshStoredAccount();
+    return {
+      ok: true,
+      message: `图生图完成，已保存 ${items.length} 张图片。`,
+      items,
+      actualSeed,
+    };
+  } catch (error: any) {
+    return handleGenerateError(error, "图生图失败");
+  } finally {
+    job.end();
+  }
+}
+
+// Batch redraw = img2img on an EXPLICIT source image (not the workbench image),
+// saved into a named history group (created if missing) on disk + in history.
+// Driven serially by the 图片批量重绘 tool, one call per image.
+const batchRuns=new Map<string,{controller:AbortController;done:Promise<void>}>();
+export async function waitBatchRedraw(runId:string){await batchRuns.get(runId)?.done;}
+export function cancelBatchRedraw(runId:string){const owned=batchRuns.get(runId);owned?.controller.abort(Error('批量重绘已停止'));return {ok:true,requested:Boolean(owned)};}
+export async function redrawImage(request:BatchRedrawRequest):Promise<GenerateResult>{
+ const id=request.runId??crypto.randomUUID();if(typeof id!=='string'||!/^[a-zA-Z0-9_-]{1,160}$/.test(id)||batchRuns.has(id))return {ok:false,items:[],message:'批量重绘运行标识无效或正在提交'};
+ const controller=new AbortController();let release!:()=>void;const done=new Promise<void>(r=>release=r);batchRuns.set(id,{controller,done});
+ try{prepareBatchImageService([request]);return await redrawImageRequest(request,controller.signal);}catch(error){return handleGenerateError(error,"批量重绘失败");}finally{if(batchRuns.get(id)?.controller===controller)batchRuns.delete(id);release();}
+}
+
+async function redrawImageRequest(
+  request: BatchRedrawRequest,
+  signal: AbortSignal,
+): Promise<GenerateResult> {
+  const params = normalizeGenerateParams({
+    ...request.params,
+    fileNamePrefix:
+      request.fileNamePrefix || request.params.fileNamePrefix || "redraw",
+  });
+  const token = getToken();
+  if (!token) return { ok: false, message: "请先配置 API Token。", items: [] };
+  if (!request.imageBase64)
+    return { ok: false, message: "缺少待重绘的图片。", items: [] };
+  if (!params.positivePrompt.trim())
+    return { ok: false, message: "该图片缺少提示词。", items: [] };
+
+  const job = beginJob();
+  const abortOwned=()=>job.controller.abort(signal.reason);
+  signal.addEventListener('abort',abortOwned,{once:true});if(signal.aborted)abortOwned();
+  const actualSeed =
+    params.seedMode !== "random" && params.seed >= 0
+      ? params.seed
+      : crypto.randomInt(1, 2_147_483_647);
+  try {
+    job.controller.signal.throwIfAborted();
+    prepareBatchImageService([request]);
+    const binding=request.imageServiceBinding??currentBatchImageBinding();assertBatchImageBinding(binding);
+    const guard=await authorizeAgentBatchRequest(request);
+    const beforeSubmit=async()=>{job.controller.signal.throwIfAborted();assertBatchImageBinding(binding);await guard?.();assertBatchImageBinding(binding);job.controller.signal.throwIfAborted();};
+    const srcBuffer = Buffer.from(
+      stripBase64Prefix(request.imageBase64),
+      "base64",
+    );
+    const base64Image = resizeImageBufferToPng(
+      srcBuffer,
+      params.width,
+      params.height,
+    ).toString("base64");
+    const preparedExtras = await prepareExtras(
+      params,
+      request.extras,
+      job.controller.signal,
+      beforeSubmit,
+    );
+    const strength = clamp01(request.strength, 0.4);
+    const group = ensureHistoryGroup(request.groupName);
+    const groupOverride = {
+      groupId: group.id,
+      folderName: sanitizeGroupFolderName(group.name),
+    };
+
+    const applyI2I = (payload: ReturnType<typeof buildPayload>) => {
+      payload.action = "img2img";
+      payload.parameters.image = base64Image;
+      payload.parameters.strength = strength;
+      payload.parameters.noise = 0;
+      payload.parameters.extra_noise_seed = crypto.randomInt(1, 2_147_483_647);
+      return payload;
+    };
+
+    let buffers: Buffer[];
+    try {
+      buffers = await postGenerateImage(
+        applyI2I(buildPayload(params, actualSeed, preparedExtras)),
+        job.controller.signal,
+        beforeSubmit,
+      );
+    } catch (error: any) {
+      if (!shouldRetryCharCaptionsAsPipe(error, params, preparedExtras))
+        throw error;
+      buffers = await postGenerateImage(
+        applyI2I(buildPayload(params, actualSeed, preparedExtras, "pipe")),
+        job.controller.signal,
+        beforeSubmit,
+      );
+    }
+    if (buffers.length === 0)
+      return { ok: false, message: "重绘成功但无图片返回。", items: [] };
+    const items = await saveBuffers(
+      buffers,
+      params,
+      actualSeed,
+      "redraw",
+      undefined,
+      { groupOverride },
+    );
+    void refreshStoredAccount();
+    logInfo(
+      `batch-redraw: model=${params.model} ${params.width}x${params.height} strength=${strength} group=${request.groupName}`,
+    );
+    return {
+      ok: true,
+      message: `重绘完成，已保存到分组「${group.name}」。`,
+      items,
+      actualSeed,
+    };
+  } catch (error: any) {
+    return handleGenerateError(error, "批量重绘失败");
+  } finally {
+    signal.removeEventListener('abort',abortOwned);
+    job.end();
+  }
+}
+
+export async function inpaintImage(
+  params: GenerateParams,
+  inpaintModel: NAIInpaintModel,
+  maskBase64: string,
+  strength = 1,
+  noise = 0,
+  region?: import("../../src/focused-inpaint").InpaintRegion,
+): Promise<GenerateResult> {
+  params = normalizeGenerateParams(params);
+  const token = getToken();
+  if (!token) return { ok: false, message: "请先配置 API Token。", items: [] };
+  if (!params.positivePrompt.trim())
+    return { ok: false, message: "请输入正面提示词。", items: [] };
+  if (!workbenchImagePath)
+    return { ok: false, message: "请先加载原图。", items: [] };
+  if (!maskBase64)
+    return { ok: false, message: "请先绘制需要重绘的蒙版区域。", items: [] };
+
+  const job = beginJob();
+
+  try {
+    const { buffer } = await readWorkbenchImage();
+    const focused = region ? prepareFocusedInpaintInput(bufferToPng(buffer),Buffer.from(stripBase64Prefix(maskBase64),'base64'),region,params,resizeImageBufferToPng) : null;
+    const preparedAssets = focused
+      ? prepareInpaintAssets(focused.crop,focused.cropMask.toString('base64'),focused.size)
+      : prepareInpaintAssets(buffer, maskBase64, params);
+    const actualSeed =
+      params.seedMode !== "random" && params.seed >= 0
+        ? params.seed
+        : crypto.randomInt(1, 2_147_483_647);
+    const normalizedStrength = Math.max(
+      0,
+      Math.min(1, Number.isFinite(strength) ? strength : 1),
+    );
+    // Retain the argument and transport field for backward compatibility while
+    // intentionally pinning the removed UI control to zero.
+    void noise;
+    const normalizedNoise = 0;
+    const buildInpaintPayload = (model: NAIInpaintModel) => {
+      const inpaintParams: PayloadParams = {
+        ...params,
+        model,
+        width: preparedAssets.width,
+        height: preparedAssets.height,
+      };
+      const historyParams: GenerateParams = {
+        ...params,
+        width: preparedAssets.width,
+        height: preparedAssets.height,
+      };
+      const payload = buildPayload(inpaintParams, actualSeed);
+      payload.action = "infill";
+      applyOfficialInpaintParameters(
+        payload.parameters,
+        preparedAssets,
+        normalizedStrength,
+        normalizedNoise,
+        actualSeed,
+      );
+      return { payload, historyParams, model };
+    };
+
+    let chosen: ReturnType<typeof buildInpaintPayload> | null = null;
+    let buffers: Buffer[] | null = null;
+    let lastError: any = null;
+    const candidates = currentNaiAccount() ? [inpaintModel] : inpaintModelCandidates(inpaintModel);
+    for (let index = 0; index < candidates.length; index += 1) {
+      chosen = buildInpaintPayload(candidates[index]);
+      try {
+        buffers = await postGenerateImage(
+          chosen.payload,
+          job.controller.signal,
+        );
+        break;
+      } catch (error: any) {
+        lastError = error;
+        // Only retry when the server explicitly rejects the selected inpaint
+        // model. A paid request that reaches a 5xx may already have run, so a
+        // broad server-error retry can duplicate both generation and charge.
+        const retryable = isInpaintModelCompatibilityError(error);
+        if (!retryable || index >= candidates.length - 1) {
+          annotateInpaintError(error, preparedAssets, candidates[index]);
+          throw error;
+        }
+      }
+    }
+    if (!chosen || !buffers)
+      throw lastError ?? new Error("重绘请求未返回结果。");
+    if (buffers.length === 0)
+      return { ok: false, message: "重绘成功但无图片返回。", items: [] };
+    let outputBuffers = compositeInpaintBuffers(buffers, preparedAssets);
+    if(focused) outputBuffers=outputBuffers.map(patch=>compositeFocusedPatch(patch,focused,resizeImageBufferToPng));
+    const items = await saveBuffers(
+      outputBuffers,
+      focused ? {...chosen.historyParams,width:focused.source.width,height:focused.source.height} : chosen.historyParams,
+      actualSeed,
+      "inpaint",
+      chosen.model,
+    );
+    void refreshStoredAccount();
+    const resizedNote = !focused && preparedAssets.resized
+      ? `重绘输出尺寸 ${preparedAssets.originalWidth}×${preparedAssets.originalHeight} → ${preparedAssets.width}×${preparedAssets.height}。`
+      : "";
+    return {
+      ok: true,
+      message: `重绘完成，已保存 ${items.length} 张图片。${resizedNote}`,
+      items,
+      actualSeed,
+    };
+  } catch (error: any) {
+    return handleGenerateError(error, "重绘失败");
+  } finally {
+    job.end();
+  }
+}
+
+export async function upscaleImg(
+  scale: UpscaleScale,
+  model: string,
+): Promise<SingleImageResult> {
+  const token = getToken();
+  if (!token) return { ok: false, message: "请先配置 API Token。" };
+  if (!workbenchImagePath) return { ok: false, message: "请先加载图片。" };
+  logInfo(`upscale: scale=${scale}x`);
+
+  const job = beginJob();
+  const abort = job.controller;
+  let requestDiagnostic = "";
+
+  try {
+    const { buffer, image } = await readWorkbenchImage();
+    if (!image.width || !image.height) {
+      return { ok: false, message: "无法读取图片尺寸，请重新加载图片。" };
+    }
+    const plan = planUpscale(image.width, image.height, scale);
+    if (plan.exceedsLimit) return { ok: false, message: "当前倍率超过超分限制，请选择 MAX。" };
+    const preparedImage = { width: plan.inputWidth, height: plan.inputHeight, resized: plan.resized, originalWidth: image.width, originalHeight: image.height,
+      base64: resizeImageBufferToPng(buffer, plan.inputWidth, plan.inputHeight).toString("base64") };
+    const settings = getSettings();
+    // The dedicated upscaler is served by image.novelai.net and returns a ZIP
+    // archive (same as generate-image), not a raw PNG.
+    const imageBaseUrl = resolveUpscaleBaseUrl(settings.imageBaseUrl);
+    const upscaleModel = resolveUpscaleModel(model);
+    const passes = plan.passes;
+    let passInput: Buffer = Buffer.from(preparedImage.base64, "base64");
+    let outBuffer: Buffer = passInput;
+    let sizeNote = "";
+    for (let pass = 0; pass < passes; pass += 1) {
+      const payload = buildUpscalePayload(passInput, upscaleModel);
+      requestDiagnostic = describeUpscaleRequest(imageBaseUrl, payload.width, payload.height, pass + 1);
+      logInfo(requestDiagnostic);
+      const res = await requestWithRetry(
+        () =>
+          axios.post(
+            `${imageBaseUrl}/ai/upscale`,
+            payload,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                Accept: "application/zip, application/octet-stream, image/png",
+              },
+              responseType: "arraybuffer",
+              timeout: 180_000,
+              signal: abort.signal,
+              ...proxyConfig("nai"),
+      maxRedirects: currentNaiAccount() ? 0 : undefined,
+            },
+          ),
+        // Paid upscale POST — only retry pre-charge 429s, never 5xx.
+        { signal: abort.signal, retryStatuses: [429] },
+      );
+
+      // The native decoder accepts either ZIP or raw PNG/JPEG/WebP. Invalid
+      // ZIP/HTML must not bypass validation via an unconditional raw fallback.
+      outBuffer = (await extractImages(res.data, abort.signal))[0];
+      const actual = readImageDimensions(outBuffer);
+      const inputSize = readImageDimensions(passInput);
+      if (![actual.width, actual.height].every(v => Number.isSafeInteger(v) && v > 0)) {
+        throw new Error("超分返回的数据不是有效图片。");
+      }
+      if (actual.width !== inputSize.width * 2 || actual.height !== inputSize.height * 2) {
+        // A paid, valid response must not be discarded or trigger another paid
+        // request merely because this endpoint chose a different output size.
+        sizeNote = `接口实际返回 ${actual.width}×${actual.height}，与预计倍率不同；已保存原始返回图片并停止后续付费请求。`;
+        break;
+      }
+      if (outBuffer.length === 0) break;
+      passInput = outBuffer;
+    }
+    if (outBuffer.length === 0) {
+      return { ok: false, message: "超分返回了空数据。" };
+    }
+
+    const now = new Date();
+    const date = dateStamp(now);
+    const activeGroup = resolveGenerationSaveGroup();
+    const dir = activeGroup
+      ? path.join(settings.outputDir, date, activeGroup.folderName)
+      : path.join(settings.outputDir, date);
+    await fs.mkdir(dir, { recursive: true });
+    const baseName = path
+      .basename(workbenchImagePath, path.extname(workbenchImagePath))
+      .replace(/[^\w.-]+/g, "-");
+    const filePath = path.join(
+      dir,
+      `${now.getTime()}-upscale${scale}x-${baseName}.png`,
+    );
+    // Upscale has its own save path, so apply the same metadata preference used
+    // by generation, img2img, inpaint, batch redraw, and Director tools.
+    const savedBuffer = prepareImageBufferForSave(outBuffer, settings.keepImageMetadata !== false);
+    await fs.writeFile(filePath, savedBuffer);
+    const outDims = readImageDimensions(outBuffer);
+    const outWidth = outDims.width || plan.width;
+    const outHeight = outDims.height || plan.height;
+    const item: HistoryItem = {
+      id: crypto.randomUUID(),
+      filePath,
+      fileUrl: toLocalMediaUrl(filePath),
+      date,
+      createdAt: now.toISOString(),
+      ...localGenerationTime(savedBuffer, now),
+      params: {
+        ...DEFAULT_PARAMS,
+        width: outWidth,
+        height: outHeight,
+        positivePrompt: "upscale",
+      },
+      actualSeed: 0,
+      model: "upscale",
+      width: outWidth,
+      height: outHeight,
+      groupId: activeGroup?.groupId,
+    };
+    addHistory([item]);
+    void refreshStoredAccount();
+    const resizeNote = preparedImage.resized
+      ? `原图 ${preparedImage.originalWidth}×${preparedImage.originalHeight} 已按倍率、接口尺寸对齐及面积限制调整为 ${preparedImage.width}×${preparedImage.height} 后执行。`
+      : "";
+    return { ok: true, message: `${sizeNote ? "超分结果已保存（未达到预计尺寸）。" : `超分 ${scale === "max" ? "MAX" : `${scale}x`} 完成。`}${resizeNote}${sizeNote}`, item };
+  } catch (error: any) {
+    if (axios.isCancel(error) || error?.code === "ERR_CANCELED")
+      return { ok: false, message: "超分已取消。" };
+    const status = error?.response?.status;
+    const detail = responseErrorText(error) || "未知错误";
+    const hint = /resolution too high/i.test(detail)
+      ? "接口拒绝了当前尺寸；请换用较小图片或核对接口尺寸限制。本次不会自动缩小并重发付费请求。"
+      : "";
+    return {
+      ok: false,
+      message: `超分失败${status ? `（HTTP ${status}）` : ""}：${detail}${hint ? ` ${hint}` : ""}${requestDiagnostic ? ` [${requestDiagnostic}]` : ""}`,
+    };
+  } finally {
+    job.end();
+  }
+}
+
+export async function augmentImg(
+  tool: DirectorTool,
+  options: AugmentOptions,
+): Promise<GenerateResult> {
+  const token = getToken();
+  if (!token) return { ok: false, message: "请先配置 API Token。", items: [] };
+  if (!workbenchImagePath)
+    return { ok: false, message: "请先加载图片。", items: [] };
+  logInfo(`director: tool=${tool}`);
+
+  const job = beginJob();
+
+  try {
+    const { buffer, image } = await readWorkbenchImage();
+    if (!image.width || !image.height) {
+      return {
+        ok: false,
+        message: "无法读取图片尺寸，请重新加载图片。",
+        items: [],
+      };
+    }
+    const preparedImage = prepareLimitedImage(
+      buffer,
+      MAX_NAI_DIRECTOR_INPUT_PIXELS,
+      {
+        flattenAlpha: true,
+        forcePng: true,
+      },
+    );
+    const settings = getSettings();
+    const imageBaseUrl = tokenSafeBaseUrl(
+      settings.imageBaseUrl,
+      "https://image.novelai.net",
+    );
+    const payload: Record<string, unknown> = {
+      image: preparedImage.base64,
+      width: preparedImage.width,
+      height: preparedImage.height,
+      req_type: tool,
+      defry: Math.min(5, Math.max(0, options.defry)),
+    };
+
+    if (tool === "colorize") {
+      payload.prompt = options.colorizePrompt;
+    }
+    if (tool === "emotion") {
+      payload.prompt = `${options.emotion};;${Math.min(5, Math.max(0, options.emotionLevel))}`;
+    }
+
+    const res = await axios.post(`${imageBaseUrl}/ai/augment-image`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Accept: "application/zip, application/octet-stream",
+      },
+      responseType: "arraybuffer",
+      timeout: 180_000,
+      signal: job.controller.signal,
+      ...proxyConfig("nai"),
+      maxRedirects: currentNaiAccount() ? 0 : undefined,
+    });
+
+    const buffers = await extractImages(res.data, job.controller.signal);
+    if (buffers.length === 0)
+      return { ok: false, message: "后期处理成功但无图片返回。", items: [] };
+    const outputBuffers = preparedImage.resized
+      ? buffers.map((buffer) =>
+          resizeImageBufferToPng(
+            buffer,
+            preparedImage.originalWidth,
+            preparedImage.originalHeight,
+          ),
+        )
+      : buffers;
+    const historyParams: GenerateParams = {
+      ...DEFAULT_PARAMS,
+      positivePrompt: `director:${tool}`,
+      width: preparedImage.originalWidth,
+      height: preparedImage.originalHeight,
+    };
+    const items = await saveBuffers(
+      outputBuffers,
+      historyParams,
+      0,
+      `director-${tool}`,
+      `director-${tool}`,
+    );
+    void refreshStoredAccount();
+    const resizeNote = preparedImage.resized
+      ? `原图 ${preparedImage.originalWidth}×${preparedImage.originalHeight} 超过后期接口稳态尺寸，已先缩至 ${preparedImage.width}×${preparedImage.height} 处理，并恢复到原尺寸。`
+      : "";
+    return {
+      ok: true,
+      message: `后期处理完成，已保存 ${items.length} 张图片。${resizeNote}`,
+      items,
+    };
+  } catch (error: any) {
+    return handleGenerateError(error, "后期处理失败");
+  } finally {
+    job.end();
+  }
+}
+
+// Only treat a 400/422 as a reference problem when the server error actually
+// names a reference field. A generic 400 (bad size, model, prompt, etc.) must
+// NOT be classified as "reference", otherwise callers (e.g. the comic queue)
+// fire a second *paid* reference-less retry that both wastes Anlas and hides the
+// real cause.
+function looksLikeReferenceError(detail: string): boolean {
+  return /reference|vibe|director_reference|encode|information_extracted|controlnet/i.test(
+    detail,
+  );
+}
+
+/** Recovery stays on the selected account; relay Keys must never be redirected to official hosts. */
+export function authenticationFailureMessage(status?: number, method?: 'token' | 'official-login' | 'relay'): string {
+  const service = method === 'relay' ? '中转接口' : 'NovelAI';
+  return `${service} 鉴权失败${status ? `（HTTP ${status}）` : ""}：请在账户管理中检查当前账号的 API Token 和接口地址，并重新验证。`;
+}
+
+function handleGenerateError(error: any, prefix: string): GenerateResult {
+  if (error instanceof ImageSaveError) {
+    logError(prefix, error.message);
+    return { ok: false, message: error.message, items: error.items,
+      actualSeed: error.actualSeed, failureKind: "storage" };
+  }
+  if (axios.isCancel(error) || error?.code === "ERR_CANCELED") {
+    return {
+      ok: false,
+      message: "操作已取消。",
+      items: [],
+      failureKind: "cancelled",
+    };
+  }
+  const status = error?.response?.status;
+  const detail = responseErrorText(error) || error?.message || "未知错误";
+  logError(`${prefix}${status ? `（HTTP ${status}）` : ""}`, detail);
+  const failureKind =
+    status === 401 || status === 403
+      ? "auth"
+      : status === 400 || status === 422
+        ? looksLikeReferenceError(detail)
+          ? "reference"
+          : "validation"
+        : status
+          ? "api"
+          : "validation";
+  const authHint =
+    failureKind === "auth"
+      ? authenticationFailureMessage(status, currentNaiAccount()?.method)
+      : "";
+  return {
+    ok: false,
+    message:
+      authHint || `${prefix}${status ? `（HTTP ${status}）` : ""}：${detail}`,
+    items: [],
+    failureKind,
+    statusCode: status,
+  };
+}
+
+export function cancelGeneration() {
+  cancelAllJobs();
+  return { ok: true };
+}
+
+function localSuggestTags(prompt: string): TagSuggestion[] {
+  const query = prompt.trim().toLowerCase().replace(/_/g, " ");
+  if (!query) return [];
+  const isCjk = /[㐀-鿿]/.test(query);
+
+  return TAG_DICTIONARY.map((item) => {
+    // Chinese input matches Chinese keywords; latin input matches tag/aliases.
+    const terms = isCjk
+      ? [item.zh, ...(item.keywords ?? [])]
+      : [item.tag, ...(item.aliases ?? [])].map((x) =>
+          x.toLowerCase().replace(/_/g, " "),
+        );
+    let score = 0;
+    for (const term of terms) {
+      const t = term.toLowerCase();
+      if (t === query) score = Math.max(score, 3);
+      else if (t.startsWith(query)) score = Math.max(score, 2);
+      else if (t.includes(query)) score = Math.max(score, 1);
+    }
+    return { item, score };
+  })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || b.item.count - a.item.count)
+    .slice(0, 12)
+    .map(({ item }) => ({
+      tag: item.tag,
+      count: item.count,
+      category: item.category,
+      description: item.zh,
+    }));
+}
+
+/** Tag autocomplete — calls NAI suggest-tags endpoint, with local fallback when API is unavailable. */
+export async function suggestTags(
+  model: string,
+  prompt: string,
+): Promise<TagSuggestion[]> {
+  const token = getToken();
+  if (!prompt.trim()) return [];
+  // Prefer the local Danbooru index when the user has downloaded it: it is
+  // offline, Chinese-aware, has full tag coverage and real post counts.
+  const danbooru = await searchDanbooru(prompt, 12);
+  if (danbooru.length > 0) return danbooru;
+  const fallback = localSuggestTags(prompt);
+  const serverTags = await queryTagServer(prompt, 12);
+  if (serverTags.length > 0) return serverTags;
+  if (!token) return fallback;
+  const settings = getSettings();
+  const apiBaseUrl = tokenSafeBaseUrl(
+    settings.apiBaseUrl,
+    "https://api.novelai.net",
+  );
+  try {
+    const res = await axios.get(
+      `${apiBaseUrl}/ai/generate-image/suggest-tags`,
+      {
+        params: { model, prompt },
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 5000,
+        ...proxyConfig("nai"),
+      maxRedirects: currentNaiAccount() ? 0 : undefined,
+      },
+    );
+    const tags = (res.data?.tags ?? []) as TagSuggestion[];
+    return tags.length > 0 ? tags : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Translate text (e.g. Chinese -> English). Provider is chosen in settings:
+ * "google" uses the public gtx endpoint (no key); "baidu" uses the Baidu
+ * translate open API (needs appid + secret). Runs in the main process to avoid
+ * CORS. Returns the translated string, or an error message on failure.
+ */
+export async function translateText(
+  text: string,
+  target?: string,
+  sourceLanguage?: string,
+): Promise<{ ok: boolean; text?: string; error?: string; sourceLanguage?: string }> {
+  const trimmed = (text ?? "").trim();
+  if (!trimmed) return { ok: false, error: "没有可翻译的内容。" };
+  sourceLanguage = normalizeTranslationSource(sourceLanguage);
+  const settings = getSettings();
+  target = resolveTranslationTarget(target ?? settings.translateTargetLanguage, settings.language);
+  if (settings.translateProvider === "baidu") {
+    return baiduTranslate(
+      trimmed,
+      target,
+      settings.baiduAppId.trim(),
+      settings.baiduSecret.trim(),
+      sourceLanguage,
+    );
+  }
+  if (settings.translateProvider === "ai") {
+    return aiTranslate(
+      trimmed,
+      target,
+      settings.translateAiApiUrl.trim(),
+      settings.translateAiApiKey.trim(),
+      settings.translateAiModel.trim(),
+      sourceLanguage,
+    );
+  }
+  return googleTranslate(trimmed, target, sourceLanguage);
+}
+
+async function aiTranslate(
+  text: string,
+  target: string,
+  apiUrl: string,
+  apiKey: string,
+  model: string,
+  sourceLanguage = "auto",
+): Promise<{ ok: boolean; text?: string; error?: string; sourceLanguage?: string }> {
+  if (!apiUrl || !apiKey || !model) {
+    return { ok: false, error: "请先在设置中填写 AI 翻译的 API 地址、API Key 和模型。" };
+  }
+  const targetLanguage = translationLanguageName(target);
+  const systemPrompt = [
+    "You are a precise translation engine for NovelAI prompts.",
+    `Translate the user's text into ${targetLanguage}.`,
+    target === "en" ? "Preserve existing English Danbooru tags, weights, brackets, punctuation, and comma-separated structure." : "Translate the words, including English tags, but preserve weights, brackets, punctuation, and comma-separated structure. Do not shorten or omit content.",
+    sourceLanguage === "auto"
+      ? 'Detect the source language and return JSON only: {"text":"translated text","sourceLanguage":"BCP-47 language code"}. No explanations or markdown fences.'
+      : `The source language is ${translationLanguageName(sourceLanguage)}. Return only the translated text without explanations, quotes, or markdown fences.`,
+  ].join(" ");
+  try {
+    const base = apiUrl.replace(/\/+$/, "");
+    const response = await axios.post(
+      `${base}/chat/completions`,
+      {
+        model,
+        max_tokens: 2000,
+        temperature: 0.1,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: text },
+        ],
+      },
+      {
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        timeout: 120_000,
+        ...proxyConfig("translate"),
+      },
+    );
+    const output = cleanPromptOutput(String(response.data?.choices?.[0]?.message?.content ?? "")).trim();
+    const parsed = parseTranslationReply(output, sourceLanguage);
+    if (!parsed.text) return { ok: false, error: "AI 翻译结果为空，请检查模型是否支持 Chat Completions。" };
+    recordAiCall({ label: "AI 翻译", api: "translate", model, systemPrompt, userText: text, ok: true, response: output });
+    return { ok: true, ...parsed };
+  } catch (error: any) {
+    const message = error?.response?.data?.error?.message ?? error?.response?.data?.message ?? error?.message ?? "未知错误";
+    recordAiCall({ label: "AI 翻译", api: "translate", model, systemPrompt, userText: text, ok: false, response: String(message) });
+    return { ok: false, error: `AI 翻译失败：${message}` };
+  }
+}
+
+async function googleTranslate(
+  text: string,
+  target: string,
+  sourceLanguage = "auto",
+): Promise<{ ok: boolean; text?: string; error?: string; sourceLanguage?: string }> {
+  try {
+    if (sourceLanguage === target) return { ok: true, text, sourceLanguage };
+    const plan = await prepareGooglePromptTranslation(text, async (tag) => {
+          const normalized = tag.toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+          const hits = await searchDanbooru(tag, 20); // optional local index; never downloads
+          return hits.find(hit => hit.tag.toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim() === normalized)?.category;
+        });
+    const outputs: string[] = [];
+    let detected = normalizeTranslationSource(sourceLanguage);
+    for (const query of plan.queries) {
+      const res = await axios.get(
+        "https://translate.googleapis.com/translate_a/single",
+        {
+          params: { client: "gtx", sl: sourceLanguage, tl: target, dt: "t", q: query },
+          timeout: 8_000,
+          ...proxyConfig("translate"),
+        },
+      );
+      const segments = Array.isArray(res.data?.[0]) ? res.data[0] : [];
+      const out = segments.map((s: unknown) => Array.isArray(s) && typeof s[0] === 'string' ? s[0] : '').join('').trim();
+      if (!out) return { ok: false, error: "谷歌翻译结果为空。" };
+      outputs.push(out);
+      if (detected === 'auto') detected = normalizeTranslationSource(res.data?.[2]);
+    }
+    const out = plan.restore(outputs);
+    return { ok: true, text: out, ...(detected !== "auto" ? { sourceLanguage: detected } : {}) };
+  } catch (error: any) {
+    return {
+      ok: false,
+      error: error?.message
+        ? `谷歌翻译失败：${error.message}`
+        : "谷歌翻译失败，请检查网络（可能需要代理）。",
+    };
+  }
+}
+
+async function baiduTranslate(
+  text: string,
+  target: string,
+  appid: string,
+  secret: string,
+  sourceLanguage = "auto",
+): Promise<{ ok: boolean; text?: string; error?: string; sourceLanguage?: string }> {
+  if (!appid || !secret) {
+    return { ok: false, error: "请先在设置中填写百度翻译 APP ID 与密钥。" };
+  }
+  const to = baiduTranslationTarget(target);
+  const salt = String(Date.now());
+  const sign = crypto
+    .createHash("md5")
+    .update(appid + text + salt + secret)
+    .digest("hex");
+  try {
+    const res = await axios.get(
+      "https://fanyi-api.baidu.com/api/trans/vip/translate",
+      {
+        params: { q: text, from: sourceLanguage === "auto" ? "auto" : baiduTranslationTarget(sourceLanguage), to, appid, salt, sign },
+        timeout: 8_000,
+        ...proxyConfig("translate"),
+      },
+    );
+    if (res.data?.error_code) {
+      return {
+        ok: false,
+        error: `百度翻译失败：${res.data.error_code} ${res.data.error_msg ?? ""}`,
+      };
+    }
+    const out = (res.data?.trans_result ?? [])
+      .map((r: { dst?: string }) => r?.dst ?? "")
+      .join("\n")
+      .trim();
+    if (!out) return { ok: false, error: "百度翻译结果为空。" };
+    const detected = normalizeTranslationSource(sourceLanguage === "auto" ? res.data?.from : sourceLanguage);
+    return { ok: true, text: out, ...(detected !== "auto" ? { sourceLanguage: detected } : {}) };
+  } catch (error: any) {
+    return {
+      ok: false,
+      error: error?.message
+        ? `百度翻译失败：${error.message}`
+        : "百度翻译失败，请检查网络。",
+    };
+  }
+}
+
+export async function listConfiguredMcpTools() {
+  const settings=getSettings(),type=settings.tagServerType;
+  if(type==='rest') throw Error('REST does not expose MCP tools/list');
+  return mcpListTools({type,url:settings.tagServerUrl,apiKey:settings.tagServerApiKey,tool:settings.tagServerTool,command:settings.tagServerCommand,args:settings.tagServerArgs});
+}
