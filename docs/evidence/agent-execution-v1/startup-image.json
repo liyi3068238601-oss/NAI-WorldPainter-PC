@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Desktop onboarding hero image",
+  "source": {
+    "repository": "E:/NAI-WorldPainter/手机端",
+    "path": "assets/style_presets/style_001.jpg",
+    "tracked": true,
+    "commit": "d09fb8df450d7ef2f55f0d9c9f13324ea0690785",
+    "commitDate": "2026-06-06",
+    "licenseStatus": "No tracked repository LICENSE file or asset-specific license metadata was identified; reuse was explicitly requested for this desktop app."
+  },
+  "destination": "desktop/public/worldpainter/onboarding-style-preset-001.jpg",
+  "image": {
+    "format": "jpeg",
+    "width": 1080,
+    "height": 1578,
+    "sha256": "90B8DB98A9AC7F59EA44635E8AEAFB8E26DF7E50F2B6B8BA6066582C4309E53D",
+    "copiedByteForByte": true
+  },
+  "identityEvidence": {
+    "path": "E:/NAI-WorldPainter/手机端/test/mobile_creation_layout_test.dart",
+    "lines": "322-325",
+    "note": "The mobile creation preview fixture renders this exact source image."
+  }
+}

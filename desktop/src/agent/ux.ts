@@ -13,6 +13,15 @@ export function studioToolStatus(status: string) {
     error: 'statusError', denied: 'statusDenied', aborted: 'statusStopped' } as Record<string, string>)[status] ?? 'statusRunning';
 }
 
+export function studioToolTitle(language: unknown, name: string, fallback = name) {
+  const key = ({
+    langbai_prepare_generation: 'planTitle',
+    read_skill: 'readSkillTitle',
+    langbai_apply_prompt: 'applyPromptTitle',
+  } as Record<string, string>)[name];
+  return key ? studioUxText(language, key) : fallback;
+}
+
 export function preparedStudioPreview(tool: AgentToolExecution): Record<string, unknown> | undefined {
   if (tool.name !== 'langbai_prepare_generation' || tool.status !== 'completed' || !tool.output || tool.output.length > 30_000) return;
   try {

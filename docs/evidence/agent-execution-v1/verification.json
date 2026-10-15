@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-15",
+  "platform": "win32",
+  "arch": "x64",
+  "baselineCommit": "c69aa60",
+  "scope": "Current Electron Pi Agent and onboarding image",
+  "regression": {
+    "total": 4107,
+    "passed": 4105,
+    "skipped": 2,
+    "failed": 0,
+    "pending": 2,
+    "success": true,
+    "suites": 715,
+    "testFiles": 445,
+    "skippedTests": [
+      {
+        "file": "desktop/electron/ipc/local-super-resolution.test.ts",
+        "test": "local super-resolution service runs the installed Real-CUGAN CLI on a synthetic PNG and preserves evidence under .tmp"
+      },
+      {
+        "file": "desktop/electron/ipc/vibe-fixture-acceptance.test.ts",
+        "test": "provided mixed Vibe bundle constructs both references without re-encoding"
+      }
+    ],
+    "rawReportPath": ".tmp/agent-final-regression.json",
+    "rawReportSha256": "68f4621ae1233016c9cc5e63ae9a97df9c6357b139d99ee2a1057d0ded1e4c73"
+  },
+  "commands": {
+    "typecheck": {
+      "path": "typecheck.log",
+      "sha256": "741c824fe1d512417ec78d9b6e68ebf204ebb6e49e25f7208a88a66055c46bfd",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec_command/write_stdin completion, not inferred from log text"
+    },
+    "build": {
+      "path": "build.log",
+      "sha256": "911571817e47252943d7713e3c2d9da6e4cb7c92ebb4a514761e6da6c0ba0b7a",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec_command/write_stdin completion, not inferred from log text"
+    },
+    "build-electron": {
+      "path": "build-electron.log",
+      "sha256": "4a76937367462b0d89ff4ccc0700c8ff94507bad9857774ad5267f3c3a9ed8f6",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec_command/write_stdin completion, not inferred from log text"
+    },
+    "package": {
+      "path": "package.log",
+      "sha256": "4dc369077c02ed32134b5c9a29605fb6338a0468963471f7ebc36aba5615958a",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec_command/write_stdin completion, not inferred from log text"
+    },
+    "regression": {
+      "path": "regression.log",
+      "sha256": "bbb935636288cc71d8b2505791215ce883956109747239cf8fadef5f915692e5",
+      "exitCode": 0,
+      "exitCodeSource": "Observed exec_command/write_stdin completion, not inferred from log text"
+    }
+  },
+  "package": {
+    "executable": {
+      "path": "build/WorldPainter-0.1.0-agent-preview/win-unpacked/NAI WorldPainter PC.exe",
+      "sizeBytes": 235081216,
+      "sha256": "7aa7be5e9cfd7123626067e73d29888a8cc55516fb7b6f037dda5350427b1d77"
+    },
+    "appAsar": {
+      "path": "build/WorldPainter-0.1.0-agent-preview/win-unpacked/resources/app.asar",
+      "sizeBytes": 258110618,
+      "sha256": "20b11f4661e9e939bcf97284e0789e5888f2c4abd8868d23ad3b72ff499bbc85"
+    }
+  },
+  "byteChecks": {
+    "onboardingStylePreset": {
+      "archivePath": "dist/worldpainter/onboarding-style-preset-001.jpg",
+      "desktopPath": "desktop/public/worldpainter/onboarding-style-preset-001.jpg",
+      "mobilePath": "手机端/assets/style_presets/style_001.jpg",
+      "sizeBytes": 298800,
+      "sha256": "90b8db98a9ac7f59ea44635e8aeafb8e26df7e50f2b6b8ba6066582c4309e53d",
+      "allByteEqual": true
+    },
+    "electronIpcFiles": [
+      {
+        "archivePath": "dist-electron/electron/ipc/pi-agent-core.js",
+        "localPath": "desktop/dist-electron/electron/ipc/pi-agent-core.js",
+        "packagedBytes": 9984,
+        "localBytes": 9984,
+        "sha256": "13c576c837b7ddee5f373ef7cdc32ceffd0d8fd4b2aef51f50f2d57c0428d231",
+        "equal": true
+      },
+      {
+        "archivePath": "dist-electron/electron/ipc/pi-agent-turn.js",
+        "localPath": "desktop/dist-electron/electron/ipc/pi-agent-turn.js",
+        "packagedBytes": 21077,
+        "localBytes": 21077,
+        "sha256": "eaa36c4cbbffbfc77ac9e0955a55cdf65cafbbae14334f2e74b64c3f8be26da7",
+        "equal": true
+      },
+      {
+        "archivePath": "dist-electron/electron/ipc/agent-runtime.js",
+        "localPath": "desktop/dist-electron/electron/ipc/agent-runtime.js",
+        "packagedBytes": 78807,
+        "localBytes": 78807,
+        "sha256": "51b83b8b0c62fd9d7bf92061dd8310675e6893721e5c9eac8702c49eba791991",
+        "equal": true
+      },
+      {
+        "archivePath": "dist-electron/electron/ipc/pi-studio-tools.js",
+        "localPath": "desktop/dist-electron/electron/ipc/pi-studio-tools.js",
+        "packagedBytes": 20193,
+        "localBytes": 20193,
+        "sha256": "3105fbec578677f092eedffb4ffaffa3eb288dc54ae79b302babd1c426c2052f",
+        "equal": true
+      }
+    ],
+    "allElectronIpcFilesEqual": true
+  },
+  "native": {
+    "profile": ".tmp/agent-native-final",
+    "provider": "Loopback-only synthetic SSE provider",
+    "providerFixture": "scripts/agent-native-fixture.cjs",
+    "providerFixtureSha256": "40bbde1f7d3b6f1433db65bf3d566edc5e56509701d72b20c93a8a16ee86eb97",
+    "providerEvents": "native-provider-events.jsonl",
+    "providerRequests": 10,
+    "conversationStatus": "idle",
+    "completedAssistantTurns": 3,
+    "turns": [
+      {
+        "turn": 1,
+        "status": "complete",
+        "content": "本地模拟验收：已通过真实工具应用提示词，未调用生图服务。",
+        "usage": {
+          "input": 400,
+          "output": 80,
+          "reasoning": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 480
+        },
+        "tools": [
+          {
+            "name": "read_skill",
+            "status": "completed"
+          },
+          {
+            "name": "langbai_get_generation_state",
+            "status": "completed"
+          },
+          {
+            "name": "langbai_apply_prompt",
+            "status": "completed"
+          }
+        ]
+      },
+      {
+        "turn": 2,
+        "status": "complete",
+        "content": "本地模拟验收：已通过真实工具应用提示词，未调用生图服务。",
+        "usage": {
+          "input": 300,
+          "output": 60,
+          "reasoning": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 360
+        },
+        "tools": [
+          {
+            "name": "langbai_apply_prompt",
+            "status": "completed"
+          }
+        ]
+      },
+      {
+        "turn": 3,
+        "status": "complete",
+        "content": "本地模拟验收：已通过真实工具应用提示词，未调用生图服务。",
+        "usage": {
+          "input": 300,
+          "output": 60,
+          "reasoning": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 360
+        },
+        "tools": [
+          {
+            "name": "langbai_apply_prompt",
+            "status": "completed"
+          }
+        ]
+      }
+    ],
+    "persistedGenerationState": {
+      "params": {
+        "model": "nai-diffusion-5-full",
+        "effort": "high",
+        "stylePrompt": "",
+        "positivePrompt": "1cat, window light",
+        "negativePrompt": "",
+        "width": 832,
+        "height": 1216,
+        "steps": 28,
+        "cfgScale": 6,
+        "cfgRescale": 0,
+        "sampler": "k_euler_ancestral",
+        "noiseSchedule": "karras",
+        "seed": 0,
+        "seedMode": "random",
+        "ucPreset": 2,
+        "qualityPreset": "standard",
+        "qualityToggle": true,
+        "transparentBackground": false,
+        "smea": false,
+        "smeaDyn": false,
+        "variety": false,
+        "fileNamePrefix": ""
+      },
+      "batchCount": 1,
+      "i2iParams": {
+        "strength": 0.7,
+        "noise": 0,
+        "extraNoiseSeed": 0
+      },
+      "inpaintModel": "nai-diffusion-5-full-inpainting",
+      "inpaintStrength": 1,
+      "inpaintNoise": 0,
+      "inpaintPositivePrompt": "",
+      "brushSize": 4,
+      "brushOpacity": 0.55,
+      "brushColor": "#ffffff",
+      "brushShape": "round",
+      "brushSizeUnit": "grid8",
+      "upscaleScale": 4,
+      "directorTool": "bg-removal",
+      "augmentOptions": {
+        "defry": 0,
+        "colorizePrompt": "",
+        "emotion": "happy",
+        "emotionLevel": 0
+      }
+    },
+    "realPaidRequests": 0,
+    "realModelRequests": 0,
+    "checks": {
+      "startupImageMatchesMobile": true,
+      "existingPresetTabRetained": true,
+      "worldbookTabReplacedBySkills": true,
+      "builtinSkillsVisible": true,
+      "skillReadThroughNativeTool": true,
+      "realApplyPromptWithConfirmation": true,
+      "multiTurnNativeHistoryPaired": true,
+      "textualCallRepairedThroughNativeTool": true,
+      "restartPersistence": true,
+      "finalBuildStreamingDuplicationAbsent": true,
+      "finalReplyDoesNotRetainInvocationText": true
+    },
+    "screenshots": {
+      "windows/final-startup.jpg": "First packaged candidate; same renderer and image as final package",
+      "windows/final-confirmation.jpg": "First packaged candidate, first turn confirmation",
+      "windows/final-presets.jpg": "First packaged candidate, retained presets",
+      "windows/final-skills.jpg": "Final package after restart and third completed turn",
+      "windows/final-protocol-repair-confirmation.jpg": "Final package; repair creates real tool confirmation; no duplicate streamed text",
+      "windows/final-multiturn-complete.jpg": "Final package; three completed turns across restart",
+      "windows/startup-mobile-preset.jpg": "Development candidate startup",
+      "windows/native-confirmation.jpg": "Development candidate confirmation"
+    },
+    "firstPackagedCandidateAsarSha256": "3ae8c62d1569edd084f614187622dd9346d6eb17af6a59271a9e7f27ff38d138"
+  },
+  "limitations": [
+    "Synthetic provider verifies execution plumbing, not real-model tool-selection or proactive search success rate.",
+    "No paid generation/edit request or external model request was sent.",
+    "This batch does not establish complete mobile parity or all M4 acceptance.",
+    "Native checks used one dark-theme window size; no comprehensive DPI/multi-monitor regression.",
+    "Skills are declarative in-app workflows; external scripts and packages are not executed.",
+    "Edit confirmation binds settings/account/attachment IDs, not a content hash of attachment files."
+  ]
+}

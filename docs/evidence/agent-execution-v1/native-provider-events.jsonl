@@ -1,0 +1,10 @@
+{"request":1,"tool":"read_skill","repaired":false,"historyToolCalls":0,"historyResults":0,"final":false}
+{"request":2,"tool":"langbai_get_generation_state","repaired":false,"historyToolCalls":0,"historyResults":0,"final":false}
+{"request":3,"tool":"langbai_apply_prompt","repaired":false,"historyToolCalls":0,"historyResults":0,"final":false}
+{"request":4,"tool":null,"repaired":false,"historyToolCalls":0,"historyResults":0,"final":true}
+{"request":5,"tool":null,"repaired":false,"historyToolCalls":3,"historyResults":3,"final":true}
+{"request":6,"tool":"langbai_apply_prompt","repaired":true,"historyToolCalls":3,"historyResults":3,"final":false}
+{"request":7,"tool":null,"repaired":true,"historyToolCalls":3,"historyResults":3,"final":true}
+{"request":8,"tool":null,"repaired":false,"historyToolCalls":4,"historyResults":4,"final":true}
+{"request":9,"tool":"langbai_apply_prompt","repaired":true,"historyToolCalls":4,"historyResults":4,"final":false}
+{"request":10,"tool":null,"repaired":true,"historyToolCalls":4,"historyResults":4,"final":true}

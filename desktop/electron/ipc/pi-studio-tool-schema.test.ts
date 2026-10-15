@@ -35,5 +35,18 @@ describe('actual shared templates and explicit tools',()=>{
    required:['attachmentId','maskAttachmentId','positivePrompt'],
    properties:{strength:{type:'number',minimum:0.01,maximum:1}},
   });
+  const inpaintProperties=studioPiToolSchema('langbai_inpaint_image').properties as Record<string,unknown>;
+  for(const unsupported of ['vibeReferences','preciseReferences','characterPrompts'])expect(inpaintProperties).not.toHaveProperty(unsupported);
+ });
+ it('constrains Director operations and describes the compatible colorize prompt alias',()=>{
+  expect(studioPiToolSchema('langbai_director')).toMatchObject({
+   additionalProperties:false,
+   required:['attachmentId','tool'],
+   properties:{
+    tool:{enum:['bg-removal','lineart','sketch','colorize','emotion','declutter']},
+    colorizePrompt:{type:'string',maxLength:2000},
+    prompt:{type:'string',maxLength:2000},
+   },
+  });
  });
 });

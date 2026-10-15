@@ -262,6 +262,8 @@ export interface AgentConversation {
   studioWebSearchEnabled?: boolean;
   studioTemplateEnabled?: boolean;
   studioPresetId?: string;
+  /** Skills explicitly selected for this conversation; automatic matches are resolved per turn. */
+  selectedSkillIds?: string[];
   reasoningEffort?: AgentReasoningEffort;
   autoPlayGroup: boolean;
   backgroundDataUrl?: string;
@@ -274,6 +276,10 @@ export interface AgentSkill {
   description: string;
   instructions: string;
   enabled: boolean;
+  /** Terms that make an automatically selectable skill relevant to a user turn. */
+  triggerKeywords?: string[];
+  /** When true, the skill is offered for turns matching triggerKeywords. */
+  autoSelect?: boolean;
   builtIn?: boolean;
   createdAt: string;
   updatedAt: string;

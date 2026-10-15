@@ -1,10 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
-import { studioFlowStage, studioSourceUrl, studioWebSources, studioTemplateApplyRequest, studioStoredTemplate, studioTemplateRequest, studioContextMeter, studioTemplateDraft, preparedStudioPreview, shouldFollowStudioScroll, studioToolStatus, studioUxText, validStudioModelConfig } from './ux';
+import { studioFlowStage, studioSourceUrl, studioWebSources, studioTemplateApplyRequest, studioStoredTemplate, studioTemplateRequest, studioContextMeter, studioTemplateDraft, preparedStudioPreview, shouldFollowStudioScroll, studioToolStatus, studioToolTitle, studioUxText, validStudioModelConfig } from './ux';
 it('keeps technical status names out of normal user feedback in every locale', () => {
   for (const language of ['zh-CN', 'zh-TW', 'en-US', 'ja-JP', 'ko-KR']) {
     expect(studioUxText(language, studioToolStatus('completed'))).not.toBe('completed');
     expect(studioUxText(language, 'planTitle')).not.toBe('planTitle');
+  }
+});
+it('localizes full-auto limits and skill/prompt tool titles',()=>{
+  for(const language of ['zh-CN','zh-TW','en-US','ja-JP','ko-KR']){
+    expect(studioUxText(language,'autoModeHint')).toContain('32');
+    expect(studioToolTitle(language,'read_skill','read_skill')).not.toBe('read_skill');
+    expect(studioToolTitle(language,'langbai_apply_prompt','langbai_apply_prompt')).not.toBe('langbai_apply_prompt');
   }
 });
 it('follows new content only when the user is near the end', () => {
@@ -42,9 +49,18 @@ it('prefills saved prompt data without losing negative prompts or executing tool
   expect(JSON.parse(studioTemplateDraft({name: 'empty', prefix: '', suffix: '', negativePrompt: ''})).positivePrompt).toBe('');
 });
 it('covers actionable context and template controls in every supported locale', () => {
-  for (const language of ['zh-CN','zh-TW','en-US','ja-JP','ko-KR']) for (const key of ['context','tokensEstimated','tokensReported','compactNow','autoCompact','actions','prefillOnly','templateSave','webQuery','reattach','advancedSettings','resource_memories']) {
+  for (const language of ['zh-CN','zh-TW','en-US','ja-JP','ko-KR']) for (const key of ['context','tokensEstimated','tokensReported','compactNow','autoCompact','actions','prefillOnly','templateSave','webQuery','reattach','advancedSettings','resource_memories','resource_skills','skillSelection','skillName','skillDescription','skillInstructions','skillKeywords','skillAutoSelectHint','skillUseInChat','skillEnabled','skillEdit','skillDelete']) {
     expect(studioUxText(language, key)).not.toBe(key);
   }
+});
+
+it('replaces the Pi worldbook resource with persisted skills while retaining preset controls', () => {
+  const resourcePanel = readFileSync(new URL('../components/AgentResourcePanel.tsx', import.meta.url), 'utf8');
+  expect(resourcePanel).toContain("['presets','skills','characters','memories']");
+  expect(resourcePanel).toContain('<AgentSkillsPanel');
+  expect(resourcePanel).toContain('STUDIO_BUILTIN_PRESETS.map');
+  expect(resourcePanel).not.toContain("tab==='worldbooks'");
+  expect(resourcePanel).not.toContain('lorebookIds');
 });
 
 it('wires owned page controls to real preload APIs and keeps model setup out of the header', () => {

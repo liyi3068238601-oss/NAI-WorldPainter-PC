@@ -1,0 +1,6 @@
+
+> nai-worldpainter-pc@0.1.0 test
+> vitest run --retry=0 --reporter=json --outputFile=../.tmp/agent-final-regression.json
+
+FULL_POOL_SAMPLER: candidates=600000; recipes=8; milliseconds=49
+JSON report written to E:/NAI-WorldPainter/PC端/.tmp/agent-final-regression.json

@@ -209,7 +209,7 @@ const novelAiImageUrl = "https://novelai.net/image";
 const DEFAULT_HTTP_PROXY = "http://127.0.0.1:7890";
 const DEFAULT_SOCKS_PROXY = "socks5://127.0.0.1:10808";
 const appIconUrl = "./icon.png";
-const onboardingHeroUrl = "./worldpainter-welcome.svg";
+const onboardingHeroUrl = "./worldpainter/onboarding-style-preset-001.jpg";
 const projectGithubUrl = "https://github.com/liyi3068238601-oss/NAI-WorldPainter-PC";
 
 function makeStylePresetId() {

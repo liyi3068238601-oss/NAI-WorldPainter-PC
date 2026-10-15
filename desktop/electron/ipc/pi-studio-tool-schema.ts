@@ -13,6 +13,10 @@ const generation={positivePrompt:requiredText(20_000),negativePrompt:text(20_000
   seed:integer(0,4294967295),seedMode:choice('random','fixed'),sampler:text(100),noiseSchedule:text(100),smea:flag,smeaDyn:flag,variety:flag,
   effort:{...choice('medium','high'),description:'V5 Full/inpainting only. Medium fixes 14 steps/Euler Ancestral, heavy UC, zero CFG Rescale; cannot use custom negative prompts. Never alter count when changing effort.'},qualityToggle:flag,qualityPreset:choice('standard','light','none'),ucPreset:integer(0,3),transparentBackground:flag,
   vibeReferences:refs,preciseReferences:refs,characterPrompts:refs};
+const inpaintGeneration:Record<string,Schema>={...generation};
+delete inpaintGeneration.vibeReferences;
+delete inpaintGeneration.preciseReferences;
+delete inpaintGeneration.characterPrompts;
 /** Schemas are for the fields inside Pi's {args:{...}} envelope. */
 export function studioPiToolSchema(name:string):Schema {
   let properties:Record<string,Schema>={},required:string[]=[];
@@ -32,9 +36,9 @@ export function studioPiToolSchema(name:string):Schema {
     case 'langbai_memory_list':properties={query:requiredText(1000)};required=['query'];break;
     case 'langbai_generate_image':properties={preparationId:id};required=['preparationId'];break;
     case 'langbai_redraw_image':properties={...generation,attachmentId:id,strength:number(0,1),noise:number(0,1)};required=['attachmentId','positivePrompt'];break;
-    case 'langbai_inpaint_image':properties={...generation,attachmentId:id,maskAttachmentId:id,strength:number(0.01,1),noise:number(0,1)};required=['attachmentId','maskAttachmentId','positivePrompt'];break;
+    case 'langbai_inpaint_image':properties={...inpaintGeneration,attachmentId:id,maskAttachmentId:id,strength:number(0.01,1),noise:number(0,1)};required=['attachmentId','maskAttachmentId','positivePrompt'];break;
     case 'langbai_upscale_image':properties={attachmentId:id,scale:choice(2,4)};required=['attachmentId','scale'];break;
-    case 'langbai_director':properties={attachmentId:id,tool:text(100),prompt:text(20_000),emotion:text(50),emotionLevel:number(0,1),defry:integer(0,5)};required=['attachmentId','tool'];break;
+    case 'langbai_director':properties={attachmentId:id,tool:{...text(100),enum:['bg-removal','lineart','sketch','colorize','emotion','declutter']},colorizePrompt:{...text(2_000),description:'上色提示词；旧字段 prompt 仍可单独使用。两者同时提供时内容必须一致。'},prompt:{...text(2_000),description:'兼容旧调用的上色提示词字段；与 colorizePrompt 同时提供时内容必须一致。'},emotion:choice('neutral','happy','sad','angry','surprised','scared','disgusted','amazed'),emotionLevel:number(0,1),defry:integer(0,5)};required=['attachmentId','tool'];break;
     case 'langbai_reverse_prompt':properties={attachmentId:id,scope:choice('full','character','object','scene'),hint:text(1000),knownCharacter:flag,mode:template.mode,templateVersion:template.templateVersion};required=['attachmentId'];break;
     case 'langbai_convert_prompt':properties={text:requiredText(24_000),knownCharacter:flag,mode:template.mode,templateVersion:template.templateVersion};required=['text'];break;
     case 'langbai_save_prompt_preset':properties={name:requiredText(100),prompt:requiredText()};required=['name','prompt'];break;

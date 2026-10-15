@@ -544,6 +544,11 @@ export async function executeAgentTool(
         return response(result.ok, result.ok ? "图生图完成" : "图生图失败", result, images);
       }
       case "langbai_inpaint_image": {
+        if (["vibeReferences", "preciseReferences", "characterPrompts"].some((key) =>
+          Array.isArray(args[key]) && (args[key] as unknown[]).length > 0
+        )) {
+          throw new Error("局部重绘暂不支持 Vibe 参考图、精准参考图或角色提示；这些输入未执行，请将要求写入 positivePrompt，或改用图生图。");
+        }
         const sourcePath = attachmentForRequest(request, args.attachmentId).filePath;
         const maskPath = attachmentForRequest(request, args.maskAttachmentId).filePath;
         const params = generationInput(request, args).params;
@@ -574,13 +579,24 @@ export async function executeAgentTool(
         return response(result.ok, result.ok ? "超分完成" : "超分失败", result, images);
       }
       case "langbai_director": {
-        const sourcePath = attachmentForRequest(request, args.attachmentId).filePath;
         const allowed = new Set<DirectorTool>(["bg-removal", "lineart", "sketch", "colorize", "emotion", "declutter"]);
-        const tool = allowed.has(args.tool as DirectorTool) ? args.tool as DirectorTool : "bg-removal";
+        if (!allowed.has(args.tool as DirectorTool)) {
+          throw new Error(`不支持的 Director 工具：${String(args.tool ?? "")}`);
+        }
+        const legacyPrompt = typeof args.prompt === "string" ? text(args.prompt, 2_000) : undefined;
+        const colorizePrompt = typeof args.colorizePrompt === "string" ? text(args.colorizePrompt, 2_000) : undefined;
+        if (legacyPrompt !== undefined && colorizePrompt !== undefined && legacyPrompt !== colorizePrompt) {
+          throw new Error("prompt 与 colorizePrompt 内容冲突，请只保留一个相同的上色提示词。");
+        }
+        if (args.tool !== "colorize" && (legacyPrompt !== undefined || colorizePrompt !== undefined)) {
+          throw new Error("只有 Director 上色操作支持 colorizePrompt。");
+        }
+        const sourcePath = attachmentForRequest(request, args.attachmentId).filePath;
+        const tool = args.tool as DirectorTool;
         const options: AugmentOptions = {
           ...DEFAULT_AUGMENT_OPTIONS,
           defry: finite(args.defry, 0, 0, 5),
-          colorizePrompt: text(args.colorizePrompt, 2_000),
+          colorizePrompt: colorizePrompt ?? legacyPrompt ?? "",
           emotion: ["neutral", "happy", "sad", "angry", "surprised", "scared", "disgusted", "amazed"]
             .includes(String(args.emotion)) ? args.emotion as AugmentOptions["emotion"] : "happy",
           emotionLevel: finite(args.emotionLevel, 0, 0, 1),

@@ -62,7 +62,8 @@ describe("Character Tavern direct runtime", () => {
     expect(runtimeSource).toContain('message.role !== "user" || !message.sourceMessageId');
     expect(runtimeSource).toContain('backing.role !== "user"');
     expect(runtimeSource).toContain("sourceById.get(message.sourceMessageId)");
-    expect(runtimeSource).toContain("messages.map((message) => plain(message))");
+    expect(runtimeSource).toContain("MAX_PROVIDER_IMAGE_REFERENCES = 16");
+    expect(runtimeSource).toContain("availableForImageTools");
   });
 
   it("resets the unreleased legacy Agent workspace instead of migrating it", () => {

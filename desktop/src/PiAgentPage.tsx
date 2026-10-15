@@ -13,7 +13,7 @@ import remarkGfm from 'remark-gfm';
 import { LuArrowDown, LuArrowUp, LuCheck, LuChevronDown, LuCopy, LuImage, LuLoaderCircle, LuMessageSquare, LuPencil, LuPlus, LuSearch, LuSettings, LuSparkles, LuSquare, LuArchive, LuArchiveRestore, LuTrash2, LuEllipsis, LuX, LuUserRound, LuBot, LuNetwork, LuWrench, LuGauge, LuFileText, LuShieldCheck, LuZap, LuPanelLeftOpen, LuPanelLeftClose, LuPanelRightOpen, LuPanelRightClose } from 'react-icons/lu';
 import type { AgentComposerAction, AgentConversation, AgentAttachment, AgentEvent, AgentMessage, AgentPermissionRequest, AgentWorkspaceData } from './agent/types';
 import { AGENT_PROVIDER_PRESETS, agentProviderRequiresApiKey, inferAgentProviderPreset } from './agent/provider-catalog';
-import { studioSourceUrl, studioWebSources, studioContextMeter, preparedStudioPreview, studioToolStatus, studioUxText, validStudioModelConfig } from './agent/ux';
+import { studioSourceUrl, studioWebSources, studioContextMeter, preparedStudioPreview, studioToolStatus, studioToolTitle, studioUxText, validStudioModelConfig } from './agent/ux';
 import { clampCompactThreshold } from './agent/context';
 import type { AppSettings } from './types';
 import { useAppStore } from './store';
@@ -93,7 +93,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(()=>settings?.agentUiPreferences?.sidebarOpen??window.innerWidth>760);
   const [resourcesOpen,setResourcesOpen]=useState(settings?.agentUiPreferences?.resourcesOpen??false);
-  const [resourceTab,setResourceTab]=useState<NonNullable<AgentUiPreferences['resourceTab']>>(settings?.agentUiPreferences?.resourceTab??'presets');
+  const [resourceTab,setResourceTab]=useState<NonNullable<AgentUiPreferences['resourceTab']>>(normalizeAgentUiPreferences(settings?.agentUiPreferences).resourceTab??'presets');
   const sidebarPresent=useDisclosurePresence(sidebarOpen),resourcesPresent=useDisclosurePresence(resourcesOpen);
   const leftToggle=useRef<HTMLButtonElement>(null),rightToggle=useRef<HTMLButtonElement>(null);
   const [optionsBusy,setOptionsBusy]=useState(false);
@@ -215,7 +215,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     try { const result = await action; if (result.ok) { updateWorkspace(result.workspace); if(window.innerWidth<=760)setSidebarOpen(false); } else setError(result.message ?? t('statusError')); }
     catch (reason) { setError(String(reason)); }
   };
-  const importResources=async(kind:'presets'|'worldbooks'|'characters')=>{
+  const importResources=async(kind:'presets'|'characters')=>{
     if(controlsBusy)return;setOptionsBusy(true);setError('');
     try{const result=await window.naiDesktop.importStudioResources(kind);if(result.ok){updateWorkspace(result.workspace);if(!result.cancelled&&result.message)useAppStore.getState().setToast(result.message);}else setError(result.message??t('statusError'));}catch(reason){setError(String(reason));}finally{setOptionsBusy(false);}
   };
@@ -322,7 +322,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     {message.tools.length > 0 && <AgentToolGroup message={message} language={settings?.language}>{message.tools.map((tool) => {
       const preview = preparedStudioPreview(tool);
       const web = studioWebSources(tool);
-      return <div key={tool.id} className="pi-tool"><div className="pi-tool-heading">{['pending','running'].includes(tool.status)?<LuLoaderCircle aria-hidden/>:tool.status==='completed'?<LuCheck aria-hidden/>:<LuX aria-hidden/>}<span>{tool.name === 'langbai_prepare_generation' ? t('planTitle') : tool.title}</span><span className={`pi-status pi-status-${tool.status}`}>{t(studioToolStatus(tool.status))}</span></div>
+      return <div key={tool.id} className="pi-tool"><div className="pi-tool-heading">{['pending','running'].includes(tool.status)?<LuLoaderCircle aria-hidden/>:tool.status==='completed'?<LuCheck aria-hidden/>:<LuX aria-hidden/>}<span>{studioToolTitle(settings?.language,tool.name,tool.title)}</span><span className={`pi-status pi-status-${tool.status}`}>{t(studioToolStatus(tool.status))}</span></div>
         {preview && !(pending && message.id === chat?.messages.at(-1)?.id) && plan(preview)}
         {tool.status==='error'&&<p role="alert" className="pi-notice pi-notice-error">{tool.error||t('statusError')}</p>}
         {tool.status === 'denied' && <p>{t('cancelledSafe')}</p>}

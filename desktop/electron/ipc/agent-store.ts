@@ -9,7 +9,7 @@ import {
   scoreAgentMemoryQuery,
 } from '../../src/agent/memory';
 import { normalizeStudioComposerActions } from '../../src/agent/composer-actions';
-import {studioBuiltinPreset,studioPresetId,STUDIO_DEFAULT_PRESET_ID,type StudioConversationOptions} from '../../src/agent/workspace-controls';
+import {createBuiltinAgentSkills,studioBuiltinPreset,studioPresetId,STUDIO_DEFAULT_PRESET_ID,STUDIO_SKILL_LIMITS,type StudioConversationOptions} from '../../src/agent/workspace-controls';
 import {decodeSystemPromptFile,importImageSystemPrompt,MAX_SYSTEM_PROMPT_IMPORT_BYTES,SystemPromptImportError} from '../../src/tavern/system-prompt-import';
 import {systemPromptImportErrorText,systemPromptImportText} from '../../src/tavern/system-prompt-import-text';
 import { recoverInterruptedImageRepairs } from "../../src/tavern/image-repair";
@@ -75,10 +75,7 @@ function now() {
 }
 
 function defaultSkills(): AgentSkill[] {
-  // The pre-release Agent skill system is intentionally not migrated into the
-  // roleplay product. Keep the legacy collection empty so old backup readers
-  // remain structurally compatible without surfacing obsolete concepts.
-  return [];
+  return createBuiltinAgentSkills(now());
 }
 
 export function createEmptyAgentWorkspace(): AgentWorkspaceData {
@@ -105,6 +102,7 @@ export function createEmptyAgentWorkspace(): AgentWorkspaceData {
     generationMode: "confirm",
     studioApprovalMode: "confirm",
     studioWebSearchEnabled: true,
+    selectedSkillIds: [],
     reasoningEffort: "auto",
     autoPlayGroup: false,
     pinned: false,
@@ -373,6 +371,9 @@ export function normalizeAgentWorkspace(raw: unknown, preserveRuntimeStatus = fa
         studioWebSearchEnabled: conversation.studioWebSearchEnabled!==false,
         studioTemplateEnabled: conversation.studioTemplateEnabled!==false,
         studioPresetId: typeof conversation.studioPresetId==='string'&&(studioBuiltinPreset(conversation.studioPresetId)||conversation.studioPresetId.startsWith('tavern:')&&samplerPresets.some(p=>'tavern:'+p.id===conversation.studioPresetId))?studioPresetId(conversation.studioPresetId):STUDIO_DEFAULT_PRESET_ID,
+        selectedSkillIds: Array.isArray(conversation.selectedSkillIds)
+          ? [...new Set(conversation.selectedSkillIds.filter((id): id is string => typeof id === 'string' && id.length <= 200))]
+          : [],
         reasoningEffort: (["low", "medium", "high"].includes(String(conversation.reasoningEffort))
           ? conversation.reasoningEffort
           : "auto") as AgentConversation["reasoningEffort"],
@@ -386,29 +387,52 @@ export function normalizeAgentWorkspace(raw: unknown, preserveRuntimeStatus = fa
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
   const builtIns = defaultSkills();
   const inputSkills = Array.isArray(input.skills) ? input.skills : [];
+  const storedSkillById = new Map(inputSkills
+    .filter((skill): skill is AgentSkill => Boolean(skill && typeof skill.id === "string"))
+    .map(skill => [skill.id, skill]));
+  const builtInIds = new Set(builtIns.map(skill => skill.id));
   const skillById = new Map<string, AgentSkill>();
-  for (const skill of [...builtIns, ...inputSkills]) {
-    if (!skill || typeof skill.id !== "string" || typeof skill.name !== "string" || typeof skill.instructions !== "string") continue;
+  for (const builtin of builtIns) {
+    const stored = storedSkillById.get(builtin.id);
+    skillById.set(builtin.id, {
+      ...builtin,
+      enabled: stored?.enabled !== false,
+      createdAt: typeof stored?.createdAt === "string" ? stored.createdAt : builtin.createdAt,
+      updatedAt: typeof stored?.updatedAt === "string" ? stored.updatedAt : builtin.updatedAt,
+    });
+  }
+  for (const skill of inputSkills) {
+    if (!skill || typeof skill.id !== "string" || !skill.id || builtInIds.has(skill.id)
+      || typeof skill.name !== "string" || typeof skill.instructions !== "string") continue;
+    const triggerKeywords = Array.isArray(skill.triggerKeywords)
+      ? skill.triggerKeywords.filter((item): item is string => typeof item === "string")
+      : [];
     skillById.set(skill.id, {
       id: skill.id,
-      name: skill.name.trim().slice(0, 80) || "未命名技能",
-      description: typeof skill.description === "string" ? skill.description.trim().slice(0, 300) : "",
+      name: skill.name,
+      description: typeof skill.description === "string" ? skill.description : "",
       instructions: skill.instructions,
       enabled: skill.enabled !== false,
-      builtIn: builtIns.some((item) => item.id === skill.id),
+      autoSelect: skill.autoSelect === true,
+      triggerKeywords,
       createdAt: typeof skill.createdAt === "string" ? skill.createdAt : now(),
       updatedAt: typeof skill.updatedAt === "string" ? skill.updatedAt : now(),
     });
   }
-  const memories: AgentMemory[] = (Array.isArray(input.memories) ? input.memories : [])
-    .map((item) => normalizeAgentMemorySnapshot(item, now()))
-    .filter((item): item is AgentMemory => Boolean(item));
+  for (const conversation of conversations) {
+    conversation.selectedSkillIds = (conversation.selectedSkillIds ?? []).filter(id => skillById.has(id));
+  }
   const selectedConversationId = typeof input.selectedConversationId === "string" && conversations.some((item) => item.id === input.selectedConversationId)
     ? input.selectedConversationId
     : conversations.find(item => !item.archivedAt)?.id;
+  const studioDefaults = normalizeStudioDefaults(input.studioDefaults ?? conversations.find(c => c.id === selectedConversationId));
+  if (studioDefaults.selectedSkillIds) studioDefaults.selectedSkillIds = studioDefaults.selectedSkillIds.filter(id => skillById.has(id));
+  const memories: AgentMemory[] = (Array.isArray(input.memories) ? input.memories : [])
+    .map((item) => normalizeAgentMemorySnapshot(item, now()))
+    .filter((item): item is AgentMemory => Boolean(item));
   return {
     version: AGENT_WORKSPACE_VERSION,
-    studioDefaults: normalizeStudioDefaults(input.studioDefaults??conversations.find(c=>c.id===selectedConversationId)),
+    studioDefaults,
     ...(selectedConversationId ? { selectedConversationId } : {}),
     conversations,
     skills: [...skillById.values()],
@@ -520,6 +544,7 @@ export function createAgentConversation(title?: string): AgentWorkspaceMutationR
     generationMode: workspace.defaultGenerationMode,
     studioApprovalMode: "confirm",
     studioWebSearchEnabled: true,
+    selectedSkillIds: [],
     reasoningEffort: "auto",
     autoPlayGroup: false,
     pinned: false,
@@ -530,6 +555,7 @@ export function createAgentConversation(title?: string): AgentWorkspaceMutationR
   if(defaults.lorebookIds)conversation.lorebookIds=defaults.lorebookIds.filter(id=>workspace.lorebooks.some(b=>b.id===id));
   if(defaults.studioApprovalMode)conversation.studioApprovalMode=defaults.studioApprovalMode;
   if(defaults.studioWebSearchEnabled!==undefined)conversation.studioWebSearchEnabled=defaults.studioWebSearchEnabled;
+  if(defaults.selectedSkillIds)conversation.selectedSkillIds=defaults.selectedSkillIds.filter(id=>workspace.skills.some(skill=>skill.id===id));
   if(defaults.studioTemplateEnabled!==undefined)conversation.studioTemplateEnabled=defaults.studioTemplateEnabled;
   if(defaults.studioPresetId&&(studioBuiltinPreset(defaults.studioPresetId)||workspace.samplerPresets.some(p=>'tavern:'+p.id===defaults.studioPresetId)))conversation.studioPresetId=defaults.studioPresetId;
   workspace.conversations.unshift(conversation);
@@ -642,9 +668,10 @@ export function setStudioConversationOptions(conversationId:string,patch:Partial
  if(patch.studioWebSearchEnabled!==undefined&&typeof patch.studioWebSearchEnabled==='boolean')chat.studioWebSearchEnabled=patch.studioWebSearchEnabled;
  if(patch.studioTemplateEnabled!==undefined&&typeof patch.studioTemplateEnabled==='boolean')chat.studioTemplateEnabled=patch.studioTemplateEnabled;
  if(patch.studioPresetId!==undefined){const id=patch.studioPresetId;if(typeof id!=='string'||!studioBuiltinPreset(id)&&!workspace.samplerPresets.some(p=>'tavern:'+p.id===id))return {ok:false,message:'预设不存在。',workspace};chat.studioPresetId=id;}
+  if(patch.selectedSkillIds!==undefined){if(!Array.isArray(patch.selectedSkillIds))return {ok:false,message:'无效的技能选择。',workspace};const selectedSkillIds=[...new Set(patch.selectedSkillIds.filter(id=>typeof id==='string'&&workspace.skills.some(skill=>skill.id===id)))];if(selectedSkillIds.length>STUDIO_SKILL_LIMITS.maxSelected)return {ok:false,message:`每个会话最多选择${STUDIO_SKILL_LIMITS.maxSelected}个技能。`,workspace};chat.selectedSkillIds=selectedSkillIds;}
  if(patch.characterIds!==undefined){if(!Array.isArray(patch.characterIds))return {ok:false,message:'无效的角色选择。',workspace};const ids=[...new Set(patch.characterIds.filter(id=>workspace.characters.some(c=>c.id===id)))];if(!ids.length)return {ok:false,message:'请选择一个角色卡。',workspace};chat.characterIds=ids;chat.activeCharacterId=ids.includes(patch.activeCharacterId??'')?patch.activeCharacterId:ids[0];}
  if(patch.lorebookIds!==undefined){if(!Array.isArray(patch.lorebookIds))return {ok:false,message:'无效的世界书选择。',workspace};chat.lorebookIds=[...new Set(patch.lorebookIds.filter(id=>workspace.lorebooks.some(b=>b.id===id)))];}
- workspace.studioDefaults=normalizeStudioDefaults({studioApprovalMode:chat.studioApprovalMode,studioWebSearchEnabled:chat.studioWebSearchEnabled,studioTemplateEnabled:chat.studioTemplateEnabled,studioPresetId:chat.studioPresetId,characterIds:chat.characterIds,activeCharacterId:chat.activeCharacterId,lorebookIds:chat.lorebookIds});
+ workspace.studioDefaults=normalizeStudioDefaults({studioApprovalMode:chat.studioApprovalMode,studioWebSearchEnabled:chat.studioWebSearchEnabled,studioTemplateEnabled:chat.studioTemplateEnabled,studioPresetId:chat.studioPresetId,characterIds:chat.characterIds,activeCharacterId:chat.activeCharacterId,lorebookIds:chat.lorebookIds,selectedSkillIds:chat.selectedSkillIds});
  return mutation(workspace);
 }
 
@@ -816,7 +843,24 @@ export async function exportAgentAttachment(
 
 export function upsertAgentSkill(input: Partial<AgentSkill> & Pick<AgentSkill, "name" | "instructions">): AgentWorkspaceMutationResult {
   const workspace = readAgentWorkspace();
+  if (!input || typeof input.name !== "string" || typeof input.instructions !== "string") {
+    return { ok: false, message: "技能名称和指令无效。", workspace };
+  }
   const existing = input.id ? workspace.skills.find((item) => item.id === input.id) : undefined;
+  if (!existing && workspace.skills.length >= STUDIO_SKILL_LIMITS.maxSkills) {
+    return { ok: false, message: `技能数量已达上限（${STUDIO_SKILL_LIMITS.maxSkills}）。`, workspace };
+  }
+  if(existing&&!existing.builtIn&&typeof input.enabled==='boolean'){
+    const inputKeywords=Array.isArray(input.triggerKeywords)?input.triggerKeywords:existing.triggerKeywords??[];
+    const sameKeywords=JSON.stringify(inputKeywords)===JSON.stringify(existing.triggerKeywords??[]);
+    const enabledOnly=input.name===existing.name&&input.instructions===existing.instructions
+      &&(input.description??existing.description)===existing.description
+      &&(input.autoSelect??existing.autoSelect??false)===(existing.autoSelect??false)&&sameKeywords;
+    if(enabledOnly){
+      if(existing.enabled!==input.enabled){existing.enabled=input.enabled;existing.updatedAt=now();return mutation(workspace);}
+      return {ok:true,workspace};
+    }
+  }
   if (existing?.builtIn) {
     // Built-in instructions are part of the product safety/tool contract, but
     // users must still be able to opt individual skills out of the system
@@ -829,12 +873,22 @@ export function upsertAgentSkill(input: Partial<AgentSkill> & Pick<AgentSkill, "
     return { ok: false, message: "内置技能只能启用或停用，不能覆盖内容。", workspace };
   }
   const timestamp = now();
+  const name=input.name.trim(),description=String(input.description ?? existing?.description ?? "").trim();
+  const instructions=input.instructions;
+  const triggerSource=Array.isArray(input.triggerKeywords)?input.triggerKeywords:existing?.triggerKeywords??[];
+  const triggerKeywords=[...new Set(triggerSource.filter((item):item is string=>typeof item==='string').map(item=>item.trim()).filter(Boolean))];
+  if(!name||name.length>STUDIO_SKILL_LIMITS.maxNameLength)return {ok:false,message:`技能名称不能为空且不能超过${STUDIO_SKILL_LIMITS.maxNameLength}个字符。`,workspace};
+  if(description.length>STUDIO_SKILL_LIMITS.maxDescriptionLength)return {ok:false,message:`技能简介不能超过${STUDIO_SKILL_LIMITS.maxDescriptionLength}个字符。`,workspace};
+  if(instructions.length>STUDIO_SKILL_LIMITS.maxInstructionsLength)return {ok:false,message:`技能指令不能超过${STUDIO_SKILL_LIMITS.maxInstructionsLength}个字符；现有内容已保留，请缩短后再保存。`,workspace};
+  if(triggerKeywords.length>STUDIO_SKILL_LIMITS.maxTriggerKeywords||triggerKeywords.some(item=>item.length>STUDIO_SKILL_LIMITS.maxTriggerKeywordLength))return {ok:false,message:`触发词最多${STUDIO_SKILL_LIMITS.maxTriggerKeywords}个，每个不能超过${STUDIO_SKILL_LIMITS.maxTriggerKeywordLength}个字符。`,workspace};
   const skill: AgentSkill = {
     id: existing?.id ?? crypto.randomUUID(),
-    name: input.name.trim().slice(0, 80) || "未命名技能",
-    description: String(input.description ?? existing?.description ?? "").trim().slice(0, 300),
-    instructions: input.instructions.slice(0, 30_000),
-    enabled: input.enabled ?? existing?.enabled ?? true,
+    name,
+    description,
+    instructions,
+    enabled: typeof input.enabled === "boolean" ? input.enabled : existing?.enabled ?? true,
+    triggerKeywords,
+    autoSelect: typeof input.autoSelect === "boolean" ? input.autoSelect : existing?.autoSelect ?? false,
     createdAt: existing?.createdAt ?? timestamp,
     updatedAt: timestamp,
   };
@@ -850,6 +904,12 @@ export function deleteAgentSkill(skillId: string): AgentWorkspaceMutationResult 
     return { ok: false, message: "内置技能不能删除，可将其关闭。", workspace };
   }
   workspace.skills = workspace.skills.filter((item) => item.id !== skillId);
+  for (const conversation of workspace.conversations) {
+    conversation.selectedSkillIds = (conversation.selectedSkillIds ?? []).filter((id) => id !== skillId);
+  }
+  if (workspace.studioDefaults?.selectedSkillIds) {
+    workspace.studioDefaults.selectedSkillIds = workspace.studioDefaults.selectedSkillIds.filter((id) => id !== skillId);
+  }
   return mutation(workspace);
 }
 

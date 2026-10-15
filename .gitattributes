@@ -36,3 +36,7 @@ desktop/public/worldpainter/mobile/** -text -whitespace
 desktop/mobile/test/fixtures/agent_question_options.json -text -whitespace
 docs/evidence/assistant-edit-workflow/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/evidence/assistant-tag-knowledge/* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Keep checksummed Agent acceptance logs and fixture stable across Windows checkouts.
+docs/evidence/agent-execution-v1/*.log text eol=lf
+docs/evidence/agent-execution-v1/*.jsonl text eol=lf
+scripts/agent-native-fixture.cjs text eol=lf

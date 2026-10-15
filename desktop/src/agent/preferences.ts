@@ -1,14 +1,15 @@
 import type {StudioConversationOptions} from './workspace-controls';
 export interface AgentUiPreferences {
  sidebarOpen?:boolean; resourcesOpen?:boolean; archivedView?:boolean;
- resourceTab?:'presets'|'worldbooks'|'characters'|'memories'; composerHeight?:number;
+ resourceTab?:'presets'|'skills'|'characters'|'memories'; composerHeight?:number;
 }
 /** Durable UI choices only. Never serialize modal state, permissions or secrets. */
 export function normalizeAgentUiPreferences(raw:unknown):AgentUiPreferences {
  if(!raw||typeof raw!=='object'||Array.isArray(raw))return {};
  const v=raw as Record<string,unknown>,out:AgentUiPreferences={};
  for(const key of ['sidebarOpen','resourcesOpen','archivedView'] as const)if(typeof v[key]==='boolean')out[key]=v[key];
- if(['presets','worldbooks','characters','memories'].includes(String(v.resourceTab)))out.resourceTab=v.resourceTab as AgentUiPreferences['resourceTab'];
+ if(v.resourceTab==='worldbooks')out.resourceTab='skills';
+ else if(['presets','skills','characters','memories'].includes(String(v.resourceTab)))out.resourceTab=v.resourceTab as AgentUiPreferences['resourceTab'];
  if(typeof v.composerHeight==='number'&&Number.isFinite(v.composerHeight))out.composerHeight=Math.round(Math.max(108,Math.min(420,v.composerHeight)));
  return out;
 }
@@ -20,6 +21,7 @@ export function normalizeStudioDefaults(raw:unknown):Partial<StudioConversationO
  for(const key of ['studioWebSearchEnabled','studioTemplateEnabled'] as const)if(typeof v[key]==='boolean')out[key]=v[key];
  for(const key of ['studioPresetId','activeCharacterId'] as const)if(typeof v[key]==='string'&&v[key].length<=200)out[key]=v[key];
  for(const key of ['characterIds','lorebookIds'] as const)if(Array.isArray(v[key]))out[key]=[...new Set(v[key].filter((id):id is string=>typeof id==='string'&&id.length<=200))].slice(0,256);
+ if(Array.isArray(v.selectedSkillIds))out.selectedSkillIds=[...new Set(v.selectedSkillIds.filter((id):id is string=>typeof id==='string'&&id.length<=200))];
  return out;
 }
 /** Display the recorded path, not an invented URL-to-path conversion. */

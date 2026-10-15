@@ -41,5 +41,6 @@ it('Studio reference context carries identifiers only; the selected system body 
  const chat={studioPresetId:'tavern:custom',characterIds:[]} as any;
  const refs=studioCreativeReferenceData(ws,chat,[]);expect(refs).not.toContain('BODY_SINGLE_COPY');expect(refs).not.toContain('POST_SINGLE_COPY');
  expect(JSON.parse(refs).preset).toMatchObject({id:'tavern:custom',name:'custom'});
+ expect(JSON.parse(refs)).not.toHaveProperty('worldbooks');
  expect(studioSelectedSystemPrompt(ws,chat)).toBe('BODY_SINGLE_COPY\n\nPOST_SINGLE_COPY');
 });

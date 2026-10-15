@@ -377,6 +377,20 @@
     "画像生成プラン",
     "이미지 생성 계획"
   ],
+  "readSkillTitle": [
+    "读取技能",
+    "讀取技能",
+    "Read skill",
+    "スキルを読み込む",
+    "스킬 읽기"
+  ],
+  "applyPromptTitle": [
+    "应用提示词",
+    "套用提示詞",
+    "Apply prompt",
+    "プロンプトを適用",
+    "프롬프트 적용"
+  ],
   "prompt": [
     "正面提示词",
     "正向提示詞",
@@ -1084,6 +1098,13 @@
     "プリセット",
     "프리셋"
   ],
+  "resource_skills": [
+    "技能",
+    "技能",
+    "Skills",
+    "スキル",
+    "스킬"
+  ],
   "resource_worldbooks": [
     "世界书",
     "世界書",
@@ -1175,6 +1196,60 @@
     "リソースなし。既存データは保持します。",
     "자료가 없으며 기존 데이터는 보존됩니다."
   ],
+  "skillSelection": [
+    "会话技能",
+    "對話技能",
+    "Conversation skills",
+    "会話スキル",
+    "대화 스킬"
+  ],
+  "skillSelectionHint": [
+    "选择本对话可用的技能。目录只显示简介，指令按需读取。",
+    "選擇本對話可用的技能。目錄只顯示簡介，指令按需讀取。",
+    "Choose skills for this chat. The directory shows summaries; instructions are read on demand.",
+    "この会話で使うスキルを選択します。一覧には概要だけを表示し、指示は必要時に読み込みます。",
+    "이 대화에서 사용할 스킬을 선택하세요. 목록에는 요약만 표시하고 지침은 필요할 때 읽습니다."
+  ],
+  "skillNew": ["新建技能", "新增技能", "New skill", "新しいスキル", "새 스킬"],
+  "skillEdit": ["编辑", "編輯", "Edit", "編集", "편집"],
+  "skillDelete": ["删除技能", "刪除技能", "Delete skill", "スキルを削除", "스킬 삭제"],
+  "skillBuiltIn": ["内置", "內建", "Built in", "内蔵", "내장"],
+  "skillNoDescription": ["暂无简介。", "暫無簡介。", "No description.", "説明はありません。", "설명이 없습니다."],
+  "skillUseInChat": ["本对话使用", "本對話使用", "Use in this chat", "この会話で使用", "이 대화에서 사용"],
+  "skillEnabled": ["全局启用", "全域啟用", "Enabled", "有効", "사용"],
+  "skillAutoSelect": ["按关键词自动选择", "依關鍵字自動選擇", "Auto-select by keywords", "キーワードで自動選択", "키워드로 자동 선택"],
+  "skillAutoSelectHint": [
+    "开启后，关键词命中时自动适用；关键词留空则每轮都适用。",
+    "開啟後，關鍵字命中時自動套用；關鍵字留空則每輪都套用。",
+    "When enabled, matching keywords make this skill available. With no keywords, it applies to every turn.",
+    "有効にするとキーワード一致時に適用します。キーワードが空の場合は毎ターン適用します。",
+    "켜면 키워드가 일치할 때 적용됩니다. 키워드가 비어 있으면 모든 턴에 적용됩니다."
+  ],
+  "skillName": ["名称", "名稱", "Name", "名前", "이름"],
+  "skillDescription": ["简介", "簡介", "Description", "説明", "설명"],
+  "skillInstructions": ["技能指令", "技能指令", "Instructions", "スキルの指示", "스킬 지침"],
+  "skillKeywords": ["触发关键词", "觸發關鍵字", "Trigger keywords", "トリガーキーワード", "트리거 키워드"],
+  "skillKeywordsHint": [
+    "用逗号或换行分隔关键词",
+    "用逗號或換行分隔關鍵字",
+    "Separate keywords with commas or new lines",
+    "キーワードはカンマまたは改行で区切ります",
+    "키워드는 쉼표 또는 줄바꿈으로 구분하세요"
+  ],
+  "skillEmpty": [
+    "没有技能。可以新建自定义技能。",
+    "沒有技能。可以新增自訂技能。",
+    "No skills yet. Create a custom skill to get started.",
+    "スキルはありません。カスタムスキルを作成できます。",
+    "스킬이 없습니다. 사용자 지정 스킬을 만들 수 있습니다."
+  ],
+  "skillLimitReached": [
+    "技能目录最多保留 {count} 项。请编辑或删除现有技能后再新增。",
+    "技能目錄最多保留 {count} 項。請編輯或刪除現有技能後再新增。",
+    "The skill library is limited to {count} entries. Edit or delete an existing skill before adding another.",
+    "スキルは最大 {count} 件です。追加するには既存のスキルを編集または削除してください。",
+    "스킬 라이브러리는 최대 {count}개입니다. 새 스킬을 추가하려면 기존 스킬을 수정하거나 삭제하세요."
+  ],
   "confirmMode": [
     "每次确认",
     "每次確認",
@@ -1197,11 +1272,11 @@
     "쓰기와 유료 작업마다 확인합니다."
   ],
   "autoModeHint": [
-    "直接执行软件内工具和生图，不设额外费用或次数上限；可随时停止。",
-    "直接執行軟體內工具和生圖，不設額外費用或次數上限；可隨時停止。",
-    "Run app tools and images without extra spending or count limits; Stop remains available.",
-    "追加の費用・回数上限なしでアプリ内ツールと画像生成を実行。停止できます。",
-    "추가 비용·횟수 한도 없이 앱 도구와 이미지 생성을 실행하며 중지할 수 있습니다."
+    "每轮最多自动调用工具32次；遇到失败即停止。生图可能消耗 Anlas，可随时停止。",
+    "每輪最多自動呼叫工具32次；遇到失敗即停止。生圖可能消耗 Anlas，可隨時停止。",
+    "Up to 32 automatic tool calls per turn; stops on failure. Image generation may spend Anlas. You can stop it at any time.",
+    "1ターンにつきツールを自動で最大32回呼び出し、失敗時は停止します。画像生成ではAnlasを消費する場合があります。いつでも停止できます。",
+    "턴당 도구를 최대 32회 자동 호출하며 실패하면 중지합니다. 이미지 생성에 Anlas가 사용될 수 있습니다. 언제든 중지할 수 있습니다."
   ],
   "autoCostNote": [
     "可能消耗 Anlas",

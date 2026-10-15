@@ -166,6 +166,44 @@ html.motion-reduced .pi-agent button{transition:none}
 @media(pointer:coarse){.pi-composer-grip{flex-basis:24px}.pi-agent .pi-execution-modes button,.pi-agent .pi-option-toggle,.pi-agent .pi-resource-toggle,.pi-agent .pi-resource-tabs button,.pi-agent .pi-resource-item>button,.pi-resource-check{min-height:44px}.pi-agent .pi-resource-toggle{width:44px;min-width:44px}.pi-agent .pi-resource-panel>header .pi-icon{width:44px;min-width:44px;min-height:44px}}
 html.motion-reduced .pi-resource-panel{animation:none}
 
+.pi-skill-manager{display:flex;flex-direction:column;gap:9px;padding-bottom:10px}
+.pi-skill-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.pi-skill-heading>div{display:flex;min-width:0;flex-direction:column;gap:4px}
+.pi-skill-heading strong{font-size:12px}
+.pi-skill-card-title strong{font-size:13px}
+.pi-skill-heading small,.pi-skill-manager>small{font-size:11px;line-height:1.5;color:var(--pi-muted)}
+.pi-agent .pi-skill-heading button{flex:0 0 auto;min-height:30px;padding:5px 7px;font-size:10px}
+.pi-skill-heading button svg,.pi-skill-card-title svg,.pi-skill-auto svg{width:13px;height:13px}
+.pi-skill-list{display:flex;flex-direction:column;gap:7px}
+.pi-skill-card{padding:9px;border:1px solid var(--pi-line);border-radius:10px;background:var(--pi-card);min-width:0}
+.pi-skill-card.is-selected{border-color:var(--pi-accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--pi-accent) 18%,transparent)}
+.pi-skill-card.is-disabled{opacity:.72}
+.pi-skill-card-title{display:flex;align-items:center;justify-content:space-between;gap:5px}
+.pi-skill-card-title strong{min-width:0;overflow-wrap:anywhere}
+.pi-skill-card-title span{display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;color:var(--pi-muted);font-size:10px}
+.pi-skill-card>p{margin:5px 0 7px;color:var(--pi-muted);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.pi-skill-check{display:flex;align-items:center;gap:6px;min-height:27px;font-size:12px;color:var(--pi-text);cursor:pointer}
+.pi-skill-check input{width:14px;height:14px;accent-color:var(--pi-accent);flex:0 0 auto}
+.pi-skill-check span{flex:1;min-width:0}
+.pi-skill-check svg{width:13px;height:13px;color:var(--pi-accent)}
+.pi-skill-auto{display:block;margin-top:5px;color:var(--pi-accent);font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.pi-skill-auto svg{vertical-align:middle;margin-right:3px}
+.pi-skill-actions{display:flex;justify-content:flex-end;gap:5px;margin-top:5px}
+.pi-agent .pi-skill-actions button,.pi-skill-editor>header button{min-height:28px;padding:4px 7px;font-size:10px}
+.pi-skill-actions button svg{width:12px;height:12px}
+.pi-agent .pi-skill-actions button.is-danger{color:var(--danger,#b42318)}
+.pi-skill-editor{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--pi-line);border-radius:10px;background:var(--pi-card)}
+.pi-skill-editor>header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pi-skill-editor>header strong{display:flex;align-items:center;gap:5px;font-size:12px}
+.pi-skill-editor>header strong svg{width:14px;height:14px;color:var(--pi-accent)}
+.pi-skill-editor>label:not(.pi-skill-check){display:flex;flex-direction:column;gap:4px;color:var(--pi-muted);font-size:11px}
+.pi-skill-editor input:not([type=checkbox]),.pi-skill-editor textarea{box-sizing:border-box;width:100%;min-width:0;border:1px solid var(--pi-line);border-radius:7px;padding:7px;background:var(--bg-input);color:var(--pi-text);font:inherit;font-size:12px;resize:vertical}
+.pi-skill-editor textarea{line-height:1.5}
+.pi-skill-editor>small{font-size:11px;line-height:1.5;color:var(--pi-muted)}
+.pi-skill-editor>footer{display:flex;justify-content:flex-end;gap:6px}
+.pi-skill-editor>footer button{min-height:30px;padding:5px 9px;font-size:10px}
+.pi-skill-error{margin:0;padding:6px 8px;font-size:10px}
+
 /* v9: edge controls, no input-footer resource button; right drawer starts closed. */
 .pi-sidebar[hidden]{display:none!important}
 .pi-agent .pi-side-toggle{align-self:flex-start;flex:0 0 30px;width:30px;min-width:30px;min-height:34px;margin-top:10px;padding:5px;border:0;background:transparent;border-radius:8px;color:var(--pi-muted);z-index:32}

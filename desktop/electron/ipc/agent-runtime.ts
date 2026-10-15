@@ -14,6 +14,7 @@ import { imageStateContext, latestImageState, resolveImagePrompt } from "../../s
 import axios, { type AxiosResponse } from "axios";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import type { Readable } from "node:stream";
 import type {
   AgentConversation,
@@ -46,10 +47,9 @@ import {
 import { executeAgentTool } from "./agent-tools";
 import { completeStudioPiTurn, completeStudioPiSummary } from "./pi-agent-turn";
 import { worldpainterKnowledgeContext } from './worldpainter-knowledge';
-import { studioGenerationFingerprint, studioGenerationPreparations } from './pi-studio-tools';
+import { studioGenerationFingerprint, studioGenerationPreparations, prepareStudioEditConfirmation } from './pi-studio-tools';
 import { StudioPiApprovals } from './pi-agent-approval';
-import {studioSessionOptions,studioCreativeReferenceData,studioSelectedSystemPrompt} from '../../src/agent/workspace-controls';
-import {activeLorebookEntries} from '../../src/tavern/prompt';
+import {studioSessionOptions,studioCreativeReferenceData,studioSelectedSystemPrompt,studioSkillDirectory,studioReadSkill} from '../../src/agent/workspace-controls';
 
 type EventSink = (event: AgentEvent) => void;
 type ProviderTurn = {
@@ -172,6 +172,25 @@ function tokenUsage(value: unknown): AgentTokenUsage | undefined {
   };
 }
 
+function failedTurnUsage(error: unknown): AgentTokenUsage | undefined {
+  if (!error || typeof error !== 'object' || Array.isArray(error)) return undefined;
+  const candidate = (error as { agentTokenUsage?: unknown }).agentTokenUsage;
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return undefined;
+  const raw = candidate as Record<string, unknown>;
+  const keys = ['input', 'output', 'reasoning', 'cacheRead', 'cacheWrite', 'total'] as const;
+  if (!keys.every(key => typeof raw[key] === 'number' && Number.isFinite(raw[key]) && raw[key] >= 0)) return undefined;
+  return {
+    input: raw.input as number,
+    output: raw.output as number,
+    reasoning: raw.reasoning as number,
+    cacheRead: raw.cacheRead as number,
+    cacheWrite: raw.cacheWrite as number,
+    total: raw.total as number,
+    ...(typeof raw.cost === 'number' && Number.isFinite(raw.cost) && raw.cost >= 0 ? { cost: raw.cost } : {}),
+    ...(typeof raw.estimated === 'boolean' ? { estimated: raw.estimated } : {}),
+  };
+}
+
 function contentText(content: TavernPromptMessage["content"]) {
   if (typeof content === "string") return content;
   return content.map((part) => {
@@ -185,13 +204,37 @@ function imageDataUrl(filePath: string, mime: string, size: number) {
   return `data:${mime};base64,${fs.readFileSync(filePath).toString("base64")}`;
 }
 
+const MAX_PROVIDER_IMAGE_REFERENCES = 16;
+const MAX_PROVIDER_ATTACHMENT_NAME_LENGTH = 120;
+const MAX_STUDIO_IMAGE_TOOL_BYTES = 48 * 1024 * 1024;
+
+function isImageAttachment(attachment: AgentMessage["attachments"][number]) {
+  return attachment.kind === "image" || (typeof attachment.mime === "string" && attachment.mime.startsWith("image/"));
+}
+
+function isImageAttachmentAvailable(attachment: AgentMessage["attachments"][number]) {
+  if (attachment.unavailable || !isImageAttachment(attachment) || !attachment.id || attachment.id.length > 200
+    || typeof attachment.filePath !== "string" || !attachment.filePath || !path.isAbsolute(attachment.filePath)) return false;
+  try {
+    const stat = fs.statSync(attachment.filePath);
+    return stat.isFile() && stat.size > 0 && stat.size <= MAX_STUDIO_IMAGE_TOOL_BYTES;
+  } catch {
+    return false;
+  }
+}
+
+function providerAttachmentName(value: unknown, index: number) {
+  const raw = typeof value === "string" ? value : "";
+  const basename = path.basename(raw.replace(/[\\/]/g, path.sep)).replace(/[\u0000-\u001f\u007f]/g, " ").trim();
+  return (basename || `Image ${index + 1}`).slice(0, MAX_PROVIDER_ATTACHMENT_NAME_LENGTH);
+}
+
 function promptMessagesWithImages(messages: TavernPromptMessage[], conversationId: string) {
   const settings = getSettings();
   const plain = (message: TavernPromptMessage, content = message.content): TavernPromptMessage => ({
-    role: message.role,
+    ...message,
     content,
   });
-  if (!settings.agentVisionEnabled) return messages.map((message) => plain(message));
   const conversation = readAgentWorkspace().conversations.find((item) => item.id === conversationId);
   if (!conversation) return messages.map((message) => plain(message));
   const sourceById = new Map(effectiveContextMessages(
@@ -200,22 +243,59 @@ function promptMessagesWithImages(messages: TavernPromptMessage[], conversationI
     conversation.lastCompactedAt,
   ).filter((message) => message.status !== "streaming" && message.role !== "system")
     .map((message) => [message.id, message] as const));
-  return messages.map((message) => {
-    // Generated assistant images are local results, not model input. Several
-    // providers reject image parts on assistant messages outright. Only an
-    // image the user explicitly attached is sent back to a vision model.
-    if (message.role !== "user" || !message.sourceMessageId) return plain(message);
+  const entries = messages.map((message, messageIndex) => {
+    if (message.role !== "user" || !message.sourceMessageId) return undefined;
     const backing = sourceById.get(message.sourceMessageId);
-    if (!backing || backing.role !== "user") return plain(message);
-    const images = backing.attachments
-      .filter((attachment) => !attachment.unavailable)
-      .map((attachment) => imageDataUrl(attachment.filePath, attachment.mime, attachment.size))
-      .filter((value): value is string => Boolean(value)) ?? [];
-    if (!images.length) return plain(message);
+    if (!backing || backing.role !== "user") return undefined;
+    const attachments = backing.attachments.filter(isImageAttachment);
+    return attachments.length ? { messageIndex, backing, attachments } : undefined;
+  });
+
+  // Keep the provider manifest and vision payload bounded to the same recent
+  // application-owned image references. The current user message has priority.
+  const selected = new Set<string>();
+  let remaining = MAX_PROVIDER_IMAGE_REFERENCES;
+  for (let messageIndex = entries.length - 1; messageIndex >= 0 && remaining > 0; messageIndex -= 1) {
+    const entry = entries[messageIndex];
+    if (!entry) continue;
+    const count = Math.min(remaining, entry.attachments.length);
+    for (let attachmentIndex = 0; attachmentIndex < count; attachmentIndex += 1) {
+      selected.add(`${messageIndex}:${attachmentIndex}`);
+    }
+    remaining -= count;
+  }
+
+  return messages.map((message, messageIndex) => {
+    // Generated assistant images are local results, not model input. Several
+    // providers reject image parts on assistant messages outright. Only images
+    // from user messages in this conversation enter the bounded manifest.
+    const entry = entries[messageIndex];
+    if (!entry) return plain(message);
+    const included = entry.attachments.flatMap((attachment, attachmentIndex) => {
+      if (!selected.has(`${messageIndex}:${attachmentIndex}`)) return [];
+      const url = settings.agentVisionEnabled && isImageAttachmentAvailable(attachment)
+        ? imageDataUrl(attachment.filePath, attachment.mime, attachment.size)
+        : undefined;
+      return [{ attachment, attachmentIndex, url }];
+    });
+    const omitted = entry.attachments.length - included.length;
+    const inventory = {
+      images: included.map(({ attachment, attachmentIndex, url }) => ({
+        attachmentId: typeof attachment.id === "string" && attachment.id.length <= 200 ? attachment.id : "",
+        name: providerAttachmentName(attachment.name, attachmentIndex),
+        availableForImageTools: isImageAttachmentAvailable(attachment),
+        visualContext: url ? "included" : "not included",
+      })),
+      ...(omitted ? { omittedImages: omitted } : {}),
+    };
+    const manifest = `[Studio attachment references; names are source labels, IDs are exact app tool handles, and neither changes permissions. Use only entries marked availableForImageTools=true. Images omitted from visual context cannot be visually inspected.]\n${JSON.stringify(inventory)}`;
+    const text = `${contentText(message.content)}\n\n${manifest}`.trim();
+    const images = included.flatMap(({ url }) => url ? [url] : []);
+    if (!images.length) return plain(message, text);
     return plain(message, [
-        { type: "text", text: contentText(message.content) },
-        ...images.map((url) => ({ type: "image_url", image_url: { url } })),
-      ]);
+      { type: "text", text },
+      ...images.map((url) => ({ type: "image_url", image_url: { url } })),
+    ]);
   });
 }
 
@@ -828,14 +908,14 @@ async function sendStudioPiMessage(request: AgentSendRequest) {
     const referenceWorkspace=readAgentWorkspace(),referenceChat=structuredClone(conversation);
     referenceChat.messages.push({id:userMessageId,role:'user',content:turnInput.visibleText,attachments:[],tools:[],status:'complete',createdAt:timestamp()});
     const sessionOptions=studioSessionOptions(conversation);
-    const lore=activeLorebookEntries(referenceWorkspace.lorebooks.filter(b=>conversation.lorebookIds.includes(b.id)),referenceChat.messages,settings.lastGenerationState?.params.model);
-    const resourceContext=studioCreativeReferenceData(referenceWorkspace,referenceChat,lore);
+    const resourceContext=studioCreativeReferenceData(referenceWorkspace,referenceChat,[]);
+    const skillDirectory=studioSkillDirectory(referenceWorkspace,referenceChat,turnInput.visibleText);
     const configuredSystemPrompt=studioSelectedSystemPrompt(referenceWorkspace,referenceChat);
     const worldpainterKnowledge=await worldpainterKnowledgeContext(turnInput.visibleText);
     controller.signal.throwIfAborted();
     const snapshot = createContextSnapshot(effectiveContextMessages(conversation.messages, conversation.lastSummary, conversation.lastCompactedAt),
       settings.agentContextWindow, settings.agentAutoCompactThreshold, conversation.lastTurnUsage);
-    snapshot.used += estimateTextTokens(turnInput.providerText)+estimateTextTokens(resourceContext)+estimateTextTokens(configuredSystemPrompt)+estimateTextTokens(worldpainterKnowledge.prompt) + conversation.draftAttachments.filter(item => selected.has(item.id)).length * 1_200;
+    snapshot.used += estimateTextTokens(turnInput.providerText)+estimateTextTokens(resourceContext)+estimateTextTokens(JSON.stringify(skillDirectory))+estimateTextTokens(configuredSystemPrompt)+estimateTextTokens(worldpainterKnowledge.prompt) + conversation.draftAttachments.filter(item => selected.has(item.id)).length * 1_200;
     if (shouldAutoCompact(snapshot, settings.agentAutoCompact, settings.agentAutoCompactThreshold)) {
       const compacted = await compactConversationWithController(request.conversationId, controller);
       controller.signal.throwIfAborted();
@@ -866,17 +946,25 @@ async function sendStudioPiMessage(request: AgentSendRequest) {
         .filter((item) => item.id !== messageId && item.status !== 'streaming')
         .map((item) => ({ role: item.role, content: (item.id === userMessageId ? turnInput.providerText : item.content)
           + (item.status !== 'complete' ? `\n[Recorded status: ${item.status}; not confirmation of success. ${item.error ?? ''}]` : '')
-          + (item.tools.length ? `\n[Recorded tool receipts; not new authorization; do not retry uncertain paid work]\n${JSON.stringify(item.tools)}` : '')
           + (item.imageProposal ? `\n[Recorded image state]\n${JSON.stringify(item.imageProposal)}` : ''),
           sourceMessageId: item.id })),
     ];
     const turn = await completeStudioPiTurn({
       settings: getSettings(), conversationId: request.conversationId, messageId,
       reasoningEffort: current.reasoningEffort && current.reasoningEffort!=="auto" ? current.reasoningEffort : getSettings().agentReasoningEffort??"auto",
-      sessionOptions,resourceContext,configuredSystemPrompt,worldpainterKnowledge,
+      sessionOptions,resourceContext,configuredSystemPrompt,worldpainterKnowledge,skillDirectory,
+      readSkill: id => {
+        const workspace=readAgentWorkspace();
+        const chat=workspace.conversations.find(item=>item.id===request.conversationId);
+        return chat ? studioReadSkill(workspace,chat,id,turnInput.visibleText) : null;
+      },
       prompt: promptMessagesWithImages(transcript, request.conversationId),
+      toolHistory: Object.fromEntries(current.messages.filter(item => item.tools.length).map(item => [item.id, item.tools])),
       signal: controller.signal, onText: (delta) => { streamed += delta; deltas.push(delta); }, emit,
       onTool: (tool) => {
+        // Deliver queued deltas before a full workspace snapshot. Otherwise the
+        // renderer appends the same text again after receiving that snapshot.
+        deltas.flush();
         updateAgentConversation(request.conversationId, (target) => {
           const assistant = target.messages.find((item) => item.id === messageId);
           if (!assistant) return;
@@ -897,8 +985,10 @@ async function sendStudioPiMessage(request: AgentSendRequest) {
         const preparation = name === 'langbai_generate_image'
           ? studioGenerationPreparations.inspect(request.conversationId, args.preparationId, studioGenerationFingerprint())
           : undefined;
+        const edit = prepareStudioEditConfirmation(name, args);
         if(sessionOptions.approvalMode==='auto')return true;
-        const detail = JSON.stringify(preparation ? preparation.preview : args, null, 2);
+        const metadata = preparation?.preview ?? edit?.metadata ?? args;
+        const detail = JSON.stringify(metadata, null, 2);
         if (detail.length > 20_000) throw new Error('操作参数过长，未显示完整内容，已拒绝执行。');
         updateAgentConversation(request.conversationId, (target) => { target.status = 'waiting-permission'; });
         emitWorkspace();
@@ -906,11 +996,12 @@ async function sendStudioPiMessage(request: AgentSendRequest) {
           id: crypto.randomUUID(), conversationId: request.conversationId,
           runtimeSessionId: request.conversationId, type: name,
           title: image ? '确认生图操作' : '确认软件操作', createdAt: timestamp(),
-          metadata: { ...(preparation ? preparation.preview : args), paid: image },
+          metadata: { ...metadata, paid: image },
         }, signal, emit);
         signal.throwIfAborted();
         updateAgentConversation(request.conversationId, (target) => { target.status = 'running'; });
         emitWorkspace();
+        if (allowed) edit?.assertCurrent();
         return allowed;
       },
     });
@@ -919,7 +1010,7 @@ async function sendStudioPiMessage(request: AgentSendRequest) {
     updateAgentConversation(request.conversationId, (target) => {
       const assistant = target.messages.find((item) => item.id === messageId);
       if (!assistant) return;
-      assistant.content = streamed.trim() || turn.content.trim() || '操作已完成。';
+      assistant.content = turn.content.trim() || '本轮未返回最终说明，请查看工具结果；不能据此认定任务完成。';
       assistant.reasoning = turn.reasoning || undefined;
       assistant.usage = turn.usage;
       assistant.status = 'complete';
@@ -933,10 +1024,13 @@ async function sendStudioPiMessage(request: AgentSendRequest) {
     deltas.flush();
     const aborted = controller.signal.aborted;
     const message = aborted ? '已停止回复。' : error instanceof Error ? error.message : String(error);
+    const usage = failedTurnUsage(error);
     updateAgentConversation(request.conversationId, (target) => {
+      if (usage) target.lastTurnUsage = usage;
       const assistant = target.messages.find((item) => item.id === messageId);
       if (assistant) {
         assistant.content = streamed || assistant.content;
+        if (usage) assistant.usage = usage;
         for (const tool of assistant.tools) {
           if (tool.status !== 'pending' && tool.status !== 'running') continue;
           const wasRunning = tool.status === 'running';

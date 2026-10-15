@@ -1,7 +1,8 @@
 import type { AgentEvent, AgentToolBridgeResponse } from '../../src/agent/types';
+import { redactAgentToolResponseForModel } from '../../src/agent/redact';
 import { calculateImageGenerationAnlas } from '../../src/anlas';
-import { buildAgentGenerationInput } from '../../src/agent/generation-input';
-import { DEFAULT_PARAMS, effectiveNAIEffortParams } from '../../src/types';
+import { applyAgentPromptLocks, buildAgentGenerationInput, defaultAgentInpaintModel, resolveAgentPromptLocks } from '../../src/agent/generation-input';
+import { DEFAULT_I2I_PARAMS, DEFAULT_PARAMS, effectiveNAIEffortParams } from '../../src/types';
 import { retainedPrompts } from '../../src/retained-prompts';
 import { AGENT_READ_TOOLS, AGENT_MUTATING_TOOLS, executeAgentTool } from './agent-tools';
 import { compatibleAgentInput } from './agent-image-provider';
@@ -23,6 +24,162 @@ export function studioGenerationFingerprint() {
     modelMode: settings.modelMode, generationGroupId: settings.generationGroupId,
     retained: retainedPrompts(settings), tierLevel: account.tierLevel,
     hasActiveSubscription: account.hasActiveSubscription });
+}
+
+function finite(value: unknown, fallback: number, min: number, max: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(min, Math.min(max, parsed)) : fallback;
+}
+
+function referenceAttachmentId(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+  const id = (value as Record<string, unknown>).attachmentId;
+  return typeof id === 'string' ? id.trim().slice(0, 200) : '';
+}
+
+const studioEditTools = new Set([
+  'langbai_redraw_image', 'langbai_inpaint_image', 'langbai_upscale_image', 'langbai_director',
+]);
+
+/**
+ * Build the safe, effective operation details shown while a Studio edit waits
+ * for approval. The returned assertion binds that approval to the same image
+ * settings and account that will be read by executeAgentTool.
+ */
+export function prepareStudioEditConfirmation(name: string, args: Record<string, unknown>) {
+  if (!studioEditTools.has(name)) return undefined;
+  const settings = getSettings();
+  const fingerprint = studioGenerationFingerprint();
+  const sourceAttachmentId = typeof args.attachmentId === 'string' ? args.attachmentId.slice(0, 200) : undefined;
+  let metadata: Record<string, unknown>;
+
+  if (name === 'langbai_redraw_image' || name === 'langbai_inpaint_image') {
+    if (name === 'langbai_inpaint_image' && [
+      'vibeReferences', 'preciseReferences', 'characterPrompts',
+    ].some((key) => Array.isArray(args[key]) && (args[key] as unknown[]).length > 0)) {
+      throw new Error('局部重绘暂不支持 Vibe 参考图、精准参考图或角色提示；这些输入未执行，请将要求写入 positivePrompt，或改用图生图。');
+    }
+    const built = buildAgentGenerationInput(args, {
+      params: settings.lastGenerationState?.params ?? DEFAULT_PARAMS,
+      extras: {
+        vibeImages: [], charCaptions: [], preciseReferences: [],
+        historyGroupId: settings.generationGroupId || undefined,
+        modelMode: settings.modelMode,
+      },
+      modelMode: settings.modelMode,
+      historyGroupId: settings.generationGroupId || undefined,
+    }, (attachmentId) => `approval-placeholder:${attachmentId}`);
+    const params = applyAgentPromptLocks(
+      built.params,
+      resolveAgentPromptLocks(retainedPrompts(settings)),
+    );
+    const effective = effectiveNAIEffortParams(params);
+    const vibeInputs = Array.isArray(args.vibeReferences) ? args.vibeReferences : [];
+    const preciseInputs = Array.isArray(args.preciseReferences) ? args.preciseReferences : [];
+    const references = {
+      vibe: built.extras.vibeImages.map((item, index) => ({
+        attachmentId: referenceAttachmentId(vibeInputs[index]),
+        infoExtracted: item.infoExtracted,
+        strength: item.strength,
+      })),
+      precise: (built.extras.preciseReferences ?? []).map((item, index) => ({
+        attachmentId: referenceAttachmentId(preciseInputs[index]),
+        type: item.type,
+        strength: item.strength,
+        fidelity: item.fidelity,
+      })),
+      characters: built.extras.charCaptions.map((item) => ({
+        prompt: item.prompt,
+        negativePrompt: item.negativePrompt,
+        useCoords: item.useCoords,
+        x: item.x,
+        y: item.y,
+      })),
+    };
+    const strength = name === 'langbai_redraw_image'
+      ? finite(args.strength, DEFAULT_I2I_PARAMS.strength, 0, 1)
+      : finite(args.strength, 0.7, 0.01, 1);
+    const inpaintModel = name === 'langbai_inpaint_image'
+      ? String(args.inpaintModel || defaultAgentInpaintModel(params.model))
+      : undefined;
+    metadata = {
+      operation: name === 'langbai_redraw_image' ? '图生图' : '局部重绘',
+      imageProvider: settings.imageProvider,
+      sourceAttachmentId,
+      ...(name === 'langbai_inpaint_image' && typeof args.maskAttachmentId === 'string'
+        ? { maskAttachmentId: args.maskAttachmentId.slice(0, 200) }
+        : {}),
+      positivePrompt: params.positivePrompt,
+      negativePrompt: effective.negativePrompt,
+      stylePrompt: effective.stylePrompt,
+      model: effective.model,
+      width: params.width,
+      height: params.height,
+      effort: params.effort ?? 'high',
+      steps: effective.steps,
+      sampler: effective.sampler,
+      noiseSchedule: effective.noiseSchedule,
+      cfgScale: effective.cfgScale,
+      cfgRescale: effective.cfgRescale,
+      ucPreset: effective.ucPreset,
+      qualityPreset: params.qualityPreset,
+      transparentBackground: params.transparentBackground,
+      smea: params.smea,
+      smeaDyn: params.smeaDyn,
+      variety: params.variety,
+      seedMode: params.seedMode,
+      ...(params.seedMode === 'fixed' ? { seed: params.seed } : {}),
+      strength,
+      noise: finite(args.noise, 0, 0, 1),
+      ...(inpaintModel ? { inpaintModel } : {}),
+      modelMode: built.extras.modelMode,
+      references,
+    };
+  } else if (name === 'langbai_upscale_image') {
+    const params = buildAgentGenerationInput({}, {
+      params: settings.lastGenerationState?.params ?? DEFAULT_PARAMS,
+    }).params;
+    metadata = {
+      operation: '图像放大',
+      imageProvider: settings.imageProvider,
+      sourceAttachmentId,
+      model: params.model,
+      scale: Number(args.scale) === 2 ? 2 : 4,
+    };
+  } else {
+    const tool = String(args.tool ?? '');
+    const knownTools = ['bg-removal', 'lineart', 'sketch', 'colorize', 'emotion', 'declutter'];
+    if (!knownTools.includes(tool)) throw new Error('不支持的 Director 工具：' + tool);
+    const legacyPrompt = typeof args.prompt === 'string' ? args.prompt.trim().slice(0, 2_000) : undefined;
+    const colorizePrompt = typeof args.colorizePrompt === 'string' ? args.colorizePrompt.trim().slice(0, 2_000) : undefined;
+    if (legacyPrompt !== undefined && colorizePrompt !== undefined && legacyPrompt !== colorizePrompt) {
+      throw new Error('prompt 与 colorizePrompt 内容冲突，请只保留一个相同的上色提示词。');
+    }
+    if (tool !== 'colorize' && (legacyPrompt !== undefined || colorizePrompt !== undefined)) {
+      throw new Error('只有 Director 上色操作支持 colorizePrompt。');
+    }
+    metadata = {
+      operation: 'Director 后处理',
+      imageProvider: settings.imageProvider,
+      sourceAttachmentId,
+      directorTool: tool,
+      ...(tool === 'colorize' ? { colorizePrompt: colorizePrompt ?? legacyPrompt ?? '' } : {}),
+      ...(tool === 'emotion' ? {
+        emotion: args.emotion ?? 'happy',
+        emotionLevel: finite(args.emotionLevel, 0, 0, 1),
+      } : {}),
+      defry: finite(args.defry, 0, 0, 5),
+    };
+  }
+
+  return {
+    metadata,
+    assertCurrent() {
+      if (studioGenerationFingerprint() !== fingerprint) {
+        throw new Error('确认期间生图设置或账户已变化；未执行，请重新查看操作方案。');
+      }
+    },
+  };
 }
 
 function generationPreview(args: Record<string, unknown>): StudioGenerationPreview {
@@ -71,9 +228,9 @@ const descriptions: Record<string, string> = {
   langbai_memory_list: '按当前消息检索本地已审核记忆；只返回当前会话可见的相关条目，最多 8 条且约 12000 字符。待审核和已覆盖记录不会命中。参数 args={query:string}。',
   langbai_generate_image: '仅执行先前准备的一次生图，可能消耗 Anlas；必须由用户确认，禁止自动重试。参数 args={preparationId:string}。若参数改变须重新调用 langbai_prepare_generation。',
   langbai_redraw_image: '以软件内图片执行图生图，可能消耗 Anlas；每次必须确认。参数 args={attachmentId:string,positivePrompt:string,strength?:number}。',
-  langbai_inpaint_image: '对软件内图片和蒙版重绘，可能消耗 Anlas；每次必须确认。参数 args={attachmentId:string,maskAttachmentId:string,positivePrompt:string,strength?:number}；strength 范围 0.01–1，省略时为 0.7。',
+  langbai_inpaint_image: '对软件内图片和蒙版重绘，可能消耗 Anlas；每次必须确认。strength 范围 0.01–1，省略时为 0.7。局部重绘端点不支持 Vibe/精准参考图或角色提示；请把蒙版内主体描述写入 positivePrompt。参数 args={attachmentId:string,maskAttachmentId:string,positivePrompt:string,strength?:number}。',
   langbai_upscale_image: '放大软件内图片，可能消耗 Anlas；每次必须确认。参数 args={attachmentId:string,scale:2|4}。',
-  langbai_director: '调用 NovelAI 图像后处理，可能消耗 Anlas；每次必须确认。参数 args={attachmentId:string,tool:string}。',
+  langbai_director: '调用 NovelAI 图像后处理，可能消耗 Anlas；每次必须确认。tool 只能为 bg-removal|lineart|sketch|colorize|emotion|declutter。colorizePrompt 用于上色；旧字段 prompt 可单独兼容，两者同时提供时内容必须一致。参数 args={attachmentId:string,tool:string,colorizePrompt?:string,prompt?:string,emotion?:string,emotionLevel?:number,defry?:number}。',
   langbai_reverse_prompt: '使用软件已配置的反推服务解析参考图；每次必须确认。参数 args={attachmentId:string}。',
   langbai_convert_prompt: '使用软件已配置的提示词模板转换文本；每次必须确认。参数 args={text:string}。',
   langbai_save_prompt_preset: '保存提示词预设；每次必须确认。参数 args={name:string,prompt:string}。',
@@ -96,7 +253,8 @@ export function createStudioPiTools(options: {
     parameters:studioPiToolSchema(name),
     readonly: name === 'langbai_prepare_generation' || (AGENT_READ_TOOLS as readonly string[]).includes(name),
     paid: ['langbai_generate_image', 'langbai_redraw_image', 'langbai_inpaint_image',
-      'langbai_upscale_image', 'langbai_director'].includes(name),
+      'langbai_upscale_image', 'langbai_director', 'langbai_convert_prompt',
+      'langbai_reverse_prompt', 'langbai_edit_prompt'].includes(name),
     async execute(args, signal) {
       signal.throwIfAborted();
       if (name === 'langbai_prepare_generation') {
@@ -113,9 +271,14 @@ export function createStudioPiTools(options: {
       const response = await executeAgentTool({
         tool: name, args: executionArgs, sessionId: options.sessionId, signal,
       }, options.emit);
-      if(name==='langbai_software_capabilities'&&response.ok){response.data={...(response.data as Record<string,unknown>),readonly:names.filter(n=>n==='langbai_prepare_generation'||(AGENT_READ_TOOLS as readonly string[]).includes(n)),requiresUserConfirmation:options.fullAuto?[]:AGENT_MUTATING_TOOLS,approvalMode:options.fullAuto?'auto':'confirm',webSearchEnabled:options.webSearchEnabled===true,generation:'读取状态并免费准备，然后按应用选定的确认/全自动模式执行；全自动无额外费用或次数上限，失败或结果不确定时不静默重发。'};response.output=JSON.stringify(response.data);}
+      if(name==='langbai_software_capabilities'&&response.ok){response.data={...(response.data as Record<string,unknown>),readonly:names.filter(n=>n==='langbai_prepare_generation'||(AGENT_READ_TOOLS as readonly string[]).includes(n)),requiresUserConfirmation:options.fullAuto?[]:AGENT_MUTATING_TOOLS,approvalMode:options.fullAuto?'auto':'confirm',webSearchEnabled:options.webSearchEnabled===true,generation:'先免费准备并展示方案。确认模式每轮最多12次工具调用，全自动模式最多32次；付费操作同工具同参数本轮仅执行一次。任何付费操作失败或结果不确定后，本轮剩余付费操作都会停止；本地准备不收费，NovelAI及提示词/视觉模型服务可能收费，费用以服务提供方为准。'};response.output=JSON.stringify(response.data);}
       options.onExecuted?.(name, executionArgs, response);
-      return { ok: response.ok, output: response.output, data: response.data };
+      const modelResponse = redactAgentToolResponseForModel(response);
+      return {
+        ok: response.ok,
+        output: typeof modelResponse.output === 'string' ? modelResponse.output : '',
+        data: modelResponse.data,
+      };
     },
   }));
 }
