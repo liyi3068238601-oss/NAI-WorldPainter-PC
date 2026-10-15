@@ -121,6 +121,7 @@ Future<_Fixture> _fixture({
   GenerationOperation operation = GenerationOperation.textToImage,
   bool includeSource = true,
   bool includeMask = true,
+  double? inpaintStrength = .61,
   int? failOnCall,
   _Generate? generate,
 }) async {
@@ -175,7 +176,8 @@ Future<_Fixture> _fixture({
           ? source.assetRef
           : null,
       img2imgStrength: 0.42,
-      inpaintStrength: 0.61,
+      inpaintStrength: inpaintStrength,
+      clearInpaintStrength: inpaintStrength == null,
     ),
   );
   workbench.updatePrompt('draft prompt');
@@ -411,6 +413,55 @@ void main() {
       );
     },
   );
+
+  test('inpaint strength stays consistent across Agent read, confirmation and callback', () async {
+    for (final configuredStrength in <double?>[null, .7, .43, 1]) {
+      final fixture = await _fixture(
+        operation: GenerationOperation.inpaint,
+        inpaintStrength: configuredStrength,
+      );
+      addTearDown(() async {
+        fixture.editing.dispose();
+        fixture.workbench.dispose();
+        await fixture.assets.close();
+      });
+      final expectedStrength = configuredStrength ?? .7;
+      expect(fixture.workbench.parameters.inpaintStrength, configuredStrength);
+      expect(
+        fixture.workbench.parameters.toJson()['inpaint_strength'],
+        configuredStrength,
+      );
+
+      Map<String, dynamic>? preview;
+      final results = await _run(
+        fixture,
+        [
+          AgentReply(calls: [_call('read-1', 'read_current_prompts', {})]),
+          AgentReply(
+            calls: [
+              _call('generate-1', 'generate_image', {
+                'prompt': 'repainted subject',
+                'batch_count': 1,
+              }),
+            ],
+          ),
+          const AgentReply(content: 'The inpaint result was saved.'),
+        ],
+        confirm: (_, plan) async {
+          preview = plan.preview;
+          return true;
+        },
+      );
+
+      expect(results, hasLength(2));
+      expect(results.first['inpaint_strength'], expectedStrength);
+      expect(preview, containsPair('强度', expectedStrength));
+      expect(preview, containsPair('重绘强度', expectedStrength));
+      expect(fixture.calls, hasLength(1));
+      expect(fixture.calls.single.inpaintStrength, expectedStrength);
+      expect(fixture.calls.single.effectiveInpaintStrength, expectedStrength);
+    }
+  });
 
   test(
     'inpaint refuses a missing source or mask before any generation call',

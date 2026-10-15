@@ -9,6 +9,8 @@ enum GenerationOperation { textToImage, imageToImage, inpaint }
 /// deliberately not filesystem paths; protocol adapters obtain the bytes via
 /// an injected resolver.
 class GenerationParameters {
+  /// Shared by the workbench, approval preview and every request adapter.
+  static const defaultInpaintStrength = 0.7;
   final GenerationOperation operation;
   final String model;
   final String prompt;
@@ -30,6 +32,8 @@ class GenerationParameters {
   final String? img2imgSourceImageId;
   final double? img2imgStrength;
   final double? inpaintStrength;
+  double get effectiveInpaintStrength =>
+      inpaintStrength ?? defaultInpaintStrength;
   final bool disabledOriginalImage;
   final bool colorCorrect;
 

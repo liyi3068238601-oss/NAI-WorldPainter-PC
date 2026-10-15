@@ -394,7 +394,7 @@ extension _GenerationPanels on _WorkbenchState {
           _number(
             '重绘强度',
             p.operation == GenerationOperation.inpaint
-                ? p.inpaintStrength ?? .7
+                ? p.effectiveInpaintStrength
                 : p.img2imgStrength ?? .7,
             (v) => c.updateAdvanced(
               c.parameters.copyWith(

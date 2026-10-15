@@ -3,6 +3,31 @@ import 'package:worldpainter_pc/generation/generation_parameters.dart';
 
 void main() {
   group('GenerationParameters', () {
+    test('legacy absent inpaint strength uses the UI default without rewriting stored values', () {
+      final legacy = GenerationParameters(
+        operation: GenerationOperation.inpaint,
+        model: 'nai-diffusion-4-5-full',
+        prompt: 'synthetic fixture',
+        width: 768,
+        height: 768,
+      ).toJson()..remove('inpaint_strength');
+      final restored = GenerationParameters.fromJson(legacy);
+      expect(restored.inpaintStrength, isNull);
+      expect(restored.effectiveInpaintStrength, 0.7);
+      final fullStrength = restored.copyWith(inpaintStrength: 1.0);
+      expect(
+        GenerationParameters.fromJson(fullStrength.toJson())
+            .effectiveInpaintStrength,
+        1.0,
+      );
+      expect(
+        fullStrength
+            .copyWith(clearInpaintStrength: true)
+            .effectiveInpaintStrength,
+        0.7,
+      );
+    });
+
     test('round trips the full single-image snapshot', () {
       final parameters = GenerationParameters(
         operation: GenerationOperation.imageToImage,

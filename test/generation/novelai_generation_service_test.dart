@@ -16,6 +16,68 @@ final Uint8List _png = Uint8List.fromList(
 void main() {
   group('NovelAiGenerationService', () {
     test(
+      'inpaint default and explicit strength survive every protocol',
+      () async {
+        final zipped = ZipEncoder().encode(
+          Archive()..addFile(ArchiveFile('generated.png', _png.length, _png)),
+        );
+        for (final protocol in NovelAiProtocol.values) {
+          for (final strength in <double?>[null, 0.7, 0.43, 1.0]) {
+            final expected = strength ?? 0.7;
+            final client = _ScriptedClient((request) async {
+              final body = _jsonPayload(request);
+              final settings = protocol == NovelAiProtocol.official
+                  ? body['parameters'] as Map
+                  : body;
+              expect(
+                settings['strength'],
+                expected,
+                reason: '$protocol with stored strength $strength',
+              );
+              return protocol == NovelAiProtocol.official
+                  ? _response(
+                      zipped,
+                      headers: {'content-type': 'application/zip'},
+                    )
+                  : _jsonResponse({
+                      'data': [
+                        {'b64_json': base64Encode(_png)},
+                      ],
+                    });
+            });
+            final result =
+                await NovelAiGenerationService(
+                  client: client,
+                  seedGenerator: () => 77,
+                ).generate(
+                  parameters: GenerationParameters(
+                    operation: GenerationOperation.inpaint,
+                    model: 'nai-diffusion-4-5-full',
+                    prompt: 'synthetic inpaint',
+                    width: 768,
+                    height: 768,
+                    sourceImageId: 'source',
+                    maskImageId: 'mask',
+                    inpaintStrength: strength,
+                  ),
+                  provider: GenerationProviderConfig(
+                    protocol: protocol,
+                    baseUri: Uri.https('synthetic.invalid'),
+                  ),
+                  credential: const GenerationCredential(
+                    'synthetic-test-token',
+                  ),
+                  resolveImage: (_) async => _png,
+                );
+            expect(result.effectiveParameters.inpaintStrength, expected);
+            expect(client.requests, hasLength(1));
+            client.close();
+          }
+        }
+      },
+    );
+
+    test(
       'builds the 7877 image-generations protocol and records effective values',
       () async {
         late _CapturedRequest captured;

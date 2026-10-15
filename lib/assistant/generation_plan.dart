@@ -127,7 +127,7 @@ class AssistantGenerationPlan {
             ),
           );
         }
-        final strength = parameters.inpaintStrength ?? 1.0;
+        final strength = parameters.effectiveInpaintStrength;
         if (!strength.isFinite || strength < 0.01 || strength > 1) {
           throw const AgentException('重绘强度必须在 0.01–1 之间。');
         }

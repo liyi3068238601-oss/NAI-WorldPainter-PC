@@ -97,7 +97,10 @@ class WorkspaceAgentTools {
                   : parameters.sourceImageId,
               'mask_image_ref': maskRef,
               'img2img_strength': parameters.img2imgStrength,
-              'inpaint_strength': parameters.inpaintStrength,
+              'inpaint_strength':
+                  parameters.operation == GenerationOperation.inpaint
+                  ? parameters.effectiveInpaintStrength
+                  : parameters.inpaintStrength,
               'editor_input_state': {
                 'inpaint_document_ready': document.isNotEmpty,
                 'mask_ready':

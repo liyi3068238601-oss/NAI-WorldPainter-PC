@@ -557,7 +557,7 @@ class NovelAiGenerationService {
                 : (input.img2imgStrength ?? 0.7)
           : null,
       inpaintStrength: input.operation == GenerationOperation.inpaint
-          ? (input.inpaintStrength ?? 1.0)
+          ? input.effectiveInpaintStrength
           : null,
     );
     _validateParameterValues(effective);
@@ -642,7 +642,7 @@ class NovelAiGenerationService {
     final operationStrength = switch (parameters.operation) {
       GenerationOperation.textToImage => null,
       GenerationOperation.imageToImage => parameters.img2imgStrength ?? 0.7,
-      GenerationOperation.inpaint => parameters.inpaintStrength ?? 1.0,
+      GenerationOperation.inpaint => parameters.effectiveInpaintStrength,
     };
     if (operationStrength != null &&
         !_isFiniteInRange(operationStrength, 0.01, 1)) {
@@ -952,7 +952,7 @@ class NovelAiGenerationService {
       requestParameters.addAll({
         'image': base64Encode(source),
         'mask': base64Encode(mask),
-        'strength': parameters.inpaintStrength ?? 1.0,
+        'strength': parameters.effectiveInpaintStrength,
         'add_original_image': !parameters.disabledOriginalImage,
         'color_correct': parameters.colorCorrect,
       });
@@ -1530,7 +1530,7 @@ class NovelAiGenerationService {
           'prompt': parameters.prompt,
           'image': base64Encode(source),
           'mask': base64Encode(mask),
-          'strength': parameters.inpaintStrength ?? 1.0,
+          'strength': parameters.effectiveInpaintStrength,
           'n': 1,
           'size': '${parameters.width}x${parameters.height}',
           'response_format': 'b64_json',
@@ -1717,7 +1717,7 @@ class NovelAiGenerationService {
             'negative_prompt': parameters.negativePrompt,
           'image': base64Encode(source),
           'mask': base64Encode(mask),
-          'strength': parameters.inpaintStrength ?? 1.0,
+          'strength': parameters.effectiveInpaintStrength,
           'noise': 0.0,
           'add_original_image': !parameters.disabledOriginalImage,
           'color_correct': parameters.colorCorrect,
