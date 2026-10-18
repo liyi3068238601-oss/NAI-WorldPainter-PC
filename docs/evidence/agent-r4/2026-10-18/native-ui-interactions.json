@@ -1,0 +1,115 @@
+{
+  "startedAt": "2026-10-18T03:56:56.309Z",
+  "mode": "native Electron renderer CDP mouse input + actual preload IPC",
+  "actions": [
+    "Opened and closed queue without resuming or cancelling the synthetic paused item.",
+    "Opened an R4-bound assistant message card (one R4 continue action, no legacy duplicate), verified viewer focus wrap, ensured purpose-select arrow keys do not page images, and verified purpose/artwork changes clear generation authorization.",
+    "Opened selected synthetic artwork, verified default discussion-only reference, navigated portrait to landscape, and closed viewer; no reference was added.",
+    "Opened visible workbench CAS preview showing three frozen proposal prompts; returned without clicking apply.",
+    "Scrolled to real preparation card and opened the frozen input snapshot; verified actual operation, provider/account, scale/request count, task source versus current source, and all three independent prompt fields.",
+    "Restored an explicitly cancelled synthetic message into a blank second chat; verified its frozen config notice, no send/auto-replay, and the separate paused item remains paused."
+  ],
+  "screenshots": [
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-queue-panel.png",
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-message-r4-viewer.png",
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-viewer-landscape.png",
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-viewer-portrait.png",
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-viewer-landscape.png",
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-workbench-preview.png",
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-preparation-summary.png",
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-preparation-frozen-prompts.png",
+    "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\screenshots\\agent-queue-restored-draft.png"
+  ],
+  "firstMessageGeometry": {
+    "top": 305.3000183105469,
+    "bottom": 725.3000183105469,
+    "scrollTop": 108.80000305175781,
+    "viewport": 1000
+  },
+  "queue": {
+    "visible": true,
+    "syntheticPausedText": true,
+    "pausedStatus": true,
+    "resumeButtons": [
+      "继续这条新消息",
+      "继续这条新消息"
+    ]
+  },
+  "messageArtworkCard": {
+    "text": "继续修改此创作",
+    "buttons": [
+      "继续修改此创作"
+    ],
+    "attachmentRevision": 1,
+    "attachmentRole": "artwork",
+    "attachmentCreationId": "b7e9e283-f644-4242-825c-8a8adbddefdc",
+    "messageCreationId": "b7e9e283-f644-4242-825c-8a8adbddefdc",
+    "artworkResolved": true
+  },
+  "messageViewer": {
+    "name": "R4-smoke-output-portrait-01.png",
+    "width": 1536,
+    "height": 2048,
+    "viewer": "作品查看器",
+    "actions": [
+      "继续修改此创作"
+    ]
+  },
+  "focusAfterShiftTab": {
+    "label": null,
+    "text": "添加参考"
+  },
+  "focusAfterTab": "关闭",
+  "purposeArrowDown": {
+    "name": "R4-smoke-output-portrait-01.png",
+    "purpose": "color",
+    "include": false
+  },
+  "referenceStateReset": {
+    "arrowKeysDoNotNavigate": true,
+    "purposeChangeClearsAuthorization": true,
+    "artworkChangeClearsPurposeAndAuthorization": true,
+    "initial": "R4-smoke-output-portrait-01.png",
+    "after": "R4-smoke-output-landscape-02.png"
+  },
+  "viewerPortrait": {
+    "name": "R4-smoke-output-portrait-01.png",
+    "width": 1536,
+    "height": 2048,
+    "purpose": "discussion",
+    "includeInGeneration": false,
+    "dialog": "作品查看器"
+  },
+  "viewerLandscape": {
+    "name": "R4-smoke-output-landscape-02.png",
+    "width": 2048,
+    "height": 1536,
+    "heading": "R4-smoke-output-landscape-02.png"
+  },
+  "workbenchPreview": {
+    "visible": true,
+    "showsPositive": true,
+    "showsNegative": true,
+    "showsStyle": true,
+    "hasExplicitApplyButton": true
+  },
+  "preparationSummary": {
+    "visible": true,
+    "summaryText": "生成预览\nready\n本次任务改图源（冻结快照）\nR4-smoke-output-portrait-01.png · r1\n当前创作改图源\nR4-smoke-current-edit-source.png · r1\n操作类型\n放大\n图片渠道\n未知服务商\n图片账号\n未知账号\n处理方式\nupscale\n放大倍率\n4×\n服务请求数\n2\n尺寸\n6144 × 8192\n数量\n1\n参与生成的参考/蒙版\n0\n输入快照详情\n取消预览\n确认并排队"
+  },
+  "frozenPromptDetailsVisible": true,
+  "queueRecovery": {
+    "chatTitle": "R4 queue recovery fixture",
+    "draftText": "SYNTHETIC CANCELLED QUEUE MESSAGE — restore as draft only.",
+    "restoredConfigVisible": true,
+    "restoredConfigModel": "deepseek-v4-flash",
+    "restoredConfigPreset": "dsh-infinite-gen-5",
+    "requiresHashProof": true,
+    "queueItemStatus": "cancelled",
+    "originalPausedStillPaused": true,
+    "workspacePath": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\profile\\WorldPainterWorkspace"
+  },
+  "runtimeErrors": [],
+  "noProviderCalls": true,
+  "appliedToWorkbench": false
+}

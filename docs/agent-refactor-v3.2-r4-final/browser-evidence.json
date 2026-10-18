@@ -1,0 +1,37 @@
+{
+  "version": "R4 Final",
+  "date": "2026-10-18",
+  "evidenceType": "manual_browser_observation_summary",
+  "method": "Codex in-app browser; visible controls and DOM-backed reads; local HTTP; fixed prototype data",
+  "scope": "Independent HTML only. This is a consolidated observation record, not an automatic product test runner log.",
+  "productionAcceptance": "pending",
+  "observations": [
+    {"id":"B01","status":"observed_pass","scenario":"Persistent edit source","observed":"Ordinary chat, enqueue and two completed outputs retain the original source. New result does not replace source. Chat switching keeps independent bindings."},
+    {"id":"B02","status":"observed_pass","scenario":"Clear source and concurrent text","observed":"Clear command followed immediately by ordinary text clears the source without a false image revision conflict. Artwork remains. Undo restores the binding."},
+    {"id":"B03","status":"observed_pass","scenario":"Source capsule removal","observed":"Clicking × removes source and refreshes current creation; six existing sample artworks remain."},
+    {"id":"B04","status":"observed_pass","scenario":"Discussion and generation participation","observed":"Discussion disables and clears generation participation. Explicit chat opt-in enables color reference participation. Changing color to composition resets participation to false."},
+    {"id":"B05","status":"observed_pass","scenario":"Reference patch with active draft","observed":"Typing a new text draft does not conflict with the image-purpose patch and draft text remains. Receipt undo restores discussion use."},
+    {"id":"B06","status":"observed_pass","scenario":"Queued operation command","observed":"Operation command stays independently queued, has no immediate-steer action and displays prototype scope. Stopping current reply pauses subsequent messages; queued command can be cancelled."},
+    {"id":"B07","status":"observed_pass","scenario":"Restore cancelled text","observed":"Restoring a cancelled message preserves an existing new draft and reports the conflict instead of overwriting it."},
+    {"id":"B08","status":"observed_pass","scenario":"Plain-text steering","observed":"The second plain-text message is consumed once at a safe point of the active reply; observed final text says no second concurrent response was started.","evidence":["source/plain-guidance-observation.txt"]},
+    {"id":"B09","status":"observed_pass","scenario":"Frozen conversation configuration","observed":"After sending a reference-change-then-generate command, switching the model does not replace the command's original configuration in its preview.","evidence":["screenshots/frozen-config-preview.jpg"]},
+    {"id":"B10","status":"observed_pass","scenario":"Preset switch and explicit new-chat default","observed":"Disabling preset retains its selection. Saving disabled as new-chat default is inherited by a new chat while an existing chat remains enabled. Shared edit lists affected chats and enabled states before saving a new revision."},
+    {"id":"B11","status":"observed_pass","scenario":"Fixed proposal preview","observed":"Setting current discussion proposal to revision 2 leaves explicitly prepared revision 1 preview valid and confirm enabled."},
+    {"id":"B12","status":"observed_pass","scenario":"Actual input invalidates preview","observed":"Removing source disables confirmation with a stale-input explanation. Re-preview excludes source and enables confirmation.","evidence":["screenshots/stale-preview.jpg"]},
+    {"id":"B13","status":"observed_pass","scenario":"Restart definitely unsent task","observed":"Final storage namespace restores queued task paused with submission count 0. Manual continue changes immediately to running and count 1.","evidence":["screenshots/queue-resumed.jpg"]},
+    {"id":"B14","status":"observed_pass","scenario":"Restart possibly submitted task","observed":"Restored task requires verification; submission count stays 1 and no automatic resend occurs. Verification can report confirmed cancellation.","evidence":["screenshots/restart-unknown.jpg"]},
+    {"id":"B15","status":"observed_pass","scenario":"Cancel unsent task","observed":"Local cancellation details show before-submit and count 0. Final card label after refresh is 已取消 · 未发送."},
+    {"id":"B16","status":"observed_pass","scenario":"Cancel with one existing result","observed":"Confirmed cancellation preserves the existing result and shows partial completion.","evidence":["screenshots/partial-cancel.jpg"]},
+    {"id":"B17","status":"observed_pass","scenario":"Image viewer","observed":"Default range is current batch (three). Landscape and portrait are complete, with 760×460 and 460×760 labels. Fit/zoom work; last next action disables, focus has an enabled previous action. Switching to creation range preserves current artwork identity (3 of 6). Seeds are explicitly mock values.","evidence":["screenshots/viewer-portrait.jpg"]},
+    {"id":"B18","status":"observed_pass","scenario":"Narrow layout","observed":"At 800×900, page width is 800; one visible chat entry and one creation entry. Both drawers open. Toast bottom 685.60 is above input top 727.20; send bottom 835.70 remains in viewport.","evidence":["narrow-layout.json","screenshots/narrow-800.jpg","screenshots/narrow-creation-drawer.jpg"]},
+    {"id":"B19","status":"observed_pass","scenario":"Console and final showcase","observed":"Checked warning/error logs are empty in test and showcase tabs. Set-current action is reflected in the creation panel.","evidence":["source/browser-console.json","screenshots/desktop-final.jpg"]},
+    {"id":"B20","status":"partial","scenario":"Download","observed":"Final visible native anchor has .svg download filename and image/svg+xml data URI. Its decoded SVG payload was saved as inspection evidence. Download-event wait and downloadMedia timed out without a saved-file receipt.","evidence":["source/download-link-payload.svg"],"notProven":["browser file saved","imported original byte-for-byte download","real provider attachment download"]}
+  ],
+  "intermediateObservations": [
+    "One undo click showed no immediate change; repeating through the exact receipt control succeeded. No speculative patch was made for that single observation.",
+    "A later running-task count lookup occurred after completion and removal from active list; the valid immediate post-resume observation was count 1.",
+    "An early cross-version reload used the previous storage key. Restart tests were repeated in the final independent storage namespace.",
+    "Process screenshots can precede final model-label and native-download-link cleanup; desktop-final.jpg captures the final interface."
+  ],
+  "notExecuted": ["product code","real host or provider","paid API","real model language understanding","native Windows lifecycle","disk crash transactions","data migration"]
+}

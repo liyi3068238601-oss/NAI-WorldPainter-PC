@@ -1,8 +1,15 @@
-import {describe,expect,it,vi} from 'vitest';
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+const fixture=vi.hoisted(()=>({root:''}));
 vi.mock('./store',()=>({getSettings:()=>({agentContextWindow:8192,agentAutoCompactThreshold:.8,outputDir:''}),getHistoryReferenceItems:()=>[],fileExistsWithDirectoryCache:()=>false,readWithBackupRecoverySync:()=>null,atomicWriteFileSync:vi.fn(),rotateBackupsSync:vi.fn()}));
-vi.mock('./agent-workspace-location',()=>({agentWorkspaceDirectory:()=>process.cwd()+'/defaults-qa',rebaseAgentWorkspaceFile:(value:string)=>value}));
-import {createEmptyAgentWorkspace,createAgentConversation,normalizeAgentWorkspace,setStudioConversationOptions} from './agent-store';
+vi.mock('./agent-workspace-location',()=>({agentWorkspaceDirectory:()=>fixture.root,rebaseAgentWorkspaceFile:(value:string)=>value}));
+import {createEmptyAgentWorkspace,createAgentConversation,normalizeAgentWorkspace,resetAgentStoreCacheForTests,setStudioConversationOptions} from './agent-store';
 import {studioSessionOptions,studioCreativeReferenceData,studioSelectedSystemPrompt,STUDIO_DEFAULT_PRESET_ID} from '../../src/agent/workspace-controls';
+
+let fixtureRoot='';
+beforeEach(()=>{const temp=path.resolve(process.cwd(),'.tmp');fs.mkdirSync(temp,{recursive:true});fixtureRoot=fs.mkdtempSync(path.join(temp,'agent-defaults-user-'));fixture.root=fixtureRoot;resetAgentStoreCacheForTests();});
+afterEach(()=>{resetAgentStoreCacheForTests();if(!fixtureRoot)return;const temp=path.resolve(process.cwd(),'.tmp');if(path.dirname(fixtureRoot)!==temp||!path.basename(fixtureRoot).startsWith('agent-defaults-user-'))throw Error('Refusing to remove an unexpected defaults fixture.');fs.rmSync(fixtureRoot,{recursive:true,force:true});fixtureRoot='';});
 
 describe('fresh Studio defaults without private profiles',()=>{
  it('defaults fresh and missing approval choices to confirmation while preserving explicit saved auto',()=>{

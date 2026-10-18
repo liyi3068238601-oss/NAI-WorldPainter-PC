@@ -1,0 +1,268 @@
+{
+  "startedAt": "2026-10-18T04:00:08.686Z",
+  "title": "绘世 · NAI WorldPainter",
+  "url": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/dist/index.html",
+  "note": "Native Electron main process + isolated preload + actual renderer IPC. Proposal/artwork/preparation/queue records are synthetic local fixtures; no provider POST or paid API call was made.",
+  "appData": {
+    "workspacePath": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\native-smoke-20261018-28e8f459\\profile\\WorldPainterWorkspace",
+    "conversationId": "5a8e9e99-011d-4409-a72e-cf087528135d",
+    "creationId": "b7e9e283-f644-4242-825c-8a8adbddefdc",
+    "source": {
+      "attachmentId": "734ce6a9-8bc1-445c-98da-1421c6d36531",
+      "name": "R4-smoke-current-edit-source.png",
+      "revision": 1
+    },
+    "references": [
+      {
+        "name": "R4-smoke-discussion-reference.png",
+        "role": "discussion",
+        "includeInGeneration": false,
+        "authorizationStatus": "not_authorized"
+      }
+    ],
+    "artworks": [
+      {
+        "id": "ddbad302-835d-44d5-9c22-90fa690710fa",
+        "name": "R4-smoke-output-portrait-01.png",
+        "width": 1536,
+        "height": 2048,
+        "hasLocalUrl": true
+      },
+      {
+        "id": "2b5a7588-d30a-400a-9f76-03aca3e8f857",
+        "name": "R4-smoke-output-landscape-02.png",
+        "width": 2048,
+        "height": 1536,
+        "hasLocalUrl": true
+      },
+      {
+        "id": "3f16a3f5-be2c-4958-a616-db9ec608b976",
+        "name": "R4-smoke-output-portrait-03.png",
+        "width": 1536,
+        "height": 2048,
+        "hasLocalUrl": true
+      },
+      {
+        "id": "d4c132ea-4f6e-4e06-add7-5d4128121244",
+        "name": "R4-smoke-output-landscape-04.png",
+        "width": 2048,
+        "height": 1536,
+        "hasLocalUrl": true
+      }
+    ],
+    "selectedArtworkId": "2b5a7588-d30a-400a-9f76-03aca3e8f857",
+    "proposal": {
+      "id": "r4-native-smoke-proposal",
+      "revision": 1,
+      "title": "Synthetic moonlit harbor"
+    },
+    "preparation": {
+      "status": "ready",
+      "operation": "upscale_image",
+      "scale": 4,
+      "requestCount": 2,
+      "requestSource": {
+        "name": "R4-smoke-output-portrait-01.png",
+        "revision": 1
+      },
+      "prompts": {
+        "positive": "SYNTHETIC ASSISTANT PROMPT: copper koi over a moonlit harbor",
+        "negative": "SYNTHETIC ASSISTANT NEGATIVE: blur, extra fins",
+        "style": "SYNTHETIC ASSISTANT STYLE: silkscreen grain and soft indigo"
+      },
+      "providerRef": null
+    },
+    "queue": [
+      {
+        "status": "paused",
+        "text": "SYNTHETIC NATIVE SMOKE QUEUE ITEM — not a real user prompt; do not resume.",
+        "pauseReason": "Synthetic UI fixture; deliberately not eligible for replay."
+      },
+      {
+        "status": "paused",
+        "text": "SYNTHETIC NEW TASK B — summarize the locally attached artwork dimensions. This queued item was never sent.",
+        "pauseReason": "recovered:queued; explicitly paused synthetic fixture, never started."
+      }
+    ],
+    "configurationIssue": null,
+    "config": {
+      "providerId": "legacy-default",
+      "modelId": "deepseek-v4-flash",
+      "presetId": "dsh-infinite-gen-5",
+      "enabled": true
+    },
+    "preloadApiAvailable": true
+  },
+  "workbenchPreview": {
+    "previewId": "9c98ed86-47bf-4e27-9733-4e75681ac55d",
+    "draftRevision": 1,
+    "inputRevision": 1,
+    "diff": {
+      "positivePromptChanged": true,
+      "negativePromptChanged": true,
+      "stylePromptChanged": true
+    },
+    "beforeMatchesSyntheticAssistant": false,
+    "afterMatchesSyntheticProposal": true,
+    "applied": false
+  },
+  "viewportEvidence": [
+    {
+      "emulatedCssViewport": 800,
+      "viewportWidth": 800,
+      "viewportHeight": 1000,
+      "documentWidth": 800,
+      "documentHeight": 1000,
+      "horizontalOverflow": false,
+      "agentVisible": true,
+      "creativePanelVisible": true,
+      "sourceBindings": 1,
+      "referenceBindings": 1,
+      "images": [
+        {
+          "alt": "R4-smoke-output-portrait-01.png",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-02.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-portrait-03.png",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-04.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-02.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        }
+      ]
+    },
+    {
+      "emulatedCssViewport": 1280,
+      "viewportWidth": 1280,
+      "viewportHeight": 1000,
+      "documentWidth": 1280,
+      "documentHeight": 1000,
+      "horizontalOverflow": false,
+      "agentVisible": true,
+      "creativePanelVisible": true,
+      "sourceBindings": 1,
+      "referenceBindings": 1,
+      "images": [
+        {
+          "alt": "R4-smoke-output-portrait-01.png",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-02.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-portrait-03.png",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-04.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-02.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        }
+      ]
+    },
+    {
+      "emulatedCssViewport": 1920,
+      "viewportWidth": 1920,
+      "viewportHeight": 1000,
+      "documentWidth": 1920,
+      "documentHeight": 1000,
+      "horizontalOverflow": false,
+      "agentVisible": true,
+      "creativePanelVisible": true,
+      "sourceBindings": 1,
+      "referenceBindings": 1,
+      "images": [
+        {
+          "alt": "R4-smoke-output-portrait-01.png",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-02.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-portrait-03.png",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-04.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "R4-smoke-output-landscape-02.png",
+          "naturalWidth": 2048,
+          "naturalHeight": 1536,
+          "complete": true
+        },
+        {
+          "alt": "",
+          "naturalWidth": 1536,
+          "naturalHeight": 2048,
+          "complete": true
+        }
+      ]
+    }
+  ],
+  "visibleTextChecks": {
+    "proposal": true,
+    "queue": false,
+    "operation": true,
+    "source": true
+  },
+  "runtimeEvents": []
+}

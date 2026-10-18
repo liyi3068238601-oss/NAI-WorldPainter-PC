@@ -1,0 +1,54 @@
+{
+  "startedAt": "2026-10-18T04:00:49.747Z",
+  "mode": "isolated native Electron renderer + actual preload state reads; modal button only opened, never confirmed",
+  "selectedConversationAtStart": "R4 native smoke fixture",
+  "fixture": {
+    "chatId": "5a8e9e99-011d-4409-a72e-cf087528135d",
+    "gates": [
+      {
+        "id": "r4-native-smoke-paid-unknown",
+        "active": true,
+        "reason": "unknown_prior_receipt",
+        "turnId": "synthetic:unknown-original-request"
+      },
+      {
+        "id": "critique-unknown:r4-native-smoke-no-execution",
+        "active": true,
+        "reason": "unknown_prior_receipt",
+        "turnId": "synthetic:critique-original-request",
+        "sourceExecutionId": "r4-native-smoke-no-execution"
+      }
+    ],
+    "items": [
+      {
+        "messageId": "r4-native-smoke-independent-message-B",
+        "status": "paused",
+        "userIntentRef": "synthetic:independent-message-B"
+      }
+    ],
+    "paidOperation": {
+      "tool": "rewrite_prompt",
+      "phase": "unknown",
+      "synthetic": true
+    },
+    "missingCritiqueExecution": true
+  },
+  "visibleUnknownGateText": "全局队列\n2 个待处理项目\n已暂停的任务不会自动重发。\n存在待核实回执；请选择一条无关的新消息并明确确认。\n待核实的收费回执 · 2\n\n这些记录会保留。继续独立新消息不会重新发送原请求；新回执仍会正常阻断。\n\n付费服务\nR4 native smoke fixture\n\nrewrite_prompt · unknown\n\n状态：回执待核实 · 记录ID r4-native-smoke-paid-unknown\n付费点评\nR4 native smoke fixture\n\nr4-native-smoke-no-execution\n\n状态：回执待核实 · 记录ID critique-unknown:r4-native-smoke-no-execution\n图像任务\n\n没有活动的图像任务。\n\n文字消息\nSynthetic portrait fixture\n已暂停\n\nR4 native smoke fixture · #1\n\nSYNTHETIC NATIVE SMOKE QUEUE ITEM — not a real user prompt; do not resume.\n继续这条新消息\nSynthetic portrait fixture\n已暂停\n\nR4 native smoke fixture · #2\n\nSYNTHETIC NEW TASK B — summarize the locally attached artwork dimensions. This queued item was never sent.\n继续这条新消息\n已取消的消息 · 1",
+  "independentMessageText": "Synthetic portrait fixture\n已暂停\n\nR4 native smoke fixture · #2\n\nSYNTHETIC NEW TASK B — summarize the locally attached artwork dimensions. This queued item was never sent.\n继续这条新消息",
+  "confirmationText": "明确继续一条新消息\n这条新消息将继续\n\nR4 native smoke fixture · 消息 r4-native-smoke-independent-message-B\n\nSYNTHETIC NEW TASK B — summarize the locally attached artwork dimensions. This queued item was never sent.\n\n确认即表示：只继续上面这条未启动的新消息；下面列出的旧请求绝不重发，待核实记录也不会删除。若本次产生新的未知回执，后续收费操作仍会暂停。\n\n当前待核实来源\n付费服务\nR4 native smoke fixture\n\nrewrite_prompt · unknown\n\n状态：回执待核实 · 记录ID r4-native-smoke-paid-unknown\n付费点评\nR4 native smoke fixture\n\nr4-native-smoke-no-execution\n\n状态：回执待核实 · 记录ID critique-unknown:r4-native-smoke-no-execution\n返回队列\n确认继续这条新消息",
+  "postOpenState": {
+    "messageQueue": [
+      {
+        "status": "paused"
+      }
+    ],
+    "activeGates": [
+      "r4-native-smoke-paid-unknown",
+      "critique-unknown:r4-native-smoke-no-execution"
+    ]
+  },
+  "confirmNotClicked": true,
+  "noProviderCalls": true,
+  "appliedToWorkbench": false,
+  "runtimeErrors": []
+}

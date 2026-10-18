@@ -57,6 +57,10 @@ export interface AgentWorkspaceMergeResult {
   imported: number;
   skipped: number;
   renamed: number;
+  /** Source chat id to the exact retained/imported destination id. */
+  conversationIdMap: Map<string, string>;
+  /** Source Tavern preset id to the exact retained/imported destination id. */
+  samplerPresetIdMap: Map<string, string>;
 }
 
 /** Merge-only import: identical IDs/content are skipped; conflicts are copied
@@ -154,6 +158,12 @@ export function mergeAgentWorkspaces(
     ...(conversation.samplerPresetId
       ? { samplerPresetId: samplerIdMap.get(conversation.samplerPresetId) ?? conversation.samplerPresetId }
       : {}),
+    ...(conversation.studioPresetId?.startsWith("tavern:")
+      ? {
+          studioPresetId: `tavern:${samplerIdMap.get(conversation.studioPresetId.slice("tavern:".length))
+            ?? conversation.studioPresetId.slice("tavern:".length)}`,
+        }
+      : {}),
     messages: conversation.messages.map((message) => ({
       ...message,
       ...(message.characterId
@@ -186,5 +196,5 @@ export function mergeAgentWorkspaces(
   if (!next.selectedConversationId || !next.conversations.some((item) => item.id === next.selectedConversationId)) {
     next.selectedConversationId = next.conversations[0]?.id;
   }
-  return { workspace: next, imported, skipped, renamed };
+  return { workspace: next, imported, skipped, renamed, conversationIdMap, samplerPresetIdMap: samplerIdMap };
 }

@@ -13,11 +13,25 @@ export interface StudioPiTool {
   paid?: boolean;
   /** Schema for the fields INSIDE the existing args wrapper, not the wrapper itself. */
   parameters?: Record<string, unknown>;
+  /** R4 canonical tools use the published flat schema; legacy transcripts retain args. */
+  flatArguments?: boolean;
+  /** Preserves raw R4 arguments for host-side preflight envelopes despite SDK schema rejection. */
+  prepareArguments?: (args: unknown) => Record<string, unknown>;
+  /** Strict input check used to bypass SDK-only paid-call guards for preflight-invalid R4 input. */
+  isValidArguments?: (args: unknown) => boolean;
+  /** The trusted host executes the preview/approval transaction inside the tool. */
+  handlesAuthorization?: boolean;
   execute: (args: Record<string, unknown>, signal: AbortSignal) => Promise<{
     ok: boolean;
     output: string;
     data?: unknown;
   }>;
+}
+
+export interface StudioPiAgentControls {
+  steer: (message: UserMessage & { r4MessageId?: string }) => void;
+  /** Removes only a still-queued message tagged with this R4 id. */
+  withdrawSteering: (messageId: string) => boolean;
 }
 
 export interface StudioPiRun {
@@ -27,6 +41,11 @@ export interface StudioPiRun {
   history: Message[];
   text: string | UserMessage;
   tools: readonly StudioPiTool[];
+  /** Re-evaluated after catalog discovery; only mounted tools enter the next request. */
+  getTools?: () => readonly StudioPiTool[];
+  beforeModelCall?: () => void | Promise<void>;
+  onReady?: (controls: StudioPiAgentControls) => void;
+  onSteeringConsumed?: (messageId: string) => void | Promise<void>;
   authorize: (name: string, args: Record<string, unknown>, signal: AbortSignal) => Promise<boolean>;
   onToolRunning?: (id: string, name: string, args: Record<string, unknown>) => void;
   onEvent?: (event: AgentEvent) => void | Promise<void>;
@@ -93,7 +112,8 @@ export async function runStudioPiAgent(input: StudioPiRun): Promise<StudioPiResu
     import('@earendil-works/pi-agent-core'),
     import('@earendil-works/pi-ai'),
   ]);
-  const allowed = new Map(input.tools.map((tool) => [tool.name, tool]));
+  const allowed = new Map((input.getTools?.() ?? input.tools).map((tool) => [tool.name, tool]));
+  const rawArguments = new Map<string, Record<string, unknown>>();
   const paidActions = new Set<string>();
   let paidFailed = false;
   let toolCalls = 0;
@@ -122,25 +142,36 @@ export async function runStudioPiAgent(input: StudioPiRun): Promise<StudioPiResu
     blockingReason = reason;
     return { block: true as const, reason, terminate: true };
   };
-  const tools: AgentTool[] = input.tools.map((entry) => ({
+  const makeTools = (entries: readonly StudioPiTool[]): AgentTool[] => entries.map((entry) => ({
     name: entry.name,
     label: entry.name,
     description: entry.description,
-    parameters: Type.Object({ args: entry.parameters
+    parameters: entry.flatArguments ? Type.Unsafe(entry.parameters ?? { type: 'object', additionalProperties: false }) : Type.Object({ args: entry.parameters
       ? Type.Unsafe(entry.parameters)
       : Type.Optional(Type.Object({}, { additionalProperties: true })) }, { additionalProperties: false }),
+    ...(entry.prepareArguments ? { prepareArguments: (args: unknown) => entry.prepareArguments!(args) as never } : {}),
     executionMode: 'sequential',
     async execute(_id, params, signal) {
-      const args = (params as { args?: Record<string, unknown> }).args ?? {};
+      // Pi may normalize/coerce JSON schema inputs. The R4 host validates the
+      // actual model arguments strictly and must never authorize a coerced value.
+      const args = entry.flatArguments ? rawArguments.get(_id) ?? params as Record<string, unknown>
+        : (params as { args?: Record<string, unknown> }).args ?? {};
       signal?.throwIfAborted();
       input.onToolRunning?.(_id, entry.name, args);
-      if (entry.paid) paidActions.add(`${entry.name}:${stableArguments(args)}`);
+      if (entry.paid && !entry.handlesAuthorization) paidActions.add(`${entry.name}:${stableArguments(args)}`);
       let result:Awaited<ReturnType<StudioPiTool['execute']>>;
       try{result=await entry.execute(args, signal ?? new AbortController().signal);if(!result.ok)throw new Error(result.output);}
       catch(error){if(entry.paid)paidFailed=true;throw error;}
+      if (input.getTools) {
+        const mounted = input.getTools();
+        allowed.clear();
+        for (const tool of mounted) allowed.set(tool.name, tool);
+        agent.state.tools = makeTools(mounted);
+      }
       return { content: [{ type: 'text', text: result.output }], details: result };
     },
   }));
+  const tools = makeTools(input.getTools?.() ?? input.tools);
   const agent = new Agent({
     initialState: {
       model: input.model,
@@ -149,23 +180,57 @@ export async function runStudioPiAgent(input: StudioPiRun): Promise<StudioPiResu
       messages: input.history,
       tools,
     },
-    streamFn: input.streamFn,
+    streamFn: async (model, context, options) => {
+      await input.beforeModelCall?.();
+      return input.streamFn(model, context, options);
+    },
     toolExecution: 'sequential',
+    // Agent snapshots its tool array when a run starts. Updating state.tools
+    // alone cannot mount a newly discovered tool in the active loop.
+    prepareNextTurnWithContext: input.getTools ? ({context}) => ({
+      context: {...context, tools: makeTools(input.getTools!())},
+    }) : undefined,
     beforeToolCall: async ({ toolCall, args }, signal) => {
       if (++toolCalls > (input.fullAuto ? 32 : 12)) return block('单轮工具调用超过上限，已停止；已完成的结果保留。');
       const tool = allowed.get(toolCall.name);
       if (!tool) return block('未授权的软件工具。');
-      if(tool.paid&&paidFailed)return block('付费请求失败或结果不确定；保留结果，停止自动重发以免重复扣费。');
-      const parameters = (args as { args?: Record<string, unknown> }).args ?? {};
-      if (tool.paid && paidActions.has(`${tool.name}:${stableArguments(parameters)}`)) {
+      if(tool.paid&&paidFailed&&!tool.handlesAuthorization)return block('付费请求失败或结果不确定；保留结果，停止自动重发以免重复扣费。');
+      const parameters = tool.flatArguments ? toolCall.arguments as Record<string, unknown>
+        : (args as { args?: Record<string, unknown> }).args ?? {};
+      if (tool.flatArguments) rawArguments.set(toolCall.id, structuredClone(parameters));
+      // Let the canonical host return its schema-validated preflight result for
+      // strict R4 input failures. The SDK's own validator is transport plumbing,
+      // not the product result contract.
+      if (tool.flatArguments && tool.isValidArguments && !tool.isValidArguments(parameters)) return undefined;
+      if (tool.paid && !tool.handlesAuthorization && paidActions.has(`${tool.name}:${stableArguments(parameters)}`)) {
         return block('本轮已执行相同付费操作，已阻止重复提交；请先检查已有结果。');
       }
-      if (tool.readonly) return undefined;
+      if (tool.readonly || tool.handlesAuthorization) return undefined;
       const approved = await input.authorize(tool.name, parameters, signal ?? new AbortController().signal);
       return approved ? undefined : block('用户未确认此操作，已停止；已完成的结果保留。');
     },
   });
-  if (input.onEvent) agent.subscribe((event) => input.onEvent!(event));
+  agent.subscribe(async (event) => {
+    if (event.type === 'message_start' && event.message.role === 'user') {
+      const messageId = (event.message as UserMessage & {r4MessageId?:string}).r4MessageId;
+      if (messageId) await input.onSteeringConsumed?.(messageId);
+    }
+    await input.onEvent?.(event);
+  });
+  input.onReady?.({
+    steer: message => agent.steer(message),
+    withdrawSteering: messageId => {
+      // pi-agent-core 0.84.4 exposes only clearSteeringQueue(). Its runtime
+      // queue is a FIFO array of the original UserMessage objects; remove only
+      // the tagged pending item so unrelated user steering remains intact.
+      const queue = (agent as unknown as { steeringQueue?: { messages?: unknown[] } }).steeringQueue;
+      if (!queue || !Array.isArray(queue.messages)) return false;
+      const before = queue.messages.length;
+      queue.messages = queue.messages.filter(message => !message || typeof message !== 'object'
+        || (message as { r4MessageId?: unknown }).r4MessageId !== messageId);
+      return queue.messages.length < before;
+    },
+  });
   const abort = () => agent.abort();
   input.signal?.addEventListener('abort', abort, { once: true });
   try {

@@ -37,6 +37,12 @@ import type {
   AgentToolExecution,
   AgentWorkspaceData,
 } from "../../src/agent/types";
+import {
+  normalizeR4AgentState,
+  type R4AgentState,
+} from "../../src/agent/r4-types";
+import { validateR4ExecutionSemantics } from "../../src/agent/r4-execution-semantics";
+import { mergeAgentWorkspaces } from "../../src/agent/merge";
 import { DEFAULT_AUGMENT_OPTIONS, DEFAULT_I2I_PARAMS, DEFAULT_PARAMS } from "../../src/types";
 import {
   defaultSettings,
@@ -71,8 +77,9 @@ import { normalizeCharacterCaptions } from "../../src/character-presets";
 import { positivePromptPresetStorageId } from "../../src/positive-prompt-presets";
 import {
   agentAttachmentsDirectory,
-  mergeImportedAgentWorkspace,
-  readAgentWorkspace,
+  getAgentSqlStore,
+  normalizeAgentWorkspace,
+  syncLegacyAgentWorkspaceR4,
 } from "./agent-store";
 
 const FORMAT = "langbai-novelai-studio-backup";
@@ -180,9 +187,10 @@ type PortableAgentToolExecution = Omit<AgentToolExecution, "generatedImages"> & 
   generatedImages?: PortableAgentAttachment[];
 };
 
-type PortableAgentMessage = Omit<AgentMessage, "attachments" | "tools"> & {
+type PortableAgentMessage = Omit<AgentMessage, "attachments" | "tools" | "swipeAttachments"> & {
   attachments: PortableAgentAttachment[];
   tools: PortableAgentToolExecution[];
+  swipeAttachments?: PortableAgentAttachment[][];
 };
 
 type PortableAgentConversation = Omit<AgentConversation, "messages" | "draftAttachments"> & {
@@ -352,6 +360,10 @@ async function portableAgentWorkspace(
     for (const message of conversation.messages) {
       const attachments = await Promise.all(message.attachments.map((attachment) =>
         portableAgentAttachment(attachment, zip, assetByHash, includeAssets)));
+      const swipeAttachments = message.swipeAttachments
+        ? await Promise.all(message.swipeAttachments.map((swipe) => Promise.all(swipe.map((attachment) =>
+            portableAgentAttachment(attachment, zip, assetByHash, includeAssets)))))
+        : undefined;
       const tools: PortableAgentToolExecution[] = [];
       for (const tool of message.tools) {
         tools.push({
@@ -364,7 +376,7 @@ async function portableAgentWorkspace(
             : {}),
         });
       }
-      messages.push({ ...cloneJson(message), attachments, tools });
+      messages.push({ ...cloneJson(message), attachments, tools, ...(swipeAttachments ? { swipeAttachments } : {}) });
     }
     conversations.push({
       ...cloneJson(conversation),
@@ -382,6 +394,24 @@ async function portableAgentWorkspace(
     ...cloneJson(workspace),
     conversations,
   };
+}
+
+function stripDeviceLocalAgentFields(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stripDeviceLocalAgentFields);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>)
+    .filter(([key]) => !["filePath", "fileUrl", "readableHandle"].includes(key))
+    .map(([key, item]) => [key, stripDeviceLocalAgentFields(item)]));
+}
+
+function portableR4AgentState(value: R4AgentState) {
+  const state = normalizeR4AgentState(value);
+  for (const artwork of Object.values(state.artworks)) {
+    delete artwork.url;
+    delete artwork.readableHandle;
+  }
+  state.compatibility = stripDeviceLocalAgentFields(state.compatibility) as Record<string, unknown>;
+  return state;
 }
 
 async function portableHistory(
@@ -525,17 +555,24 @@ async function buildArchive(
   }
 
   if (selected.has("agentWorkspace")) {
+    const agentSnapshot = getAgentSqlStore().transaction((tx) => ({
+      workspace: tx.getWorkspace(),
+      r4State: tx.getR4State(),
+    }));
     const workspace = await portableAgentWorkspace(
-      readAgentWorkspace(),
+      agentSnapshot.workspace,
       zip,
       assetByHash,
       includeAssets,
     );
     zip.file("data/agent-workspace.json", JSON.stringify(workspace));
+    const r4State = portableR4AgentState(agentSnapshot.r4State);
+    zip.file("data/agent-r4-state.json", JSON.stringify(r4State));
     const attachments = workspace.conversations.flatMap((conversation) => [
       ...conversation.draftAttachments,
       ...conversation.messages.flatMap((message) => [
         ...message.attachments,
+        ...(message.swipeAttachments ?? []).flat(),
         ...message.tools.flatMap((tool) => tool.generatedImages ?? []),
       ]),
     ]);
@@ -545,7 +582,11 @@ async function buildArchive(
         + workspace.characters.length
         + workspace.personas.length
         + workspace.lorebooks.length
-        + workspace.samplerPresets.length,
+        + workspace.samplerPresets.length
+        + Object.values(r4State.creations).length
+        + Object.values(r4State.proposals).length
+        + Object.values(r4State.artworks).length
+        + Object.values(r4State.executions).length,
       attachments.reduce((total, attachment) => total + (attachment.asset?.bytes ?? 0), 0),
     ));
   }
@@ -933,7 +974,7 @@ async function restoreAgentWorkspace(
   zip: JSZip,
   raw: PortableAgentWorkspace,
   counters: { count: number; skipped: number; renamed: number },
-) {
+): Promise<AgentWorkspaceData> {
   const restoredByHash = new Map<string, { filePath: string; fileUrl: string }>();
   const conversations: AgentConversation[] = [];
   for (const portableConversation of Array.isArray(raw?.conversations) ? raw.conversations : []) {
@@ -944,6 +985,12 @@ async function restoreAgentWorkspace(
       const attachments = (await Promise.all((portableMessage.attachments ?? []).map((attachment) =>
         restoreAgentAttachment(zip, attachment, restoredByHash, counters))))
         .filter((attachment): attachment is AgentAttachment => Boolean(attachment));
+      const swipeAttachments = portableMessage.swipeAttachments
+        ? await Promise.all(portableMessage.swipeAttachments.map(async (swipe) =>
+            (await Promise.all((swipe ?? []).map((attachment) =>
+              restoreAgentAttachment(zip, attachment, restoredByHash, counters))))
+              .filter((attachment): attachment is AgentAttachment => Boolean(attachment))))
+        : undefined;
       const tools: AgentToolExecution[] = [];
       for (const portableTool of Array.isArray(portableMessage.tools) ? portableMessage.tools : []) {
         const generatedImages = (await Promise.all((portableTool.generatedImages ?? []).map((attachment) =>
@@ -955,8 +1002,8 @@ async function restoreAgentWorkspace(
           ...(generatedImages.length ? { generatedImages } : {}),
         } as AgentToolExecution);
       }
-      const { attachments: _portableAttachments, tools: _portableTools, ...message } = cloneJson(portableMessage);
-      messages.push({ ...message, attachments, tools } as AgentMessage);
+      const { attachments: _portableAttachments, tools: _portableTools, swipeAttachments: _portableSwipes, ...message } = cloneJson(portableMessage);
+      messages.push({ ...message, attachments, tools, ...(swipeAttachments ? { swipeAttachments } : {}) } as AgentMessage);
     }
     const draftAttachments = (await Promise.all((portableConversation.draftAttachments ?? []).map((attachment) =>
       restoreAgentAttachment(zip, attachment, restoredByHash, counters))))
@@ -980,10 +1027,126 @@ async function restoreAgentWorkspace(
     skills: Array.isArray(raw?.skills) ? cloneJson(raw.skills) : [],
     memories: Array.isArray(raw?.memories) ? cloneJson(raw.memories) : [],
   } as AgentWorkspaceData;
-  const merged = mergeImportedAgentWorkspace(incoming);
-  counters.count += merged.imported;
-  counters.skipped += merged.skipped;
-  counters.renamed += merged.renamed;
+  return normalizeAgentWorkspace(incoming);
+}
+
+function stableAgentJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableAgentJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, item]) => `${JSON.stringify(key)}:${stableAgentJson(item)}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function remapR4ConversationIds(stateValue: R4AgentState, conversationIds: Map<string, string>): R4AgentState {
+  const state = normalizeR4AgentState(stateValue);
+  const conversations: R4AgentState["conversations"] = {};
+  for (const [sourceId, conversation] of Object.entries(state.conversations)) {
+    if (conversation.conversationId !== sourceId) throw new Error("备份中的 R4 会话映射键与 ID 不一致。");
+    const destinationId = conversationIds.get(sourceId) ?? sourceId;
+    if (conversations[destinationId]) throw new Error("备份中的 R4 会话重映射发生冲突。");
+    conversations[destinationId] = { ...conversation, conversationId: destinationId };
+  }
+  const remapItems = <T extends { conversationId: string }>(items: Record<string, T>) => Object.fromEntries(
+    Object.entries(items).map(([id, item]) => [id, {
+      ...item,
+      conversationId: conversationIds.get(item.conversationId) ?? item.conversationId,
+    }]),
+  ) as Record<string, T>;
+  return {
+    ...state,
+    conversations,
+    creations: remapItems(state.creations),
+    proposals: remapItems(state.proposals),
+    artworks: remapItems(state.artworks),
+    preparations: remapItems(state.preparations),
+    executions: remapItems(state.executions),
+    messageQueue: remapItems(state.messageQueue),
+    gates: remapItems(state.gates),
+    operations: remapItems(state.operations),
+    critiqueQueue: remapItems(state.critiqueQueue),
+  };
+}
+
+const R4_BACKUP_COLLECTIONS = [
+  "conversations", "creations", "proposals", "artworks", "preparations", "executions",
+  "messageQueue", "gates", "operations", "critiqueQueue", "assistantPresets",
+] as const;
+
+function attachmentIndex(workspace: AgentWorkspaceData) {
+  const index = new Map<string, AgentAttachment>();
+  const add = (items: AgentAttachment[]) => items.forEach((item) => index.set(item.id, item));
+  for (const conversation of workspace.conversations) {
+    add(conversation.draftAttachments);
+    for (const message of conversation.messages) {
+      add(message.attachments);
+      for (const swipe of message.swipeAttachments ?? []) add(swipe);
+      for (const tool of message.tools) add(tool.generatedImages ?? []);
+    }
+  }
+  return index;
+}
+
+function mergeR4BackupState(
+  currentValue: R4AgentState,
+  incomingValue: R4AgentState,
+  conversationIdMap: Map<string, string>,
+  mergedWorkspace: AgentWorkspaceData,
+) {
+  const current = normalizeR4AgentState(currentValue);
+  const incoming = remapR4ConversationIds(incomingValue, conversationIdMap);
+  const target = structuredClone(current);
+  let imported = 0;
+  let skipped = 0;
+  const chats = new Set(mergedWorkspace.conversations.map((conversation) => conversation.id));
+  for (const conversation of Object.values(incoming.conversations)) {
+    if (!chats.has(conversation.conversationId)) throw new Error("R4 备份引用了未随 Agent 工作区导入的会话。");
+  }
+
+  for (const collectionName of R4_BACKUP_COLLECTIONS) {
+    const destination = target[collectionName] as Record<string, unknown>;
+    const source = incoming[collectionName] as Record<string, unknown>;
+    for (const [id, item] of Object.entries(source)) {
+      if (id !== (item as { id?: unknown }).id && collectionName !== "conversations" && collectionName !== "proposals") {
+        throw new Error(`R4 备份 ${collectionName} 映射键与记录 ID 不一致。`);
+      }
+      const existing = destination[id];
+      if (existing !== undefined) {
+        if (stableAgentJson(existing) !== stableAgentJson(item)) {
+          throw new Error(`R4 备份中的 ${collectionName} ID ${id} 与当前记录冲突；两份数据都已保留，未覆盖。`);
+        }
+        skipped += 1;
+        continue;
+      }
+      destination[id] = structuredClone(item);
+      imported += 1;
+    }
+  }
+
+  if (incoming.assistantPresetDefaultBinding) {
+    if (!target.assistantPresetDefaultBinding) target.assistantPresetDefaultBinding = structuredClone(incoming.assistantPresetDefaultBinding);
+    else if (stableAgentJson(target.assistantPresetDefaultBinding) !== stableAgentJson(incoming.assistantPresetDefaultBinding)) {
+      const sourceFingerprint = sha256(Buffer.from(stableAgentJson(incoming.assistantPresetDefaultBinding)));
+      target.compatibility[`importedAgentDefaultBinding:${sourceFingerprint}`] = structuredClone(incoming.assistantPresetDefaultBinding);
+    }
+  }
+  if (Object.keys(incoming.compatibility).length) {
+    const sourceFingerprint = sha256(Buffer.from(stableAgentJson(incoming.compatibility)));
+    const key = `importedAgentCompatibility:${sourceFingerprint}`;
+    if (target.compatibility[key] === undefined) {
+      target.compatibility[key] = structuredClone(incoming.compatibility);
+      imported += 1;
+    } else skipped += 1;
+  }
+
+  const attachments = attachmentIndex(mergedWorkspace);
+  for (const artwork of Object.values(target.artworks)) {
+    if (artwork.url || artwork.readableHandle) continue;
+    const attachment = attachments.get(artwork.attachmentId);
+    if (attachment?.fileUrl) artwork.url = attachment.fileUrl;
+  }
+  return { state: target, imported, skipped };
 }
 
 async function historyHashIndex(items: HistoryItem[]) {
@@ -1556,9 +1719,19 @@ export async function importDataBackup(
   let accountRestore: Awaited<ReturnType<typeof prepareNaiAccountsBackupRestore>> | undefined;
   let archive: Awaited<ReturnType<typeof loadArchive>>;
   let portable: Awaited<ReturnType<typeof inspectPortableProjects>>;
+  let archivedAgentR4State: R4AgentState | undefined;
   try {
     archive = await loadArchive(request.path);
     portable = await inspectPortableProjects(archive.zip, new Set(categories));
+    if (categories.includes("agentWorkspace") && archive.zip.file("data/agent-r4-state.json")) {
+      const rawR4State = await readJsonEntry<unknown>(archive.zip, "data/agent-r4-state.json", null);
+      if (rawR4State === null) throw new Error("Agent R4 状态备份为空或无效。");
+      archivedAgentR4State = normalizeR4AgentState(rawR4State);
+      for (const execution of Object.values(archivedAgentR4State.executions)) {
+        const semantic = validateR4ExecutionSemantics(execution);
+        if (!semantic.valid) throw new Error(`Agent R4 执行记录无效：${semantic.issues[0].message}`);
+      }
+    }
     if (categories.includes("apiCredentials")) {
       const payload = await readJsonEntry<{ settings?: Record<string, unknown>;novelAiAccounts?:unknown } | null>(archive.zip, "data/api-credentials.json", null);
       if (!payload || !payload.settings || typeof payload.settings !== 'object' || Array.isArray(payload.settings)) throw new Error('备份缺少有效的 API 配置。');
@@ -1759,7 +1932,28 @@ export async function importDataBackup(
       if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) {
         throw new Error("备份缺少有效的 Agent 工作区数据。");
       }
-      await restoreAgentWorkspace(archive.zip, incoming, counters);
+      const importedWorkspace = await restoreAgentWorkspace(archive.zip, incoming, counters);
+      const merged = getAgentSqlStore().transaction((tx) => {
+        const workspaceMerge = mergeAgentWorkspaces(tx.getWorkspace(), importedWorkspace);
+        const r4Merge = archivedAgentR4State
+          ? mergeR4BackupState(tx.getR4State(), archivedAgentR4State, workspaceMerge.conversationIdMap, workspaceMerge.workspace)
+          : undefined;
+        const nextR4State = r4Merge?.state ?? tx.getR4State();
+        const beforeLegacyRecords = Object.keys(nextR4State.assistantPresets).length
+          + Object.keys(nextR4State.conversations).length;
+        // Older archives predate the R4 file. Seed only missing per-chat rows
+        // from the merged chat's own legacy fields; never substitute or alter
+        // the destination's current new-chat default.
+        syncLegacyAgentWorkspaceR4(nextR4State, workspaceMerge.workspace);
+        const seededLegacyRecords = Object.keys(nextR4State.assistantPresets).length
+          + Object.keys(nextR4State.conversations).length - beforeLegacyRecords;
+        tx.setWorkspace(workspaceMerge.workspace);
+        tx.setR4State(nextR4State);
+        return { workspaceMerge, r4Merge, seededLegacyRecords };
+      });
+      counters.count += merged.workspaceMerge.imported + (merged.r4Merge?.imported ?? 0) + merged.seededLegacyRecords;
+      counters.skipped += merged.workspaceMerge.skipped + (merged.r4Merge?.skipped ?? 0);
+      counters.renamed += merged.workspaceMerge.renamed;
     }
 
     next.history.sort((left, right) => right.createdAt.localeCompare(left.createdAt));

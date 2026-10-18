@@ -17,6 +17,11 @@ const generationKeys=['params','charCaptions','batchCount','batchIntervalSeconds
 function generation(state:State):LastGenerationState {
   return {...Object.fromEntries(generationKeys.map(k=>[k,state[k]])),brushSizeUnit:'grid8'} as unknown as LastGenerationState;
 }
+const PROMPT_FIELDS=['positivePrompt','negativePrompt','stylePrompt'] as const;
+type PromptField=typeof PROMPT_FIELDS[number];
+function promptFields(params:Record<string,unknown>) {
+  return Object.fromEntries(PROMPT_FIELDS.map(key=>[key,typeof params[key]==='string'?params[key]:''])) as Record<PromptField,string>;
+}
 export interface StudioAgentDependencies {
   getState:()=>State;
   setState:(patch:Partial<State>)=>void;
@@ -28,6 +33,24 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
   let rendererCollections:ReturnType<typeof createRendererCollections>|undefined;
   const collections=()=>rendererCollections??=createRendererCollections({storage:localStorage,getTab:()=>deps.getState().activeTab,setTab:activeTab=>deps.setState({activeTab}),changed:group=>window.dispatchEvent(new CustomEvent('studio:collections-changed',{detail:group}))});
   let fingerprint='',sequence=0,taskFingerprint='',taskSequence=0;
+  const workbenchId=deps.uuid();let workbenchFingerprint:string|undefined,workbenchRevision=0;
+  function liveWorkbench(state=deps.getState()) {
+    if(!state.bootDone||!state.settings)throw new Error('软件尚未初始化完成，请稍后重试。');
+    const current=generation(state);
+    // Include reference/source identity and mask revision in the live CAS token,
+    // but never serialize image bodies into an Agent-facing snapshot.
+    const imageIdentity=(image:{id?:unknown;filePath?:unknown;width?:unknown;height?:unknown}|null|undefined)=>image?{
+      id:image.id??null,filePath:image.filePath??null,width:image.width??null,height:image.height??null,
+    }:null;
+    const identity={generation:current,sourceMode:state.i2iSourceMode,source:imageIdentity(state.i2iOriginalImage),
+      workbenchImage:imageIdentity(state.workbenchImage),maskRevision:state.maskRevision,hasMask:Boolean(state.inpaintMask),
+      vibeImages:state.vibeImages.map(({id,name,strength,infoExtracted})=>({id,name,strength,infoExtracted})),
+      preciseReferences:state.preciseReferences.map(({id,type,strength,fidelity})=>({id,type,strength,fidelity}))};
+    const next=JSON.stringify(identity);
+    if(next!==workbenchFingerprint){workbenchFingerprint=next;workbenchRevision++;}
+    return {draftId:workbenchId,draftRevision:workbenchRevision,inputRevision:workbenchRevision,draftSource:'workbench' as const,
+      params:projectStudioData(current.params) as Record<string,unknown>};
+  }
   function tasks(){const s=deps.getState();const fp=JSON.stringify([s.isGenerating,s.isGenerateQueueRunning,s.queuePaused,s.generationQueue?.map(x=>x.id)]);if(fp!==taskFingerprint){taskFingerprint=fp;taskSequence++;}return {revision:`${instance}:tasks:${taskSequence}`,running:s.isGenerating,queueRunning:s.isGenerateQueueRunning,paused:s.queuePaused,progress:s.queueProgress,items:projectStudioData(s.generationQueue??[]),status:s.statusText,error:s.lastError,scope:'软件生成队列；暂停在当前图片结束后生效，取消不能撤销已完成的收费调用。'};}
   const instance=deps.uuid();
   async function current() {
@@ -74,6 +97,26 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
   async function handle(request:StudioAgentRequest):Promise<StudioAgentReply> {
     try {
       const args=request.args;
+      if(request.action==='r4-workbench-read')return {ok:true,data:liveWorkbench()};
+      if(request.action==='r4-workbench-apply') {
+        const draftId=args.draftId,draftRevision=args.draftRevision,patch=args.patch;
+        if(typeof draftId!=='string'||!draftId||!Number.isSafeInteger(draftRevision)||Number(draftRevision)<0
+          ||!patch||typeof patch!=='object'||Array.isArray(patch))throw new Error('工作台 CAS 参数无效。');
+        const values=patch as Record<string,unknown>;
+        if(Object.keys(values).length!==PROMPT_FIELDS.length||PROMPT_FIELDS.some(key=>typeof values[key]!=='string'||String(values[key]).length>100_000))throw new Error('工作台只能应用完整、有效的提示词字段。');
+        const state=deps.getState(),current=liveWorkbench(state),before=promptFields(current.params),after=promptFields(values);
+        const diff={positivePromptChanged:before.positivePrompt!==after.positivePrompt,
+          negativePromptChanged:before.negativePrompt!==after.negativePrompt,stylePromptChanged:before.stylePrompt!==after.stylePrompt};
+        if(current.draftId!==draftId||current.draftRevision!==draftRevision)return {ok:true,data:{applyStatus:'conflict',draftId:current.draftId,draftRevision:current.draftRevision,diff}};
+        if(Object.values(diff).some(Boolean)) {
+          // applyParams updates just `params` from the then-current Zustand state
+          // and persists that complete live snapshot; it does not touch source,
+          // reference, character-card or selection state.
+          state.applyParams(after);
+        }
+        const applied=liveWorkbench(deps.getState());
+        return {ok:true,data:{applyStatus:'applied',draftId:applied.draftId,draftRevision:applied.draftRevision,diff}};
+      }
       if(request.action==='batch-project'){
         const action=String(args.action),project=createBatchProjectActions(getBatchProjectStore());
         if(action==='_batch.snapshot')return {ok:true,data:project.snapshot(args.expectedRevision)};
@@ -154,8 +197,9 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
         }
         const libraryKeys=new Set(['stylePromptPresets','positivePromptPresets','characterPromptPresets','promptChunks','lastGenerationState']);
         const config=Object.fromEntries(Object.entries(settings).map(([k,v])=>[k,libraryKeys.has(k)?{source:k==='lastGenerationState'?'persisted; use generation for live values':'list_studio_data',count:Array.isArray(v)?v.length:undefined}:v]));
+        const workbench=liveWorkbench(state);
         const sections:Record<string,unknown>={
-          generation:generation(state),settings:config,
+          generation:{...generation(state),...workbench},settings:config,
           references:{vibeImages:state.vibeImages,preciseReferences:state.preciseReferences},
           runtime:{activeTab:state.activeTab,isGenerating:state.isGenerating,isGenerateQueueRunning:state.isGenerateQueueRunning,batchRunning:state.batchRunning,batchProgress:state.batchProgress,account:state.account,generationGroupId:state.generationGroupId,selectedGroupId:state.selectedGroupId,selectedDate:state.selectedDate,currentImage:state.currentImage,workbenchImage:state.workbenchImage,i2iOriginalImage:state.i2iOriginalImage,i2iSourceMode:state.i2iSourceMode,inpaintSourceMode:state.inpaintSourceMode,i2iSizeMode:state.i2iSizeMode,brushMode:state.brushMode,maskRevision:state.maskRevision,hasMask:!!state.inpaintMask},
           textTools:{reversePromptText:state.reversePromptText,reversePromptMode:state.reversePromptMode,reversePromptScope:state.reversePromptScope,reversePromptHint:state.reversePromptHint,convertInput:state.convertInput,convertResult:state.convertResult,convertMode:state.convertMode},
@@ -226,7 +270,11 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
 export function installStudioAgent() {
   if(!window.naiDesktop?.onStudioAgentRequest)return;
   const service=createStudioAgentService({getState:useAppStore.getState,setState:patch=>useAppStore.setState(patch),api:window.naiDesktop,uuid:()=>crypto.randomUUID(),notifyReferenceChange:()=>window.dispatchEvent(new Event('langbai:reference-presets-changed'))});
-  return window.naiDesktop.onStudioAgentRequest(request=>{
+  const disposeStudio=window.naiDesktop.onStudioAgentRequest(request=>{
     void service.handle(request).then(reply=>window.naiDesktop.replyStudioAgent(request.id,reply)).catch(()=>{/* Main may have timed out or closed; do not retry mutations. */});
   });
+  const disposeR4=window.naiDesktop.onR4WorkbenchRequest?.(request=>{
+    void service.handle({id:request.id,action:request.action,args:request.args}).then(reply=>window.naiDesktop.replyR4Workbench(request.id,reply)).catch(()=>{/* Main may have timed out or closed; do not retry mutations. */});
+  });
+  return ()=>{disposeStudio();disposeR4?.();};
 }

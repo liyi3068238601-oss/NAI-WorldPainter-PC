@@ -1,8 +1,17 @@
+import type { R4ConversationCreativeState } from "./r4-types";
+
 // Version 4 is the corrected first Character Tavern workspace. Version 3 was
 // only used by unreleased local builds and could flatten a built-in character
 // into an empty card, so those drafts are intentionally reset rather than
 // migrated.
 export const AGENT_WORKSPACE_VERSION = 4 as const;
+
+import type {
+  R4ConversationConfigSnapshot,
+  R4CreationInputSnapshot,
+  R4ReferenceAuthorizationStatus,
+  R4ReferencePurpose,
+} from "./r4-types";
 
 /**
  * Wire formats supported by both desktop and mobile Agent runtimes.
@@ -184,6 +193,15 @@ export interface AgentAttachment {
   unavailable?: "deleted" | "missing" | "replaced";
   width?: number;
   height?: number;
+  /** R4 metadata is optional so pre-R4 attachments remain lossless. */
+  revision?: number;
+  sha256?: string;
+  creationId?: string;
+  role?: "source" | "reference" | "mask" | "artwork";
+  referencePurpose?: R4ReferencePurpose;
+  includeInGeneration?: boolean;
+  authorizationStatus?: R4ReferenceAuthorizationStatus;
+  authorizationReceiptId?: string;
   createdAt: string;
 }
 
@@ -231,6 +249,14 @@ export interface AgentMessage {
   imageProposal?: TavernImageProposal;
   imageProposalSwipes?: Array<TavernImageProposal | null>;
   swipeAttachments?: AgentAttachment[][];
+  /** R4 ownership/configuration is explicit; old history is never inferred into it. */
+  creationId?: string;
+  conversationConfig?: R4ConversationConfigSnapshot;
+  originalInputSnapshot?: R4CreationInputSnapshot;
+  queuedMessageId?: string;
+  userIntentRef?: string;
+  critiqueForExecutionId?: string;
+  r4LegacyStatus?: "legacy_unversioned" | "migration_conflict";
 }
 
 export interface AgentConversation {
@@ -404,6 +430,7 @@ export interface AgentQuestionResult {cancelled:boolean;answers:Array<AgentQuest
 
 export type AgentEvent =
   | { kind: "workspace"; workspace: AgentWorkspaceData }
+  | { kind: "creative-state"; state: R4ConversationCreativeState }
   | { kind: "runtime"; status: AgentRuntimeStatus }
   | { kind: "message-delta"; conversationId: string; messageId: string; delta: string }
   | { kind: "message-reasoning-delta"; conversationId: string; messageId: string; delta: string }
@@ -420,6 +447,11 @@ export interface AgentSendRequest {
   text: string;
   actions?: AgentComposerAction[];
   attachmentIds?: string[];
+  creationId?: string;
+  composerDraftRevision?: number;
+  /** Renderer CAS token for a restored draft's frozen conversation config. */
+  confirmedConversationConfigHash?: string;
+  delivery?: "queue" | "steer";
   characterId?: string;
   regenerateMessageId?: string;
   /** Renderer snapshot prevents a just-edited Tavern right panel from racing workspace persistence. */

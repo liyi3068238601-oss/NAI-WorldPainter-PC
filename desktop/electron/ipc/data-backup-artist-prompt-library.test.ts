@@ -22,8 +22,8 @@ vi.mock("./store", () => ({
   writeStore: (value: unknown) => { fixture.store = value as typeof fixture.store; },
   ensureOutputDir: () => fixture.root,
 }));
-vi.mock("./agent-store", () => ({
-  readAgentWorkspace: () => ({ conversations: [], characters: [], personas: [], lorebooks: [], samplerPresets: [] }),
+vi.mock("./agent-store", async () => ({
+  ...(await import("./data-backup-agent-store-test-helper")).dataBackupAgentStoreStub(),
   agentAttachmentsDirectory: () => fixture.root,
   mergeImportedAgentWorkspace: vi.fn(() => ({ imported: 0, skipped: 0, renamed: 0 })),
 }));

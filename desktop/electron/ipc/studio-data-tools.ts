@@ -74,7 +74,16 @@ export function createStudioDataTools(window:()=>BrowserWindow|null,timeoutMs=15
         }else{
           const store=await import('./agent-store.js');const workspace=store.readAgentWorkspace();
           const merged={...workspace,[collection]:[...workspace[collection],...items]};
-          store.writeAgentWorkspace(merged);backupPath=store.agentWorkspacePath()+'.bak';
+          const {app}=await import('electron');const fs=await import('node:fs/promises');const path=await import('node:path');
+          const directory=path.join(app.getPath('userData'),'TavernAgent','library-import-backups');await fs.mkdir(directory,{recursive:true});
+          backupPath=path.join(directory,`${Date.now()}-${randomUUID()}.json`);
+          const temporary=`${backupPath}.${randomUUID()}.tmp`;
+          await fs.writeFile(temporary,JSON.stringify({collection,workspace},null,2),{flag:'wx'});
+          try{await fs.rename(temporary,backupPath);}catch(error){await fs.rm(temporary,{force:true}).catch(()=>{});throw error;}
+          // Keep the complete pre-import workspace beside the passive Agent
+          // library. It is a real, reopenable path; JSON migration baselines
+          // remain immutable and are never reused as rotating backups.
+          store.writeAgentWorkspace(merged);
         }
         return response({ok:true,data:{imported:items.length,collection,mode:'append-new-identities',backupPath}});
       }

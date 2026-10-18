@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-18",
+  "scope": "R4 Final independent HTML and current documentation",
+  "inlineScriptsParse": 1,
+  "uniqueStaticIds": 42,
+  "externalResources": [],
+  "missingRelativeLinks": [],
+  "downloadPayload": {
+    "xmlParsed": true,
+    "sha256": "5d1dac345bd2e8f5ea39c3da7973160509c280f2c34d37fe894bbe2bfe6fc4a1",
+    "bytes": 5168,
+    "evidence": "visible link content, not a saved-download receipt"
+  }
+}

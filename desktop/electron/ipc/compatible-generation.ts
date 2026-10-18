@@ -7,7 +7,7 @@ import sharp from "sharp";
 import { DEFAULT_PARAMS, type CompatibleGenerationRequest, type CompatibleImageSettings, type GenerateResult, type HistoryItem } from "../../src/types";
 import { buildCompatibleImageRequest, imageGenerationEndpoint } from "../../src/image-provider-contract";
 import { addHistory, getHistoryGroups, getSettings, setCompatibleImageSettings, setSetting } from "./store";
-import { generateCompatibleImages } from "./openai-images";
+import { generateCompatibleImages,type CompatibleImageRequestOptions } from "./openai-images";
 import { writeUniqueImageFile } from "./image-output";
 import { toLocalMediaUrl } from "./local-media-protocol";
 import { beginJob } from "./job-registry";
@@ -48,7 +48,7 @@ export function switchCompatibleImageProvider(provider: 'novelai', expectedRevis
 }
 
 /** Ordinary T2I only: no native token/account calls and no fallback to NovelAI. */
-export async function generateConfiguredImages(request: CompatibleGenerationRequest, options: { signal?: AbortSignal; expectedProvider?: ImageProviderBinding; size?: string; beforeSubmit?: () => void | Promise<void> } = {}): Promise<GenerateResult> {
+export async function generateConfiguredImages(request: CompatibleGenerationRequest, options: { signal?: AbortSignal; expectedProvider?: ImageProviderBinding; size?: string; configSnapshot?:CompatibleImageSettings; beforeSubmit?: () => void | Promise<void>;afterReceipt?:CompatibleImageRequestOptions['afterReceipt'] } = {}): Promise<GenerateResult> {
   const items: HistoryItem[] = [];
   const job = beginJob();
   const abort = () => job.controller.abort();
@@ -68,8 +68,8 @@ export async function generateConfiguredImages(request: CompatibleGenerationRequ
     if (settings.imageProvider !== "openai-images" || !settings.compatibleImage) {
       return { ok: false, items, message: "请先在设置中选择并保存兼容图片服务。" };
     }
-    if(!NAI_RELAY_MODEL_IDS.includes(settings.compatibleImage.model as any)) return {ok:false,items,message:'仅兼容 NovelAI 模型；未提交生成。'};
-    const config = { ...settings.compatibleImage, apiKey: settings.imageApiKey ?? "" };
+    const config = { ...(options.configSnapshot??settings.compatibleImage), apiKey: settings.imageApiKey ?? "" };
+    if(!NAI_RELAY_MODEL_IDS.includes(config.model as any)) return {ok:false,items,message:'仅兼容 NovelAI 模型；未提交生成。'};
     const input = { prompt: request.prompt, n: request.n, size: options.size ?? config.size, extensions: config.extensions };
     const body = buildCompatibleImageRequest(config, input);
     const groupId = request.historyGroupId ?? settings.generationGroupId;
@@ -87,6 +87,7 @@ export async function generateConfiguredImages(request: CompatibleGenerationRequ
     await fs.access(dir, fs.constants.W_OK);
     const batch = await generateCompatibleImages(config, input, {
       signal: job.controller.signal,
+      afterReceipt:options.afterReceipt,
       beforeSubmit: async () => {
         if(getSettings().imageServiceRevision!==settings.imageServiceRevision) throw Error('Image settings changed before submit');
         assertAgentImageProvider(getSettings(), options.expectedProvider);

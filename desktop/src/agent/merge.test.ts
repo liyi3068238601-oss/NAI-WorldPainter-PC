@@ -38,6 +38,7 @@ describe("agent backup merge", () => {
     expect(result.workspace.conversations).toHaveLength(2);
     expect(result.workspace.conversations[1].title).toBe("角色设计 (1)");
     expect(result.workspace.conversations[1].id).not.toBe("same");
+    expect(result.conversationIdMap.get("same")).toBe(result.workspace.conversations[1].id);
     expect(result.renamed).toBe(1);
   });
 
@@ -75,6 +76,7 @@ describe("agent backup merge", () => {
     const result = mergeAgentWorkspaces(current, incoming);
     expect(result.workspace.conversations).toHaveLength(1);
     expect(result.skipped).toBe(1);
+    expect(result.conversationIdMap.get("portable")).toBe("portable");
   });
 
   it("remaps conversation-scoped memory when a conflicting chat is copied", () => {

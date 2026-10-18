@@ -1,0 +1,92 @@
+{
+  "scope": "仅独立 JSON 数据校验；附带语义函数的判断来自静态控制流，未运行用户脚本或产品。",
+  "cases": [
+    {
+      "label": "pending-output-hidden-by-error",
+      "instance": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "error",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "pending"
+            }
+          ],
+          "receiptRevision": 1,
+          "expectedOutputCount": 1,
+          "requestGranularity": "per_output",
+          "providerReceiptStatus": "pending",
+          "requestedSeedPolicy": "random",
+          "requestedSeed": null
+        }
+      },
+      "schemaAccepted": true,
+      "expectedByWrittenContract": false,
+      "validatorAssessment": "Static control-flow: global predicates pass; state is not handled in lines 106-138; random null passes. User script not executed."
+    },
+    {
+      "label": "pending-output-hidden-by-blocked",
+      "instance": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "blocked",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "pending"
+            }
+          ],
+          "receiptRevision": 1,
+          "expectedOutputCount": 1,
+          "requestGranularity": "per_output",
+          "providerReceiptStatus": "pending",
+          "requestedSeedPolicy": "random",
+          "requestedSeed": null
+        }
+      },
+      "schemaAccepted": true,
+      "expectedByWrittenContract": false,
+      "validatorAssessment": "Static control-flow: global predicates pass; state is not handled in lines 106-138; random null passes. User script not executed."
+    },
+    {
+      "label": "pending-output-hidden-by-denied",
+      "instance": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "denied",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "pending"
+            }
+          ],
+          "receiptRevision": 1,
+          "expectedOutputCount": 1,
+          "requestGranularity": "per_output",
+          "providerReceiptStatus": "pending",
+          "requestedSeedPolicy": "random",
+          "requestedSeed": null
+        }
+      },
+      "schemaAccepted": true,
+      "expectedByWrittenContract": false,
+      "validatorAssessment": "Static control-flow: global predicates pass; state is not handled in lines 106-138; random null passes. User script not executed."
+    }
+  ]
+}

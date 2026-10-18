@@ -1,0 +1,24 @@
+{
+  "version": "v3.2-r3",
+  "date": "2026-10-16",
+  "scope": "Design documents and standalone mock HTML only",
+  "productionHead": "dfd7caa63ae19bd40651e00127a71efe57b71b4e",
+  "trackedProductionDiff": "",
+  "toolSchemaVersion": "2.0.0",
+  "toolCount": 36,
+  "schemaFixtureCount": 215,
+  "semanticCaseCount": 15,
+  "counterexampleCount": 8,
+  "browserEvidenceCases": 34,
+  "screenshots": 9,
+  "r2ManifestVerified": 28,
+  "productTestsRun": false,
+  "externalModelOrImageServiceCalls": 0,
+  "main": "prototype-v3.2-r3.html",
+  "verification": "VERIFICATION.md",
+  "limitations": [
+    "sessionStorage mock is not product durable storage",
+    "fixed phrases and prewritten text are not model behavior",
+    "download click is not file integrity verification"
+  ]
+}

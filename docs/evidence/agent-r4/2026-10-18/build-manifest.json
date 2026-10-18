@@ -1,0 +1,797 @@
+{
+  "recordedAt": "2026-10-18T04:16:55.045Z",
+  "sourceFiles": [
+    {
+      "path": "desktop/electron/ipc/account-vault-backup-transaction.test.ts",
+      "bytes": 13299,
+      "sha256": "b6f2f756c307a7fed388f8e270bfdd2de0ca78da2b100262c29fb91840886c57"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-composer-import.test.ts",
+      "bytes": 3855,
+      "sha256": "0227f62fe2a8dd66532edbaa365620940f6dd5a233bffd7ad9f93f3499208257"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-defaults-user.test.ts",
+      "bytes": 5728,
+      "sha256": "356ab0992ad3441dfa6ec33d49e42c2ba0c54fc5bc2fbda68f5be039fadbf688"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-history-workflows.test.ts",
+      "bytes": 8263,
+      "sha256": "9ca05aa13fa91a12ef51f3bd2b6a12019fa81f8a86581b946e1efb6ad13b52b3"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-library-tools.test.ts",
+      "bytes": 4317,
+      "sha256": "c4216e828f57f6e837ff6dced25fa5e018c638d56698225731dc72df960d930c"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-options-activity.integration.test.ts",
+      "bytes": 7415,
+      "sha256": "5cd192f822d0593b98b63edb547ad1601f7fbbf1b974dd68715870149a5ae019"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-runtime-pi.test.ts",
+      "bytes": 34214,
+      "sha256": "1497a5dc6304e7f31e0eba6f2e3f5d168be9f7f024a7cdd181ceba6159600cde"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-runtime.ts",
+      "bytes": 63582,
+      "sha256": "5971d2305b7f0ba27ada6216a08e61ee750e38da643d36d02ce0b1cfb81c7db4"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-store-r4-migration.test.ts",
+      "bytes": 15287,
+      "sha256": "51558530fe295c8342e53afd6030ecfc24ecb1d65ef8b9ed294054147d16ebbf"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-store.ts",
+      "bytes": 80573,
+      "sha256": "c515934e1b6b53fe6dd43de1ae2d2b676bb53fa3046e6c84c95dfede92ac40b2"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-system-prompt-import.test.ts",
+      "bytes": 8315,
+      "sha256": "62331164f5431cb3a2bbe3ccf015135311d49e86a4685bb148327503199eabad"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-workspace-location.ts",
+      "bytes": 2029,
+      "sha256": "3f596a6f8406e8775c2b49bd3c700df41000df574e5c26c02cc8d3517fb920ae"
+    },
+    {
+      "path": "desktop/electron/ipc/agent-workspace-migration.test.ts",
+      "bytes": 11028,
+      "sha256": "4ff246900e5951c776137ab7e24ffc046b7dac3f39837045540b39b45ae7a44d"
+    },
+    {
+      "path": "desktop/electron/ipc/audit-account-vault-backup-public.test.ts",
+      "bytes": 4934,
+      "sha256": "28d45d201252e6c8d72973aeafb4accb5344a626faabe447ff8fbb807b31eede"
+    },
+    {
+      "path": "desktop/electron/ipc/compatible-generation.ts",
+      "bytes": 8783,
+      "sha256": "ce11df77dc451af90a05a400f73d5f13c34764cd1ae5b72c37331189bd757b19"
+    },
+    {
+      "path": "desktop/electron/ipc/compatible-image-backup.test.ts",
+      "bytes": 9318,
+      "sha256": "7c6b666715f8377d871c6e7eeda731704aa909650105a8f80e68e8902528d6ee"
+    },
+    {
+      "path": "desktop/electron/ipc/data-backup-agent-store-test-helper.ts",
+      "bytes": 1177,
+      "sha256": "e4ad2d999980fdf7d260a3a12c40c4f307b3350ed7f5dfe937cb7f5ff226e3e9"
+    },
+    {
+      "path": "desktop/electron/ipc/data-backup-artist-prompt-library.test.ts",
+      "bytes": 9323,
+      "sha256": "3c345a989f5686696d911233344e602325d92620c9c133176fd2782db4816925"
+    },
+    {
+      "path": "desktop/electron/ipc/data-backup-bridge.test.ts",
+      "bytes": 17096,
+      "sha256": "f1d7621a4527777e7b3da55be51e45cedb3ff52764e19a7520feb980b26c1cf7"
+    },
+    {
+      "path": "desktop/electron/ipc/data-backup-image-records.test.ts",
+      "bytes": 6360,
+      "sha256": "7c5bfd31f5888798eb3a01568a4ccf44176635421bc21fc5d5e74f03f7948bd9"
+    },
+    {
+      "path": "desktop/electron/ipc/data-backup-positive-characters.test.ts",
+      "bytes": 4671,
+      "sha256": "bad3970ce1c01c319c175c9cd74039a585eccf6dab87dfdd3e66a7d139dade57"
+    },
+    {
+      "path": "desktop/electron/ipc/data-backup.ts",
+      "bytes": 86938,
+      "sha256": "55e26671fab624503c05f88253ce94bd83edd24968247900236a3c2cd55c7336"
+    },
+    {
+      "path": "desktop/electron/ipc/history-delete-delivery.test.ts",
+      "bytes": 6535,
+      "sha256": "cd4933ab068422d541ea3a4d69762b099d842850286dffed7bac92a20ddc9566"
+    },
+    {
+      "path": "desktop/electron/ipc/mcp-backup-metadata.test.ts",
+      "bytes": 6806,
+      "sha256": "482c0d0f1530166b027e7ece1edc46f0fc2da3107238311e6b6569ad25a5bcdc"
+    },
+    {
+      "path": "desktop/electron/ipc/nai.ts",
+      "bytes": 220309,
+      "sha256": "9e60b97b3f93138396177742636476e14b5f4d2da1e52e6067147706d857ab60"
+    },
+    {
+      "path": "desktop/electron/ipc/openai-images.ts",
+      "bytes": 6802,
+      "sha256": "3ec4ce82cb1c0c83314ec60819cc8ea7842b5dffe8a1164efa09dc42a4c4e28a"
+    },
+    {
+      "path": "desktop/electron/ipc/pi-agent-core.test.ts",
+      "bytes": 20740,
+      "sha256": "1f328b94c32e18fc13b6bdc1bc5a961c5f8435588df68faa76263f5eaa91b4ac"
+    },
+    {
+      "path": "desktop/electron/ipc/pi-agent-core.ts",
+      "bytes": 14941,
+      "sha256": "c03226e581cbfe15354b1dbfb6e4a5d3e71bd636f855d1deec0150c8965ae081"
+    },
+    {
+      "path": "desktop/electron/ipc/pi-agent-provider.ts",
+      "bytes": 13954,
+      "sha256": "c8a87562691ee43088f504530b97426e74465efc8579bbea0b468009bc0aa7f2"
+    },
+    {
+      "path": "desktop/electron/ipc/pi-agent-turn.r4.test.ts",
+      "bytes": 9634,
+      "sha256": "2740bb564a50de1e2954e9f696778f3c15e2f1f4bbacb7bcebb9b318df80356d"
+    },
+    {
+      "path": "desktop/electron/ipc/pi-agent-turn.test.ts",
+      "bytes": 21558,
+      "sha256": "83df7f2f1ed8805d145a211dee22e2a7331c9abf74fb2ef0e0a10010285b2666"
+    },
+    {
+      "path": "desktop/electron/ipc/pi-agent-turn.ts",
+      "bytes": 31316,
+      "sha256": "df9ab5e322cb9845dd8559b44995d3a6499ae9e6c0fea6e47d81103d6a6b684e"
+    },
+    {
+      "path": "desktop/electron/ipc/portable-projects.test.ts",
+      "bytes": 20535,
+      "sha256": "e3cc1c3ba933411ead581d7b500586d9f7aaa32ff5030b245d91e0267f0d19b0"
+    },
+    {
+      "path": "desktop/electron/ipc/portable-projects.ts",
+      "bytes": 42192,
+      "sha256": "a28dacf7e12abe436596492f9d483f84211d16852d97b3b87514e69fa25c62b0"
+    },
+    {
+      "path": "desktop/electron/ipc/preflight-network.test.ts",
+      "bytes": 6152,
+      "sha256": "e67413d92ada25e1026af6fd054a50615259acceef4823311ba670a096e19764"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-agent-prompt-independence.test.ts",
+      "bytes": 11378,
+      "sha256": "3a4941ab3317e456ac49b0c7428e7db56d4804233dc604ee5f6423d159bc6112"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-agent-runtime.ts",
+      "bytes": 23889,
+      "sha256": "fe427fb029e91dc2b9839d0e943b85b51b692e86bde50e09954106aa89207588"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-agent-service.ts",
+      "bytes": 28517,
+      "sha256": "e3d09ffe59a8fb9cd2af14e0a16bd910efef4471f6963942066a2ff566d9e7cc"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-artwork-download.test.ts",
+      "bytes": 1608,
+      "sha256": "733f4243ade8181bdb40fbfc4f5c196e44726bfb345cc649ac9b33ee3e44d5f3"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-artwork-download.ts",
+      "bytes": 1278,
+      "sha256": "067efcd01377fd4ab5ee7c8fdc3a6cf247d79279903f43ec16364eb65b5f668b"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-atomic-enqueue.test.ts",
+      "bytes": 11595,
+      "sha256": "a3fd39779da0655a5227407f74d67909aa7e2521d4377be34623c7e7cd10e853"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-bindings.ts",
+      "bytes": 946,
+      "sha256": "6d620b5212fb28cea481fb697a4b01335b033f6680ebd6fa87c5e03022ceed4e"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-contracts.test.ts",
+      "bytes": 7528,
+      "sha256": "e82ac9b5b88406bbf18c9b349a4c13a62bcae37591acb02ec9b2651d282924e9"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-conversation-queue.test.ts",
+      "bytes": 24489,
+      "sha256": "82ed432ae5ad19e514d463cb31014d5ee07258e3a650a09cc3952a3720a9987c"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-conversation-queue.ts",
+      "bytes": 37636,
+      "sha256": "9dc23a67bc68344190988645f88101a6dc6fa6ead0ebe5db64499a3d0c4b70c9"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-creative-host.test.ts",
+      "bytes": 7558,
+      "sha256": "5f4944a0fd54b544e7e96b66147913be43bdfea7a30bdf343f0181db695abe00"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-creative-host.ts",
+      "bytes": 29809,
+      "sha256": "0041cb74c0a1f9d5cec427e7f1c662934b47029e06b2f3da579805a4c364afae"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-critique.test.ts",
+      "bytes": 9500,
+      "sha256": "8eadee7e59c13f801a9b3c3835d04ab3dd22c3496636f828bac9bd15a5546f08"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-critique.ts",
+      "bytes": 9474,
+      "sha256": "bf15793fa2962302d0e9c9fd9a649f5fa075a585e96b2049ada04f5e1b088e24"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-execution-coordinator.test.ts",
+      "bytes": 8458,
+      "sha256": "1e53f88480bd8602dcdcc080d04eb5922908275d31130b108bcb474370ee16c6"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-execution-coordinator.ts",
+      "bytes": 15907,
+      "sha256": "1c68f2b31e99f0ea645b3bdedcbadcbffa4ae37bd58d8c75ef1d87bc1c5482d1"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-execution-worker.test.ts",
+      "bytes": 35516,
+      "sha256": "a6316db8f1c2d1dc2ff1be9cc6c3cc2f04e4c1909313d2ca67c881f25b84090d"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-execution-worker.ts",
+      "bytes": 65249,
+      "sha256": "ffe5db7fe35d6e33686f2988de0dfe88b4561e71206ad45e9d5970e6bc07f8a8"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-five-entry-faults.test.ts",
+      "bytes": 18597,
+      "sha256": "c6e238005f26033fd1df2d483a0df2fa60b944edf9cfd1fe0316db47bc9a0629"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-history.test.ts",
+      "bytes": 1625,
+      "sha256": "10ae659ecf9d59c5b108156a821ee615d8baa9fabb10effc0456fc168fff4258"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-history.ts",
+      "bytes": 1649,
+      "sha256": "576dc2bd26cf51f790fdab5a411d84f3ed6b1070779897d9fdfed0308a7c5778"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-image-provider.ts",
+      "bytes": 11752,
+      "sha256": "371e0db25be496302cae2919723628f76c4ba98fec097d53cf4cfbdcc4e4c1d0"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-legacy-adapter.test.ts",
+      "bytes": 15388,
+      "sha256": "4b53aebd7d001a285377055468615072d05c01e2ac7e1cac1f5cb8f1a9192e66"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-native-context.test.ts",
+      "bytes": 3328,
+      "sha256": "2f104e44e0346931631a706766e38446c6323e0a7f930be66d4a2830cb759e4f"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-native-context.ts",
+      "bytes": 2506,
+      "sha256": "8c2c82588f646fc6b8cdac30ac7be0c241ebc054769a359271607e322f4bbfb6"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-paid-service.test.ts",
+      "bytes": 7467,
+      "sha256": "601326340b762218c6290a1eecd0226b566e8d40c7568de3a36356bb364c7270"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-paid-service.ts",
+      "bytes": 6337,
+      "sha256": "27339367fe8ef898e2acd4644d1b0984286d1dfff7ae2b2342134b46abed1341"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-paid-text-boundary.test.ts",
+      "bytes": 9580,
+      "sha256": "182eb9e71fabb7960effa63a344978f9080ae3293cb83d03037d5a3cef7aecca"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-paid-text-context.ts",
+      "bytes": 3113,
+      "sha256": "d451a51fa042d7aae9d04a1f4f99c6c5292c9f4d5e307787e00ea0466b2e37f4"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-pi-tools.test.ts",
+      "bytes": 16851,
+      "sha256": "60606de4538eef0d9a4de94ea0131171b40affb23e8ad9db04bf73e84cee12b6"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-pi-tools.ts",
+      "bytes": 28689,
+      "sha256": "102321642d09a1e527415d3fca69fe69df5664bd15c829db75c4add242e84bbd"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-product-boundary.test.ts",
+      "bytes": 25324,
+      "sha256": "617ca1b64df02b0b3decf96f863b196481ff821dfa88fcd94e14c9a5af3b89a5"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-provider-wire.test.ts",
+      "bytes": 7970,
+      "sha256": "f9e4a1e5e168ba96de7c4975b1d19403cf8ceb02dbd6d6d0b4d895bdcbbb3e64"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-recovery-matrix.test.ts",
+      "bytes": 15115,
+      "sha256": "599bfa95193d441137b371ee077d46fcb6bdb5ad02b1ee1b4cd9cb804a8d9d2c"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-restart-lineage.test.ts",
+      "bytes": 14345,
+      "sha256": "be39d55ddfe2bae85eef1896a46d2fc4b6d644c56cb5c9950b3a994dc5b6e85c"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-runtime-context.test.ts",
+      "bytes": 5851,
+      "sha256": "aef274a0906be4c04fb91d1dd1f534043871c673ca9e39d7dd0ea1b84a7e09f8"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-runtime-context.ts",
+      "bytes": 13179,
+      "sha256": "422b54a07952a1df589142ce745c2ea059168f15b8472537f00812a6308495dd"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-runtime-e2e.test.ts",
+      "bytes": 14663,
+      "sha256": "4063cfb24baaaa491daee61425329f9c719457430effaf088e56db2c9544a0cd"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-store.test.ts",
+      "bytes": 6299,
+      "sha256": "7cbee6e88aa2cd58dd4e36541e775bd2aca08a56e9251ce756a13d8cff8f4d85"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-store.ts",
+      "bytes": 15167,
+      "sha256": "35008fbfc2817f8aa8dba10eb5ddaa4e100493ed634882af1fd09a29953cf9ba"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-workbench.test.ts",
+      "bytes": 7443,
+      "sha256": "fa037e878a21a5b7b35da5252a5cfa129a33967d0631e384ecfceff1148bb0ba"
+    },
+    {
+      "path": "desktop/electron/ipc/r4-workbench.ts",
+      "bytes": 17066,
+      "sha256": "5533bc1256b35198200af2478d151b4bf4c995360e8bea78f3c4e38481ad006b"
+    },
+    {
+      "path": "desktop/electron/ipc/studio-data-tools.test.ts",
+      "bytes": 9375,
+      "sha256": "513697f49b103ff4d2e5e6f63bd15f9e086b6b2c3981187841219e0fb1e97970"
+    },
+    {
+      "path": "desktop/electron/ipc/studio-data-tools.ts",
+      "bytes": 11370,
+      "sha256": "1fd999b3105e59b25e19c4fb37fbe085c9bdd62c8394befa21800724f447d337"
+    },
+    {
+      "path": "desktop/electron/ipc/works-batch.test.ts",
+      "bytes": 7806,
+      "sha256": "cf16ad9eacc44f1770d465b6620c2e38feb799d710f9869f875b3e160de0319c"
+    },
+    {
+      "path": "desktop/electron/main.ts",
+      "bytes": 77803,
+      "sha256": "e3bf5e2c37e89643c675e839beea715de17084bbebb1e1c9b5bc60d5653f77f6"
+    },
+    {
+      "path": "desktop/electron/preload.ts",
+      "bytes": 40862,
+      "sha256": "70de27b9b44a104d184fcbcd2ee8b8e218cfcba0b3f1575a7c72ce7c333eaed0"
+    },
+    {
+      "path": "desktop/package-lock.json",
+      "bytes": 339482,
+      "sha256": "97ae0d99efeffbbedfb6906817e87fbd1acb73cd8fb1069d4f85a3f0409166ff"
+    },
+    {
+      "path": "desktop/package.json",
+      "bytes": 10513,
+      "sha256": "789b33a15dd7f283647221d801628c89d3a043feced1b2ae674c8325f8554809"
+    },
+    {
+      "path": "desktop/src/PiAgentPage.tsx",
+      "bytes": 89661,
+      "sha256": "787357da63c3fa094a65de81113c4a19d570bac8befebc010bf4cdea6b318f3e"
+    },
+    {
+      "path": "desktop/src/agent/merge.test.ts",
+      "bytes": 4916,
+      "sha256": "f6fca885ba781da6365b505265f0fcc6ed124b5ce345f148c772b593bfb8a203"
+    },
+    {
+      "path": "desktop/src/agent/merge.ts",
+      "bytes": 8231,
+      "sha256": "aa8ce15738457301c9d712e3de6c868ffd3f9550b4cde2f55d2a444520d86850"
+    },
+    {
+      "path": "desktop/src/agent/r4-commands.ts",
+      "bytes": 2845,
+      "sha256": "24605d0ef55e7ff9ab3b887400da32e5f6c77117c6ccdc49dc08f88345487310"
+    },
+    {
+      "path": "desktop/src/agent/r4-contracts.ts",
+      "bytes": 5158,
+      "sha256": "ba1a0b52016d0f226b72a4b21a1e187f1f9a102e47b40b6311c49dd060d499ea"
+    },
+    {
+      "path": "desktop/src/agent/r4-execution-semantics.ts",
+      "bytes": 18868,
+      "sha256": "1676be3767ad996c7f4cae24b7c7ad9a77d5a283c47b670c82f0bf5f7314844d"
+    },
+    {
+      "path": "desktop/src/agent/r4-legacy-adapter.ts",
+      "bytes": 37471,
+      "sha256": "e75a06f6e1de2dd9177d24fd38c8444aa4c68671bf6649f1f2f8435e53035a73"
+    },
+    {
+      "path": "desktop/src/agent/r4-registry.json",
+      "bytes": 608449,
+      "sha256": "91d25a6f3a4e62fc4e7e8f912e654f15d602a4bbd799ffd335afec9ea3c057d4"
+    },
+    {
+      "path": "desktop/src/agent/r4-sdk-input-fallbacks.ts",
+      "bytes": 2062,
+      "sha256": "1ddc2f6d0f696bc991bf40458de5eee6bc474af729d0c5de317316a4d56fb93d"
+    },
+    {
+      "path": "desktop/src/agent/r4-system-prompt.ts",
+      "bytes": 7259,
+      "sha256": "22c30ce09d145aaad4f6c54d7cd07b1653164f946a6e1dc52369385c320a5599"
+    },
+    {
+      "path": "desktop/src/agent/r4-types.ts",
+      "bytes": 17041,
+      "sha256": "35c52d1178a8633f5215b687f7d84de46cd3dd6b77a5b69c5035a69b51347df9"
+    },
+    {
+      "path": "desktop/src/agent/r4-ui.test.ts",
+      "bytes": 7093,
+      "sha256": "eb8c54ec9c76c1b7e6efeb767d5646b32ac57794a702042c05c9f92cfcb13bb7"
+    },
+    {
+      "path": "desktop/src/agent/r4-ui.ts",
+      "bytes": 10313,
+      "sha256": "c78629d415bc2fdf36f84fb9e669642021249d3639f62c4b52700c24488c62aa"
+    },
+    {
+      "path": "desktop/src/agent/r4-workbench-contract.ts",
+      "bytes": 2032,
+      "sha256": "3917cb573c077d5c1baaff7c2f7c8e86e621eb3b2c04172101e80eadbd1dd5bb"
+    },
+    {
+      "path": "desktop/src/agent/runtime-source.test.ts",
+      "bytes": 4892,
+      "sha256": "5415268651bf593ecf55bc3002e0671521dd2d671a582bf9b26f74cfdf8a1da8"
+    },
+    {
+      "path": "desktop/src/agent/types.ts",
+      "bytes": 16086,
+      "sha256": "1a30eab602d44fb287b27b12b8ec9fc2fbd4daef6d014958d7058abe2e315637"
+    },
+    {
+      "path": "desktop/src/agent/ux.test.ts",
+      "bytes": 13604,
+      "sha256": "2699c8e6ec113114fc26976e8ef04a14a76366d104d09d821cce0c00116060bf"
+    },
+    {
+      "path": "desktop/src/components/AgentR4ArtworkViewer.tsx",
+      "bytes": 10687,
+      "sha256": "a76d002c01a6619f99d5b9ac9c1f2a4c1e3fad528d8f7fffa391af9053a3b9ce"
+    },
+    {
+      "path": "desktop/src/components/AgentR4CreationControls.test.tsx",
+      "bytes": 2410,
+      "sha256": "a93cd51d395f6afd1d5ab00ecd7e95a8c1f5d91c1663103ccb33e64c3d766761"
+    },
+    {
+      "path": "desktop/src/components/AgentR4CreationControls.tsx",
+      "bytes": 7350,
+      "sha256": "9eb9dbbe621c9223f4b9f8283c08db26929fed8b256202e935f3d4716f148e32"
+    },
+    {
+      "path": "desktop/src/components/AgentR4CreativePanel.test.tsx",
+      "bytes": 4064,
+      "sha256": "c05d63c8b13332772ba855c6a7e2da1ab6bfe7b8cd83b501076cd024dd1752c7"
+    },
+    {
+      "path": "desktop/src/components/AgentR4CreativePanel.tsx",
+      "bytes": 24554,
+      "sha256": "01a2b0d349eacf4396b217920f3ef5027bc269e9acc715448dc7fb523fa09a13"
+    },
+    {
+      "path": "desktop/src/components/AgentR4QueuePanel.tsx",
+      "bytes": 18407,
+      "sha256": "4e5e788c682ad12fde8ec8d6a563c36c938c1f43bc78b040b3254abe37fa91bb"
+    },
+    {
+      "path": "desktop/src/components/AgentR4WorkbenchApplyPreview.test.tsx",
+      "bytes": 2058,
+      "sha256": "43d34fbab030d978f9d7a800be5795bf879c8ffe49a3e07829b6b3fc91bf04ba"
+    },
+    {
+      "path": "desktop/src/components/AgentR4WorkbenchApplyPreview.tsx",
+      "bytes": 2613,
+      "sha256": "a27d374db731f5777ac957e6e1d8ab84da57c4cc50e7a87be7dfb6ebdca7aa1a"
+    },
+    {
+      "path": "desktop/src/pi-agent-page.css",
+      "bytes": 90322,
+      "sha256": "ccff31f3f1bcbc15348fea9c5bf43a677e0b05de6ea6c5d8bfafcd16e540ce68"
+    },
+    {
+      "path": "desktop/src/studio-agent-contract.ts",
+      "bytes": 7347,
+      "sha256": "1f23c02af569bef321db0840bed159a978caf645c4890f2de42af83556727768"
+    },
+    {
+      "path": "desktop/src/studio-agent.ts",
+      "bytes": 25505,
+      "sha256": "ccdaf4d57caf56a25c57972ab941c294974135c839066d52b3e28880880bfedc"
+    },
+    {
+      "path": "desktop/src/system-prompt-contract.test.ts",
+      "bytes": 27490,
+      "sha256": "54eb1e7d224b667d81ff718c2bf8ed18d2824ffd381a79ab57d1d1bac8ee895a"
+    },
+    {
+      "path": "desktop/src/types.ts",
+      "bytes": 88258,
+      "sha256": "230726cd66d5604079489d20709537785323a1cf8d3401d2892b2515689acce4"
+    }
+  ],
+  "package": {
+    "directory": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\package-final\\win-unpacked",
+    "executable": {
+      "path": "NAI WorldPainter PC.exe",
+      "bytes": 235080704,
+      "sha256": "f21b34d5cc569bb565950ffa207fb994d23544ac29080b59baa143056903a9b5"
+    },
+    "asar": {
+      "path": "resources/app.asar",
+      "bytes": 258712916,
+      "sha256": "58995c6db87e64d50fe2c0d9130fb125d6353787f31c4ffd6f3c23178849117b"
+    },
+    "matchingBuildFiles": [
+      {
+        "path": "dist-electron/electron/bootstrap.js",
+        "bytes": 536,
+        "sha256": "0a32755c3a4baa853587c14e3405f5f6c68141c6359d9b17f2e96b56c332a9d1",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-agent-runtime.js",
+        "bytes": 27472,
+        "sha256": "8bc92bd0347b99b68ee2de6263fba6ab67a575c8c687671173becedda432865e",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-agent-service.js",
+        "bytes": 32964,
+        "sha256": "dfeedee7c30cecdb587a2acf24834f7eef0b9fad00350e7d89b2d6ee1f99af31",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-artwork-download.js",
+        "bytes": 1771,
+        "sha256": "d2af301c4f1e7bfb8a191781412341b41ed514e982c7ddf3ca588ef019c0220c",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-bindings.js",
+        "bytes": 1485,
+        "sha256": "867139f98b73365c59ad8b2880b3d6bf2a458010b30d54fcf8824d392cd5bd9d",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-conversation-queue.js",
+        "bytes": 39575,
+        "sha256": "51aa7c526f6cea95f0d3e2821245165b6522ab4eeee26c43ba333cc0e03fc182",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-creative-host.js",
+        "bytes": 33331,
+        "sha256": "4c945b171b1b7278ad87e72421c856e1b460c6ccaf6a4177c219236c17f7d57e",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-critique.js",
+        "bytes": 10989,
+        "sha256": "bd61b8ec2230b84549533391e9bfdefcd25106df6ef8e863f133860d621473e9",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-execution-coordinator.js",
+        "bytes": 18088,
+        "sha256": "1db8d7adfc5eb2118367f0bf5030b6a71a690fcd296b32b8384b132233138d4b",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-execution-worker.js",
+        "bytes": 72295,
+        "sha256": "2d2fc52c9b6e8afc3303af73b59f39a54501cb6b37d7fbe94b6b3d305a732be6",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-history.js",
+        "bytes": 1775,
+        "sha256": "c1962fb5d09166cb3eb98d7800f5b70427adb0658b083c88c6112e3a7cfdf6ff",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-image-provider.js",
+        "bytes": 13420,
+        "sha256": "6feff89d41f3424c266e20e765dedc7b748021576ddbb0e82fd5d3727564f044",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-native-context.js",
+        "bytes": 2280,
+        "sha256": "3a90220e430a77633c826a54bc408b8c4d51b03fba671311277c3a5c72ba3ece",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-paid-service.js",
+        "bytes": 7095,
+        "sha256": "5021f4e79ea6ff30c2d48b6982901187f4c4f29fb52f186ae93a5bf0c76cc15a",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-paid-text-context.js",
+        "bytes": 2663,
+        "sha256": "4e2b854a82a1823584b03f9887098f2e9a6afea999e61d727b90e7b9fd6bd07d",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-pi-tools.js",
+        "bytes": 26690,
+        "sha256": "6b792df178c130718d408c85325494ee0a41ef79a9ba55529760d80e3e8d9dc7",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-runtime-context.js",
+        "bytes": 15152,
+        "sha256": "f188a5920556efd096ab1ce97aefc72f865152851f42ebffa28ad430d1bdc99f",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-store.js",
+        "bytes": 15396,
+        "sha256": "73ec1efc83c1936bad77befb9f0c98d5bbe9637c1be205ccf25f6762a0edc0d6",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/ipc/r4-workbench.js",
+        "bytes": 15933,
+        "sha256": "7d2d3bb43b36476f8d02d4cbd8da06f3bad13b7c02016420f7f6485442c5433d",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/main.js",
+        "bytes": 79842,
+        "sha256": "d44562e9df70cf7af6066e0ea93a80321aa584ed144d3e77299822ebfda00507",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/electron/preload.js",
+        "bytes": 34356,
+        "sha256": "2e90fbcae691e3aee685930bb88bd3dce60012379f96d20b9923f284057618f1",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-commands.js",
+        "bytes": 116,
+        "sha256": "c03cd997b604f8acbbb9d52b4cc435694d86121d1f891f476ad287c59d4f5f5d",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-contracts.js",
+        "bytes": 4353,
+        "sha256": "7c7bc2c542fe68c2d9e98fd1d8e75c7ac96f5bc96b7b908d80119be40d5e9a3c",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-execution-semantics.js",
+        "bytes": 17629,
+        "sha256": "9040d1b638a69aeb8bfae4277ef48d9e9c24587125a399030ba776465f012bfc",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-legacy-adapter.js",
+        "bytes": 36325,
+        "sha256": "0dab26051253564e5e8cc2bde7008401a462f45cccee5af83fea7a36da615b0c",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-registry.json",
+        "bytes": 891839,
+        "sha256": "5acb87efdfdf934108c4a5329e75db3f774a1ff890b6a60850ce5a9444218473",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-sdk-input-fallbacks.js",
+        "bytes": 2198,
+        "sha256": "e358699464375651c537bbc3209552abece957b43fff938054eafbf52342caab",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-system-prompt.js",
+        "bytes": 7449,
+        "sha256": "5d62a6c377f030d55e4a075167b514a335c4a00440a2f5892e860395947f7389",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-types.js",
+        "bytes": 4817,
+        "sha256": "6b35934744506c48fa2f181290a337247820108dff3133190b39c4348b760ee9",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist-electron/src/agent/r4-workbench-contract.js",
+        "bytes": 126,
+        "sha256": "326de9709a859596609d09094ff9a87e99f07e5be645f173710b563e8f003cab",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist/assets/PiAgentPage-BvFPNSeB.css",
+        "bytes": 90800,
+        "sha256": "f0c9af6c47b71f6a591fba8a8a8662176d978004e4adac0fc88c8732b7a0d42b",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist/assets/PiAgentPage-DhxBvbD0.js",
+        "bytes": 322477,
+        "sha256": "3cb88b5f7e6a2d064a04e84b99ba10cc000168bf92b25bccddbedb1c9bc932e5",
+        "matchesBuild": true
+      },
+      {
+        "path": "dist/index.html",
+        "bytes": 1855,
+        "sha256": "3ddaade5bf894fa0c5cdf285dff852749bf529c68c1851e7bfba4c3f50304fad",
+        "matchesBuild": true
+      }
+    ],
+    "ajv2020Included": true,
+    "registry": {
+      "sourceSha256": "91d25a6f3a4e62fc4e7e8f912e654f15d602a4bbd799ffd335afec9ea3c057d4",
+      "packagedSha256": "5acb87efdfdf934108c4a5329e75db3f774a1ff890b6a60850ce5a9444218473",
+      "sameParsedContent": true,
+      "note": "TypeScript emits imported JSON with different whitespace; packaged file exactly matches emitted build"
+    }
+  },
+  "syntheticEvidence": true,
+  "realPaidApiRequests": 0
+}

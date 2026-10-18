@@ -1,0 +1,11 @@
+$ C:\Users\liyi\AppData\Local\Programs\Python\Python312\python.exe -B validate_registry.py
+OK: 36 tools; 239 JSON Schema fixtures; 50 semantic cases; 11 executionStatus branches each have valid+invalid semantic cases; 3 original R3 counterexamples; 8 old/new counterexamples; 8 synthetic reference authorization host-context cases; Draft 2020-12 host schemas.
+No product handlers, external services, or paid APIs were called.
+
+
+exit=0
+$ C:\Users\liyi\AppData\Local\Programs\Python\Python312\python.exe -B sync_tool_summaries.py --check
+OK: all five registry-derived summary rows match for 36 tools.
+
+
+exit=0

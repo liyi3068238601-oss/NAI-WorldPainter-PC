@@ -66,9 +66,15 @@ it('replaces the Pi worldbook resource with persisted skills while retaining pre
 it('wires owned page controls to real preload APIs and keeps model setup out of the header', () => {
   const source = readFileSync(new URL('../PiAgentPage.tsx', import.meta.url), 'utf8');
   expect(source).not.toContain('className="pi-header"');expect(source).toContain('className="pi-sidebar-footer"');
+  expect(source).toContain('<AgentModelPicker registry={modelPickerRegistry}');
+  expect(source).toContain("runR4CommandFor(chat.id,'set_model_binding',{providerId,modelId}");
+  expect(source).toContain('const modelPickerRegistry={...providers,activeProviderId:');
+  expect(source).toContain('restoredDraftConfig??creativeState?.config');
+  const pickerIndex=source.indexOf('<AgentModelPicker registry={modelPickerRegistry}');
+  const settingsDialogIndex=source.indexOf('{settingsOpen&&settings&&<AgentDialog');
+  expect(pickerIndex).toBeGreaterThanOrEqual(0);expect(settingsDialogIndex).toBeGreaterThan(pickerIndex);
+  expect(source.slice(pickerIndex,settingsDialogIndex)).not.toContain('<AgentProviderSettings');
   expect(source).toContain('<AgentProviderSettings settings={settings}');
-  expect(source).toContain('<AgentModelPicker registry={providers}');
-  expect(source).toContain("setSetting('agentProviders', selectAgentProviderModel(");
   const settings = readFileSync(new URL('../components/AgentProviderSettings.tsx', import.meta.url), 'utf8');
   expect(settings).toContain('<AgentModelCollection draft={draft}');
   const app = readFileSync(new URL('../App.tsx', import.meta.url), 'utf8');
@@ -78,7 +84,12 @@ it('wires owned page controls to real preload APIs and keeps model setup out of 
   expect(source).not.toContain('getAgentModels(');
   expect(source).toContain('window.naiDesktop.compactAgentConversation(chat.id)');
   expect(source).toContain("setSetting('agentAutoCompact'");
-  expect(source).toContain('importAttachments([item.filePath])');
+  expect(source).toContain("message.role==='assistant'&&!artwork");
+  expect(source).toContain('onClick={()=>void continueEditingLegacyAttachment(item)}');
+  expect(source).toContain('attachmentId:item.id');
+  expect(source).toContain('bindEditSource(binding,currentCreation.id)');
+  expect(source).toContain('onClick={()=>void continueEditingArtwork(artwork)}');
+  expect(source).not.toContain('importAttachments([item.filePath])');
   expect(source).toContain('studioWebSearchEnabled:!sessionOptions.webSearchEnabled');
   expect(source).toContain('studioTemplateEnabled:!sessionOptions.templateEnabled');
   expect(source).not.toMatch(/executeShell|readFileSync|mcpClient/);
@@ -135,7 +146,12 @@ it('keeps the source renderer in the actual timeline and uses the existing exter
  const collection=readFileSync(new URL('../components/AgentModelCollection.tsx',import.meta.url),'utf8');
  expect(collection).toContain("result.models.length?t('foundModels'):t('emptyModels')");
  expect(collection).toContain('t(`modelSource_${model.metadataSource}`)');
- expect(source).toContain('setChatActions(actions,id)');expect(source).toContain('sendAgentMessage({ conversationId: id, text: input, actions })');
+ expect(source).toContain('setChatActions(actions,id)');
+ expect(source).toContain('const composerDraftRevision=await saveDraftFor(id,input,attachmentIds)');
+ expect(source).toContain('sendAgentMessage({conversationId:id,text:input,actions,creationId,composerDraftRevision,delivery,');
+ expect(source).toContain('confirmedConversationConfigHash:restoredDraft.restoredConfigFingerprint');
+ expect(source).toContain("runR4CommandFor(item.conversationId,'cancel_message'");
+ expect(source).toContain("runR4CommandFor(item.conversationId,'restore_message'");
 });
 
 it('flow progress follows actual preparation and generation, never reference attachments', () => {

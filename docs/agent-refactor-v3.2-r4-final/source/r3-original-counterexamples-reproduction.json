@@ -1,0 +1,23 @@
+{
+  "source": "R3_新增聚合状态反例.json",
+  "cases": [
+    {
+      "label": "pending-output-hidden-by-error",
+      "r3SchemaAccepted": true,
+      "r3SemanticAccepted": true,
+      "expectedByWrittenContract": false
+    },
+    {
+      "label": "pending-output-hidden-by-blocked",
+      "r3SchemaAccepted": true,
+      "r3SemanticAccepted": true,
+      "expectedByWrittenContract": false
+    },
+    {
+      "label": "pending-output-hidden-by-denied",
+      "r3SchemaAccepted": true,
+      "r3SemanticAccepted": true,
+      "expectedByWrittenContract": false
+    }
+  ]
+}

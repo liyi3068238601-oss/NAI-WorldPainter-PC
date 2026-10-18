@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-18",
+  "originalR4ManifestMatched": 50,
+  "originalR4ManifestSha256": "b5288bd1a328cb5e61dd11af6e7786549d345939614cfe0d802bbc9475f4f4b0",
+  "originalR4ZipSha256": "07fda5e0b6f6659b72ff7a32c9408489d844cded91e21ee4f528e615c361df8d",
+  "productionHead": "dfd7caa63ae19bd40651e00127a71efe57b71b4e",
+  "trackedChangesAgainstHead": [],
+  "originalR3CounterexamplesSha256": "504de52f31956e56dba18092ceee6b811a0821e1c15f6429ed26f0e417e19ae0"
+}

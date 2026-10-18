@@ -12,7 +12,7 @@ import {cancelTagComicGeneration} from './ipc/nai';
 import { registerCompatibleImageIpc } from "./ipc/compatible-settings-ipc";
 import { openAIInpaintWorkbench } from "./ipc/openai-image-edit-workbench";
 import {registerImageFavoritesIpc,favoriteContextMenuItem,imageParametersContextMenuItem} from "./ipc/image-favorites-ipc";
-import {portableRecoveryPath, activatePortableRecovery, listPortableRecoveries} from './ipc/portable-projects';
+import {portableRecoveryPath, activatePortableRecovery, listPortableRecoveries,registerPortableBusy} from './ipc/portable-projects';
 import {registerHarnessLauncher, harnessNeedsExitConfirmation, confirmHarnessExit, stopHarnessForUpdate,resetHarnessExitAfterUpdateFailure} from "./ipc/harness-launcher";
 import { detectiveStatus, detectiveConfigure, detectiveStart, detectiveStop, detectiveOpenResults, detectiveClearResults, detectiveVerifyRuntime, detectiveSelectModel } from "./ipc/artist-detective";
 import { detectiveDownloadStatus, detectiveDownloadStart, detectiveDownloadCancel, detectiveDownloadDirectory, detectiveDownloadVariant } from "./ipc/detective-download";
@@ -277,7 +277,9 @@ import {
   respondAgentQuestion,
   getAgentPendingPermissions,
   getAgentRuntimeStatus,
+  ensureAgentRuntime,
   hasActiveAgentRequests,
+  agentRuntimeBusyForMigration,
   respondAgentPermission,
   restartAgentRuntime,
   sendAgentMessage,
@@ -286,6 +288,9 @@ import {
   generateTavernImage,
 } from "./ipc/agent-runtime";
 import { discoverAgentModels } from "./ipc/agent-model-discovery";
+import {getAgentCreativeState,agentCreativeCommand,getR4CreativeHost,setR4AgentEventSink,setR4AdditionalCommand} from './ipc/r4-agent-service';
+import {configureR4WorkbenchService} from './ipc/r4-workbench';
+import {downloadR4Artwork} from './ipc/r4-artwork-download';
 import { getAgentWorkspaceLocation, openAgentWorkspaceDirectory } from "./ipc/agent-workspace-location";
 import { exportTavernCard, importTavernCards, importTavernVisualAsset } from "./ipc/tavern-card";
 import type {
@@ -785,6 +790,7 @@ function accountBoundHandle(channel: string, listener: Parameters<typeof ipcMain
   });
 }
 function registerIpc() {
+  configureR4WorkbenchService(() => mainWindow, getR4CreativeHost);
   ipcMain.handle('local-sr:status', () => localSrGetStatus());
   ipcMain.handle('local-sr:choose-runtime', () => localSrChooseRuntimeDirectory());
   ipcMain.handle('local-sr:pick-source', () => localSrPickSource());
@@ -800,9 +806,21 @@ function registerIpc() {
   // OpenAI Images edits: billed by the provider, independent of the NovelAI account binding.
   ipcMain.handle("openai:inpaint", (_event, request: import("../src/types").OpenAIInpaintRequest) => openAIInpaintWorkbench(request));
   accountBoundHandle("agent:getWorkspace", () => readAgentWorkspace());
+  accountBoundHandle('agent:creativeState',(_event,conversationId:string)=>{ensureAgentRuntime();return getAgentCreativeState(conversationId);});
+  accountBoundHandle('agent:creativeCommand',(_event,request:import('../src/agent/r4-commands').R4CreativeCommand)=>{ensureAgentRuntime();return agentCreativeCommand(request);});
+  setR4AdditionalCommand(async(request,host)=>{
+    if(request.type!=='download_artwork')return undefined;
+    const artwork=host.read(request.conversationId).artworks[String(request.args?.artworkId)];
+    if(!artwork||artwork.conversationId!==request.conversationId||(request.creationId&&artwork.creationId!==request.creationId))return {ok:false,message:'作品不属于当前目标创作。'};
+    const data=await downloadR4Artwork(artwork,async(name,extension)=>{
+      const selected=await dialog.showSaveDialog({title:'保存作品',defaultPath:name,filters:[{name:'图片',extensions:[extension]}]});
+      return selected.canceled?undefined:selected.filePath;
+    });
+    return {ok:true,data,state:host.read(request.conversationId)};
+  });
   accountBoundHandle("agent:saveWorkspace", (_event, workspace: AgentWorkspaceData) => saveTavernWorkspace(workspace));
   accountBoundHandle('agent:setStudioOptions',(_event,id:string,patch:Partial<import('../src/agent/workspace-controls').StudioConversationOptions>)=>{
-    if(hasActiveAgentRequests())return {ok:false,message:'请先停止智能体任务再修改对话选项。',workspace:readAgentWorkspace()};
+    if(process.env.LANGBAI_PI_AGENT==='0'&&hasActiveAgentRequests())return {ok:false,message:'请先停止智能体任务再修改对话选项。',workspace:readAgentWorkspace()};
     return setStudioConversationOptions(id,patch);
   });
   accountBoundHandle('agent:importStudioResources',(_event,kind:'presets'|'worldbooks'|'characters')=>{
@@ -1579,11 +1597,16 @@ app.whenReady().then(async () => {
   setAgentEventSink((event) => {
     if (!mainWindow?.isDestroyed()) mainWindow?.webContents.send("agent:event", event);
   });
+  setR4AgentEventSink((event) => {
+    if (!mainWindow?.isDestroyed()) mainWindow?.webContents.send('agent:event',event);
+  });
   const proxyRefreshTimer = setInterval(() => {
     void refreshSystemProxy();
   }, 30_000);
   proxyRefreshTimer.unref();
   registerIpc();
+  ensureAgentRuntime();
+  registerPortableBusy(agentRuntimeBusyForMigration,'r4-agent');
   registerWorldpainterKnowledgeIpc();
   registerGatewayWorkbenchIpc(() => mainWindow);
   registerWorldpainterLegacyImportIpc();

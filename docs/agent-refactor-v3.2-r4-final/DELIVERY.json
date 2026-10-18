@@ -1,0 +1,52 @@
+{
+  "title": "绘世 PC Agent 重构设计 v3.2 R4 Final",
+  "date": "2026-10-18",
+  "status": "design_baseline_ready_for_implementation",
+  "scope": "Design documents, offline contract checks and standalone interactive HTML only",
+  "productCodeModified": false,
+  "unresolvedDesignDecisions": [],
+  "newConfirmedDecision": "D20: edit source persists until explicit remove or replace; preview always identifies source",
+  "entrypoints": {
+    "prototype": "prototype-v3.2-r4.html",
+    "review": "FINAL_REVIEW.md",
+    "verification": "VERIFICATION.md",
+    "decisions": "DECISIONS.md"
+  },
+  "contractSnapshot": {
+    "registryVersion": "2.0.0",
+    "tools": 36,
+    "discoveryGroups": 23,
+    "registrySha256": "91d25a6f3a4e62fc4e7e8f912e654f15d602a4bbd799ffd335afec9ea3c057d4",
+    "versionNote": "Unintegrated design snapshot; constraints and enum tightened since R4. Pin this package hash and assign/validate implementation protocol version before integration."
+  },
+  "checks": {
+    "jsonSchemaFixtures": 239,
+    "executionSemanticCases": 50,
+    "executionStatusBranchesWithPositiveAndNegativeCases": 11,
+    "originalR3Counterexamples": 3,
+    "historicalStructuralCounterexamples": 8,
+    "syntheticReferenceAuthorizationCases": 8,
+    "registrySummaryRows": "five rows for each of 36 tools match",
+    "inlineJavaScriptParse": "pass",
+    "relativeDocumentLinks": "pass",
+    "browserEvidence": "manual_browser_observation_summary"
+  },
+  "limitations": [
+    "download file-save receipt unavailable in in-app browser",
+    "all product acceptance cases remain pending",
+    "no real host, provider, paid API, native Windows lifecycle or data migration executed"
+  ],
+  "preservedBaseline": {
+    "date": "2026-10-18",
+    "originalR4ManifestMatched": 50,
+    "originalR4ManifestSha256": "b5288bd1a328cb5e61dd11af6e7786549d345939614cfe0d802bbc9475f4f4b0",
+    "originalR4ZipSha256": "07fda5e0b6f6659b72ff7a32c9408489d844cded91e21ee4f528e615c361df8d",
+    "productionHead": "dfd7caa63ae19bd40651e00127a71efe57b71b4e",
+    "trackedChangesAgainstHead": [],
+    "originalR3CounterexamplesSha256": "504de52f31956e56dba18092ceee6b811a0821e1c15f6429ed26f0e417e19ae0"
+  },
+  "integrity": {
+    "manifest": "SHA256SUMS.txt",
+    "manifestScope": "All package files except the manifest itself; archive SHA-256 is recorded in sibling .zip.sha256.txt"
+  }
+}

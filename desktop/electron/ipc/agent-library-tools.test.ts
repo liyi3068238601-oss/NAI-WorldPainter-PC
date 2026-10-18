@@ -1,4 +1,4 @@
-import fs from 'node:fs';import path from 'node:path';import os from 'node:os';
+import fs from 'node:fs';import path from 'node:path';
 import {it,expect,vi,afterAll} from 'vitest';
 const fixture=vi.hoisted(()=>({root:''}));
 vi.mock('electron',()=>({app:{getPath:(key:string)=>key==='exe'?`${fixture.root}/app/Studio.exe`:`${fixture.root}/${key}`,getAppPath:()=>fixture.root,getVersion:()=> 'test',isPackaged:false},safeStorage:{isEncryptionAvailable:()=>false},dialog:{showMessageBox:()=>{throw Error('Native confirmation must not be used')}}}));
@@ -6,8 +6,8 @@ import {createLibraryTools,desktopLibraryAdapter} from './agent-library-tools';
 import {LIBRARY_FIELDS,validateLibraryRequest} from '../../src/agent/library-contract';
 import {SOFTWARE_WORKFLOWS} from '../../src/agent/workflow-catalog';
 import {normalizeTavernLorebook} from '../../src/tavern/compat';
-fixture.root=fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()),'studio-library-actions-'));
-afterAll(()=>fs.rmSync(fixture.root,{recursive:true,force:true}));
+const tempRoot=path.resolve(process.cwd(),'.tmp');fs.mkdirSync(tempRoot,{recursive:true});fixture.root=fs.mkdtempSync(path.join(tempRoot,'studio-library-actions-'));
+afterAll(async()=>{(await import('./agent-store')).resetAgentStoreCacheForTests();if(path.dirname(fixture.root)!==tempRoot||!path.basename(fixture.root).startsWith('studio-library-actions-'))throw Error('Unsafe Agent library fixture cleanup');fs.rmSync(fixture.root,{recursive:true,force:true});});
 it('real local workspace CRUD, recoverable backups and one Agent confirmation per overwrite/delete',async()=>{
  const approve=vi.fn(async()=>true),service=createLibraryTools(desktopLibraryAdapter(),approve);
  const call=(args:Record<string,unknown>)=>service.execute({tool:'langbai_library',args,sessionId:'fixture'});

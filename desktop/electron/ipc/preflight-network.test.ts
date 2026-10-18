@@ -8,10 +8,10 @@ import {describe,it,expect} from 'vitest';
 import {compactRemoteErrorText} from '../../src/error-message';
 const cert=readFileSync('shared/issue-network-fixtures/public-test-cert.pem');
 const key=readFileSync('shared/issue-network-fixtures/public-test-key.pem');
-function production(selected=true) {
+function production(selected=true,r4=false) {
  const ast=ts.createSourceFile('nai.ts',readFileSync('electron/ipc/nai.ts','utf8'),ts.ScriptTarget.Latest,true);
  const code=['isPreflightNetworkFailure','requestWithRetry'].map(name=>ast.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text===name)!.getText(ast)).join('\n');
- return vm.runInNewContext(ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText+'\n({requestWithRetry,isPreflightNetworkFailure})',{exports:{},currentNaiAccount:()=>selected?{}:undefined,axios,sleep:async()=>{},Number,Math});
+ return vm.runInNewContext(ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText+'\n({requestWithRetry,isPreflightNetworkFailure})',{exports:{},currentNaiAccount:()=>selected?{}:undefined,currentR4NativeExecution:()=>r4?{}:undefined,axios,sleep:async()=>{},Number,Math});
 }
 async function fixture(dropBeforeTls=1,status=200,dropAfterPost=false){
  let connections=0,posts=0;
@@ -28,6 +28,11 @@ async function fixture(dropBeforeTls=1,status=200,dropAfterPost=false){
   close:async()=>{sockets.forEach(s=>s.destroy());await Promise.all([new Promise<void>(r=>proxy.close(()=>r())),new Promise<void>(r=>tls.close(()=>r()))]);}};
 }
 describe('#69 actual TLS transport / selected-account precharge boundary',()=>{
+ it('R4 dispatch never retries even a pre-TLS disconnect behind its durable boundary',async()=>{
+  const f=await fixture(1),p=production(true,true),agent=new Agent({ca:cert});
+  try{await expect(p.requestWithRetry(()=>axios.post(f.url+'/ai/generate-image',{fixture:true},{httpsAgent:agent,proxy:false,timeout:3000}),{retryPreflightNetworkFailures:true})).rejects.toBeDefined();expect(f.read()).toEqual({connections:1,posts:0});}
+  finally{agent.destroy();await f.close();}
+ });
  it('recovers one verified pre-TLS disconnect; exactly one HTTP POST is submitted',async()=>{
   const f=await fixture(),p=production(),agent=new Agent({ca:cert});
   try {const r=await p.requestWithRetry(()=>axios.post(f.url+'/ai/generate-image',{fixture:true},{httpsAgent:agent,proxy:false,timeout:3000}),{retryPreflightNetworkFailures:true});

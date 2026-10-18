@@ -42,3 +42,8 @@ docs/evidence/agent-execution-v1/*.jsonl text eol=lf
 scripts/agent-native-fixture.cjs text eol=lf
 docs/evidence/agent-providers-v1/*.log text eol=lf
 scripts/agent-providers-native-fixture.cjs text eol=lf
+
+# Frozen R4 contracts and acceptance artifacts are verified by exact-byte hashes.
+desktop/src/agent/r4-registry.json -text -whitespace
+docs/agent-refactor-v3.2-r4-final/** -text -whitespace
+docs/evidence/agent-r4/** -text -whitespace

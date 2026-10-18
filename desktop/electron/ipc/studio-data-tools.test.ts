@@ -1,11 +1,16 @@
-import {it,expect,vi,beforeEach} from 'vitest';
+import {it,expect,vi,beforeEach,afterEach} from 'vitest';
 import {EventEmitter} from 'node:events';
-const mock=vi.hoisted(()=>({handlers:new Map<string,Function>(),show:vi.fn(),settings:{theme:'system'} as Record<string,unknown>,set:vi.fn()}));
-vi.mock('electron',()=>({dialog:{showMessageBox:mock.show},ipcMain:{handle:(name:string,fn:Function)=>mock.handlers.set(name,fn)}}));
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const mock=vi.hoisted(()=>({handlers:new Map<string,Function>(),show:vi.fn(),settings:{theme:'system'} as Record<string,unknown>,set:vi.fn(),userDataPath:'',workspacePath:'',workspace:{samplerPresets:[],characters:[],personas:[],lorebooks:[],conversations:[],messages:[],attachments:[]} as any,workspaceWrites:[] as any[]}));
+vi.mock('electron',()=>({app:{getPath:()=>mock.userDataPath},dialog:{showMessageBox:mock.show},ipcMain:{handle:(name:string,fn:Function)=>mock.handlers.set(name,fn)}}));
 vi.mock('./store',()=>({getSettings:()=>mock.settings,setSetting:(key:string,value:unknown)=>{mock.set(key,value);mock.settings[key]=value;}}));
+vi.mock('./agent-store',()=>({agentWorkspacePath:()=>mock.workspacePath,readAgentWorkspace:()=>mock.workspace,writeAgentWorkspace:(workspace:any)=>{mock.workspaceWrites.push(workspace);mock.workspace=workspace;return workspace;}}));
 import {createStudioDataTools} from './studio-data-tools';
 import type {AgentToolBridgeRequest} from '../../src/agent/types';
-beforeEach(()=>{mock.handlers.clear();mock.show.mockReset();mock.show.mockResolvedValue({response:1});mock.set.mockClear();mock.settings={theme:'system'};});
+const testDirectories:string[]=[];
+beforeEach(async()=>{mock.handlers.clear();mock.show.mockReset();mock.show.mockResolvedValue({response:1});mock.set.mockClear();mock.settings={theme:'system'};mock.workspaceWrites=[];mock.workspace={samplerPresets:[{id:'existing',name:'existing'}],characters:[],personas:[],lorebooks:[],conversations:[],messages:[],attachments:[]};const root=path.join(process.cwd(),'.tmp');await fs.mkdir(root,{recursive:true});const directory=await fs.mkdtemp(path.join(root,'studio-data-tools-'));testDirectories.push(directory);mock.userDataPath=directory;mock.workspacePath=path.join(directory,'agent','agent-workspace.json');});
+afterEach(async()=>{await Promise.all(testDirectories.splice(0).map(directory=>fs.rm(directory,{recursive:true,force:true})));});
 function fixture(respond=true,timeout=1000,approve=vi.fn(async()=>true)) {
   const sent:any[]=[];
   const contents={isDestroyed:()=>false,send:(_channel:string,request:any)=>{
@@ -61,4 +66,18 @@ it.each(['destroyed','render-process-gone','did-start-navigation'])('run wait re
 it('same-document or subframe navigation does not interrupt a real run',async()=>{
  const f=waitingFixture(),waiting=f.tools.comicRunSettled('run');f.contents.emit('did-start-navigation',{isMainFrame:true,isSameDocument:true});f.contents.emit('did-start-navigation',{isMainFrame:false,isSameDocument:false});
  mock.handlers.get('studio-agent:reply')!({sender:f.contents},f.sent[0].id,{ok:true,data:{phase:'completed'}});expect(await waiting).toEqual({phase:'completed'});
+});
+it('local library import creates a real pre-import workspace backup before writing through SQL-backed store',async()=>{
+ const f=fixture();
+ const owner={isDestroyed:()=>false,webContents:{isDestroyed:()=>false}};
+ const tools=createStudioDataTools(()=>owner as any);
+ const result=await tools.execute({...f.request,tool:'langbai_import_studio_data',args:{collection:'samplerPresets',items:[{name:'imported preset',prompt:'new body'}]}});
+ expect(result.ok).toBe(true);
+ const data=JSON.parse(result.output) as {backupPath:string;collection:string;imported:number};
+ expect(data.collection).toBe('samplerPresets');expect(data.imported).toBe(1);
+ expect(data.backupPath).toContain(path.join('TavernAgent','library-import-backups'));
+ const backup=JSON.parse(await fs.readFile(data.backupPath,'utf8')) as {collection:string;workspace:{samplerPresets:Array<{id:string}>}};
+ expect(backup.collection).toBe('samplerPresets');expect(backup.workspace.samplerPresets).toEqual([{id:'existing',name:'existing'}]);
+ expect(mock.workspaceWrites).toHaveLength(1);expect(mock.workspaceWrites[0].samplerPresets).toHaveLength(2);
+ expect(await fs.stat(data.backupPath)).toBeTruthy();
 });

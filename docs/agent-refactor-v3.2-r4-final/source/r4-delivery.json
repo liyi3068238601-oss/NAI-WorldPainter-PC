@@ -1,0 +1,32 @@
+{
+  "version": "v3.2-R4",
+  "date": "2026-10-16",
+  "scope": "design documents and standalone HTML only",
+  "productHead": "dfd7caa63ae19bd40651e00127a71efe57b71b4e",
+  "trackedProductDiff": [],
+  "preservedR3ManifestFiles": 38,
+  "preservedR3ZipSha256": "f36f84dd40326ce9120d348edb18fa22bd910b34a1781e5fe04b096148f37aa3",
+  "registryVersion": "2.0.0",
+  "registryVersionNote": "Design-only reuse; fields unchanged, cancellation conditional acceptance tightened. Reassess compatibility before implementation.",
+  "validation": {
+    "tools": 36,
+    "schemas": 72,
+    "schemaFixtures": 219,
+    "semanticCases": 39,
+    "stateBranchesWithPositiveAndNegative": 11,
+    "originalCounterexamplesSemanticallyRejected": 3,
+    "browserVerifiedChecks": 16,
+    "browserRawObservations": 36,
+    "screenshots": 10
+  },
+  "entry": "prototype-v3.2-r4.html",
+  "report": "README.md",
+  "verification": "VERIFICATION.md",
+  "limitations": [
+    "No product implementation or tests",
+    "No real host or fake provider integration",
+    "No real models, image services, or paid requests",
+    "SessionStorage simulation is not disk crash recovery",
+    "Download trigger exercised; output bytes not verified"
+  ]
+}

@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import os from 'node:os';
 import {afterAll,beforeEach,expect,it,vi} from 'vitest';
 const fixture=vi.hoisted(()=>({root:''}));
 vi.mock('electron',()=>({app:{getPath:(key:string)=>key==='exe'?path.join(fixture.root,'app','Studio.exe'):path.join(fixture.root,key),getAppPath:()=>path.join(fixture.root,'app'),isPackaged:false},safeStorage:{isEncryptionAvailable:()=>false},dialog:{showMessageBox:()=>{throw Error('Unexpected native confirmation');}}}));
@@ -8,10 +7,10 @@ import {addHistory,getHistory,setSetting,writeStore,readStore} from './store';
 import {deleteHistoryItem,renameHistoryItem} from './storage';
 import {createSoftwareActions} from './software-actions';
 import {createImageApprovals} from './harness-image-approval';
-fixture.root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'studio-delete-delivery-')));
+const tempRoot=path.resolve(process.cwd(),'.tmp');await fs.mkdir(tempRoot,{recursive:true});fixture.root=await fs.realpath(await fs.mkdtemp(path.join(tempRoot,'studio-delete-delivery-')));
 let output:string;
 beforeEach(async()=>{output=await fs.mkdtemp(path.join(fixture.root,'output-'));setSetting('outputDir',output);writeStore({...readStore(),history:[]});});
-afterAll(()=>fs.rm(fixture.root,{recursive:true,force:true}));
+afterAll(async()=>{(await import('./agent-store')).resetAgentStoreCacheForTests();if(path.dirname(fixture.root)!==tempRoot||!path.basename(fixture.root).startsWith('studio-delete-delivery-'))throw Error('Unsafe history deletion fixture cleanup');await fs.rm(fixture.root,{recursive:true,force:true});});
 async function record(id:string,filePath=path.join(output,id+'.png')){await fs.writeFile(filePath,'synthetic '+id);addHistory([{id,filePath,fileUrl:'',date:'2026-09-28',createdAt:new Date().toISOString(),params:{}} as any]);return filePath;}
 it('keeps the record and reports failure when a managed file cannot be removed',async()=>{
  const file=await record('denied');const unlink=vi.spyOn(fs,'unlink').mockRejectedValueOnce(Object.assign(Error('synthetic access denied'),{code:'EACCES'}));

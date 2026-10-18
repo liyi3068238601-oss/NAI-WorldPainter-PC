@@ -1,15 +1,14 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import os from "node:os";
 import crypto from "node:crypto";
 const f = vi.hoisted(() => ({ root: "", pick: vi.fn(), writes: vi.fn() }));
 vi.mock("electron", () => ({ dialog: { showOpenDialog: f.pick }, app: { isPackaged: false, getAppPath: () => path.join(f.root, "app"), getPath: (name: string) => path.join(f.root, name) }, safeStorage: { isEncryptionAvailable: () => false } }));
 vi.mock("./agent-workspace-location", () => ({ agentWorkspaceDirectory: () => path.join(f.root, "workspace"), rebaseAgentWorkspaceFile: (p: string) => p }));
 vi.mock("./local-media-protocol", () => ({ toLocalMediaUrl: (p: string) => `fixture:${p}` }));
 vi.mock("./store", () => ({ getSettings: () => ({ language: "en-US", agentContextWindow: 128000, agentAutoCompactThreshold: .8, outputDir: path.join(f.root, "output") }), getHistoryReferenceItems: () => [], fileExistsWithDirectoryCache: (p: string) => fs.existsSync(p), atomicWriteFileSync: (p: string, value: string) => { f.writes(p, value); fs.writeFileSync(p, value); }, rotateBackupsSync: () => {}, readWithBackupRecoverySync: () => undefined }));
-beforeEach(() => { f.root = fs.mkdtempSync(path.join(os.tmpdir(), "qa-system-prompt-import-")); f.pick.mockReset(); f.writes.mockReset(); vi.resetModules(); });
-afterEach(() => { if (path.dirname(f.root) !== path.resolve(os.tmpdir()) || !path.basename(f.root).startsWith("qa-system-prompt-import-")) throw Error("Unsafe fixture path"); fs.rmSync(f.root, { recursive: true, force: true }); });
+beforeEach(() => { const fixtures = path.join(process.cwd(), ".tmp"); fs.mkdirSync(fixtures, { recursive: true }); f.root = fs.mkdtempSync(path.join(fixtures, "qa-system-prompt-import-")); f.pick.mockReset(); f.writes.mockReset(); vi.resetModules(); });
+afterEach(async () => { const store = await import("./agent-store"); store.closeAgentSqlStore(); const fixtures = path.join(process.cwd(), ".tmp"); if (path.dirname(f.root) !== fixtures || !path.basename(f.root).startsWith("qa-system-prompt-import-")) throw Error("Unsafe fixture path"); fs.rmSync(f.root, { recursive: true, force: true }); });
 const file = (name: string, body: string | Uint8Array) => { const p = path.join(f.root, name); fs.writeFileSync(p, body); return p; };
 it("imports a full Markdown file, selects only the active chat and persists the raw-byte hash", async () => {
   const store = await import("./agent-store");

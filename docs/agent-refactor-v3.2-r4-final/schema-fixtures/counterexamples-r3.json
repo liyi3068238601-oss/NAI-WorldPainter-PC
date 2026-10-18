@@ -1,0 +1,420 @@
+{
+  "purpose": "R3 schema regression evidence. Legacy R2 examples are static schema comparisons only; no product handlers or services run. New honest envelopes distinguish preflight rejection from business outcomes.",
+  "productTestsExecuted": false,
+  "cases": [
+    {
+      "id": "reverse-empty-success",
+      "label": "reverse succeeded without candidate and uncertainty",
+      "tool": "reverse_prompt",
+      "target": "result",
+      "r2Accepted": true,
+      "legacyInstance": {
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "succeeded",
+          "attachmentId": "a"
+        }
+      },
+      "r3RejectedEnvelope": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "succeeded",
+          "attachmentId": "a"
+        }
+      },
+      "r3CorrectedResult": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "chat_fixture",
+        "creationId": "creation_fixture",
+        "data": {
+          "serviceStatus": "succeeded",
+          "attachmentId": "a",
+          "candidateText": "暖光室内的人物肖像",
+          "uncertainty": "人物手部有遮挡",
+          "isPartial": false
+        }
+      },
+      "r3CorrectedAccepted": true,
+      "r3LegacyEnvelopeAccepted": false,
+      "schemaVersion": "2.0.0"
+    },
+    {
+      "id": "reverse-failure-as-success",
+      "label": "reverse failed with candidate masquerading as complete text",
+      "tool": "reverse_prompt",
+      "target": "result",
+      "r2Accepted": true,
+      "legacyInstance": {
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "failed",
+          "attachmentId": "a",
+          "candidateText": "pretend successful text"
+        }
+      },
+      "r3RejectedEnvelope": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "failed",
+          "attachmentId": "a",
+          "candidateText": "pretend successful text"
+        }
+      },
+      "r3CorrectedResult": {
+        "resultKind": "business",
+        "status": "error",
+        "conversationId": "chat_fixture",
+        "creationId": "creation_fixture",
+        "data": {
+          "serviceStatus": "failed",
+          "attachmentId": "a",
+          "partialText": "只辨认出室内暖光",
+          "isPartial": true
+        },
+        "error": {
+          "code": "provider_unknown",
+          "message": "已发出请求但未收到完整回执。",
+          "allowedActions": [
+            "do_not_retry_unknown",
+            "stop_related_paid_calls",
+            "wait_for_receipt"
+          ]
+        }
+      },
+      "r3CorrectedAccepted": true,
+      "r3LegacyEnvelopeAccepted": false,
+      "schemaVersion": "2.0.0"
+    },
+    {
+      "id": "reverse-denied-success",
+      "label": "reverse denied but service reported success",
+      "tool": "reverse_prompt",
+      "target": "result",
+      "r2Accepted": true,
+      "legacyInstance": {
+        "status": "denied",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "succeeded",
+          "attachmentId": "a",
+          "candidateText": "text"
+        }
+      },
+      "r3RejectedEnvelope": {
+        "resultKind": "business",
+        "status": "denied",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "succeeded",
+          "attachmentId": "a",
+          "candidateText": "text"
+        }
+      },
+      "r3CorrectedResult": {
+        "resultKind": "preflight_failure",
+        "status": "denied",
+        "error": {
+          "code": "user_denied",
+          "message": "在授权前拒绝；没有业务调用或结果。",
+          "allowedActions": [
+            "continue_without_tool"
+          ]
+        }
+      },
+      "r3CorrectedAccepted": true,
+      "r3LegacyEnvelopeAccepted": false,
+      "schemaVersion": "2.0.0"
+    },
+    {
+      "id": "execution-complete-empty-and-fixed-null",
+      "label": "execution completed empty and fixed seed absent",
+      "tool": "get_execution",
+      "target": "result",
+      "r2Accepted": true,
+      "legacyInstance": {
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "completed",
+          "outputs": [],
+          "receiptRevision": 1,
+          "requestedSeedPolicy": "fixed",
+          "requestedSeed": null
+        }
+      },
+      "r3RejectedEnvelope": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "completed",
+          "outputs": [],
+          "receiptRevision": 1,
+          "requestedSeedPolicy": "fixed",
+          "requestedSeed": null
+        }
+      },
+      "r3CorrectedResult": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "chat_fixture",
+        "creationId": "creation_fixture",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "completed",
+          "expectedOutputCount": 1,
+          "requestGranularity": "per_output",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "completed",
+              "artifactId": "artifact_fixture",
+              "attachmentId": "attachment_fixture",
+              "attachmentRevision": "rev_1",
+              "hash": "0123456789abcdef",
+              "conversationId": "chat_fixture",
+              "creationId": "creation_fixture",
+              "parentAttachmentId": null,
+              "resolvedSeed": null,
+              "resolvedSeedSource": null
+            }
+          ],
+          "receiptRevision": 3,
+          "providerReceiptStatus": "confirmed",
+          "requestedSeedPolicy": "fixed",
+          "requestedSeed": 123
+        }
+      },
+      "r3CorrectedAccepted": true,
+      "r3LegacyEnvelopeAccepted": false,
+      "schemaVersion": "2.0.0"
+    },
+    {
+      "id": "execution-completed-failed-and-random-seed",
+      "label": "execution completed with failed item and random numeric seed",
+      "tool": "get_execution",
+      "target": "result",
+      "r2Accepted": true,
+      "legacyInstance": {
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "completed",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "failed",
+              "errorCode": "provider_error"
+            }
+          ],
+          "receiptRevision": 1,
+          "requestedSeedPolicy": "random",
+          "requestedSeed": 123
+        }
+      },
+      "r3RejectedEnvelope": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "completed",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "failed",
+              "errorCode": "provider_error"
+            }
+          ],
+          "receiptRevision": 1,
+          "requestedSeedPolicy": "random",
+          "requestedSeed": 123
+        }
+      },
+      "r3CorrectedResult": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "chat_fixture",
+        "creationId": "creation_fixture",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "error",
+          "expectedOutputCount": 1,
+          "requestGranularity": "per_output",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "failed",
+              "errorCode": "provider_error"
+            }
+          ],
+          "receiptRevision": 2,
+          "providerReceiptStatus": "confirmed",
+          "requestedSeedPolicy": "random",
+          "requestedSeed": null
+        }
+      },
+      "r3CorrectedAccepted": true,
+      "r3LegacyEnvelopeAccepted": false,
+      "schemaVersion": "2.0.0"
+    },
+    {
+      "id": "execution-missing-id-error-envelope",
+      "label": "missing execution ID cannot invent data.executionId",
+      "tool": "get_execution",
+      "target": "result",
+      "r2Accepted": false,
+      "legacyInstance": {
+        "status": "error",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "unavailable"
+        },
+        "error": {
+          "code": "invalid_arguments",
+          "message": "executionId missing",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        }
+      },
+      "r3RejectedEnvelope": {
+        "resultKind": "preflight_failure",
+        "status": "error",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "unavailable"
+        },
+        "error": {
+          "code": "invalid_arguments",
+          "message": "executionId missing",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        }
+      },
+      "r3CorrectedResult": {
+        "resultKind": "preflight_failure",
+        "status": "error",
+        "error": {
+          "code": "invalid_arguments",
+          "message": "executionId 缺失，host 未调用业务 handler。",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        }
+      },
+      "r3CorrectedAccepted": true,
+      "r3LegacyEnvelopeAccepted": false,
+      "schemaVersion": "2.0.0"
+    },
+    {
+      "id": "search-missing-query-error-envelope",
+      "label": "missing search query cannot fabricate a no_match result",
+      "tool": "search_tags",
+      "target": "result",
+      "r2Accepted": false,
+      "legacyInstance": {
+        "status": "error",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "searchStatus": "no_match",
+          "items": []
+        },
+        "error": {
+          "code": "invalid_arguments",
+          "message": "query missing",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        }
+      },
+      "r3RejectedEnvelope": {
+        "resultKind": "preflight_failure",
+        "status": "error",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "searchStatus": "no_match",
+          "items": []
+        },
+        "error": {
+          "code": "invalid_arguments",
+          "message": "query missing",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        }
+      },
+      "r3CorrectedResult": {
+        "resultKind": "preflight_failure",
+        "status": "error",
+        "error": {
+          "code": "invalid_arguments",
+          "message": "query 缺失，host 未执行搜索。",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        }
+      },
+      "r3CorrectedAccepted": true,
+      "r3LegacyEnvelopeAccepted": false,
+      "schemaVersion": "2.0.0"
+    },
+    {
+      "id": "discovery-image-edit-group",
+      "label": "request an actual availability group from the always-on discovery tool",
+      "tool": "get_capabilities",
+      "target": "input",
+      "r2Accepted": false,
+      "legacyInstance": {
+        "requestedGroups": [
+          "image_edit"
+        ]
+      },
+      "r3RejectedEnvelope": {
+        "requestedGroups": [
+          "image_edit"
+        ]
+      },
+      "r3CorrectedResult": {
+        "requestedGroups": [
+          "image_edit"
+        ]
+      },
+      "r3CorrectedAccepted": true,
+      "r3LegacyEnvelopeAccepted": true,
+      "schemaVersion": "2.0.0"
+    }
+  ],
+  "registryVersion": "2.0.0"
+}

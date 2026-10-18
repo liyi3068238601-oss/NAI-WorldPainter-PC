@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises';import syncFs from 'node:fs';import path from 'node:path';import os from 'node:os';import {createHash} from 'node:crypto';import JSZip from 'jszip';
+import fs from 'node:fs/promises';import syncFs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';import JSZip from 'jszip';
 import {afterAll,beforeEach,expect,it,vi} from 'vitest';
 const fixture=vi.hoisted(()=>({root:'',reveal:vi.fn()}));
 vi.mock('electron',()=>({app:{getPath:(key:string)=>key==='exe'?path.join(fixture.root,'app','Studio.exe'):path.join(fixture.root,key),getAppPath:()=>path.join(fixture.root,'app'),isPackaged:false},safeStorage:{isEncryptionAvailable:()=>false},shell:{showItemInFolder:fixture.reveal},dialog:{showSaveDialog:()=>{throw Error('Unexpected native confirmation');}}}));
@@ -6,9 +6,9 @@ import {addHistory,getHistory,setSetting,writeStore,readStore,createHistoryGroup
 import {renameHistoryItem} from './storage';
 import {createSoftwareActions} from './software-actions';
 import {startHarnessBridge} from './harness-bridge';
-fixture.root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'studio-agent-history-')));let output:string;
+const tempRoot=path.resolve(process.cwd(),'.tmp');syncFs.mkdirSync(tempRoot,{recursive:true});fixture.root=await fs.realpath(await fs.mkdtemp(path.join(tempRoot,'studio-agent-history-')));let output:string;
 beforeEach(async()=>{output=await fs.mkdtemp(path.join(fixture.root,'output-'));setSetting('outputDir',output);writeStore({...readStore(),history:[],historyGroups:[]});fixture.reveal.mockClear();});
-afterAll(()=>fs.rm(fixture.root,{recursive:true,force:true}));
+afterAll(async()=>{(await import('./agent-store')).resetAgentStoreCacheForTests();if(path.dirname(fixture.root)!==tempRoot||!path.basename(fixture.root).startsWith('studio-agent-history-'))throw Error('Unsafe Agent history fixture cleanup');await fs.rm(fixture.root,{recursive:true,force:true});});
 async function record(id:string,groupId?:string){const filePath=path.join(output,id+'.png');await fs.writeFile(filePath,'original metadata '+id);addHistory([{id,filePath,fileUrl:'',model:'fixture',width:2,height:3,date:'2026-09-28',createdAt:new Date().toISOString(),groupId,params:{prompt:'synthetic',apiKey:'not-exported'}} as any]);return filePath;}
 function actions(){const approve=vi.fn(async()=>{throw Error('Ordinary rename/export should not request approval');});const service=createSoftwareActions(approve);return {approve,call:(args:Record<string,unknown>)=>service.execute({tool:'langbai_software_action',args})};}
 it('Agent renames an actual file without extra confirmation, returns actual destination, and rejects stale state',async()=>{

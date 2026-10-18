@@ -1,0 +1,20 @@
+[
+  {
+    "label": "pending-output-hidden-by-error",
+    "schemaAccepted": true,
+    "semanticAccepted": false,
+    "rejection": "[priority:pending] pending provider/output evidence requires running or cancel_requested"
+  },
+  {
+    "label": "pending-output-hidden-by-blocked",
+    "schemaAccepted": true,
+    "semanticAccepted": false,
+    "rejection": "[priority:pending] pending provider/output evidence requires running or cancel_requested"
+  },
+  {
+    "label": "pending-output-hidden-by-denied",
+    "schemaAccepted": true,
+    "semanticAccepted": false,
+    "rejection": "[priority:pending] pending provider/output evidence requires running or cancel_requested"
+  }
+]

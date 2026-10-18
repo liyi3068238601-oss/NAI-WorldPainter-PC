@@ -6,7 +6,7 @@ export interface CompatibleImageBatch {
  images:Buffer[]; complete:boolean; submitted:boolean; cancelled:boolean; timedOut:boolean;
  error?:ReturnType<typeof compatibleImageError>;
 }
-export type CompatibleImageRequestOptions={signal?:AbortSignal;beforeSubmit?:()=>void|Promise<void>;timeoutMs?:number;maxBytes?:number;route?:(url:string)=>Promise<{httpAgent?:unknown;httpsAgent?:unknown;proxy?:false}>};
+export type CompatibleImageRequestOptions={signal?:AbortSignal;beforeSubmit?:()=>void|Promise<void>;afterReceipt?:(receipt:{status:'confirmed'|'failed'|'unknown';rawStatus:string})=>void|Promise<void>;timeoutMs?:number;maxBytes?:number;route?:(url:string)=>Promise<{httpAgent?:unknown;httpsAgent?:unknown;proxy?:false}>};
 /** A prepared request. Built inside the guarded section so builder errors surface as configuration failures. */
 export interface CompatibleImagePost {endpoint:string;body:Buffer;contentType:string;expectedCount:number}
 
@@ -20,7 +20,7 @@ export async function generateCompatibleImages(config:CompatibleImageConfig,inpu
 
 /** Shared by generations and edits: one POST, no retries; output is decoded and re-encoded without upstream metadata. */
 export async function submitCompatibleImageRequest(config:Pick<CompatibleImageConfig,'apiKey'|'allowInsecureHttp'>,prepare:()=>CompatibleImagePost|Promise<CompatibleImagePost>,options:CompatibleImageRequestOptions={}):Promise<CompatibleImageBatch>{
- const images:Buffer[]=[];let submitted=false,phase:CompatibleFailurePhase='configuration',status:number|undefined;
+ const images:Buffer[]=[];let submitted=false,receipted=false,phase:CompatibleFailurePhase='configuration',status:number|undefined;
  const abort=new AbortController(),cancel=()=>abort.abort();options.signal?.addEventListener('abort',cancel,{once:true});
  if(options.signal?.aborted)abort.abort();
  const timeoutMs=options.timeoutMs??180000,maxBytes=options.maxBytes??64*1024*1024;
@@ -45,6 +45,7 @@ export async function submitCompatibleImageRequest(config:Pick<CompatibleImageCo
   abort.signal.throwIfAborted();await options.beforeSubmit?.();
   abort.signal.throwIfAborted();phase='generate';submitted=true;
   const response=await client.post(endpoint,body,{...route,headers:{Authorization:`Bearer ${config.apiKey.trim()}`,'Content-Type':contentType}});
+  await options.afterReceipt?.({status:response.status>=500?'unknown':response.status>=400?'failed':'confirmed',rawStatus:`http_${response.status}`});receipted=true;
   status=response.status;if(status<200||status>=300)throw Error('HTTP status');status=undefined;
   const parsed=JSON.parse(Buffer.from(response.data).toString('utf8'));
   if(!Array.isArray(parsed.data)||!parsed.data.length)throw Error('missing data');
@@ -78,6 +79,7 @@ export async function submitCompatibleImageRequest(config:Pick<CompatibleImageCo
   if(images.length!==expectedCount)throw Error('image count mismatch');
   return {images,complete:true,submitted,cancelled:false,timedOut:false};
  }catch{
+  if(submitted&&!receipted)await options.afterReceipt?.({status:'unknown',rawStatus:'transport_or_receipt_unknown'});
   return {images,complete:false,submitted,cancelled:options.signal?.aborted===true,timedOut,error:compatibleImageError(phase,status)};
  }finally{clearTimeout(timer);options.signal?.removeEventListener('abort',cancel);}
 }

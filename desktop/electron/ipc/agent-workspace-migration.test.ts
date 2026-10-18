@@ -1,14 +1,16 @@
 import { WORLDPAINTER_AGENT_WORKSPACE_DIRECTORY, WORLDPAINTER_DATA_DIRECTORY, WORLDPAINTER_STORE_FILE } from "../../shared/worldpainter-product";
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { spawnSync } from 'node:child_process';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { inventoryWorkspace, resolveSafeWorkspace, snapshotLegacyWorkspace, WORKSPACE_MIGRATIONS, WORKSPACE_LOCATION } from './agent-workspace-migration';
+import { r4BindingRevision } from './r4-bindings';
 
 const roots:string[]=[];
-const tempRoot=fs.realpathSync.native(os.tmpdir());
+const tempRoot=path.resolve(process.cwd(),'.tmp','agent-workspace-migration-tests');
 function fixture() {
+  fs.mkdirSync(tempRoot,{recursive:true});
   const root=fs.mkdtempSync(path.join(tempRoot,'nai-workspace-migration-'));roots.push(root);
   const install=path.join(root,'installed'), appData=path.join(root,'AppData'), userData=path.join(appData,WORLDPAINTER_DATA_DIRECTORY), source=path.join(install,'LangbaiWorkspace');
   fs.mkdirSync(source,{recursive:true});fs.mkdirSync(userData,{recursive:true});
@@ -54,6 +56,30 @@ describe('safe workspace migration',()=>{
     expect(loc.migrationId).toBe(r.id);expect(loc.migratedFromLegacy).toBe(true);
     expect(inventoryWorkspace(f.source)).toEqual(before);expect(inventoryWorkspace(loc.backupPath!)).toEqual(before);expect(inventoryWorkspace(loc.path)).toEqual(before);
     expect(fs.readFileSync(path.join(old,'agent-workspace.json'),'utf8')).toBe('previous profile');
+  });
+  it('copies the real Agent SQLite database and binding key as one verified workspace snapshot',()=>{
+    const f=fixture();
+    const databasePath=path.join(f.source,'agent-state.sqlite');
+    const db=new DatabaseSync(databasePath);
+    db.exec("CREATE TABLE retained(value TEXT NOT NULL); INSERT INTO retained VALUES ('sqlite snapshot fixture')");
+    db.close();
+    const keyPath=path.join(f.source,'agent-binding.key');
+    const revisionBefore=r4BindingRevision(f.source,{provider:'fixture',model:'fixture-model'});
+    const before=inventoryWorkspace(f.source);
+    expect(before.files.map(file=>file.path)).toEqual(expect.arrayContaining([
+      'agent-state.sqlite','agent-binding.key','agent-workspace.json',
+    ]));
+
+    const receipt=snapshotLegacyWorkspace(f.source,f.userData);
+    const active=resolveSafeWorkspace(f.userData,f.install,[]).path;
+    expect(inventoryWorkspace(path.join(f.userData,WORKSPACE_MIGRATIONS,receipt.id,'original'))).toEqual(before);
+    expect(inventoryWorkspace(active)).toEqual(before);
+    expect(fs.readFileSync(path.join(active,'agent-state.sqlite'))).toEqual(fs.readFileSync(databasePath));
+    expect(fs.readFileSync(path.join(active,'agent-binding.key'))).toEqual(fs.readFileSync(keyPath));
+    const restoredDb=new DatabaseSync(path.join(active,'agent-state.sqlite'),{readOnly:true});
+    expect((restoredDb.prepare('SELECT value FROM retained').get() as {value:string}).value).toBe('sqlite snapshot fixture');
+    restoredDb.close();
+    expect(r4BindingRevision(active,{provider:'fixture',model:'fixture-model'})).toBe(revisionBefore);
   });
   it('does not replace new edits on restart or installer retry',()=>{
     const f=fixture(),r=snapshotLegacyWorkspace(f.source,f.userData),loc=resolveSafeWorkspace(f.userData,f.install,[]);

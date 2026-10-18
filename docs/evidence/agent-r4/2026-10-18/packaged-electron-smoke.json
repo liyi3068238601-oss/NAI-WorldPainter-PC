@@ -1,0 +1,110 @@
+{
+  "capturedAt": "2026-10-18T04:14:20.033Z",
+  "mode": "packaged Windows Electron executable; copied synthetic isolated profile; actual renderer and preload IPC; no provider POST or paid API request issued by smoke",
+  "executable": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\package-final\\win-unpacked\\NAI WorldPainter PC.exe",
+  "initial": {
+    "title": "绘世 · NAI WorldPainter",
+    "url": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/.tmp/r4-validation/package-final/win-unpacked/resources/app.asar/dist/index.html",
+    "body": "绘世 · NAI WorldPainter\nv0.1.0\n未连接 API\n生成账户\n未添加账户\n账户管理\n流式预览\n输出目录\n设置\n文档\n生成\n重绘\n后期\n反推\n转换\n原数据\n工具\n参考预设\n在线画廊\n生图智能体\n记录\n更多\n排列顶栏\n文生图 / 图生图\n提示词、参考图、批量生成\n文生图\n图生图\n增强\n模型\nNAI Diffusion V5 Full（最新完整模型）\n生成档位（Effort）\nMedium · 中\nHigh · 高\n风格提示词（Style Prompt）\n选择已保存风格\n保存风格\n参考图\n删除\n正面提示词\n负面提示词\n角色提示\n氛围迁移\n精准参考\n总分辨率\n1 MP · 普通\n画面比例\n2:3\n832 × 1216 · 1.012 MP\n宽度\n×\n高度\n随机种子\n固定种子\n高级参数...\n批量生成数量\n每张图片生成间隔（秒）\n图片命名（文件名前缀，可留空）\n生成到分组\n未分组\n创建\n费用预览\n读取当前配置对应的扣费估算\n暂时无法报价\n当前余额：未知 Anlas · 执行后会用余额差再次核对\n未设置 API\nAnlas 积分\nAnlas：未知\n刷新积分\n\n请先配置 NovelAI 账号，再查看积分与额度。\n\n请先设置 API\n准备开始创作\n在左侧输入英文 tag 或自然提示词，点击下方生成按钮；结果会自动保存并进入右侧历史。\nTag 自动补全\n支持拖入图片到工作台\n历史一键复用\n历史与素材\n生成后自动出现在这里\n全部日期\n全部分组\n创建\n导出ZIP\n重命名\n删除\n暂无历史记录\n生成、重绘、超分、后期处理完成后会自动保存到这里。\n请先设置 API Token",
+    "preload": {
+      "workspace": "function",
+      "location": "function",
+      "creative": "function",
+      "command": "function"
+    }
+  },
+  "app": {
+    "workspacePath": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\package-final\\native-smoke-20261018-28e8f459\\profile\\WorldPainterWorkspace",
+    "workspaceExists": true,
+    "conversationId": "5a8e9e99-011d-4409-a72e-cf087528135d",
+    "conversationTitle": "R4 native smoke fixture",
+    "currentCreationId": "b7e9e283-f644-4242-825c-8a8adbddefdc",
+    "creationTitle": "Synthetic portrait fixture",
+    "proposalTitle": "Synthetic moonlit harbor",
+    "artworks": [
+      {
+        "name": "R4-smoke-output-portrait-01.png",
+        "width": 1536,
+        "height": 2048,
+        "hasLocalUrl": true
+      },
+      {
+        "name": "R4-smoke-output-landscape-02.png",
+        "width": 2048,
+        "height": 1536,
+        "hasLocalUrl": true
+      },
+      {
+        "name": "R4-smoke-output-portrait-03.png",
+        "width": 1536,
+        "height": 2048,
+        "hasLocalUrl": true
+      },
+      {
+        "name": "R4-smoke-output-landscape-04.png",
+        "width": 2048,
+        "height": 1536,
+        "hasLocalUrl": true
+      }
+    ],
+    "editSource": {
+      "name": "R4-smoke-current-edit-source.png",
+      "revision": 1
+    },
+    "references": [
+      {
+        "name": "R4-smoke-discussion-reference.png",
+        "role": "discussion",
+        "includeInGeneration": false
+      }
+    ],
+    "queue": [
+      {
+        "messageId": "r4-native-smoke-paused-message",
+        "status": "paused",
+        "startedAt": null
+      },
+      {
+        "messageId": "r4-native-smoke-independent-message-B",
+        "status": "paused",
+        "startedAt": null
+      }
+    ],
+    "unknownGates": [
+      {
+        "id": "r4-native-smoke-paid-unknown",
+        "sourceExecutionId": null
+      },
+      {
+        "id": "critique-unknown:r4-native-smoke-no-execution",
+        "sourceExecutionId": "r4-native-smoke-no-execution"
+      }
+    ],
+    "legacyStatus": null
+  },
+  "visible": {
+    "agentVisible": true,
+    "creativePanelVisible": true,
+    "chatTitle": "R4 native smoke fixture",
+    "proposalVisible": true,
+    "sourceVisible": true,
+    "discussionVisible": true,
+    "selectedArtwork": "R4-smoke-output-landscape-02.png",
+    "portraitLoaded": true
+  },
+  "network": {
+    "rendererHttpRequestCount": 0,
+    "rendererHttpRequests": []
+  },
+  "runtimeErrors": [],
+  "providerCallTriggeredBySmoke": false,
+  "queueConfirmedByState": true,
+  "screenshot": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\package-final\\native-smoke-20261018-28e8f459\\screenshots\\packaged-agent-smoke.png",
+  "stop": {
+    "pid": 53972,
+    "matchedExecutable": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\r4-validation\\package-final\\win-unpacked\\NAI WorldPainter PC.exe",
+    "stoppedAt": "2026-10-18T04:14:30.4425832Z",
+    "processStillRunning": false,
+    "cdpPortListeners": []
+  }
+}

@@ -1,0 +1,55 @@
+import {beforeEach,afterEach,expect,it,vi} from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import type {AppSettings} from '../../src/types';
+import type {AgentWorkspaceData} from '../../src/agent/types';
+import {createEmptyR4AgentState,type R4QueuedMessage} from '../../src/agent/r4-types';
+import {NAI_RELAY_MODEL_IDS} from '../../src/nai-accounts';
+const fixture=vi.hoisted(()=>({token:'',directory:'',settings:{} as AppSettings,state:null as ReturnType<typeof createEmptyR4AgentState>|null}));
+vi.mock('./store',()=>({getSettings:()=>fixture.settings,getToken:()=>fixture.token,getHistory:()=>[]}));
+vi.mock('./agent-store',()=>({getAgentSqlStore:()=>({readR4State:()=>fixture.state})}));
+vi.mock('./harness-prompt-templates',()=>({templateSelection:()=>({revision:'template-r1',body:'fixture template',mode:'mixed'})}));
+vi.mock('./agent-workspace-location',()=>({agentWorkspaceDirectory:()=>fixture.directory}));
+import {assertR4DispatchAllowed,r4ReferenceOptIns,r4RuntimeCapabilities,preflightR4LegacyService} from './r4-runtime-context';
+beforeEach(()=>{fixture.state=createEmptyR4AgentState();fixture.token='';fixture.settings={imageProvider:'novelai'} as AppSettings;const root=path.resolve('.tmp/r4-runtime-context-tests');fs.mkdirSync(root,{recursive:true});fixture.directory=fs.mkdtempSync(path.join(root,'case-'));});
+afterEach(()=>{if(!path.resolve(fixture.directory).startsWith(path.resolve('.tmp/r4-runtime-context-tests')+path.sep))throw Error('Unsafe test cleanup');fs.rmSync(fixture.directory,{recursive:true,force:true});});
+const scope={conversationId:'chat',creationId:'creation',userIntentRef:'steer-b',turnLineageRef:'origin-a',operationKey:'op'};
+const options={approvalMode:'confirm' as const,webSearchEnabled:false,hasSkills:false,promptingReferenceEnabled:false,workbenchReady:false};
+it('discovery only offers configured image actions and never tests service connectivity',()=>{
+  const names=()=>r4RuntimeCapabilities(options).available.flatMap(row=>row.toolNames);
+  expect(names()).not.toContain('prepare_generation');expect(names()).not.toContain('redraw_image');
+  fixture.token='fixture-token';expect(names()).toContain('generate_image');expect(names()).toContain('redraw_image');
+  fixture.settings={imageProvider:'openai-images',imageApiKey:'fixture-image-key',compatibleImage:{baseUrl:'https://fixture.invalid/v1',model:NAI_RELAY_MODEL_IDS[0],size:'1024x1024',extensions:{}}} as AppSettings;
+  expect(names()).toContain('prepare_generation');expect(names()).not.toContain('redraw_image');
+  fixture.settings.compatibleImage!.model='unsupported-model';expect(names()).not.toContain('generate_image');
+});
+it('a consumed steer cannot escape its origin failure gate, while independent turns remain available',()=>{
+  fixture.state!.gates.failure={id:'failure',conversationId:'chat',turnId:'origin-a',active:true,reason:'prior_paid_failure',createdAt:new Date().toISOString()};
+  expect(()=>assertR4DispatchAllowed(scope)).toThrow('本轮');
+  expect(()=>assertR4DispatchAllowed(scope,'read_creation')).not.toThrow();
+  expect(()=>assertR4DispatchAllowed({...scope,userIntentRef:'independent',turnLineageRef:'independent'})).not.toThrow();
+  fixture.state!.gates.failure.reason='unknown_prior_receipt';
+  expect(()=>assertR4DispatchAllowed({...scope,conversationId:'another',userIntentRef:'independent',turnLineageRef:'independent'})).toThrow('待核实');
+  expect(()=>assertR4DispatchAllowed({...scope,conversationId:'another',userIntentRef:'independent',turnLineageRef:'independent',releasedGateIds:['failure']})).not.toThrow();
+  expect(()=>assertR4DispatchAllowed({...scope,releasedGateIds:['failure']})).toThrow();
+});
+it('reference opt-in is tied to one human-resolved attachment, revision and purpose',()=>{
+  const workspace={conversations:[{id:'chat',messages:[{id:'message',attachments:[]}]}]} as unknown as AgentWorkspaceData;
+  const item={conversationId:'chat',messageId:'message',text:'允许这张图按色彩用途参与生成',originalInputSnapshot:{references:[{attachmentId:'ref-a',revision:3,name:'参考A',purpose:'composition'}]}} as unknown as R4QueuedMessage;
+  expect(r4ReferenceOptIns(item,workspace)).toEqual([{attachmentId:'ref-a',attachmentRevision:3,purpose:'color'}]);
+  expect(r4ReferenceOptIns({...item,text:'这张仅讨论，不要参与生成'},workspace)).toEqual([]);
+  expect(r4ReferenceOptIns({...item,text:'把这张改成构图参考'},workspace)).toEqual([]);
+  const ambiguous={...item,originalInputSnapshot:{...item.originalInputSnapshot!,references:[...item.originalInputSnapshot!.references,{attachmentId:'ref-b',revision:1,name:'参考B',role:'reference' as const,includeInGeneration:false}]}};
+  expect(r4ReferenceOptIns(ambiguous,workspace)).toEqual([]);
+  expect(r4ReferenceOptIns({...ambiguous,text:'允许参考B按角色用途参与生成'},workspace)).toEqual([{attachmentId:'ref-b',attachmentRevision:1,purpose:'character'}]);
+});
+it('paid-service preflight rejects missing configuration, stale templates and changed approval dependencies without dispatch',()=>{
+  const call={...scope};
+  expect(()=>preflightR4LegacyService('convert_prompt',{text:'scene'},call)).toThrow('尚未配置');
+  fixture.settings.convertApiUrl='https://fixture.invalid/v1';fixture.settings.convertApiKey='fixture-key';fixture.settings.convertApiModel='model';
+  expect(()=>preflightR4LegacyService('convert_prompt',{text:'scene',templateRevision:'stale'},call)).toThrow('模板修订');
+  expect(()=>preflightR4LegacyService('convert_prompt',{text:'scene',templateRevision:'template-r1'},call)).not.toThrow();
+  expect(call.paidServiceRevision).toMatch(/^[a-f0-9]{64}$/);
+  fixture.settings.convertApiKey='replaced-key';
+  expect(()=>preflightR4LegacyService('convert_prompt',{text:'scene',templateRevision:'template-r1'},call)).toThrow('确认期间');
+});

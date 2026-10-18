@@ -9,7 +9,7 @@ import {
   scoreAgentMemoryQuery,
 } from '../../src/agent/memory';
 import { normalizeStudioComposerActions } from '../../src/agent/composer-actions';
-import {createBuiltinAgentSkills,studioBuiltinPreset,studioPresetId,STUDIO_DEFAULT_PRESET_ID,STUDIO_SKILL_LIMITS,type StudioConversationOptions} from '../../src/agent/workspace-controls';
+import {createBuiltinAgentSkills,studioBuiltinPreset,STUDIO_DEFAULT_PRESET_ID,STUDIO_LYRA_PRESET_ID,STUDIO_SKILL_LIMITS,type StudioConversationOptions} from '../../src/agent/workspace-controls';
 import {decodeSystemPromptFile,importImageSystemPrompt,MAX_SYSTEM_PROMPT_IMPORT_BYTES,SystemPromptImportError} from '../../src/tavern/system-prompt-import';
 import {systemPromptImportErrorText,systemPromptImportText} from '../../src/tavern/system-prompt-import-text';
 import { recoverInterruptedImageRepairs } from "../../src/tavern/image-repair";
@@ -49,9 +49,24 @@ import {
   TAVERN_PRESET_LIBRARY_VERSION,
 } from "../../src/tavern/builtins";
 import { toLocalMediaUrl } from "./local-media-protocol";
-import { atomicWriteFileSync, getSettings, getHistoryReferenceItems, fileExistsWithDirectoryCache, readWithBackupRecoverySync, rotateBackupsSync } from "./store";
+import { getSettings, getHistoryReferenceItems, fileExistsWithDirectoryCache } from "./store";
 import { invalidateHistoryAttachments, reconcileHistoryAttachments } from "./agent-attachment-lifecycle";
 import { agentWorkspaceDirectory, rebaseAgentWorkspaceFile } from "./agent-workspace-location";
+import {
+  createAgentSqlStore,
+  type AgentSqlStore,
+} from "./r4-store";
+import {
+  createEmptyR4AgentState,
+  normalizeR4AgentState,
+  projectR4Conversation,
+  type R4AgentState,
+  type R4ConversationConfigSnapshot,
+  type R4CreationInputSnapshot,
+  type R4AssistantPresetBinding,
+  type R4ConversationCreativeState,
+} from "../../src/agent/r4-types";
+import { STUDIO_BUILTIN_PRESETS } from "../../src/agent/workspace-controls";
 
 const MAX_FILE_BYTES = 48 * 1024 * 1024;
 const MAX_IMPORT_BYTES = 192 * 1024 * 1024;
@@ -60,7 +75,7 @@ const ALLOWED_EXTENSIONS = new Set([
   ".pdf", ".txt", ".md", ".json", ".jsonl", ".csv", ".tsv", ".yaml", ".yml",
 ]);
 
-let cache: AgentWorkspaceData | null = null;
+let sqlStore: AgentSqlStore | null = null;
 
 export function agentWorkspacePath() {
   return path.join(agentWorkspaceDirectory(), "agent-workspace.json");
@@ -212,8 +227,22 @@ function rehydrateAttachment(raw: Partial<AgentAttachment>): AgentAttachment | n
     ...(["deleted", "missing", "replaced"].includes(String(raw.unavailable)) ? { unavailable: raw.unavailable } : {}),
     ...(Number.isFinite(raw.width) ? { width: raw.width } : {}),
     ...(Number.isFinite(raw.height) ? { height: raw.height } : {}),
+    ...(Number.isSafeInteger(raw.revision) && Number(raw.revision) >= 0 ? { revision: raw.revision } : {}),
+    ...(typeof raw.sha256 === "string" ? { sha256: raw.sha256 } : {}),
+    ...(typeof raw.creationId === "string" ? { creationId: raw.creationId } : {}),
+    ...(raw.role === "source" || raw.role === "reference" || raw.role === "mask" || raw.role === "artwork" ? { role: raw.role } : {}),
+    ...(raw.referencePurpose === "color" || raw.referencePurpose === "composition" || raw.referencePurpose === "character" || raw.referencePurpose === "atmosphere" ? { referencePurpose: raw.referencePurpose } : {}),
+    ...(typeof raw.includeInGeneration === "boolean" ? { includeInGeneration: raw.includeInGeneration } : {}),
+    ...(raw.authorizationStatus === "authorized" || raw.authorizationStatus === "not_authorized" || raw.authorizationStatus === "revoked" || raw.authorizationStatus === "unknown" ? { authorizationStatus: raw.authorizationStatus } : {}),
+    ...(typeof raw.authorizationReceiptId === "string" ? { authorizationReceiptId: raw.authorizationReceiptId } : {}),
     createdAt: typeof raw.createdAt === "string" ? raw.createdAt : now(),
   };
+}
+
+function cloneOptionalRecord<T extends object>(value: unknown): T | undefined {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? structuredClone(value) as T
+    : undefined;
 }
 
 function normalizeImageProposal(raw: unknown): TavernImageProposal | undefined {
@@ -281,6 +310,13 @@ function normalizeMessage(raw: Partial<AgentMessage>): AgentMessage | null {
     createdAt: typeof raw.createdAt === "string" ? raw.createdAt : now(),
     ...(typeof raw.completedAt === "string" ? { completedAt: raw.completedAt } : {}),
     ...(typeof raw.characterId === "string" ? { characterId: raw.characterId } : {}),
+    ...(typeof raw.creationId === "string" ? { creationId: raw.creationId } : {}),
+    ...(cloneOptionalRecord<R4ConversationConfigSnapshot>(raw.conversationConfig) ? { conversationConfig: cloneOptionalRecord<R4ConversationConfigSnapshot>(raw.conversationConfig) } : {}),
+    ...(cloneOptionalRecord<R4CreationInputSnapshot>(raw.originalInputSnapshot) ? { originalInputSnapshot: cloneOptionalRecord<R4CreationInputSnapshot>(raw.originalInputSnapshot) } : {}),
+    ...(typeof raw.queuedMessageId === "string" ? { queuedMessageId: raw.queuedMessageId } : {}),
+    ...(typeof raw.userIntentRef === "string" ? { userIntentRef: raw.userIntentRef } : {}),
+    ...(typeof raw.critiqueForExecutionId === "string" ? { critiqueForExecutionId: raw.critiqueForExecutionId } : {}),
+    ...(raw.r4LegacyStatus === "legacy_unversioned" || raw.r4LegacyStatus === "migration_conflict" ? { r4LegacyStatus: raw.r4LegacyStatus } : {}),
     ...(Array.isArray(raw.swipes)
       ? { swipes: raw.swipes.filter((item): item is string => typeof item === "string").map((item) => item.slice(0, 200_000)).slice(0, 100) }
       : {}),
@@ -294,7 +330,7 @@ function normalizeMessage(raw: Partial<AgentMessage>): AgentMessage | null {
 export function normalizeAgentWorkspace(raw: unknown, preserveRuntimeStatus = false): AgentWorkspaceData {
   const input = raw && typeof raw === "object" ? raw as Partial<AgentWorkspaceData> : {};
   if (Number(input.version) !== AGENT_WORKSPACE_VERSION) {
-    return createEmptyAgentWorkspace();
+    throw new Error(`Agent workspace 版本 ${String(input.version)} 暂不支持；原文件与备份均已保留。`);
   }
   const settings = getSettings();
   const characters = (Array.isArray(input.characters) ? input.characters : [])
@@ -307,6 +343,9 @@ export function normalizeAgentWorkspace(raw: unknown, preserveRuntimeStatus = fa
     .map((item) => normalizeTavernSamplerPreset(item));
   restoreProtectedStarterKit(characters, personas, lorebooks);
   const incomingPresetLibraryVersion = Math.max(0, Math.trunc(Number(input.presetLibraryVersion) || 0));
+  if (incomingPresetLibraryVersion > TAVERN_PRESET_LIBRARY_VERSION) {
+    throw new Error(`Tavern 预设库版本 ${incomingPresetLibraryVersion} 暂不支持；原文件与备份均已保留。`);
+  }
   if (incomingPresetLibraryVersion < TAVERN_PRESET_LIBRARY_VERSION) {
     samplerPresets.splice(0, samplerPresets.length, ...createTavernBuiltinSamplerPresets());
   }
@@ -370,7 +409,12 @@ export function normalizeAgentWorkspace(raw: unknown, preserveRuntimeStatus = fa
         studioApprovalMode: conversation.studioApprovalMode==='auto'?'auto' as const:'confirm' as const,
         studioWebSearchEnabled: conversation.studioWebSearchEnabled!==false,
         studioTemplateEnabled: conversation.studioTemplateEnabled!==false,
-        studioPresetId: typeof conversation.studioPresetId==='string'&&(studioBuiltinPreset(conversation.studioPresetId)||conversation.studioPresetId.startsWith('tavern:')&&samplerPresets.some(p=>'tavern:'+p.id===conversation.studioPresetId))?studioPresetId(conversation.studioPresetId):STUDIO_DEFAULT_PRESET_ID,
+        // Keep a missing/unknown reference visible for repair. The R4 binding
+        // carries migration_conflict and blocks execution until the user picks
+        // a real preset; silently replacing the ID here would hide that state.
+        studioPresetId: typeof conversation.studioPresetId === 'string'
+          ? conversation.studioPresetId
+          : STUDIO_DEFAULT_PRESET_ID,
         selectedSkillIds: Array.isArray(conversation.selectedSkillIds)
           ? [...new Set(conversation.selectedSkillIds.filter((id): id is string => typeof id === 'string' && id.length <= 200))]
           : [],
@@ -449,27 +493,257 @@ export function normalizeAgentWorkspace(raw: unknown, preserveRuntimeStatus = fa
   };
 }
 
+function workspaceForSql(value: unknown, preserveRuntimeStatus = false) {
+  return resolvedWorkspace(normalizeAgentWorkspace(value, preserveRuntimeStatus));
+}
+
+function sha256(value: string) {
+  return crypto.createHash("sha256").update(value, "utf8").digest("hex");
+}
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : undefined;
+}
+
+function readLegacyWorkspace(): { raw: Record<string, unknown>; sourceFile: string } | undefined {
+  const primary = agentWorkspacePath();
+  const candidates = [primary, `${primary}.bak`, `${primary}.bak2`];
+  let found = false;
+  let lastParseError: unknown;
+  for (const candidate of candidates) {
+    if (!fs.existsSync(candidate)) continue;
+    found = true;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(fs.readFileSync(candidate, "utf8"));
+    } catch (error) {
+      lastParseError = error;
+      continue;
+    }
+    const raw = asRecord(parsed);
+    if (!raw) {
+      lastParseError = new Error("Agent workspace JSON root must be an object.");
+      continue;
+    }
+    // A syntactically valid but unsupported version is authoritative. Falling
+    // back to an older snapshot here could silently roll back user data.
+    if (Number(raw.version) !== AGENT_WORKSPACE_VERSION) {
+      throw new Error(`Agent workspace 版本 ${String(raw.version)} 暂不支持；原文件与备份均已保留。`);
+    }
+    const presetLibraryVersion = Math.max(0, Math.trunc(Number(raw.presetLibraryVersion) || 0));
+    if (presetLibraryVersion > TAVERN_PRESET_LIBRARY_VERSION) {
+      throw new Error(`Tavern 预设库版本 ${presetLibraryVersion} 暂不支持；原文件与备份均已保留。`);
+    }
+    return { raw: structuredClone(raw), sourceFile: path.basename(candidate) };
+  }
+  if (found) {
+    throw new Error(`Agent workspace 与两个备份均无法读取；原文件均已保留。${lastParseError instanceof Error ? ` ${lastParseError.message}` : ""}`);
+  }
+  return undefined;
+}
+
+function legacyBinding(value: unknown, availablePresetIds: Set<string>): R4AssistantPresetBinding {
+  const conversation = asRecord(value) ?? {};
+  const rawId = typeof conversation.studioPresetId === "string" ? conversation.studioPresetId : undefined;
+  const hasKnownId = rawId === undefined
+    || STUDIO_BUILTIN_PRESETS.some((preset) => preset.id === rawId)
+    || (rawId.startsWith("tavern:") && availablePresetIds.has(rawId.slice("tavern:".length)));
+  const oldAlias = rawId === "studio-director" || rawId === "studio-prompts" || rawId === "studio-reference" || rawId === `tavern:${STUDIO_LYRA_PRESET_ID}`;
+  const enabled = typeof conversation.studioTemplateEnabled === "boolean"
+    ? conversation.studioTemplateEnabled
+    : true; // Fixed workspace v4 runtime treats a missing flag as enabled.
+  return {
+    // Preserve an unknown ID exactly. R4 host configuration capture treats the
+    // migration_conflict marker as repair-required instead of silently using a
+    // built-in prompt. Known legacy aliases keep their established mapping.
+    presetId: rawId && !oldAlias ? rawId : STUDIO_DEFAULT_PRESET_ID,
+    enabled,
+    ...(!hasKnownId && !oldAlias ? { legacyStatus: "migration_conflict" as const } : {}),
+  };
+}
+
+function seedR4FromLegacyWorkspace(raw: Record<string, unknown>, sourceFile: string, sourceKind: "legacy" | "new-workspace" = "legacy"): R4AgentState {
+  const state = createEmptyR4AgentState();
+  const samplerPresets = Array.isArray(raw.samplerPresets) ? raw.samplerPresets : [];
+  const availablePresetIds = new Set(samplerPresets
+    .map(asRecord)
+    .filter((preset): preset is Record<string, unknown> => Boolean(preset && typeof preset.id === "string"))
+    .map((preset) => String(preset.id)));
+
+  for (const preset of STUDIO_BUILTIN_PRESETS) {
+    state.assistantPresets[preset.id] = {
+      id: preset.id,
+      name: preset.name,
+      body: preset.body,
+      revision: 1,
+      hash: sha256(preset.body),
+      source: "builtin",
+    };
+  }
+  for (const candidate of samplerPresets) {
+    const preset = asRecord(candidate);
+    if (!preset || typeof preset.id !== "string" || !preset.id) continue;
+    const systemPrompt = typeof preset.systemPrompt === "string" ? preset.systemPrompt : "";
+    const jailbreakPrompt = typeof preset.jailbreakPrompt === "string" ? preset.jailbreakPrompt : "";
+    const body = [systemPrompt, jailbreakPrompt].filter(Boolean).join("\n\n");
+    const id = `tavern:${preset.id}`;
+    state.assistantPresets[id] = {
+      id,
+      name: typeof preset.name === "string" ? preset.name : preset.id,
+      body,
+      revision: 1,
+      hash: sha256(body),
+      source: "legacy_tavern",
+      legacyRecord: structuredClone(preset),
+    };
+  }
+
+  const conversationRecords = Array.isArray(raw.conversations) ? raw.conversations : [];
+  for (const candidate of conversationRecords) {
+    const conversation = asRecord(candidate);
+    if (!conversation || typeof conversation.id !== "string" || !conversation.id) continue;
+    const binding = legacyBinding(conversation, availablePresetIds);
+    const stateConversation = {
+      conversationId: conversation.id,
+      messageCreationIds: {},
+      ...(binding.legacyStatus ? { legacyStatus: binding.legacyStatus } : sourceKind === "legacy" ? { legacyStatus: "legacy_unversioned" as const } : {}),
+      assistantPresetBinding: binding,
+      selectionRevision: 0,
+      updatedAt: typeof conversation.updatedAt === "string" ? conversation.updatedAt : now(),
+    };
+    state.conversations[conversation.id] = stateConversation;
+  }
+
+  const rawDefaults = asRecord(raw.studioDefaults);
+  const selectedId = typeof raw.selectedConversationId === "string" ? raw.selectedConversationId : undefined;
+  const selectedConversation = conversationRecords.find((candidate) => asRecord(candidate)?.id === selectedId);
+  const defaultSource = rawDefaults ?? asRecord(selectedConversation);
+  state.assistantPresetDefaultBinding = legacyBinding(defaultSource, availablePresetIds);
+  if (sourceKind === "legacy") {
+    state.compatibility = {
+      legacyWorkspace: {
+        version: raw.version,
+        presetLibraryVersion: raw.presetLibraryVersion ?? null,
+        sourceFile,
+        // Retain exact field names, custom prompt bodies and unknown extensions.
+        raw: structuredClone(raw),
+      },
+    };
+  }
+  return state;
+}
+
+/** Mirror deliberate legacy resource-preset edits into versioned R4 history. */
+function syncLegacyAssistantPresets(state: R4AgentState, workspace: AgentWorkspaceData) {
+  let changed = false;
+  const history = asRecord(state.compatibility.presetRevisionHistory)
+    ?? (state.compatibility.presetRevisionHistory = {} as Record<string, unknown>) as Record<string, unknown>;
+  for (const samplerPreset of workspace.samplerPresets) {
+    const id = `tavern:${samplerPreset.id}`;
+    const body = [samplerPreset.systemPrompt, samplerPreset.jailbreakPrompt].filter(Boolean).join("\n\n");
+    const legacyRecord = structuredClone(samplerPreset) as unknown as Record<string, unknown>;
+    const existing = state.assistantPresets[id];
+    if (!existing) {
+      state.assistantPresets[id] = {
+        id,
+        name: samplerPreset.name,
+        body,
+        revision: 1,
+        hash: sha256(body),
+        source: "legacy_tavern",
+        legacyRecord,
+      };
+      changed = true;
+      continue;
+    }
+    // R4 users may have edited the copied assistant body independently. The
+    // legacy resource should advance it only when that source record itself
+    // changes, never on an unrelated workspace write.
+    if (existing.source !== "legacy_tavern" || JSON.stringify(existing.legacyRecord) === JSON.stringify(legacyRecord)) continue;
+    history[`${id}@${existing.revision}`] ??= structuredClone(existing);
+    existing.name = samplerPreset.name;
+    existing.body = body;
+    existing.hash = sha256(body);
+    existing.revision++;
+    existing.updatedAt = now();
+    existing.legacyRecord = legacyRecord;
+    changed = true;
+  }
+  if (changed) state.updatedAt = now();
+  return changed;
+}
+
+/**
+ * Preserve legacy per-chat preset selection when an old archive or workspace
+ * merge introduces conversations that have no R4 row yet. Existing R4
+ * bindings and the current new-chat default always win.
+ */
+export function syncLegacyAgentWorkspaceR4(state: R4AgentState, workspace: AgentWorkspaceData) {
+  let changed = syncLegacyAssistantPresets(state, workspace);
+  const availablePresetIds = new Set(workspace.samplerPresets.map((preset) => preset.id));
+  for (const chat of workspace.conversations) {
+    if (state.conversations[chat.id]) continue;
+    const binding = legacyBinding(chat, availablePresetIds);
+    state.conversations[chat.id] = {
+      conversationId: chat.id,
+      messageCreationIds: {},
+      ...(binding.legacyStatus ? { legacyStatus: binding.legacyStatus } : { legacyStatus: "legacy_unversioned" as const }),
+      assistantPresetBinding: binding,
+      selectionRevision: 0,
+      updatedAt: typeof chat.updatedAt === "string" ? chat.updatedAt : now(),
+    };
+    changed = true;
+  }
+  if (changed) state.updatedAt = now();
+  return changed;
+}
+
+function loadInitialSqlState() {
+  const legacy = readLegacyWorkspace();
+  if (!legacy) {
+    const workspace = createEmptyAgentWorkspace();
+    return { workspace, r4State: seedR4FromLegacyWorkspace(workspace as unknown as Record<string, unknown>, "new-workspace", "new-workspace") };
+  }
+  // The pre-R4 baseline migrated its sampler preset library destructively.
+  // Keep source records by lifting only the normalized version marker; the
+  // original JSON, both backup generations and an exact copy in compatibility
+  // remain untouched for later versioned repair or export.
+  const normalizationInput = {
+    ...structuredClone(legacy.raw),
+    presetLibraryVersion: TAVERN_PRESET_LIBRARY_VERSION,
+  };
+  const workspace = workspaceForSql(normalizationInput);
+  workspace.conversations.forEach((conversation) => { recoverInterruptedImageRepairs(conversation); });
+  return {
+    workspace,
+    r4State: seedR4FromLegacyWorkspace(legacy.raw, legacy.sourceFile),
+  };
+}
+
+export function getAgentSqlStore() {
+  if (!sqlStore) {
+    sqlStore = createAgentSqlStore({
+      filename: path.join(agentWorkspaceDirectory(), "agent-state.sqlite"),
+      legacyFiles: [agentWorkspacePath(), `${agentWorkspacePath()}.bak`, `${agentWorkspacePath()}.bak2`],
+      loadInitialState: loadInitialSqlState,
+      normalizeWorkspace: workspaceForSql,
+    });
+  }
+  return sqlStore;
+}
+
+export function closeAgentSqlStore() {
+  if (!sqlStore) return;
+  try { sqlStore.close(); } finally { sqlStore = null; }
+}
+
 export function readAgentWorkspace(): AgentWorkspaceData {
-  if (cache) return resolvedWorkspace(cache);
-  const file = agentWorkspacePath();
-  let resetLegacyWorkspace = false;
-  let migratedPresetLibrary = false;
-  const recovered = readWithBackupRecoverySync<AgentWorkspaceData>(
-    file,
-    (text) => {
-      const parsed = JSON.parse(text) as Partial<AgentWorkspaceData>;
-      if (Number(parsed?.version) !== AGENT_WORKSPACE_VERSION) resetLegacyWorkspace = true;
-      if (Math.max(0, Math.trunc(Number(parsed?.presetLibraryVersion) || 0)) < TAVERN_PRESET_LIBRARY_VERSION) {
-        migratedPresetLibrary = true;
-      }
-      return normalizeAgentWorkspace(parsed);
-    },
-    (value) => JSON.stringify(value, null, 2),
-  );
-  cache = recovered?.value ?? createEmptyAgentWorkspace();
-  const recoveredRepairs = cache.conversations.map(recoverInterruptedImageRepairs).some(Boolean);
-  if (!recovered || resetLegacyWorkspace || migratedPresetLibrary || recoveredRepairs) writeAgentWorkspace(cache);
-  return resolvedWorkspace(cache);
+  const workspace = resolvedWorkspace(getAgentSqlStore().readWorkspace());
+  const recoveredRepairs = workspace.conversations.map(recoverInterruptedImageRepairs).some(Boolean);
+  if (recoveredRepairs) return writeAgentWorkspace(workspace);
+  return workspace;
 }
 
 function resolvedWorkspace(workspace: AgentWorkspaceData): AgentWorkspaceData {
@@ -494,12 +768,82 @@ export function writeAgentWorkspace(workspace: AgentWorkspaceData) {
   // A still-open renderer editor may save a snapshot from before deletion.
   // Resolve identities at the write boundary too, not only on the next read.
   const normalized = resolvedWorkspace(normalizeAgentWorkspace({ ...workspace, updatedAt: now() }, true));
-  const file = agentWorkspacePath();
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  rotateBackupsSync(file);
-  atomicWriteFileSync(file, JSON.stringify(normalized, null, 2));
-  cache = normalized;
-  return clone(normalized);
+  return getAgentSqlStore().transaction((tx) => {
+    const state = tx.getR4State();
+    const changed = syncLegacyAgentWorkspaceR4(state, normalized);
+    tx.setWorkspace(normalized);
+    if (changed) tx.setR4State(state);
+    return tx.getWorkspace();
+  });
+}
+
+export function readAgentR4State() {
+  return normalizeR4AgentState(getAgentSqlStore().readR4State());
+}
+
+export function writeAgentR4State(state: R4AgentState) {
+  return getAgentSqlStore().writeR4State(state);
+}
+
+function workspaceAttachments(workspace: AgentWorkspaceData) {
+  const attachments: AgentAttachment[] = [];
+  for (const conversation of workspace.conversations) {
+    attachments.push(...conversation.draftAttachments);
+    for (const message of conversation.messages) {
+      attachments.push(...message.attachments);
+      attachments.push(...(message.swipeAttachments ?? []).flat());
+      for (const tool of message.tools) attachments.push(...(tool.generatedImages ?? []));
+      for (const swipe of message.imageProposalSwipes ?? []) {
+        if (swipe?.continuity?.baseImageId) {
+          const found = conversation.messages.flatMap((item) => item.attachments).find((item) => item.id === swipe.continuity?.baseImageId);
+          if (found) attachments.push(found);
+        }
+      }
+    }
+  }
+  return attachments;
+}
+
+const R4_CONVERSATION_COLLECTIONS = [
+  "creations", "proposals", "artworks", "preparations", "executions",
+  "messageQueue", "gates", "operations", "critiqueQueue",
+] as const;
+
+function hasDurableR4ConversationData(state: R4AgentState, conversationId: string) {
+  if (R4_CONVERSATION_COLLECTIONS.some((collection) =>
+    Object.values(state[collection]).some((item) => item.conversationId === conversationId))) return true;
+  const conversation = state.conversations[conversationId];
+  return Boolean(conversation && (
+    conversation.currentCreationId
+    || conversation.selectedArtworkId
+    || Object.keys(conversation.messageCreationIds).length
+    || conversation.composerDraft?.text
+    || conversation.composerDraft?.attachmentIds.length
+  ));
+}
+
+function hasR4AttachmentReference(value: unknown, attachmentId: string): boolean {
+  if (Array.isArray(value)) return value.some((item) => hasR4AttachmentReference(item, attachmentId));
+  if (!value || typeof value !== "object") return false;
+  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    if ((key === "attachmentId" || key === "parentAttachmentId") && child === attachmentId) return true;
+    if (key === "attachmentIds" && Array.isArray(child) && child.includes(attachmentId)) return true;
+    if (hasR4AttachmentReference(child, attachmentId)) return true;
+  }
+  return false;
+}
+
+export function getAgentCreativeState(conversationId: string): R4ConversationCreativeState {
+  const store = getAgentSqlStore();
+  const state = projectR4Conversation(store.readR4State(), conversationId);
+  const attachments = new Map(workspaceAttachments(resolvedWorkspace(store.readWorkspace())).map((item) => [item.id, item]));
+  for (const artwork of Object.values(state.artworks)) {
+    const attachment = attachments.get(artwork.attachmentId);
+    if (!attachment || attachment.unavailable) continue;
+    if (attachment.fileUrl) artwork.url = attachment.fileUrl;
+    else if (fs.existsSync(attachment.filePath)) artwork.url = toLocalMediaUrl(attachment.filePath, attachment.id);
+  }
+  return state;
 }
 
 function mutation(workspace: AgentWorkspaceData, message?: string): AgentWorkspaceMutationResult {
@@ -516,51 +860,82 @@ function uniqueConversationTitle(workspace: AgentWorkspaceData, requested = "新
 }
 
 export function createAgentConversation(title?: string): AgentWorkspaceMutationResult {
-  const workspace = readAgentWorkspace();
-  const createdAt = now();
-  const settings = getSettings();
-  const characterId = workspace.selectedCharacterId ?? workspace.characters[0]?.id;
-  const personaId = workspace.selectedPersonaId ?? workspace.personas[0]?.id;
-  const linkedLorebookIds = [
-    workspace.characters.find((item) => item.id === characterId)?.lorebookId,
-    workspace.personas.find((item) => item.id === personaId)?.lorebookId,
-  ].filter((id): id is string => Boolean(id && workspace.lorebooks.some((item) => item.id === id)));
-  const samplerPresetId = workspace.samplerPresets[0]?.id;
-  const conversation: AgentConversation = {
-    id: crypto.randomUUID(),
-    title: uniqueConversationTitle(workspace, title),
-    messages: [],
-    draftAttachments: [],
-    status: "idle",
-    context: createContextSnapshot([], settings.agentContextWindow, settings.agentAutoCompactThreshold),
-    compactCount: 0,
-    createdAt,
-    updatedAt: createdAt,
-    characterIds: characterId ? [characterId] : [],
-    ...(characterId ? { activeCharacterId: characterId } : {}),
-    ...(personaId ? { personaId } : {}),
-    lorebookIds: [...new Set(linkedLorebookIds)],
-    ...(samplerPresetId ? { samplerPresetId } : {}),
-    generationMode: workspace.defaultGenerationMode,
-    studioApprovalMode: "confirm",
-    studioWebSearchEnabled: true,
-    selectedSkillIds: [],
-    reasoningEffort: "auto",
-    autoPlayGroup: false,
-    pinned: false,
-  };
-  const defaults=normalizeStudioDefaults(workspace.studioDefaults);
-  const defaultCharacters=defaults.characterIds?.filter(id=>workspace.characters.some(c=>c.id===id));
-  if(defaultCharacters?.length){conversation.characterIds=defaultCharacters;conversation.activeCharacterId=defaultCharacters.includes(defaults.activeCharacterId??'')?defaults.activeCharacterId:defaultCharacters[0];}
-  if(defaults.lorebookIds)conversation.lorebookIds=defaults.lorebookIds.filter(id=>workspace.lorebooks.some(b=>b.id===id));
-  if(defaults.studioApprovalMode)conversation.studioApprovalMode=defaults.studioApprovalMode;
-  if(defaults.studioWebSearchEnabled!==undefined)conversation.studioWebSearchEnabled=defaults.studioWebSearchEnabled;
-  if(defaults.selectedSkillIds)conversation.selectedSkillIds=defaults.selectedSkillIds.filter(id=>workspace.skills.some(skill=>skill.id===id));
-  if(defaults.studioTemplateEnabled!==undefined)conversation.studioTemplateEnabled=defaults.studioTemplateEnabled;
-  if(defaults.studioPresetId&&(studioBuiltinPreset(defaults.studioPresetId)||workspace.samplerPresets.some(p=>'tavern:'+p.id===defaults.studioPresetId)))conversation.studioPresetId=defaults.studioPresetId;
-  workspace.conversations.unshift(conversation);
-  workspace.selectedConversationId = conversation.id;
-  return mutation(workspace);
+  return getAgentSqlStore().transaction((tx) => {
+    // Read the default binding and insert the new conversation in one commit.
+    // Otherwise a preference change between the legacy workspace write and
+    // lazy R4 conversation creation could retroactively change this chat.
+    const workspace = resolvedWorkspace(tx.getWorkspace());
+    const r4State = tx.getR4State();
+    const createdAt = now();
+    const settings = getSettings();
+    const characterId = workspace.selectedCharacterId ?? workspace.characters[0]?.id;
+    const personaId = workspace.selectedPersonaId ?? workspace.personas[0]?.id;
+    const linkedLorebookIds = [
+      workspace.characters.find((item) => item.id === characterId)?.lorebookId,
+      workspace.personas.find((item) => item.id === personaId)?.lorebookId,
+    ].filter((id): id is string => Boolean(id && workspace.lorebooks.some((item) => item.id === id)));
+    const samplerPresetId = workspace.samplerPresets[0]?.id;
+    const conversation: AgentConversation = {
+      id: crypto.randomUUID(),
+      title: uniqueConversationTitle(workspace, title),
+      messages: [],
+      draftAttachments: [],
+      status: "idle",
+      context: createContextSnapshot([], settings.agentContextWindow, settings.agentAutoCompactThreshold),
+      compactCount: 0,
+      createdAt,
+      updatedAt: createdAt,
+      characterIds: characterId ? [characterId] : [],
+      ...(characterId ? { activeCharacterId: characterId } : {}),
+      ...(personaId ? { personaId } : {}),
+      lorebookIds: [...new Set(linkedLorebookIds)],
+      ...(samplerPresetId ? { samplerPresetId } : {}),
+      generationMode: workspace.defaultGenerationMode,
+      studioApprovalMode: "confirm",
+      studioWebSearchEnabled: true,
+      selectedSkillIds: [],
+      reasoningEffort: "auto",
+      autoPlayGroup: false,
+      pinned: false,
+    };
+    const defaults = normalizeStudioDefaults(workspace.studioDefaults);
+    const defaultCharacters = defaults.characterIds?.filter(id => workspace.characters.some(c => c.id === id));
+    if (defaultCharacters?.length) {
+      conversation.characterIds = defaultCharacters;
+      conversation.activeCharacterId = defaultCharacters.includes(defaults.activeCharacterId ?? '')
+        ? defaults.activeCharacterId : defaultCharacters[0];
+    }
+    if (defaults.lorebookIds) conversation.lorebookIds = defaults.lorebookIds.filter(id => workspace.lorebooks.some(b => b.id === id));
+    if (defaults.studioApprovalMode) conversation.studioApprovalMode = defaults.studioApprovalMode;
+    if (defaults.studioWebSearchEnabled !== undefined) conversation.studioWebSearchEnabled = defaults.studioWebSearchEnabled;
+    if (defaults.selectedSkillIds) conversation.selectedSkillIds = defaults.selectedSkillIds.filter(id => workspace.skills.some(skill => skill.id === id));
+    if (defaults.studioTemplateEnabled !== undefined) conversation.studioTemplateEnabled = defaults.studioTemplateEnabled;
+    if (defaults.studioPresetId && (studioBuiltinPreset(defaults.studioPresetId) || workspace.samplerPresets.some(p => 'tavern:' + p.id === defaults.studioPresetId))) {
+      conversation.studioPresetId = defaults.studioPresetId;
+    }
+
+    workspace.conversations.unshift(conversation);
+    workspace.selectedConversationId = conversation.id;
+    const normalizedWorkspace = resolvedWorkspace(normalizeAgentWorkspace({ ...workspace, updatedAt: createdAt }, true));
+    syncLegacyAssistantPresets(r4State, normalizedWorkspace);
+
+    const availablePresetIds = new Set(normalizedWorkspace.samplerPresets.map((preset) => preset.id));
+    if (!r4State.assistantPresetDefaultBinding) {
+      r4State.assistantPresetDefaultBinding = legacyBinding(normalizedWorkspace.studioDefaults, availablePresetIds);
+    }
+    const binding = structuredClone(r4State.assistantPresetDefaultBinding);
+    r4State.conversations[conversation.id] = {
+      conversationId: conversation.id,
+      messageCreationIds: {},
+      assistantPresetBinding: binding,
+      ...(binding.legacyStatus ? { legacyStatus: binding.legacyStatus } : {}),
+      selectionRevision: 0,
+      updatedAt: createdAt,
+    };
+    tx.setWorkspace(normalizedWorkspace);
+    tx.setR4State(r4State);
+    return { ok: true, workspace: tx.getWorkspace() };
+  });
 }
 
 export function selectAgentConversation(conversationId: string): AgentWorkspaceMutationResult {
@@ -599,22 +974,47 @@ export function setAgentConversationArchived(conversationId: string, archived: b
 }
 
 export function deleteAgentConversation(conversationId: string): AgentWorkspaceMutationResult {
-  const workspace = readAgentWorkspace();
-  if (!workspace.conversations.some((item) => item.id === conversationId)) {
-    return { ok: false, message: "对话不存在或已经删除。", workspace };
+  const store = getAgentSqlStore();
+  let removed = false;
+  const result = store.transaction((tx) => {
+    const workspace = resolvedWorkspace(tx.getWorkspace());
+    const deleting = workspace.conversations.find((item) => item.id === conversationId);
+    if (!deleting) return { ok: false, message: "对话不存在或已经删除。", workspace };
+    if (["running", "waiting-permission"].includes(deleting.status)) {
+      return { ok: false, message: "请先停止该对话的任务再删除。", workspace };
+    }
+    const state = tx.getR4State();
+    if (hasDurableR4ConversationData(state, conversationId)) {
+      return {
+        ok: false,
+        message: "该对话仍关联 R4 创作、任务或作品记录。请先处理任务并保留或归档对话；当前不会物理删除这些记录。",
+        workspace,
+      };
+    }
+    workspace.conversations = workspace.conversations.filter((item) => item.id !== conversationId);
+    workspace.memories = workspace.memories.filter((item) => item.conversationId !== conversationId);
+    if (workspace.selectedConversationId === conversationId) {
+      workspace.selectedConversationId = workspace.conversations.find((item) => !item.archivedAt)?.id;
+    }
+    const nextWorkspace = resolvedWorkspace(normalizeAgentWorkspace({ ...workspace, updatedAt: now() }, true));
+    tx.setWorkspace(nextWorkspace);
+    if (state.conversations[conversationId]) {
+      delete state.conversations[conversationId];
+      state.updatedAt = now();
+      tx.setR4State(state);
+    }
+    removed = true;
+    return { ok: true, workspace: nextWorkspace };
+  });
+  if (removed) {
+    try {
+      const base = path.resolve(agentAttachmentsDirectory()), target = path.resolve(base, conversationId);
+      if (target.startsWith(base + path.sep)) fs.rmSync(target, { recursive: true, force: true });
+    } catch {
+      // Metadata deletion is committed first; an antivirus may leave harmless orphan bytes.
+    }
   }
-  const deleting=workspace.conversations.find(item=>item.id===conversationId)!;
-  if(["running","waiting-permission"].includes(deleting.status))return {ok:false,message:"请先停止该对话的任务再删除。",workspace};
-  workspace.conversations = workspace.conversations.filter((item) => item.id !== conversationId);
-  workspace.memories = workspace.memories.filter((item) => item.conversationId !== conversationId);
-  if (workspace.selectedConversationId === conversationId) workspace.selectedConversationId = workspace.conversations.find(item=>!item.archivedAt)?.id;
-  try {
-    const base=path.resolve(agentAttachmentsDirectory()),target=path.resolve(base,conversationId);
-    if(target.startsWith(base+path.sep))fs.rmSync(target, { recursive: true, force: true });
-  } catch {
-    // Metadata deletion should still succeed if an antivirus temporarily holds a file.
-  }
-  return mutation(workspace);
+  return result;
 }
 
 export function updateAgentConversation(
@@ -798,15 +1198,31 @@ export function importAgentFileData(conversationId:string,raw:unknown) {
 }
 
 export function deleteAgentAttachment(conversationId: string, attachmentId: string): AgentWorkspaceMutationResult {
-  const workspace = readAgentWorkspace();
-  const conversation = workspace.conversations.find((item) => item.id === conversationId);
-  if (!conversation) return { ok: false, message: "对话不存在。", workspace };
-  const attachment = conversation.draftAttachments.find((item) => item.id === attachmentId);
-  conversation.draftAttachments = conversation.draftAttachments.filter((item) => item.id !== attachmentId);
-  if (attachment) {
-    try { fs.rmSync(attachment.filePath, { force: true }); } catch { /* best effort */ }
+  const store = getAgentSqlStore();
+  let removedPath: string | undefined;
+  const result = store.transaction((tx) => {
+    const workspace = resolvedWorkspace(tx.getWorkspace());
+    const conversation = workspace.conversations.find((item) => item.id === conversationId);
+    if (!conversation) return { ok: false, message: "对话不存在。", workspace };
+    const attachment = conversation.draftAttachments.find((item) => item.id === attachmentId);
+    if (!attachment) return { ok: false, message: "草稿附件不存在。", workspace };
+    const state = tx.getR4State();
+    if (hasR4AttachmentReference(state, attachmentId)) {
+      return { ok: false, message: "该附件仍被 R4 创作、预览、排队任务或作品引用，已保留原文件。", workspace };
+    }
+    conversation.draftAttachments = conversation.draftAttachments.filter((item) => item.id !== attachmentId);
+    const nextWorkspace = resolvedWorkspace(normalizeAgentWorkspace({ ...workspace, updatedAt: now() }, true));
+    tx.setWorkspace(nextWorkspace);
+    removedPath = attachment.filePath;
+    return { ok: true, workspace: nextWorkspace };
+  });
+  if (result.ok && removedPath) {
+    try {
+      const base = path.resolve(agentAttachmentsDirectory()), target = path.resolve(removedPath);
+      if (target.startsWith(base + path.sep)) fs.rmSync(target, { force: true });
+    } catch { /* best effort after durable metadata commit */ }
   }
-  return mutation(workspace);
+  return result;
 }
 
 export async function exportAgentAttachment(
@@ -1045,5 +1461,5 @@ export function mergeImportedAgentWorkspace(incoming: AgentWorkspaceData) {
 }
 
 export function resetAgentStoreCacheForTests() {
-  cache = null;
+  closeAgentSqlStore();
 }

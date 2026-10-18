@@ -1,0 +1,270 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1100" viewBox="0 0 1800 1100" role="img" aria-labelledby="title desc">
+  <title id="title">绘世 PC Agent 创作对话 · 界面概念 3.2 R2</title>
+  <desc id="desc">原创矢量界面示意。三栏布局中左栏只切换聊天；主区顶部选择当前创作并切换当前创作或全部对话；提示词方案默认摘要，全文按需展开，生成是唯一主按钮，设为当前是次操作，工作台应用位于更多菜单；右栏按当前方案、选中作品、创作要求排列。输入区下方同一工具栏放模型与助手预设。参考图默认仅讨论，参与生成需显式选择。回复中的新消息默认排队，也可立即引导。</desc>
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#19191d"/>
+      <stop offset="0.62" stop-color="#111115"/>
+      <stop offset="1" stop-color="#090a0d"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f1d786"/>
+      <stop offset="1" stop-color="#d2b45d"/>
+    </linearGradient>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#263241"/>
+      <stop offset="0.58" stop-color="#394554"/>
+      <stop offset="1" stop-color="#171c24"/>
+    </linearGradient>
+    <linearGradient id="windowGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe4a0"/>
+      <stop offset="1" stop-color="#d27b3f"/>
+    </linearGradient>
+    <clipPath id="heroArtClip">
+      <rect width="420" height="202" rx="12"/>
+    </clipPath>
+    <style>
+      text{font-family:"Segoe UI","Microsoft YaHei","Noto Sans SC",sans-serif;fill:#f1eee7}
+      .eyebrow{font-size:14px;font-weight:700;letter-spacing:2px;fill:#c9ad68}
+      .boardTitle{font-size:38px;font-weight:750;letter-spacing:.4px}
+      .boardSub{font-size:18px;fill:#b7b2aa}
+      .appBrand{font-size:18px;font-weight:700}
+      .chatName{font-size:18px;font-weight:650}
+      .sectionTitle{font-size:22px;font-weight:700}
+      .proposalTitle{font-size:23px;font-weight:700}
+      .body{font-size:18px;fill:#e7e2d9}
+      .bodyStrong{font-size:19px;font-weight:600}
+      .muted{font-size:16px;fill:#aaa6a0}
+      .small{font-size:15px;fill:#aaa6a0}
+      .goldText{fill:#f0d482}
+      .ink{fill:#1a1917}
+      .mint{fill:#9bd4c4}
+      .surface{fill:#1a1a1f}
+      .surfaceSoft{fill:#202025}
+      .thinLine{stroke:#37363c;stroke-width:1.2}
+      .lightLine{stroke:#4b4950;stroke-width:1}
+      .softButton{fill:#222227;stroke:#48464c;stroke-width:1}
+      .chip{fill:#27262b;stroke:#403f45;stroke-width:1}
+    </style>
+  </defs>
+
+  <rect width="1800" height="1100" fill="url(#canvas)"/>
+  <circle cx="1680" cy="12" r="260" fill="#e8c873" opacity=".026"/>
+  <circle cx="80" cy="1080" r="210" fill="#e8c873" opacity=".02"/>
+
+  <g id="board-header" transform="translate(64 26)">
+    <text class="eyebrow" x="0" y="14">WORLDPAINTER PC · CONCEPT 3.2 R2</text>
+    <text class="boardTitle" x="0" y="57">绘世 PC Agent · 创作对话</text>
+    <text class="boardSub" x="1" y="86">让作品成为视觉中心，让常用操作留在对话里</text>
+    <g transform="translate(1314 10)">
+      <rect width="358" height="42" rx="21" fill="#25231e" stroke="#796a43" stroke-width="1"/>
+      <circle cx="22" cy="21" r="5" fill="#e8cb78"/>
+      <text x="40" y="27" font-size="17" font-weight="700" class="goldText">原创矢量示意 · 设计概念</text>
+    </g>
+  </g>
+
+  <g id="app-window">
+    <rect x="64" y="120" width="1672" height="884" rx="17" fill="#111115" stroke="#45434a" stroke-width="1.3"/>
+    <path d="M81 120 H1719 Q1736 120 1736 137 V176 H64 V137 Q64 120 81 120 Z" fill="#18181d"/>
+    <line x1="64" y1="176" x2="1736" y2="176" class="thinLine"/>
+    <circle cx="92" cy="148" r="12" fill="#d9bd70"/>
+    <path d="M86 148 H98 M92 142 V154" stroke="#201e18" stroke-width="2.2" stroke-linecap="round"/>
+    <text class="appBrand" x="114" y="154">绘世 Agent</text>
+    <text class="muted" x="264" y="153">创作工作区</text>
+    <rect x="1550" y="133" width="162" height="30" rx="15" fill="#242329"/>
+    <circle cx="1569" cy="148" r="4.5" fill="#e8cb78"/>
+    <text x="1583" y="154" font-size="15" fill="#c7c2b9">概念界面</text>
+
+    <rect x="64" y="176" width="228" height="828" fill="#141418"/>
+    <rect x="1372" y="176" width="364" height="828" fill="#151519"/>
+    <line x1="292" y1="176" x2="292" y2="1004" class="thinLine"/>
+    <line x1="1372" y1="176" x2="1372" y2="1004" class="thinLine"/>
+
+    <g id="chat-sidebar">
+      <text class="sectionTitle" x="84" y="218">聊天</text>
+      <rect x="226" y="192" width="44" height="38" rx="10" fill="url(#gold)"/>
+      <path d="M248 201 V221 M238 211 H258" stroke="#1a1917" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="80" y="238" width="194" height="36" rx="9" fill="#1c1c21" stroke="#39383e"/>
+      <circle cx="98" cy="256" r="5" fill="none" stroke="#89858d" stroke-width="1.5"/>
+      <path d="M102 260 L107 265" stroke="#89858d" stroke-width="1.5" stroke-linecap="round"/>
+      <text class="muted" x="116" y="262">搜索聊天</text>
+      <text class="small" x="84" y="307">最近</text>
+
+      <rect x="76" y="321" width="204" height="62" rx="10" fill="#222126"/>
+      <rect x="76" y="332" width="3" height="40" rx="1.5" fill="#d9bd70"/>
+      <text class="chatName" x="92" y="347">书店与旅人</text>
+      <text class="small" x="92" y="371">2 个创作 · 生成中</text>
+      <circle cx="257" cy="344" r="5" fill="#9bd4c4"/>
+
+      <text class="chatName" x="92" y="423">海边列车站</text>
+      <text class="small" x="92" y="447">昨天 · 3 张作品</text>
+      <line x1="84" y1="463" x2="272" y2="463" class="thinLine"/>
+      <text class="chatName" x="92" y="500">雾林旅行者</text>
+      <text class="small" x="92" y="524">周二 · 继续构思</text>
+      <line x1="84" y1="542" x2="272" y2="542" class="thinLine"/>
+      <text class="small" x="84" y="581">已归档</text>
+      <text class="chatName" x="92" y="620">月下旅人</text>
+      <text class="small" x="92" y="644">上周 · 方案比较</text>
+
+      <line x1="84" y1="922" x2="272" y2="922" class="thinLine"/>
+      <text class="small" x="84" y="951">这里只切换聊天</text>
+    </g>
+
+    <g id="conversation">
+      <text class="small" x="320" y="203">书店与旅人</text>
+      <text x="320" y="239" font-size="23" font-weight="700">当前创作：暖灯书店</text>
+      <path d="M567 229 l7 7 7 -7" fill="none" stroke="#d8d2c4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <g transform="translate(727 207)">
+        <rect width="270" height="36" rx="10" fill="#222126"/>
+        <rect x="135" y="3" width="132" height="30" rx="8" fill="#383226"/>
+        <text x="69" y="27" text-anchor="middle" font-size="16" fill="#c2beb6">当前创作</text>
+        <text x="202" y="27" text-anchor="middle" font-size="16" font-weight="700" class="goldText">全部对话</text>
+      </g>
+      <g transform="translate(1013 207)">
+        <rect width="331" height="36" rx="10" fill="#202025"/>
+        <circle cx="18" cy="18" r="5" fill="#9bd4c4"/>
+        <text x="31" y="24" font-size="16" fill="#d5d0c7">图像任务 · 生成中 1 · 排队 2</text>
+      </g>
+      <line x1="316" y1="255" x2="1350" y2="255" class="thinLine"/>
+
+      <g id="user-message">
+        <circle cx="341" cy="293" r="8" fill="#77747b"/>
+        <rect x="360" y="267" width="984" height="68" rx="14" fill="#1c1c21"/>
+        <text class="body" x="380" y="296">这张图先只讨论配色；书店和人物保持现有构图。</text>
+        <rect x="987" y="278" width="57" height="46" rx="7" fill="url(#night)"/>
+        <path d="M987 309 L1001 296 L1013 305 L1024 290 L1044 309 V324 H987 Z" fill="#27303a"/>
+        <circle cx="1029" cy="290" r="5" fill="#edcb75"/>
+        <text x="1055" y="294" font-size="16" class="muted">参考图 · 仅讨论</text>
+        <text x="1055" y="319" font-size="15" class="goldText">更改参考用途 ▾</text>
+      </g>
+
+      <g id="assistant-reply">
+        <circle cx="341" cy="363" r="7" fill="#d9bd70"/>
+        <text class="body" x="360" y="369">可以保留人物与构图，只把窗内暖光提亮。</text>
+      </g>
+
+      <g id="proposal-card">
+        <rect x="326" y="390" width="582" height="282" rx="13" fill="#1b1b20"/>
+        <rect x="326" y="402" width="3" height="258" rx="1.5" fill="#cfb46a"/>
+        <text class="small goldText" x="348" y="418">提示词方案</text>
+        <text class="proposalTitle" x="348" y="448">方案 A · 雨夜暖光</text>
+        <rect x="579" y="425" width="69" height="27" rx="13.5" fill="#2a292d"/>
+        <text x="613" y="444" text-anchor="middle" font-size="15" fill="#c1bdb4">修订 2</text>
+        <text x="825" y="444" text-anchor="end" font-size="16" class="muted">复制</text>
+
+        <text class="body" x="348" y="480">保留人物和构图，仅调整灯光。</text>
+        <rect x="348" y="495" width="104" height="28" rx="14" class="chip"/>
+        <text x="400" y="514" text-anchor="middle" font-size="15">雨夜店面</text>
+        <rect x="460" y="495" width="104" height="28" rx="14" class="chip"/>
+        <text x="512" y="514" text-anchor="middle" font-size="15">琥珀暖窗</text>
+        <rect x="572" y="495" width="104" height="28" rx="14" class="chip"/>
+        <text x="624" y="514" text-anchor="middle" font-size="15">细雨反光</text>
+
+        <text x="348" y="550" font-size="16" fill="#c2beb7">提示词全文</text>
+        <text x="457" y="550" font-size="16" class="goldText">按需展开 ▾</text>
+        <line x1="348" y1="563" x2="886" y2="563" class="thinLine"/>
+
+        <rect x="348" y="578" width="176" height="44" rx="10" fill="url(#gold)"/>
+        <text x="436" y="606" text-anchor="middle" font-size="17" font-weight="750" class="ink">用此版本生成</text>
+        <text x="545" y="606" font-size="17" fill="#e2ddd2">设为当前方案</text>
+        <rect x="759" y="578" width="127" height="44" rx="10" class="softButton"/>
+        <text x="822" y="606" text-anchor="middle" font-size="16" fill="#ddd8ce">更多 ▾</text>
+        <text x="348" y="648" font-size="15" class="muted">聊天里可说“设方案 A 为当前” · 设错可撤销</text>
+        <text x="693" y="648" font-size="14" class="muted">更多含工作台应用</text>
+      </g>
+
+      <g id="result-card">
+        <g transform="translate(930 390)" clip-path="url(#heroArtClip)">
+          <rect width="420" height="202" fill="url(#night)"/>
+          <circle cx="343" cy="33" r="17" fill="#d9d8d1" opacity=".78"/>
+          <circle cx="349" cy="28" r="15" fill="#293443"/>
+          <path d="M0 128 L44 91 L92 111 L143 69 L198 120 L256 87 L310 111 L365 67 L420 106 V202 H0 Z" fill="#202935"/>
+          <path d="M45 164 V93 L89 71 L134 93 V164 Z" fill="#31323a"/>
+          <path d="M37 96 L89 62 L145 96" fill="#473c39" stroke="#b67a52" stroke-width="3"/>
+          <rect x="69" y="105" width="45" height="53" rx="2" fill="url(#windowGlow)"/>
+          <path d="M68 119 H115 M91 105 V158" stroke="#6a4837" stroke-width="3"/>
+          <rect x="54" y="88" width="70" height="10" rx="3" fill="#bb7148"/>
+          <path d="M55 98 L62 108 L69 98 L76 108 L83 98 L90 108 L97 98 L104 108 L111 98 L118 108 L125 98" fill="#d99b5b"/>
+          <path d="M0 166 Q76 150 158 167 T320 164 T420 171 V202 H0 Z" fill="#13181f"/>
+          <path d="M70 169 L111 169 M62 181 L128 181 M188 173 L235 173 M279 185 L350 185" stroke="#e8ac61" stroke-width="3" opacity=".82"/>
+          <path d="M366 151 Q385 139 404 151 L390 156 Z" fill="#12161b"/>
+          <path d="M384 156 L380 179 M384 156 L393 179" stroke="#12161b" stroke-width="5" stroke-linecap="round"/>
+          <path d="M370 148 Q384 128 401 148" fill="none" stroke="#12161b" stroke-width="4"/>
+          <path d="M14 13 L7 31 M181 14 L174 32 M230 8 L223 26 M285 18 L278 36 M326 70 L319 88 M154 31 L147 49 M260 45 L253 63" stroke="#a7bfd0" stroke-width="1.5" opacity=".58"/>
+        </g>
+        <rect x="944" y="402" width="125" height="26" rx="13" fill="#11151acc"/>
+        <text x="1006" y="420" text-anchor="middle" font-size="14" font-weight="700" class="goldText">原创矢量示意</text>
+        <text x="946" y="620" font-size="19" font-weight="700">雨夜书店 · 第 2 张</text>
+        <text x="946" y="645" font-size="15" class="muted">来自方案 B · 修订 1</text>
+        <rect x="1184" y="606" width="151" height="38" rx="10" class="softButton"/>
+        <text x="1260" y="631" text-anchor="middle" font-size="16" font-weight="650">继续修改</text>
+      </g>
+
+      <g id="composer">
+        <line x1="316" y1="704" x2="1350" y2="704" class="thinLine"/>
+        <circle cx="336" cy="728" r="4.5" fill="#d9bd70"/>
+        <text x="350" y="734" font-size="16" fill="#c9c4ba">本地模拟 · 可排队或引导</text>
+        <rect x="631" y="711" width="104" height="32" rx="16" fill="#292720" stroke="#74643e"/>
+        <text x="683" y="732" text-anchor="middle" font-size="15" font-weight="650" class="goldText">立即引导</text>
+
+        <rect x="316" y="752" width="1034" height="88" rx="12" fill="#19191e" stroke="#424149" stroke-width="1"/>
+        <rect x="333" y="763" width="252" height="25" rx="12.5" fill="#29282e"/>
+        <circle cx="348" cy="775.5" r="4" fill="#d9bd70"/>
+        <text x="360" y="781" font-size="15" class="goldText">改图源：书店 · 第 2 张</text>
+        <text x="566" y="781" font-size="17" class="goldText">×</text>
+        <text x="333" y="823" font-size="18" fill="#8f8b92">想调整哪里？</text>
+
+        <line x1="316" y1="852" x2="1350" y2="852" class="thinLine"/>
+        <text x="333" y="879" font-size="16" fill="#ded9cf">对话模型：示例 ▾</text>
+        <line x1="497" y1="862" x2="497" y2="886" class="lightLine"/>
+        <text x="516" y="879" font-size="16" fill="#ded9cf">助手预设：暖光共创 ▾</text>
+        <rect x="1231" y="859" width="101" height="36" rx="10" fill="#2c2b30"/>
+        <text x="1282" y="883" text-anchor="middle" font-size="16" font-weight="650">发送</text>
+      </g>
+    </g>
+
+    <g id="right-context">
+      <text class="sectionTitle" x="1396" y="218">当前创作</text>
+      <text class="small" x="1396" y="246">暖灯书店</text>
+
+      <text x="1396" y="281" font-size="17" font-weight="700" class="goldText">当前方案</text>
+      <text x="1396" y="312" font-size="21" font-weight="700">方案 B · 店内暖灯</text>
+      <rect x="1628" y="289" width="83" height="26" rx="13" fill="#292720"/>
+      <text x="1669" y="307" text-anchor="middle" font-size="14" fill="#d8c68d">修订 1</text>
+      <text x="1396" y="339" font-size="16" class="muted">人物与构图保持不变</text>
+      <text x="1396" y="365" font-size="15" class="goldText">查看方案摘要</text>
+
+      <line x1="1396" y1="383" x2="1712" y2="383" class="thinLine"/>
+      <text x="1396" y="414" font-size="19" font-weight="700">选中作品 · 第 2 张</text>
+      <g transform="translate(1396 428)">
+        <rect width="316" height="154" rx="10" fill="url(#night)"/>
+        <circle cx="266" cy="25" r="13" fill="#d9d8d1" opacity=".75"/>
+        <path d="M0 100 L42 70 L86 90 L132 51 L180 92 L229 65 L270 85 L316 57 V154 H0 Z" fill="#202935"/>
+        <path d="M47 127 V81 L88 61 L128 81 V127 Z" fill="#31323a"/>
+        <path d="M39 84 L88 54 L136 84" fill="#473c39" stroke="#b67a52" stroke-width="2.5"/>
+        <rect x="68" y="88" width="42" height="36" fill="url(#windowGlow)"/>
+        <path d="M68 102 H110 M89 88 V124" stroke="#6a4837" stroke-width="2.4"/>
+        <path d="M0 131 Q65 120 142 134 T316 132 V154 H0 Z" fill="#13181f"/>
+        <path d="M49 139 L104 139 M169 140 L220 140 M242 146 L284 146" stroke="#e8ac61" stroke-width="2.2" opacity=".75"/>
+      </g>
+      <text x="1396" y="606" font-size="15" class="muted">来自方案 B · 修订 1</text>
+      <rect x="1396" y="619" width="149" height="36" rx="10" class="softButton"/>
+      <text x="1470" y="643" text-anchor="middle" font-size="16" font-weight="650">继续修改</text>
+      <text x="1561" y="643" font-size="15" class="muted">查看大图</text>
+
+      <line x1="1396" y1="677" x2="1712" y2="677" class="thinLine"/>
+      <text x="1396" y="708" font-size="19" font-weight="700">创作要求</text>
+      <text x="1396" y="739" font-size="16" fill="#ded9cf">保持：人物 · 构图</text>
+      <text x="1396" y="765" font-size="16" fill="#d4be82">待确认：招牌文字</text>
+      <text x="1396" y="795" font-size="15" class="muted">查看全部要求</text>
+    </g>
+  </g>
+
+  <g id="footer">
+    <line x1="64" y1="1030" x2="1736" y2="1030" class="thinLine"/>
+    <text x="64" y="1061" font-size="15" fill="#85818a">概念板 · 3.2 第二轮</text>
+    <text x="1736" y="1061" text-anchor="end" font-size="16" font-weight="700" class="goldText">原创矢量示意 · 不代表真实生成或产品实现</text>
+  </g>
+</svg>
+

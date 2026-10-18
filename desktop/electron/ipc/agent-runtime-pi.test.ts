@@ -1,37 +1,64 @@
-import { beforeEach, expect, it, vi } from 'vitest';
+import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 const fixture = vi.hoisted(() => ({
-  workspace: null as any,
+  workspace: null as any, r4: null as any, host: null as any, store: null as any,
   turn: vi.fn(),
   summary: vi.fn(),
   settings: { agentAutoCompact: false, agentAutoCompactThreshold: 0.8, agentContextWindow: 8192 },
 }));
-vi.mock('./store', () => ({ getSettings: () => ({
+vi.mock('./store', () => ({ getToken:()=>'',getHistory:()=>[],getSettings: () => ({
   agentApiBaseUrl: 'https://fixture.invalid/v1', agentApiModel: 'fixture',
   agentApiKey: 'fixture-key', agentApiProtocol: 'openai-compatible',
   agentVisionEnabled: false, ...fixture.settings,
 }) }));
 vi.mock('./agent-store', () => ({
+  getAgentSqlStore:()=>fixture.store,
   readAgentWorkspace: () => structuredClone(fixture.workspace),
   updateAgentConversation: (id: string, update: (chat: any) => void) => {
     const chat = fixture.workspace.conversations.find((item: any) => item.id === id);
     if (chat) update(chat);
   },
 }));
+vi.mock('./r4-agent-service',()=>({
+ getR4CreativeHost:()=>fixture.host,getR4ExecutionCoordinator:()=>({worker:{recover:()=>{}}}),
+ prepareR4ImageOperation:vi.fn(),setR4AdditionalCommand:vi.fn(),onR4CreativeChanged:()=>()=>{},hasActiveR4Executions:()=>false,
+ captureR4ConversationConfig:()=>({version:1,providerRef:{providerId:'fixture'},modelId:'fixture',presetId:'fixture-preset',enabled:true,body:'frozen task system preset',revision:1,hash:'fixture',
+  publicParameters:{visionEnabled:(fixture.settings as any).agentVisionEnabled===true,autoCompact:fixture.settings.agentAutoCompact,autoCompactThreshold:fixture.settings.agentAutoCompactThreshold,contextWindow:fixture.settings.agentContextWindow},capturedAt:new Date().toISOString(),source:'message_send'}),
+ settingsForR4Config:(config:any)=>({agentApiBaseUrl:'https://fixture.invalid/v1',agentApiModel:config.modelId,agentApiKey:'fixture-key',agentApiProtocol:'openai-compatible',...fixture.settings,
+  agentVisionEnabled:config.publicParameters.visionEnabled,agentAutoCompact:config.publicParameters.autoCompact,agentAutoCompactThreshold:config.publicParameters.autoCompactThreshold,agentContextWindow:config.publicParameters.contextWindow}),
+}));
 vi.mock('./pi-agent-turn', () => ({ completeStudioPiTurn: fixture.turn, completeStudioPiSummary: fixture.summary }));
 vi.mock('./agent-tools', () => ({ executeAgentTool: vi.fn() }));
 vi.mock('./proxy', () => ({ proxyConfig: () => ({}) }));
 vi.mock('./worldpainter-knowledge', () => ({ worldpainterKnowledgeContext: async () => ({ prompt: 'bounded-fixture-knowledge', version: 'v45' }) }));
-import { compactAgentConversation, sendAgentMessage, getAgentPendingPermissions, respondAgentPermission, abortAgentMessage, hasActiveAgentRequests, stopAgentRuntime, setAgentEventSink } from './agent-runtime';
+import { compactAgentConversation, sendAgentMessage as enqueueAgentMessage, getAgentPendingPermissions, respondAgentPermission, abortAgentMessage, hasActiveAgentRequests, stopAgentRuntime, setAgentEventSink } from './agent-runtime';
 
+import {R4CreativeHost} from './r4-creative-host';
+import {createEmptyR4AgentState} from '../../src/agent/r4-types';
+import {captureR4ConversationConfig} from './r4-agent-service';
+
+// These outgoing-payload/streaming regressions use an explicit in-memory store
+// double. Real SQLite queue/CAS/restart coverage is in r4-conversation-queue.
+async function sendAgentMessage(request:any){
+ const accepted=await enqueueAgentMessage(request);if(!accepted.ok)return accepted;
+ const row=Object.values(fixture.r4.messageQueue).find((row:any)=>row.messageId===(accepted as any).messageId) as any;
+ await vi.waitFor(()=>expect(['completed','error','cancelled'].includes(row.status)||row.status==='paused'&&!row.startedAt).toBe(true));
+ return row.status==='completed'?{ok:true}:{ok:false,message:row.pauseReason};
+}
+afterEach(()=>{stopAgentRuntime();});
 beforeEach(() => {
   delete process.env.LANGBAI_PI_AGENT;
-  fixture.workspace = { characters: [], lorebooks: [], samplerPresets: [], skills: [], conversations: [{
+  fixture.workspace = { memories:[],personas:[],characters: [], lorebooks: [], samplerPresets: [], skills: [], conversations: [{
     id: 'studio', title: '新对话', messages: [], characterIds: [], lorebookIds: [], draftAttachments: [], status: 'idle', compactCount: 0,
   }] };
+  fixture.r4=createEmptyR4AgentState();
+  fixture.store={readWorkspace:()=>structuredClone(fixture.workspace),readR4State:()=>structuredClone(fixture.r4),transaction:(work:any)=>work({
+   getWorkspace:()=>fixture.workspace,setWorkspace:(value:any)=>{fixture.workspace=value;},getR4State:()=>fixture.r4,setR4State:(value:any)=>{fixture.r4=value;}
+  })};
+  fixture.host=new R4CreativeHost(fixture.store,{captureConfig:captureR4ConversationConfig,resolveAttachment:()=>{throw Error('not used in this unit fixture');}});
   stopAgentRuntime();
   fixture.settings.agentAutoCompact = false;
   fixture.settings.agentVisionEnabled = false;
@@ -70,7 +97,7 @@ it('persists the final result instead of intermediate promises and never invents
     });
     expect((await sendAgentMessage({conversationId:'studio',text:'仅检查词条'})).ok).toBe(true);
     const reply=fixture.workspace.conversations[0].messages.at(-1);
-    expect(reply.content).toBe(final||'本轮未返回最终说明，请查看工具结果；不能据此认定任务完成。');
+    expect(reply.content).toBe(final||'本轮未返回最终说明，请查看操作回执。');
     expect(reply.content).not.toContain('我会马上生成');
   }
 });
@@ -342,11 +369,14 @@ it('abort during summary never commits fallback or advances the boundary', async
   const before = structuredClone(chat.messages);
   fixture.summary.mockImplementation(({ signal }) => new Promise(resolve => signal.addEventListener('abort', () => resolve({ content: 'late summary' }), { once: true })));
   const pending = compactAgentConversation('studio');
+  await vi.waitFor(()=>expect(fixture.summary).toHaveBeenCalledTimes(1));
   expect((await compactAgentConversation('studio')).ok).toBe(false);
-  expect((await sendAgentMessage({ conversationId: 'studio', text: 'racing' })).ok).toBe(false);
+  expect((await enqueueAgentMessage({ conversationId: 'studio', text: 'racing' })).ok).toBe(true);
   expect(abortAgentMessage('studio').ok).toBe(true);
   expect((await pending).ok).toBe(false);
-  expect(chat.messages).toEqual(before);
+  expect(chat.messages.slice(0,before.length)).toEqual(before);
+  expect(chat.messages.at(-1).content).toBe('racing');
+  expect(Object.values(fixture.r4.messageQueue).some((row:any)=>row.text==='racing'&&row.status==='paused')).toBe(true);
   expect(chat.lastSummary).toBeUndefined();
   expect(chat.compactCount).toBe(0);
   expect(chat.status).toBe('idle');
@@ -357,6 +387,7 @@ it('rejects a stale summary if durable history changes while the provider is pen
   let resolve!: (value: any) => void;
   fixture.summary.mockImplementation(() => new Promise(r => { resolve = r; }));
   const pending = compactAgentConversation('studio');
+  await vi.waitFor(()=>expect(resolve).toBeTypeOf('function'));
   chat.messages[0].content = 'edited meanwhile';
   resolve({ content: 'stale' });
   expect((await pending).ok).toBe(false);
@@ -401,11 +432,13 @@ it('stopped stale compaction cannot clear the lock or status of a replacement tu
   let finishTurn!: (value: any) => void;
   fixture.summary.mockImplementation(() => new Promise(r => { finishSummary = r; }));
   const pending = compactAgentConversation('studio');
+  await vi.waitFor(()=>expect(finishSummary).toBeTypeOf('function'));
   stopAgentRuntime();
   fixture.turn.mockImplementation(() => new Promise(r => { finishTurn = r; }));
   const next = sendAgentMessage({ conversationId: 'studio', text: 'new turn' });
   finishSummary({ content: 'late stale summary' });
   expect((await pending).ok).toBe(false);
+  await vi.waitFor(()=>expect(finishTurn).toBeTypeOf('function'));
   expect(chat.status).toBe('running');
   expect(hasActiveAgentRequests()).toBe(true);
   expect(chat.compactCount).toBe(0);
@@ -413,17 +446,19 @@ it('stopped stale compaction cannot clear the lock or status of a replacement tu
   expect((await next).ok).toBe(true);
 });
 
-it('auto summary abort does not consume input, mutate history, or start a provider turn', async () => {
+it('auto summary abort preserves accepted input and original history without starting a provider turn', async () => {
   const chat = seedHistory(60);
   const before = structuredClone(chat.messages);
   chat.draftAttachments = [{ id: 'draft', kind: 'image', name: 'draft.png' }];
   fixture.settings.agentAutoCompact = true;
   fixture.summary.mockImplementation(({ signal }) => new Promise(resolve => signal.addEventListener('abort', () => resolve({ content: 'late' }), { once: true })));
   const pending = sendAgentMessage({ conversationId: 'studio', text: 'new request' });
+  await vi.waitFor(()=>expect(fixture.summary).toHaveBeenCalledTimes(1));
   expect(abortAgentMessage('studio').ok).toBe(true);
   expect((await pending).ok).toBe(false);
-  expect(chat.messages).toEqual(before);
-  expect(chat.draftAttachments[0].id).toBe('draft');
+  expect(chat.messages.slice(0,before.length)).toEqual(before);
+  expect(chat.messages.find((message:any)=>message.role==='user'&&message.content==='new request').attachments[0].id).toBe('draft');
+  expect(Object.values(fixture.r4.messageQueue).some((row:any)=>row.text==='new request'&&row.status==='error')).toBe(true);
   expect(chat.compactCount).toBe(0);
   expect(fixture.turn).not.toHaveBeenCalled();
 });

@@ -1749,6 +1749,10 @@ export interface NaiDesktopApi {
   onStudioAgentRequest?: (callback:(request:import('./studio-agent-contract').StudioAgentRequest)=>void) => ()=>void;
   replyStudioAgent: (id:string,reply:import('./studio-agent-contract').StudioAgentReply) => Promise<void>;
   commitStudioSetting: (id:string,key:SettingKey,expected:AppSettings[SettingKey],value:AppSettings[SettingKey]) => Promise<void>;
+  onR4WorkbenchRequest: (callback:(request:import('./agent/r4-workbench-contract').R4WorkbenchRendererRequest)=>void) => () => void;
+  replyR4Workbench: (id:string,reply:import('./studio-agent-contract').StudioAgentReply) => Promise<unknown>;
+  previewR4PromptApply: (request:import('./agent/r4-workbench-contract').R4WorkbenchPromptPreviewRequest) => Promise<import('./agent/r4-workbench-contract').R4WorkbenchIpcReply<import('./agent/r4-workbench-contract').R4WorkbenchPromptPreview>>;
+  applyR4PromptCAS: (request:import('./agent/r4-workbench-contract').R4WorkbenchPromptApplyRequest) => Promise<import('./agent/r4-workbench-contract').R4WorkbenchIpcReply<import('./agent/r4-workbench-contract').R4ApplyPromptResult>>;
   harnessSetAutoPluginUpdates: (enabled:boolean) => Promise<import("./harness-types").HarnessPluginAutoState>;
   harnessCheckPluginUpdates: () => Promise<import("./harness-types").HarnessPluginAutoState>;
   harnessSnapshot: () => Promise<import("./harness-types").HarnessSnapshot>;
@@ -1797,6 +1801,8 @@ export interface NaiDesktopApi {
   dismissImageSaveFeedback: (id: number) => void;
   exportAgentAttachment: (conversationId: string, messageId: string, attachmentId: string) => Promise<{ ok: boolean; cancelled?: boolean; message: string; filePath?: string }>;
   sendAgentMessage: (request: import("./agent/types").AgentSendRequest) => Promise<{ ok: boolean; message?: string }>;
+  getAgentCreativeState: (conversationId:string) => Promise<import('./agent/r4-types').R4ConversationCreativeState>;
+  agentCreativeCommand: (request:import('./agent/r4-commands').R4CreativeCommand) => Promise<import('./agent/r4-commands').R4CreativeCommandResult>;
   generateTavernImage: (request: import("./agent/types").TavernImageRequest) => Promise<{ ok: boolean; message?: string }>;
   importTavernCards: (sourcePaths?: string[]) => Promise<import("./agent/types").TavernCardImportResult>;
   exportTavernCard: (request: import("./agent/types").TavernCardExportRequest) => Promise<{ ok: boolean; cancelled?: boolean; message: string; filePath?: string }>;

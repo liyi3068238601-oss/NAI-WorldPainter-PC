@@ -1,0 +1,75 @@
+{
+  "scope": "static schema only; no product handlers executed",
+  "results": [
+    {
+      "label": "discovered_image_edit_group_cannot_be_requested",
+      "tool": "get_capabilities",
+      "observedAccepted": false,
+      "reportAccepted": false,
+      "matchesReport": true,
+      "errors": [
+        "'image_edit' is not one of ['generation', 'prompt', 'templates', 'references', 'gallery', 'web', 'memory', 'skills', 'questions', 'execution']"
+      ]
+    },
+    {
+      "label": "reverse_succeeded_without_text_or_uncertainty",
+      "tool": "reverse_prompt",
+      "observedAccepted": true,
+      "reportAccepted": true,
+      "matchesReport": true,
+      "errors": []
+    },
+    {
+      "label": "reverse_failed_with_candidate_text",
+      "tool": "reverse_prompt",
+      "observedAccepted": true,
+      "reportAccepted": true,
+      "matchesReport": true,
+      "errors": []
+    },
+    {
+      "label": "reverse_denied_but_service_succeeded",
+      "tool": "reverse_prompt",
+      "observedAccepted": true,
+      "reportAccepted": true,
+      "matchesReport": true,
+      "errors": []
+    },
+    {
+      "label": "execution_completed_empty_outputs_and_fixed_null_seed",
+      "tool": "get_execution",
+      "observedAccepted": true,
+      "reportAccepted": true,
+      "matchesReport": true,
+      "errors": []
+    },
+    {
+      "label": "execution_completed_with_failed_output_and_random_numeric_seed",
+      "tool": "get_execution",
+      "observedAccepted": true,
+      "reportAccepted": true,
+      "matchesReport": true,
+      "errors": []
+    },
+    {
+      "label": "get_execution_missing_input_id_cannot_return_honest_validation_error",
+      "tool": "get_execution",
+      "observedAccepted": false,
+      "reportAccepted": false,
+      "matchesReport": true,
+      "errors": [
+        "'executionId' is a required property"
+      ]
+    },
+    {
+      "label": "search_tags_missing_query_cannot_return_honest_validation_error",
+      "tool": "search_tags",
+      "observedAccepted": false,
+      "reportAccepted": false,
+      "matchesReport": true,
+      "errors": [
+        "'query' is a required property"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "purpose": "v3.2-r2 schema 反例复核；observed accepted 是当前 schema 的结果，不是修订后应接受的结果。",
+  "product_tests_executed": false,
+  "cases": [
+    {
+      "label": "discovered_image_edit_group_cannot_be_requested",
+      "tool": "get_capabilities",
+      "target": "input",
+      "accepted": false,
+      "instance": {
+        "requestedGroups": [
+          "image_edit"
+        ]
+      },
+      "errors": [
+        "'image_edit' is not one of ['generation', 'prompt', 'templates', 'references', 'gallery', 'web', 'memory', 'skills', 'questions', 'execution']"
+      ]
+    },
+    {
+      "label": "reverse_succeeded_without_text_or_uncertainty",
+      "tool": "reverse_prompt",
+      "target": "result",
+      "accepted": true,
+      "instance": {
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "succeeded",
+          "attachmentId": "a"
+        }
+      },
+      "errors": []
+    },
+    {
+      "label": "reverse_failed_with_candidate_text",
+      "tool": "reverse_prompt",
+      "target": "result",
+      "accepted": true,
+      "instance": {
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "failed",
+          "attachmentId": "a",
+          "candidateText": "pretend successful text"
+        }
+      },
+      "errors": []
+    },
+    {
+      "label": "reverse_denied_but_service_succeeded",
+      "tool": "reverse_prompt",
+      "target": "result",
+      "accepted": true,
+      "instance": {
+        "status": "denied",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "serviceStatus": "succeeded",
+          "attachmentId": "a",
+          "candidateText": "text"
+        }
+      },
+      "errors": []
+    },
+    {
+      "label": "execution_completed_empty_outputs_and_fixed_null_seed",
+      "tool": "get_execution",
+      "target": "result",
+      "accepted": true,
+      "instance": {
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "completed",
+          "outputs": [],
+          "receiptRevision": 1,
+          "requestedSeedPolicy": "fixed",
+          "requestedSeed": null
+        }
+      },
+      "errors": []
+    },
+    {
+      "label": "execution_completed_with_failed_output_and_random_numeric_seed",
+      "tool": "get_execution",
+      "target": "result",
+      "accepted": true,
+      "instance": {
+        "status": "completed",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "e",
+          "executionStatus": "completed",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "failed",
+              "errorCode": "provider_error"
+            }
+          ],
+          "receiptRevision": 1,
+          "requestedSeedPolicy": "random",
+          "requestedSeed": 123
+        }
+      },
+      "errors": []
+    },
+    {
+      "label": "get_execution_missing_input_id_cannot_return_honest_validation_error",
+      "tool": "get_execution",
+      "target": "result",
+      "accepted": false,
+      "instance": {
+        "status": "error",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "readStatus": "unavailable"
+        },
+        "error": {
+          "code": "invalid_arguments",
+          "message": "executionId missing",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        }
+      },
+      "errors": [
+        "'executionId' is a required property"
+      ]
+    },
+    {
+      "label": "search_tags_missing_query_cannot_return_honest_validation_error",
+      "tool": "search_tags",
+      "target": "result",
+      "accepted": false,
+      "instance": {
+        "status": "error",
+        "conversationId": "c",
+        "creationId": "cr",
+        "data": {
+          "searchStatus": "no_match",
+          "items": []
+        },
+        "error": {
+          "code": "invalid_arguments",
+          "message": "query missing",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        }
+      },
+      "errors": [
+        "'query' is a required property"
+      ]
+    }
+  ]
+}

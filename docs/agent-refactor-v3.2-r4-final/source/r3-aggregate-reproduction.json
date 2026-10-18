@@ -1,0 +1,101 @@
+{
+  "provenance": "Report section 3.2; not the missing JSON attachment",
+  "cases": [
+    {
+      "id": "error-with-pending",
+      "reconstructedFromReport": true,
+      "originalAttachmentUnavailable": true,
+      "result": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "chat_r4_reconstructed",
+        "creationId": "creation_r4_reconstructed",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "exec_r4_reconstructed_error",
+          "executionStatus": "error",
+          "expectedOutputCount": 1,
+          "requestGranularity": "per_output",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "pending"
+            }
+          ],
+          "receiptRevision": 1,
+          "providerReceiptStatus": "pending",
+          "requestedSeedPolicy": "random",
+          "requestedSeed": null
+        }
+      },
+      "r3SchemaAccepted": true,
+      "r3SemanticAccepted": true,
+      "expectedByWrittenContract": false,
+      "r3SchemaErrors": []
+    },
+    {
+      "id": "blocked-with-pending",
+      "reconstructedFromReport": true,
+      "originalAttachmentUnavailable": true,
+      "result": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "chat_r4_reconstructed",
+        "creationId": "creation_r4_reconstructed",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "exec_r4_reconstructed_blocked",
+          "executionStatus": "blocked",
+          "expectedOutputCount": 1,
+          "requestGranularity": "per_output",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "pending"
+            }
+          ],
+          "receiptRevision": 1,
+          "providerReceiptStatus": "pending",
+          "requestedSeedPolicy": "random",
+          "requestedSeed": null
+        }
+      },
+      "r3SchemaAccepted": true,
+      "r3SemanticAccepted": true,
+      "expectedByWrittenContract": false,
+      "r3SchemaErrors": []
+    },
+    {
+      "id": "denied-with-pending",
+      "reconstructedFromReport": true,
+      "originalAttachmentUnavailable": true,
+      "result": {
+        "resultKind": "business",
+        "status": "completed",
+        "conversationId": "chat_r4_reconstructed",
+        "creationId": "creation_r4_reconstructed",
+        "data": {
+          "readStatus": "ok",
+          "executionId": "exec_r4_reconstructed_denied",
+          "executionStatus": "denied",
+          "expectedOutputCount": 1,
+          "requestGranularity": "per_output",
+          "outputs": [
+            {
+              "outputIndex": 0,
+              "status": "pending"
+            }
+          ],
+          "receiptRevision": 1,
+          "providerReceiptStatus": "pending",
+          "requestedSeedPolicy": "random",
+          "requestedSeed": null
+        }
+      },
+      "r3SchemaAccepted": true,
+      "r3SemanticAccepted": true,
+      "expectedByWrittenContract": false,
+      "r3SchemaErrors": []
+    }
+  ]
+}

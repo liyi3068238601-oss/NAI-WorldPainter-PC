@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createAssistantMessageEventStream } from '@earendil-works/pi-ai';
 import type { AssistantMessage, Model, StreamFunction } from '@earendil-works/pi-ai';
-import { runStudioPiAgent, hasTextualStudioToolCall, studioPiUsageFromError } from './pi-agent-core';
+import { runStudioPiAgent, hasTextualStudioToolCall, studioPiUsageFromError, type StudioPiAgentControls } from './pi-agent-core';
 
 const model: Model<'openai-completions'> = {
   id: 'fixture', name: 'Fixture', provider: 'fixture', api: 'openai-completions',
@@ -33,6 +33,101 @@ function fakeStream(...turns: AssistantMessage[]) {
 }
 
 describe('Studio Pi gateway', () => {
+  it('retracts one queued R4 steering message without dropping the next one', async () => {
+    let releaseFirst!: () => void;
+    const waitForRelease = new Promise<void>(resolve => { releaseFirst = resolve; });
+    let calls = 0;
+    const streamFn = vi.fn((() => {
+      const stream = createAssistantMessageEventStream();
+      const message = reply([{ type: 'text', text: calls === 0 ? 'current turn' : 'steering handled' }], 'stop');
+      const index = calls++;
+      const emit = () => {
+        stream.push({ type: 'start', partial: message });
+        stream.push({ type: 'done', reason: 'stop', message });
+      };
+      if (index === 0) void waitForRelease.then(() => queueMicrotask(emit));
+      else queueMicrotask(emit);
+      return stream;
+    }) as StreamFunction<'openai-completions'>);
+    let controls: StudioPiAgentControls | undefined;
+    const consumed: string[] = [];
+    const running = runStudioPiAgent({ model, streamFn, systemPrompt: 'fixture', history: [], text: 'current request',
+      tools: [], authorize: async () => false,
+      onReady: value => { controls = value; },
+      onSteeringConsumed: id => { consumed.push(id); },
+    });
+    await vi.waitFor(() => expect(controls).toBeDefined());
+    controls!.steer({ role: 'user', content: 'remove this', timestamp: 1, r4MessageId: 'r4-cancel' });
+    controls!.steer({ role: 'user', content: 'keep this', timestamp: 2, r4MessageId: 'r4-keep' });
+    expect(controls!.withdrawSteering('r4-cancel')).toBe(true);
+    expect(controls!.withdrawSteering('missing')).toBe(false);
+    releaseFirst();
+    await running;
+    expect(consumed).toEqual(['r4-keep']);
+    expect(streamFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('mounts discovered flat canonical tools for the next request and preserves raw arguments', async () => {
+    let mounted = false;
+    const execute = vi.fn(async (args:Record<string,unknown>) => ({ok:true,output:JSON.stringify(args)}));
+    const discovered = {name:'propose_prompt',description:'Create version',readonly:true,flatArguments:true,
+      parameters:{type:'object',properties:{positivePrompt:{type:'string'}},required:['positivePrompt'],additionalProperties:false},execute};
+    const discover = {name:'get_capabilities',description:'Discover',readonly:true,flatArguments:true,
+      parameters:{type:'object',additionalProperties:false},execute:async()=>{mounted=true;return {ok:true,output:'mounted'};}};
+    const streamFn = fakeStream(
+      reply([{type:'toolCall',id:'catalog',name:'get_capabilities',arguments:{}}],'toolUse'),
+      reply([{type:'toolCall',id:'proposal',name:'propose_prompt',arguments:{positivePrompt:'quiet bookshop'}}],'toolUse'),
+      reply([{type:'text',text:'方案已保存。'}],'stop'),
+    );
+    const result=await runStudioPiAgent({model,streamFn,systemPrompt:'fixture',history:[],text:'create a proposal',
+      tools:[discover],getTools:()=>mounted?[discover,discovered]:[discover],authorize:async()=>false});
+    expect(result.text).toBe('方案已保存。');
+    expect(execute).toHaveBeenCalledExactlyOnceWith({positivePrompt:'quiet bookshop'},expect.any(AbortSignal));
+    const requests=streamFn.mock.calls as unknown as Array<[unknown,{tools:Array<{name:string;parameters:Record<string,unknown>}>}]>;
+    expect(requests[0][1].tools.map(tool=>tool.name)).toEqual(['get_capabilities']);
+    expect(requests[1][1].tools.map(tool=>tool.name)).toContain('propose_prompt');
+    expect(requests[1][1].tools.find(tool=>tool.name==='propose_prompt')?.parameters).not.toHaveProperty('properties.args');
+  });
+
+  it('routes malformed R4 SDK arguments to the canonical host preflight result', async () => {
+    const tool = {
+      name: 'search_tags', description: 'Search tags', readonly: false, paid: true,
+      flatArguments: true, handlesAuthorization: true,
+      parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'], additionalProperties: false },
+      prepareArguments: (args: unknown) => args && typeof args === 'object' && 'query' in args
+        ? args as Record<string, unknown> : { query: 'x' },
+      isValidArguments: (args: unknown) => Boolean(args && typeof args === 'object' && 'query' in args),
+      execute: vi.fn(async (args: Record<string, unknown>) => ({
+        ok: true,
+        output: JSON.stringify({ resultKind: 'preflight_failure', status: 'error', error: {
+          code: 'invalid_arguments', message: `Rejected ${String(args.unexpected)}`, allowedActions: ['correct_arguments'],
+        } }),
+      })),
+    };
+    const streamFn = fakeStream(
+      reply([{ type: 'toolCall', id: 'bad-r4', name: 'search_tags', arguments: { unexpected: 'raw' } }], 'toolUse'),
+      reply([{ type: 'text', text: '参数错误。' }], 'stop'),
+    );
+    const running = await runStudioPiAgent({ model, streamFn, systemPrompt: 'fixture', history: [], text: 'search',
+      tools: [tool], authorize: async () => false,
+    });
+    expect(running.text).toBe('参数错误。');
+    expect(tool.execute).toHaveBeenCalledExactlyOnceWith({ unexpected: 'raw' }, expect.any(AbortSignal));
+    const request = streamFn.mock.calls[0] as unknown as [unknown, { tools: Array<{ name: string; parameters: Record<string, unknown> }> }];
+    expect(request[1].tools[0].parameters).toMatchObject(tool.parameters);
+  });
+
+  it('checks the durable model-dispatch gate before each automatic follow-up', async () => {
+    let blocked=false;
+    const gate=vi.fn(()=>{if(blocked)throw Error('durable failure gate');});
+    const streamFn=fakeStream(reply([{type:'toolCall',id:'queued',name:'generate_image',arguments:{preparationId:'p1'}}],'toolUse'));
+    await expect(runStudioPiAgent({model,streamFn,systemPrompt:'fixture',history:[],text:'generate',
+      tools:[{name:'generate_image',description:'Enqueue',readonly:false,paid:true,flatArguments:true,handlesAuthorization:true,
+        parameters:{type:'object',properties:{preparationId:{type:'string'}},required:['preparationId'],additionalProperties:false},
+        execute:async()=>{blocked=true;return {ok:true,output:'accepted'};}}],authorize:async()=>false,beforeModelCall:gate})).rejects.toThrow('durable failure gate');
+    expect(gate).toHaveBeenCalledTimes(2);
+    expect(streamFn).toHaveBeenCalledTimes(1);
+  });
   it('runs a read-only Studio tool and returns the follow-up answer', async () => {
     const execute = vi.fn(async () => ({ ok: true, output: 'state ready' }));
     const authorize = vi.fn(async () => true);

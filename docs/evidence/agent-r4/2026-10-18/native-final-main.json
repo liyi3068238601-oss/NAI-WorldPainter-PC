@@ -1,0 +1,31 @@
+{
+  "capturedAt": "2026-10-18T04:05:35.331Z",
+  "mode": "isolated Electron renderer with synthetic local fixture; actual preload and main IPC; no provider request",
+  "title": "R4 native smoke fixture",
+  "activeCreation": "当前创作\nSynthetic portrait fixture\nr2",
+  "proposal": "Synthetic moonlit harbor\nv1\n当前\n\nFixture proposal; no Agent model call was made.\n\nSynthetic local-only proposal for native rendering smoke.\n\nsynthetic\nkoi\nharbor\n查看完整词\n用此版本生成\n应用到工作台",
+  "selectedArtwork": "R4-smoke-output-landscape-02.png",
+  "editSource": "改图源\nR4-smoke-current-edit-source.png\n修订 1",
+  "discussionReference": "仅讨论\nR4-smoke-discussion-reference.png\n不参与生成\n仅讨论\n色彩\n构图\n角色\n氛围\n参与生成",
+  "sourceCapsules": [],
+  "referenceImages": [
+    "",
+    ""
+  ],
+  "messageImages": [
+    "R4-smoke-output-portrait-01.png",
+    "R4-smoke-output-landscape-02.png",
+    "R4-smoke-output-portrait-03.png",
+    "R4-smoke-output-landscape-04.png"
+  ],
+  "transcriptScroll": {
+    "top": 1614.4000244140625,
+    "height": 2239,
+    "client": 625
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 1200
+  },
+  "bodyText": "绘世 · NAI WorldPainter\nv0.1.0\n未连接 API\n生成账户\n未添加账户\n账户管理\n流式预览\n输出目录\n设置\n文档\n生成\n重绘\n后期\n反推\n转换\n原数据\n工具\n参考预设\n在线画廊\n生图智能体\n记录\n更多\n排列顶栏\n准备开始创作\n在左侧输入英文 tag 或自然提示词，点击下方生成按钮；结果会自动保存并进入右侧历史。\nTag 自动补全\n支持拖入图片到工作台\n历史一键复用\n聊天\nR4 native smoke fixture\n当前创作\nSynthetic portrait fixture\n新建创作\n全部对话\n当前创作\n队列\n2\n当前创作\n请先配置智能体对话模型\n\n只需配置一次对话模型。生图仍使用你原来的 NovelAI 地址和 Token，不需要重新填写。\n\n配置对话模型\n生图助手\nSynthetic portrait fixture · #b7e9e28\n\nSynthetic local result fixture. No Agent model call or image provider request was made.\n\n继续修改此创作\n继续修改此创作\n继续修改此创作\n继续修改此创作\n复制文本\n你\nSynthetic portrait fixture · #b7e9e28\n\nSYNTHETIC NEW TASK B — summarize the locally attached artwork dimensions. This queued item was never sent.\n\n复制文本\n修改要求\nR4-smoke-current-edit-source.png\nR4-smoke-discussion-reference.png\nR4-smoke-output-portrait-01.png\nR4-smoke-output-landscape-02.png\nR4-smoke-output-portrait-03.png\nR4-smoke-output-landscape-04.png\n排队发送\n每次确认\n全自动\n网页查询\n使用酒馆\nEffort · High\nDeepSeek · deepseek-v4-flash\n⌄\n助手预设\n夏瑾 天琴座 Beta 3.8\npresetComplete\npresetInfinite\npresetInfiniteFive\n启用\nv1\n设为新会话默认\n0%\n创作\n资源\n当前创作\nSynthetic portrait fixture\nr2\n当前方案\nv1\nSynthetic moonlit harbor\nv1\n当前\n\nFixture proposal; no Agent model call was made.\n\nSynthetic local-only proposal for native rendering smoke.\n\nsynthetic\nkoi\nharbor\n查看完整词\n用此版本生成\n应用到工作台\n选中作品\n2048 × 1536\n查看大图\nR4-smoke-output-landscape-02.png\n种子未返回\n继续修改\n选择用途\n仅讨论\n色彩\n构图\n角色\n氛围\n创作要求\n编辑\n改图源\nR4-smoke-current-edit-source.png\n修订 1\n仅讨论\nR4-smoke-discussion-reference.png\n不参与生成\n仅讨论\n色彩\n构图\n角色\n氛围\n参与生成\n添加参考\n\nSynthetic local smoke fixture; no external calls\n\n提示词详情\n生成预览\nready\n本次任务改图源（冻结快照）\nR4-smoke-output-portrait-01.png · r1\n当前创作改图源\nR4-smoke-current-edit-source.png · r1\n操作类型\n放大\n图片渠道\n未知服务商\n图片账号\n未知账号\n处理方式\nupscale\n放大倍率\n4×\n服务请求数\n2\n尺寸\n6144 × 8192\n数量\n1\n参与生成的参考/蒙版\n0\n输入快照详情\n取消预览\n确认并排队\n详情\n请先设置 API Token"
+}

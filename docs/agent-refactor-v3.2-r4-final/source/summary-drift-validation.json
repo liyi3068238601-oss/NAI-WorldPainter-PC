@@ -1,0 +1,20 @@
+[
+  {
+    "mutation": "description",
+    "driftDetected": [
+      "get_capabilities:职责与时机"
+    ]
+  },
+  {
+    "mutation": "enum",
+    "driftDetected": [
+      "get_capabilities:模型入参"
+    ]
+  },
+  {
+    "mutation": "required",
+    "driftDetected": [
+      "get_capabilities:模型入参"
+    ]
+  }
+]

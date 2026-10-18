@@ -1,4 +1,5 @@
 import {localGenerationTime} from "./history-generation-time";
+import { checkR4NativeSubmission, currentR4NativeExecution, r4NativeSourcePath, withR4NativeHttpReceipt, mapR4NativeInputs, type R4NativeRequestKind } from './r4-native-context';
 import {extractEmbeddedImageMetadata} from '../image-metadata';
 import {prepareGooglePromptTranslation} from '../../src/google-prompt-translation';
 import {resolveTranslationTarget,baiduTranslationTarget,translationLanguageName,normalizeTranslationSource,parseTranslationReply} from '../../src/translation';
@@ -102,6 +103,7 @@ import {
 import { TAG_DICTIONARY } from "../data/tag-dictionary";
 import { mcpSearch, mcpListTools } from "./mcp-client";
 import {configuredMcpTagTools} from "../../src/mcp-tools";
+import { currentR4PaidTextSignal, postR4PaidText } from './r4-paid-text-context';
 import { searchDanbooru } from "./danbooru-tags";
 import { logError, logInfo, appendLog } from "./logger";
 import { zhForTag } from "../../src/prompt-data";
@@ -526,7 +528,7 @@ function shouldRetryCharCaptionsAsPipe(
   params: GenerateParams,
   extras?: GenerateExtras,
 ) {
-  if(currentNaiAccount()) return false;
+  if(currentNaiAccount() || currentR4NativeExecution()) return false;
   const status = error?.response?.status;
   return (
     !params.preservePromptText &&
@@ -924,9 +926,10 @@ export function countCachedVibes(
  */
 type NativeSubmissionGuard = () => void | Promise<void>;
 
-async function checkNativeSubmission(signal?: AbortSignal, beforeSubmit?: NativeSubmissionGuard) {
+async function checkNativeSubmission(signal?: AbortSignal, beforeSubmit?: NativeSubmissionGuard, kind: R4NativeRequestKind = 'image') {
   signal?.throwIfAborted();
   await beforeSubmit?.();
+  await checkR4NativeSubmission(kind);
   signal?.throwIfAborted();
 }
 
@@ -980,8 +983,8 @@ export async function prepareExtras(
   // Keep the account-bound host guard intact for references that actually need encoding.
   const imageBaseUrl = needsEncoding ? tokenSafeBaseUrl(settings!.imageBaseUrl, "https://image.novelai.net") : "";
 
-  const encoded = await Promise.all(
-    extras.vibeImages.map(async (vibe) => {
+  const encoded = await mapR4NativeInputs(
+    extras.vibeImages,async (vibe) => {
       const imported = matchingVibeEncoding(vibe, params.model);
       if (imported) return {...vibe, base64: imported};
       const rawBase64 = stripBase64Prefix(vibe.base64);
@@ -995,8 +998,8 @@ export async function prepareExtras(
       try {
         const res = await requestWithRetry(
           async () => {
-            await checkNativeSubmission(signal, beforeSubmit);
-            return axios.post(
+            await checkNativeSubmission(signal, beforeSubmit, 'vibe_encode');
+            return withR4NativeHttpReceipt('vibe_encode',()=>axios.post(
               `${imageBaseUrl}/ai/encode-vibe`,
               {
                 image: rawBase64,
@@ -1014,7 +1017,7 @@ export async function prepareExtras(
                 ...proxyConfig("nai"),
       maxRedirects: currentNaiAccount() ? 0 : undefined,
               },
-            );
+            ));
           },
           // encode-vibe is a paid endpoint; only retry pre-charge 429s.
           { retries: 2, signal, retryStatuses: [429] },
@@ -1031,7 +1034,7 @@ export async function prepareExtras(
         // a wrong (or reference-less) image.
         throw new Error(`参考图编码失败（encode-vibe）：${detail}`);
       }
-    }),
+    },
   );
 
   return { ...extras, vibeImages: encoded, preciseReferences };
@@ -1859,15 +1862,16 @@ export async function readWorkbenchImage(): Promise<{
   buffer: Buffer;
   image: WorkingImage;
 }> {
-  if (!workbenchImagePath) throw new Error("请先加载图片。");
-  const buffer = await processableImage(await fs.readFile(workbenchImagePath));
+  const sourcePath = r4NativeSourcePath(workbenchImagePath);
+  if (!sourcePath) throw new Error("请先加载图片。");
+  const buffer = await processableImage(await fs.readFile(sourcePath));
   const dims = readImageDimensions(buffer);
   return {
     base64: buffer.toString("base64"),
     buffer,
     image: {
-      filePath: workbenchImagePath,
-      fileUrl: toLocalMediaUrl(workbenchImagePath),
+      filePath: sourcePath,
+      fileUrl: toLocalMediaUrl(sourcePath),
       width: dims.width,
       height: dims.height,
     },
@@ -2162,6 +2166,9 @@ async function requestWithRetry<T>(
     retryPreflightNetworkFailures?: boolean;
   } = {},
 ): Promise<T> {
+  // R4 owns durable dispatch and uncertain receipts. An automatic retry here
+  // would create an unrecorded second paid request under the same execution.
+  if (currentR4NativeExecution()) return fn();
   const selectedAccount = !!currentNaiAccount(); // Only a proven pre-submission disconnect may retry a selected account.
   let attempt = 0;
   for (;;) {
@@ -2272,7 +2279,7 @@ async function postGenerateImage(
         // custom-endpoint fallback; reusing the consumed stream produces an
         // empty/partial multipart request and misleading server errors.
         const { body, bodyHeaders } = buildGenerateImageHttpBody(payload);
-        return axios.post(`${baseUrl}/ai/generate-image`, body, {
+        return withR4NativeHttpReceipt('image',async()=>axios.post(`${baseUrl}/ai/generate-image`, body, {
           headers: {
             Authorization: `Bearer ${token}`,
             ...bodyHeaders,
@@ -2285,7 +2292,7 @@ async function postGenerateImage(
           signal,
           ...await proxyConfigForUrl("nai", `${baseUrl}/ai/generate-image`, settings),
       maxRedirects: currentNaiAccount() ? 0 : undefined,
-        });
+        }));
       },
       // A paid generate POST may have already produced (and charged for) an image
       // even when the gateway reports a 5xx, so we never auto-retry server errors
@@ -2305,7 +2312,7 @@ async function postGenerateImage(
     if (
       (status === 401 || status === 403) &&
       imageBaseUrl !== defaultImageBaseUrl &&
-      settings.allowCustomEndpointFallback
+      settings.allowCustomEndpointFallback && !currentR4NativeExecution()
     ) {
       res = await postTo(defaultImageBaseUrl);
     } else {
@@ -2675,7 +2682,7 @@ async function postGenerateImageStream(
     if (
       (status === 401 || status === 403) &&
       configuredBaseUrl !== officialBaseUrl &&
-      settings.allowCustomEndpointFallback
+      settings.allowCustomEndpointFallback && !currentR4NativeExecution()
     ) {
       return postTo(officialBaseUrl);
     }
@@ -2697,6 +2704,7 @@ async function postGenerateImageWithOptionalPreview(
   ) {
     const streamed = await postGenerateImageStream(payload, signal, onPreview, beforeSubmit);
     if (streamed) return streamed;
+    if (currentR4NativeExecution()) throw Error('当前流式端点不支持本次请求；未自动改用其他接口。');
   }
   return postGenerateImage(payload, signal, beforeSubmit);
 }
@@ -2837,8 +2845,9 @@ async function callVisionApi(
 
   // Resolve the actual endpoint before the first request, not the startup cache
   // shared with other AI providers (which may still be empty or use another PAC rule).
-  const post = async (tokens: number) =>
-    axios.post(
+  const post = async (tokens: number) => {
+    const signal = currentR4PaidTextSignal();
+    return postR4PaidText(async () => axios.post(
       `${base}/chat/completions`,
       { ...body, max_tokens: tokens },
       {
@@ -2848,8 +2857,10 @@ async function callVisionApi(
         },
         timeout: 180_000,
         ...await proxyConfigForUrl("ai", `${base}/chat/completions`, settings),
+        ...(signal ? { signal } : {}),
       },
-    );
+    ));
+  };
 
   try {
     let resp = await post(maxTokens);
@@ -2971,8 +2982,9 @@ async function callConvertApi(
     ],
   };
 
-  const post = async (tokens: number) =>
-    axios.post(
+  const post = async (tokens: number) => {
+    const signal = currentR4PaidTextSignal();
+    return postR4PaidText(async () => axios.post(
       `${base}/chat/completions`,
       { ...body, max_tokens: tokens },
       {
@@ -2982,8 +2994,10 @@ async function callConvertApi(
         },
         timeout: 180_000,
         ...await proxyConfigForUrl("ai", `${base}/chat/completions`, settings),
+        ...(signal ? { signal } : {}),
       },
-    );
+    ));
+  };
 
   try {
     let resp = await post(maxTokens);
@@ -4596,7 +4610,7 @@ export async function generateI2I(
   if (!token) return { ok: false, message: "请先配置 API Token。", items: [] };
   if (!params.positivePrompt.trim())
     return { ok: false, message: "请输入正面提示词。", items: [] };
-  if (!workbenchImagePath)
+  if (!r4NativeSourcePath(workbenchImagePath))
     return { ok: false, message: "请先加载参考图片。", items: [] };
   logInfo(
     `img2img: model=${params.model} size=${params.width}x${params.height} strength=${i2i?.strength}`,
@@ -4804,7 +4818,7 @@ export async function inpaintImage(
   if (!token) return { ok: false, message: "请先配置 API Token。", items: [] };
   if (!params.positivePrompt.trim())
     return { ok: false, message: "请输入正面提示词。", items: [] };
-  if (!workbenchImagePath)
+  if (!r4NativeSourcePath(workbenchImagePath))
     return { ok: false, message: "请先加载原图。", items: [] };
   if (!maskBase64)
     return { ok: false, message: "请先绘制需要重绘的蒙版区域。", items: [] };
@@ -4856,7 +4870,7 @@ export async function inpaintImage(
     let chosen: ReturnType<typeof buildInpaintPayload> | null = null;
     let buffers: Buffer[] | null = null;
     let lastError: any = null;
-    const candidates = currentNaiAccount() ? [inpaintModel] : inpaintModelCandidates(inpaintModel);
+    const candidates = currentNaiAccount() || currentR4NativeExecution() ? [inpaintModel] : inpaintModelCandidates(inpaintModel);
     for (let index = 0; index < candidates.length; index += 1) {
       chosen = buildInpaintPayload(candidates[index]);
       try {
@@ -4913,7 +4927,8 @@ export async function upscaleImg(
 ): Promise<SingleImageResult> {
   const token = getToken();
   if (!token) return { ok: false, message: "请先配置 API Token。" };
-  if (!workbenchImagePath) return { ok: false, message: "请先加载图片。" };
+  const sourcePath = r4NativeSourcePath(workbenchImagePath);
+  if (!sourcePath) return { ok: false, message: "请先加载图片。" };
   logInfo(`upscale: scale=${scale}x`);
 
   const job = beginJob();
@@ -4943,8 +4958,9 @@ export async function upscaleImg(
       requestDiagnostic = describeUpscaleRequest(imageBaseUrl, payload.width, payload.height, pass + 1);
       logInfo(requestDiagnostic);
       const res = await requestWithRetry(
-        () =>
-          axios.post(
+        async () => {
+          await checkR4NativeSubmission('upscale');
+          return withR4NativeHttpReceipt('upscale',()=>axios.post(
             `${imageBaseUrl}/ai/upscale`,
             payload,
             {
@@ -4959,7 +4975,8 @@ export async function upscaleImg(
               ...proxyConfig("nai"),
       maxRedirects: currentNaiAccount() ? 0 : undefined,
             },
-          ),
+          ));
+        },
         // Paid upscale POST — only retry pre-charge 429s, never 5xx.
         { signal: abort.signal, retryStatuses: [429] },
       );
@@ -4993,7 +5010,7 @@ export async function upscaleImg(
       : path.join(settings.outputDir, date);
     await fs.mkdir(dir, { recursive: true });
     const baseName = path
-      .basename(workbenchImagePath, path.extname(workbenchImagePath))
+      .basename(sourcePath, path.extname(sourcePath))
       .replace(/[^\w.-]+/g, "-");
     const filePath = path.join(
       dir,
@@ -5054,7 +5071,7 @@ export async function augmentImg(
 ): Promise<GenerateResult> {
   const token = getToken();
   if (!token) return { ok: false, message: "请先配置 API Token。", items: [] };
-  if (!workbenchImagePath)
+  if (!r4NativeSourcePath(workbenchImagePath))
     return { ok: false, message: "请先加载图片。", items: [] };
   logInfo(`director: tool=${tool}`);
 
@@ -5097,7 +5114,8 @@ export async function augmentImg(
       payload.prompt = `${options.emotion};;${Math.min(5, Math.max(0, options.emotionLevel))}`;
     }
 
-    const res = await axios.post(`${imageBaseUrl}/ai/augment-image`, payload, {
+    await checkR4NativeSubmission();
+    const res = await withR4NativeHttpReceipt('image',()=>axios.post(`${imageBaseUrl}/ai/augment-image`, payload, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -5108,7 +5126,7 @@ export async function augmentImg(
       signal: job.controller.signal,
       ...proxyConfig("nai"),
       maxRedirects: currentNaiAccount() ? 0 : undefined,
-    });
+    }));
 
     const buffers = await extractImages(res.data, job.controller.signal);
     if (buffers.length === 0)

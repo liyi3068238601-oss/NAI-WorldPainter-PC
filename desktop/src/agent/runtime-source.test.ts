@@ -82,6 +82,7 @@ it("keeps current image state outside compaction and blocks unreviewed automatic
   // inside the model-generated summary. Behavioral coverage lives in the Pi
   // outgoing-prompt and image-continuity compaction tests.
   expect(runtime).toContain("planContextCompaction(conversation)");
-  expect(runtime).toContain("effectiveContextMessages(current.messages, current.lastSummary, current.lastCompactedAt)");
-  expect(runtime).toContain("JSON.stringify(item.imageProposal)");
+  const r4Runtime=readFileSync('electron/ipc/r4-agent-runtime.ts','utf8');
+  expect(r4Runtime).toContain("effectiveContextMessages(messages,chat.lastSummary,chat.lastCompactedAt)");
+  expect(r4Runtime).toContain("JSON.stringify(message.imageProposal)");
 });

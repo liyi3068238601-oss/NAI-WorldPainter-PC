@@ -1,0 +1,52 @@
+{
+  "recordedAt": "2026-10-18T04:16:54.582Z",
+  "branch": "feat/agent-r4-refactor",
+  "baseCommit": "dfd7caa63ae19bd40651e00127a71efe57b71b4e",
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "scope": "renderer and Electron TypeScript"
+    },
+    {
+      "command": "npm test -- --reporter=json --outputFile=.tmp/r4-validation/vitest-final.json",
+      "exitCode": 0,
+      "report": "vitest-final.json"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "scope": "Vite renderer and Electron TypeScript; large chunk warning remains"
+    },
+    {
+      "command": "npx electron-builder --dir --win --x64 --config .tmp/r4-validation/electron-builder.config.json --publish never",
+      "exitCode": 0,
+      "scope": "Windows x64 unpacked directory; no installer or publication"
+    }
+  ],
+  "tests": {
+    "success": true,
+    "total": 4338,
+    "passed": 4336,
+    "failed": 0,
+    "skipped": 2,
+    "files": 480,
+    "skippedCases": [
+      {
+        "file": "electron/ipc/local-super-resolution.test.ts",
+        "title": "local super-resolution service runs the installed Real-CUGAN CLI on a synthetic PNG and preserves evidence under .tmp"
+      },
+      {
+        "file": "electron/ipc/vibe-fixture-acceptance.test.ts",
+        "title": "provided mixed Vibe bundle constructs both references without re-encoding"
+      }
+    ]
+  },
+  "limitations": [
+    "Synthetic local fixtures and HTTP/SDK providers only; no real paid model or image request",
+    "Native smoke uses isolated synthetic profiles; not real-user data migration acceptance",
+    "Actual native image provider remote cancellation is unsupported; fake cancellation branches do not establish supplier support",
+    "No multi-monitor/DPI/physical-device or destructive power-loss validation",
+    "Full frozen T/U scenario cross-product is not declared accepted; see AGENT_R4_ACCEPTANCE.md"
+  ]
+}

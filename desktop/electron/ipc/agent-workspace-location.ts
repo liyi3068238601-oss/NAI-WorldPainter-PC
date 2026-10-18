@@ -38,4 +38,5 @@ export async function openAgentWorkspaceDirectory() {
   const message=await shell.openPath(location.path);
   return message ? {ok:false,message} : {ok:true};
 }
-export function resetAgentWorkspaceLocationForTests() { cached=null; }
+export function resetAgentWorkspaceLocation() { cached=null; }
+export const resetAgentWorkspaceLocationForTests = resetAgentWorkspaceLocation;

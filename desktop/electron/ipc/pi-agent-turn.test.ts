@@ -235,7 +235,7 @@ it('reconstructs multiple rounds as native calls/results and still executes the 
   for(let index=0;index<3;index++){
     const id=`assistant-${index}`;
     prompt.push({role:'user',content:`previous request ${index}`},{role:'assistant',content:`previous reply ${index}`,sourceMessageId:id});
-    toolHistory[id]=[{id:`call-${index}`,name:'langbai_generate_image',title:'generation',
+    toolHistory[id]=[{id:`${id}:call-${index}`,name:'langbai_generate_image',title:'generation',
       status:index===2?'error':'completed',input:{preparationId:`prepared-${index}`,filePath:'C:\\private\\image.png'},
       output:JSON.stringify({imageId:`image-${index}`,filePath:'C:\\private\\image.png',apiKey:'fixture-secret'}),
       error:index===2?'request outcome uncertain; do not retry':undefined}];

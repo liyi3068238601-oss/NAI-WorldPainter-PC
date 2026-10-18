@@ -135,6 +135,14 @@ contextBridge.exposeInMainWorld("naiDesktop", {
     ipcRenderer.on('studio-agent:request',listener);
     return ()=>ipcRenderer.removeListener('studio-agent:request',listener);
   },
+  onR4WorkbenchRequest: (callback:(request:import('../src/agent/r4-workbench-contract').R4WorkbenchRendererRequest)=>void) => {
+    const listener=(_event:Electron.IpcRendererEvent,request:import('../src/agent/r4-workbench-contract').R4WorkbenchRendererRequest)=>callback(request);
+    ipcRenderer.on('r4-workbench:request',listener);
+    return ()=>ipcRenderer.removeListener('r4-workbench:request',listener);
+  },
+  replyR4Workbench: (id:string,reply:import('../src/studio-agent-contract').StudioAgentReply) => ipcRenderer.invoke('r4-workbench:reply',id,reply),
+  previewR4PromptApply: (request:import('../src/agent/r4-workbench-contract').R4WorkbenchPromptPreviewRequest) => ipcRenderer.invoke('agent:r4WorkbenchPreview',request),
+  applyR4PromptCAS: (request:import('../src/agent/r4-workbench-contract').R4WorkbenchPromptApplyRequest) => ipcRenderer.invoke('agent:r4WorkbenchApply',request),
   replyStudioAgent: (id:string,reply:import('../src/studio-agent-contract').StudioAgentReply) => ipcRenderer.invoke('studio-agent:reply',id,reply),
   commitStudioSetting: (id:string,key:SettingKey,expected:AppSettings[SettingKey],value:AppSettings[SettingKey]) => ipcRenderer.invoke('studio-agent:commit',id,key,expected,value),
   harnessSetAutoPluginUpdates: (enabled:boolean) => ipcRenderer.invoke('harness:setAutoPluginUpdates',enabled),
@@ -205,6 +213,8 @@ contextBridge.exposeInMainWorld("naiDesktop", {
   deleteAgentAttachment: (conversationId: string, attachmentId: string) => ipcRenderer.invoke("agent:deleteAttachment", conversationId, attachmentId),
   exportAgentAttachment: (conversationId: string, messageId: string, attachmentId: string) => imageSaves.run(`agent:${conversationId}:${messageId}:${attachmentId}`, "image", () => ipcRenderer.invoke("agent:exportAttachment", conversationId, messageId, attachmentId), 1),
   sendAgentMessage: (request: AgentSendRequest) => ipcRenderer.invoke("agent:send", request),
+  getAgentCreativeState: (conversationId:string) => ipcRenderer.invoke('agent:creativeState',conversationId),
+  agentCreativeCommand: (request:import('../src/agent/r4-commands').R4CreativeCommand) => ipcRenderer.invoke('agent:creativeCommand',request),
   generateTavernImage: (request: TavernImageRequest) => ipcRenderer.invoke("agent:generateImage", request),
   importTavernCards: (sourcePaths?: string[]) => ipcRenderer.invoke("agent:importCards", sourcePaths),
   exportTavernCard: (request: TavernCardExportRequest) => ipcRenderer.invoke("agent:exportCard", request),

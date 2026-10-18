@@ -73,7 +73,7 @@ export function studioPiModel(settings: AppSettings): Model<Api> {
 export function studioPiStream(settings: AppSettings): StreamFn {
   const fetch = studioPiFetch(settings);
   return async (model, context, options) => {
-    const common = { ...options, maxTokens: settings.agentMaxOutputTokens,
+    const common = { ...options, maxTokens: settings.agentMaxOutputTokens,maxRetries:0,
       apiKey: settings.agentApiKey.trim() || (!agentProviderRequiresApiKey(settings.agentApiProtocol, settings.agentApiBaseUrl) ? 'local-no-key' : ''), fetch };
     switch (model.api) {
       case 'openai-completions': {
