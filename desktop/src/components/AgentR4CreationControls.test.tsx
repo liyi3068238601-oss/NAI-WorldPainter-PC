@@ -2,7 +2,10 @@ import {describe, expect, it, vi} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 import type {R4AssistantPreset, R4ConversationConfigSnapshot, R4Creation} from '../agent/r4-types';
 import {studioUxText} from '../agent/ux';
-import {AgentR4AssistantPresetControl, AgentR4CreationControls} from './AgentR4CreationControls';
+import {AgentR4CreationControls} from './AgentR4CreationControls';
+import {AgentR4AssistantPresetControl} from './AgentResourcePanel';
+
+const selectedPresetIds=(html:string)=>[...html.matchAll(/<button[^>]*title="[^"]*ID: ([^"]+)"[^>]*aria-pressed="true"[^>]*>/g)].map(match=>match[1]);
 
 const presets:Record<string,R4AssistantPreset>={
   concise:{id:'concise',name:'Concise',body:'Be concise.',revision:3,hash:'abc123',source:'builtin'},
@@ -13,8 +16,9 @@ describe('Agent R4 assistant preset control',()=>{
   it('uses the seeded new-chat binding when the conversation has no override and offers no clear option',()=>{
     const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} defaults={{presetId:'concise',enabled:false}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
 
-    expect(html).toContain('value="concise"');
-    expect(html).toContain('>Concise</option>');
+    expect(selectedPresetIds(html)).toEqual(['concise']);
+    expect(html).toContain('>Concise</span>');
+    expect(html).not.toContain('<select');
     expect(html).not.toContain('No preset selected');
     expect(html).not.toContain('value=""');
   });
@@ -22,7 +26,7 @@ describe('Agent R4 assistant preset control',()=>{
   it('keeps a conversation selection instead of silently replacing it with the default',()=>{
     const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} binding={{presetId:'detailed',enabled:true}} defaults={{presetId:'concise',enabled:false}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
 
-    expect(html).toContain('value="detailed"');
+    expect(selectedPresetIds(html)).toEqual(['detailed']);
     expect(html).toContain('checked=""');
   });
 
@@ -30,7 +34,7 @@ describe('Agent R4 assistant preset control',()=>{
     const restored: R4ConversationConfigSnapshot={version:1,providerRef:{providerId:'provider-original'},modelId:'model-original',presetId:'detailed',enabled:false,publicParameters:{},capturedAt:'2026-10-18T00:00:00.000Z',source:'message_send'};
     const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} binding={{presetId:'concise',enabled:true}} defaults={{presetId:'concise',enabled:false}} restoredConfig={restored} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
 
-    expect(html).toContain('value="detailed"');
+    expect(selectedPresetIds(html)).toEqual(['detailed']);
     expect(html).not.toContain('checked=""');
     expect(html).not.toContain('dialog');
     expect(html).not.toContain('No preset selected');
@@ -42,7 +46,7 @@ describe('Agent R4 assistant preset control',()=>{
 
     expect(html).toContain(studioUxText(language,'assistantRolePreset'));
     expect(html).toContain(studioUxText(language,'presetInfiniteFive'));
-    expect(html).toContain('value="dsh-infinite-gen-5"');
+    expect(selectedPresetIds(html)).toEqual(['dsh-infinite-gen-5']);
     expect(html).toContain('presetInfiniteFive');
     expect(html).toContain('ID: dsh-infinite-gen-5');
   });
@@ -51,9 +55,9 @@ describe('Agent R4 assistant preset control',()=>{
     const custom:R4AssistantPreset={id:'user-preset',name:'presetInfiniteFive',body:'User body.',revision:1,hash:'user-hash',source:'user'};
     const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="zh-CN" presets={{[custom.id]:custom}} binding={{presetId:custom.id,enabled:true}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
 
-    expect(html).toContain('>presetInfiniteFive</option>');
-    expect(html).not.toContain('>无限五代 · 生图适配</option>');
-    expect(html).toContain('value="user-preset"');
+    expect(html).toContain('>presetInfiniteFive</span>');
+    expect(html).not.toContain('>无限五代 · 生图适配</span>');
+    expect(selectedPresetIds(html)).toEqual(['user-preset']);
   });
 });
 

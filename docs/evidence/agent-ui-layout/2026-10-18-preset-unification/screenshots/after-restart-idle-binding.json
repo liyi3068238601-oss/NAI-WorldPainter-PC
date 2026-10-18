@@ -1,0 +1,24 @@
+{
+  "mode": "read-only real preload projection from final packaged app; synthetic isolated profile; no content or provider calls",
+  "target": {
+    "id": "0F8386A47CA7E8625543CAD8CF81E88B",
+    "title": "绘世 · NAI WorldPainter",
+    "url": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/.tmp/agent-preset-unification-20261018/package/win-unpacked/resources/app.asar/dist/index.html"
+  },
+  "selectedConversationId": "synthetic-layout-running-conversation",
+  "requestedConversationId": "add0708d-1d65-4c74-a165-fa3359d66d00",
+  "conversationFound": true,
+  "currentCreationId": "synthetic-layout-current-creation",
+  "assistantPresetBinding": {
+    "presetId": "tavern:builtin-lyra-beta-3-8-sampler",
+    "enabled": true
+  },
+  "config": {
+    "presetId": "tavern:builtin-lyra-beta-3-8-sampler",
+    "enabled": true
+  },
+  "historicalEnabled": [
+    true,
+    true
+  ]
+}

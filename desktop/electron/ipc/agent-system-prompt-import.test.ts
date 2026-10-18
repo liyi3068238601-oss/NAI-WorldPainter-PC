@@ -21,12 +21,33 @@ it("imports a full Markdown file, selects only the active chat and persists the 
   const preset = result.workspace.samplerPresets.at(-1)!;
   expect(preset).toMatchObject({ name: "creative", systemPrompt: body.slice(1), jailbreakPrompt: "", sourceHash: inputHash });
   expect(result.workspace.conversations.find(c => c.id === before.selectedConversationId)?.studioPresetId).toBe("tavern:" + preset.id);
+  const r4 = store.readAgentR4State();
+  expect(r4.conversations[before.selectedConversationId!].assistantPresetBinding?.presetId).toBe('tavern:' + preset.id);
+  expect(r4.assistantPresets['tavern:' + preset.id].body).toBe(body.slice(1));
   // Existing normalization recalculates the context measurement timestamp.
   // Preserve every other field, including the inactive chats' preset choices.
   const stableChats = (workspace: typeof before) => workspace.conversations.filter(c => c.id !== before.selectedConversationId).map(c => ({ ...c, context: c.context ? { ...c.context, updatedAt: "measurement-clock" } : c.context }));
   expect(stableChats(result.workspace)).toEqual(stableChats(before));
   expect(crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex")).toBe(inputHash);
   expect(f.pick.mock.calls[0][0].filters[0].extensions).toEqual(["json", "md", "txt"]);
+});
+it("imports into the current R4 binding atomically without enabling it or changing new-chat defaults", async () => {
+  const store = await import("./agent-store");
+  const workspace = store.createAgentConversation("Import binding fixture").workspace;
+  const id = workspace.selectedConversationId!, before = store.readAgentR4State();
+  const defaults = structuredClone(before.assistantPresetDefaultBinding);
+  before.conversations[id].assistantPresetBinding!.enabled = false;
+  store.writeAgentR4State(before);
+  f.pick.mockResolvedValue({ canceled:false, filePaths:[file('binding.txt', 'Synthetic new assistant body')] });
+  const result = await store.importStudioPresetFiles();
+  expect(result.ok).toBe(true);
+  const presetId = 'tavern:' + result.workspace.samplerPresets.at(-1)!.id;
+  const after = store.readAgentR4State();
+  expect(after.conversations[id].assistantPresetBinding).toEqual({presetId, enabled:false});
+  expect(after.conversations[id].config).toBeUndefined();
+  expect(after.assistantPresetDefaultBinding).toEqual(defaults);
+  store.closeAgentSqlStore();
+  expect(store.readAgentR4State().conversations[id].assistantPresetBinding).toEqual({presetId, enabled:false});
 });
 it("deduplicates byte-identical input preserving the entire edited body, sampler and timestamps", async () => {
   const store = await import("./agent-store"), p = file("fixture.json", JSON.stringify({ name: "Original", system_prompt: "Rules", jailbreak_prompt: "Post" }));

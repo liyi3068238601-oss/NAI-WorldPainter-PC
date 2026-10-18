@@ -1,0 +1,68 @@
+{
+  "checkedAt": "2026-10-18T09:29:10.593Z",
+  "packageDirectory": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-preset-unification-20261018\\package\\win-unpacked",
+  "executableSha256": "89185c0754e7e26bcc16120d84028c7fb1791bf0b4406d6cc6ec2fc15f72789a",
+  "asarSha256": "a88ecbd09968f2c181c1274a6a1c5510599e07c093e5b3b11d48987798fc12bd",
+  "matchedBuildFiles": [
+    {
+      "path": "dist-electron/electron/main.js",
+      "bytes": 79842,
+      "sha256": "d44562e9df70cf7af6066e0ea93a80321aa584ed144d3e77299822ebfda00507"
+    },
+    {
+      "path": "dist-electron/electron/preload.js",
+      "bytes": 34356,
+      "sha256": "2e90fbcae691e3aee685930bb88bd3dce60012379f96d20b9923f284057618f1"
+    },
+    {
+      "path": "dist-electron/electron/ipc/agent-store.js",
+      "bytes": 86097,
+      "sha256": "a2f4382645a27786320b2bcabebb378887858e1817af112fd7f68a29a5993eba"
+    },
+    {
+      "path": "dist-electron/electron/ipc/r4-agent-runtime.js",
+      "bytes": 27497,
+      "sha256": "e45ee25a5ee2200315f24fe04178c524fbdd1e13c5f537e184fec23952b09f47"
+    },
+    {
+      "path": "dist-electron/electron/ipc/r4-agent-service.js",
+      "bytes": 32964,
+      "sha256": "dfeedee7c30cecdb587a2acf24834f7eef0b9fad00350e7d89b2d6ee1f99af31"
+    },
+    {
+      "path": "dist-electron/src/agent/workspace-controls.js",
+      "bytes": 12809,
+      "sha256": "020e2b6c74571e3ca10146640e2c83c18a059955ed81f58682271c168e52314b"
+    },
+    {
+      "path": "dist-electron/shared/agent-ux-locales.json",
+      "bytes": 67999,
+      "sha256": "2f01bf579e02673e67af6e9cfbd4c5f025ee580221059396ce49898696e30245"
+    },
+    {
+      "path": "dist/index.html",
+      "bytes": 1855,
+      "sha256": "2befa779869deb11dca64f21f9cb857c7d5ac3c8313f7ae59d89ddb1461559df"
+    },
+    {
+      "path": "dist/assets/index-C9tEex-C.css",
+      "bytes": 679990,
+      "sha256": "0a9d2da8ff6833d7907aa2163d5dab0681b870130d0741e5114270367abe9522"
+    },
+    {
+      "path": "dist/assets/index-QZBPZIHN.js",
+      "bytes": 1321805,
+      "sha256": "e3cb2bddfaf4f8685b3b03d190ec274e6a6448e6985cbda6002760bd9ca23c50"
+    },
+    {
+      "path": "dist/assets/PiAgentPage-BdTDle1Y.js",
+      "bytes": 323352,
+      "sha256": "618682a5bbc8c733aea5068f9009b88ede8d794452fb8fe1be1d826c2b529fcd"
+    },
+    {
+      "path": "dist/assets/PiAgentPage-BgWFD8nP.css",
+      "bytes": 92782,
+      "sha256": "cda20363ed471953a2a4e4a9d93ef9b545afba7ee57b6041570f3034c6dfec36"
+    }
+  ]
+}

@@ -59,4 +59,16 @@ describe('fresh Studio defaults without private profiles',()=>{
   expect(disabled.preset).toBeNull();
   expect(disabled.characters).toEqual(enabled.characters);
  });
+ it('uses the supplied frozen preset snapshot for R4 while preserving legacy Studio metadata when omitted',()=>{
+  const workspace=createEmptyAgentWorkspace(),chat=workspace.conversations[0];
+  chat.studioPresetId='dsh-infinite-gen-4';
+  const legacy=JSON.parse(studioCreativeReferenceData(workspace,chat,[]));
+  expect(legacy.preset).toEqual({id:'dsh-infinite-gen-4',name:'presetInfinite',source:'builtin'});
+
+  const frozen=JSON.parse(studioCreativeReferenceData(workspace,chat,[],{presetId:'queued-preset',enabled:true,revision:7,hash:'queued-hash'}));
+  expect(frozen.preset).toEqual({id:'queued-preset',enabled:true,revision:7,hash:'queued-hash'});
+  expect(JSON.stringify(frozen.preset)).not.toContain('presetInfinite');
+  expect(JSON.parse(studioCreativeReferenceData(workspace,chat,[],{presetId:'queued-preset',enabled:false,revision:7,hash:'queued-hash'})).preset).toBeNull();
+  expect(JSON.parse(studioCreativeReferenceData(workspace,chat,[],{presetId:null,enabled:true})).preset).toBeNull();
+ });
 });

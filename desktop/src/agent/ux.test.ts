@@ -58,7 +58,8 @@ it('replaces the Pi worldbook resource with persisted skills while retaining pre
   const resourcePanel = readFileSync(new URL('../components/AgentResourcePanel.tsx', import.meta.url), 'utf8');
   expect(resourcePanel).toContain("['presets','skills','characters','memories']");
   expect(resourcePanel).toContain('<AgentSkillsPanel');
-  expect(resourcePanel).toContain('STUDIO_BUILTIN_PRESETS.map');
+  expect(resourcePanel).toContain('<AgentR4AssistantPresetControl language={language} {...presetControl}/>');
+  expect(resourcePanel).not.toContain('onChange({studioPresetId:');
   expect(resourcePanel).not.toContain("tab==='worldbooks'");
   expect(resourcePanel).not.toContain('lorebookIds');
 });
@@ -91,10 +92,13 @@ it('wires owned page controls to real preload APIs and keeps model setup out of 
   expect(source).toContain('onClick={()=>void continueEditingArtwork(artwork)}');
   expect(source).not.toContain('importAttachments([item.filePath])');
   expect(source).toContain('studioWebSearchEnabled:!sessionOptions.webSearchEnabled');
-  // R4's preset checkbox owns the actual frozen enabled flag. The old Tavern
-  // toggle only changed a legacy context marker and must not impersonate it.
-  expect(source).toContain('binding={creativeState?.assistantPresetBinding}');
-  expect(source).toContain('onChange={setPresetBinding}');
+  // Preset selection and session/default actions belong to the resource list.
+  expect(source).toContain('binding:creativeState?.assistantPresetBinding');
+  expect(source).toContain('onChange:setPresetBinding');
+  expect(source).not.toContain('<AgentR4AssistantPresetControl');
+  const composer=source.slice(source.indexOf('<div className="pi-compose-meta">'),source.indexOf('<button ref={rightToggle}'));
+  expect(composer).not.toContain('r4-preset-control');
+  expect(composer).not.toContain('presetControl=');
   expect(source).not.toContain('studioTemplateEnabled:!sessionOptions.templateEnabled');
   expect(source).not.toMatch(/executeShell|readFileSync|mcpClient/);
 });

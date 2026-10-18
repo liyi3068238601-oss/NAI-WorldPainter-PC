@@ -1,5 +1,6 @@
 import ig5 from "../../shared/ig5-image-prompts.json";
 import type {AgentConversation,AgentSkill,AgentWorkspaceData} from './types';
+import type {R4ConversationConfigSnapshot} from './r4-types';
 import infinitePreset from '../../shared/agent-infinite-preset.json';
 import {LYRA_PRESET_SYSTEM_PROMPT,LYRA_PRESET_JAILBREAK_PROMPT} from '../tavern/lyra-preset-data';
 
@@ -128,13 +129,24 @@ export function createBuiltinAgentSkills(timestamp=new Date().toISOString()):Age
 }
 
 /** User-selected creative references are data, never execution permissions. */
-export function studioCreativeReferenceData(workspace:AgentWorkspaceData,chat:AgentConversation,lore:Array<{book:{name:string};entry:{content:string;comment?:string}}>){
+export function studioCreativeReferenceData(workspace:AgentWorkspaceData,chat:AgentConversation,lore:Array<{book:{name:string};entry:{content:string;comment?:string}}>,frozenConfig?:Pick<R4ConversationConfigSnapshot,'presetId'|'enabled'|'revision'|'hash'>){
  void lore;
- const options=studioSessionOptions(chat);
- const preset=studioBuiltinPreset(options.presetId);
- const tavern=options.presetId.startsWith('tavern:')?workspace.samplerPresets.find(p=>p.id===options.presetId.slice(7)):undefined;
+ let preset:Record<string,unknown>|null;
+ if(frozenConfig!==undefined){
+  preset=frozenConfig.enabled&&frozenConfig.presetId?{
+   id:frozenConfig.presetId,
+   enabled:frozenConfig.enabled,
+   revision:frozenConfig.revision??null,
+   hash:frozenConfig.hash??null,
+  }:null;
+ }else{
+  const options=studioSessionOptions(chat);
+  const builtin=studioBuiltinPreset(options.presetId);
+  const tavern=options.presetId.startsWith('tavern:')?workspace.samplerPresets.find(p=>p.id===options.presetId.slice(7)):undefined;
+  preset=options.templateEnabled?(builtin?{id:builtin.id,name:builtin.name,source:'builtin'}:tavern?{id:'tavern:'+tavern.id,name:tavern.name,source:tavern.source,sourceName:tavern.sourceName}:null):null;
+ }
  return JSON.stringify({
-  preset:options.templateEnabled?(preset?{id:preset.id,name:preset.name,source:'builtin'}:tavern?{id:'tavern:'+tavern.id,name:tavern.name,source:tavern.source,sourceName:tavern.sourceName}:null):null,
+  preset,
   characters:workspace.characters.filter(c=>chat.characterIds.includes(c.id)).map(c=>({name:c.nickname||c.name,description:c.description,personality:c.personality,scenario:c.scenario,creativeInstructions:c.systemPrompt,postscript:c.postHistoryInstructions})),
  });
 }

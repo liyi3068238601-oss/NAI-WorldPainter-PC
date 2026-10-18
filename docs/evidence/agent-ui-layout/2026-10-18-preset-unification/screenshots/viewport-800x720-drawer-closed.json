@@ -1,0 +1,481 @@
+{
+  "mode": "CDP viewport emulation 800x720; actual package window 1387x902; Current Creation drawer closed",
+  "target": {
+    "id": "0F8386A47CA7E8625543CAD8CF81E88B",
+    "title": "绘世 · NAI WorldPainter",
+    "url": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/.tmp/agent-preset-unification-20261018/package/win-unpacked/resources/app.asar/dist/index.html"
+  },
+  "buildAssets": [
+    "PiAgentPage-BdTDle1Y.js",
+    "PiAgentPage-BgWFD8nP.css"
+  ],
+  "screenshot": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-preset-unification-20261018\\screenshots\\viewport-800x720-drawer-closed.png",
+  "geometry": {
+    "viewport": {
+      "innerWidth": 800,
+      "innerHeight": 720,
+      "devicePixelRatio": 1.0000000149011612,
+      "screenWidth": 2048,
+      "screenHeight": 1152
+    },
+    "boxes": {
+      "root": {
+        "x": 18,
+        "y": 133.4,
+        "width": 764,
+        "height": 544.6,
+        "right": 782,
+        "bottom": 678,
+        "clientWidth": 764,
+        "clientHeight": 545,
+        "scrollWidth": 764,
+        "scrollHeight": 545,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "grid"
+      },
+      "main": {
+        "x": 18,
+        "y": 191.4,
+        "width": 764,
+        "height": 486.6,
+        "right": 782,
+        "bottom": 678,
+        "clientWidth": 764,
+        "clientHeight": 487,
+        "scrollWidth": 764,
+        "scrollHeight": 487,
+        "overflowX": "hidden",
+        "overflowY": "auto",
+        "display": "flex"
+      },
+      "transcript": {
+        "x": 18,
+        "y": 191.4,
+        "width": 764,
+        "height": 233,
+        "right": 782,
+        "bottom": 424.4,
+        "clientWidth": 764,
+        "clientHeight": 233,
+        "scrollWidth": 764,
+        "scrollHeight": 233,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "block"
+      },
+      "composeArea": {
+        "x": 18,
+        "y": 424.4,
+        "width": 764,
+        "height": 253.6,
+        "right": 782,
+        "bottom": 678,
+        "clientWidth": 764,
+        "clientHeight": 254,
+        "scrollWidth": 764,
+        "scrollHeight": 254,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "block"
+      },
+      "attachments": null,
+      "shell": {
+        "x": 34,
+        "y": 432.4,
+        "width": 732,
+        "height": 154,
+        "right": 766,
+        "bottom": 586.4,
+        "clientWidth": 730,
+        "clientHeight": 152,
+        "scrollWidth": 730,
+        "scrollHeight": 152,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "flex"
+      },
+      "grip": {
+        "x": 34.8,
+        "y": 433.2,
+        "width": 730.4,
+        "height": 16,
+        "right": 765.2,
+        "bottom": 449.2,
+        "clientWidth": 730,
+        "clientHeight": 16,
+        "scrollWidth": 730,
+        "scrollHeight": 16,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "grid"
+      },
+      "composer": {
+        "x": 34.8,
+        "y": 449.2,
+        "width": 730.4,
+        "height": 136.4,
+        "right": 765.2,
+        "bottom": 585.6,
+        "clientWidth": 730,
+        "clientHeight": 136,
+        "scrollWidth": 730,
+        "scrollHeight": 136,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "textarea": {
+        "x": 84.8,
+        "y": 453.2,
+        "width": 435.2,
+        "height": 122.4,
+        "right": 520,
+        "bottom": 575.6,
+        "clientWidth": 435,
+        "clientHeight": 122,
+        "scrollWidth": 435,
+        "scrollHeight": 122,
+        "overflowX": "auto",
+        "overflowY": "auto",
+        "display": "block"
+      },
+      "send": {
+        "x": 568,
+        "y": 533.6,
+        "width": 89.6,
+        "height": 42,
+        "right": 657.6,
+        "bottom": 575.6,
+        "clientWidth": 88,
+        "clientHeight": 40,
+        "scrollWidth": 88,
+        "scrollHeight": 40,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "steer": {
+        "x": 665.6,
+        "y": 533.6,
+        "width": 89.6,
+        "height": 42,
+        "right": 755.2,
+        "bottom": 575.6,
+        "clientWidth": 88,
+        "clientHeight": 40,
+        "scrollWidth": 88,
+        "scrollHeight": 40,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "stop": {
+        "x": 528,
+        "y": 543.6,
+        "width": 32,
+        "height": 32,
+        "right": 560,
+        "bottom": 575.6,
+        "clientWidth": 30,
+        "clientHeight": 30,
+        "scrollWidth": 30,
+        "scrollHeight": 30,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "config": {
+        "x": 35,
+        "y": 594.4,
+        "width": 730,
+        "height": 32,
+        "right": 765,
+        "bottom": 626.4,
+        "clientWidth": 730,
+        "clientHeight": 32,
+        "scrollWidth": 730,
+        "scrollHeight": 32,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "model": {
+        "x": 35,
+        "y": 594.4,
+        "width": 340,
+        "height": 32,
+        "right": 375,
+        "bottom": 626.4,
+        "clientWidth": 340,
+        "clientHeight": 32,
+        "scrollWidth": 340,
+        "scrollHeight": 32,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "preset": null,
+      "context": {
+        "x": 710.8,
+        "y": 594.4,
+        "width": 54.2,
+        "height": 32,
+        "right": 765,
+        "bottom": 626.4,
+        "clientWidth": 53,
+        "clientHeight": 30,
+        "scrollWidth": 53,
+        "scrollHeight": 30,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "actions": {
+        "x": 35,
+        "y": 633.4,
+        "width": 730,
+        "height": 34.6,
+        "right": 765,
+        "bottom": 668,
+        "clientWidth": 730,
+        "clientHeight": 35,
+        "scrollWidth": 730,
+        "scrollHeight": 35,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "modes": {
+        "x": 35,
+        "y": 634.4,
+        "width": 151.6,
+        "height": 33.6,
+        "right": 186.6,
+        "bottom": 668,
+        "clientWidth": 150,
+        "clientHeight": 32,
+        "scrollWidth": 150,
+        "scrollHeight": 32,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "web": {
+        "x": 196.6,
+        "y": 637.2,
+        "width": 78,
+        "height": 28,
+        "right": 274.6,
+        "bottom": 665.2,
+        "clientWidth": 78,
+        "clientHeight": 28,
+        "scrollWidth": 78,
+        "scrollHeight": 28,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "imageSettings": {
+        "x": 284.6,
+        "y": 637.2,
+        "width": 122.3,
+        "height": 28,
+        "right": 406.9,
+        "bottom": 665.2,
+        "clientWidth": 122,
+        "clientHeight": 28,
+        "scrollWidth": 122,
+        "scrollHeight": 28,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "sidebar": {
+        "x": -339,
+        "y": 249.4,
+        "width": 340,
+        "height": 428.6,
+        "right": 1,
+        "bottom": 678,
+        "clientWidth": 340,
+        "clientHeight": 429,
+        "scrollWidth": 340,
+        "scrollHeight": 429,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "block"
+      },
+      "resources": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0,
+        "clientWidth": 0,
+        "clientHeight": 0,
+        "scrollWidth": 0,
+        "scrollHeight": 0,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "none"
+      },
+      "rightPanel": null,
+      "assistantReply": {
+        "x": 128.3,
+        "y": 0.2,
+        "width": 610.1,
+        "height": 50.4,
+        "right": 738.4,
+        "bottom": 50.6,
+        "clientWidth": 610,
+        "clientHeight": 50,
+        "scrollWidth": 610,
+        "scrollHeight": 50,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "block"
+      }
+    },
+    "overlap": {
+      "textareaSend": false
+    },
+    "hitTests": {
+      "textarea": {
+        "x": 302.4,
+        "y": 514.4,
+        "topTag": "TEXTAREA",
+        "topText": "",
+        "topClass": "",
+        "covered": false
+      },
+      "send": {
+        "x": 612.8,
+        "y": 554.6,
+        "topTag": "SPAN",
+        "topText": "排队发送",
+        "topClass": "",
+        "covered": false
+      },
+      "grip": {
+        "x": 400,
+        "y": 441.2,
+        "topTag": "SPAN",
+        "topText": "",
+        "topClass": "",
+        "covered": false
+      },
+      "config": {
+        "x": 400,
+        "y": 610.4,
+        "topTag": "DIV",
+        "topText": "对话模型 绘世合成服务商（界面压力测试专用） · Synthetic Long-Name Model · 256K Co",
+        "topClass": "pi-compose-config-row",
+        "covered": false
+      },
+      "actions": {
+        "x": 400,
+        "y": 650.7,
+        "topTag": "svg",
+        "topText": null,
+        "topClass": "[object SVGAnimatedString]",
+        "covered": false
+      },
+      "model": {
+        "x": 205,
+        "y": 610.4,
+        "topTag": "SPAN",
+        "topText": "绘世合成服务商（界面压力测试专用） · Synthetic Long-Name Model · 256K Context",
+        "topClass": "agent-model-picker-trigger-name",
+        "covered": false
+      },
+      "preset": null,
+      "context": {
+        "x": 737.9,
+        "y": 610.4,
+        "topTag": "BUTTON",
+        "topText": "0%",
+        "topClass": "pi-context-trigger",
+        "covered": false
+      },
+      "web": {
+        "x": 235.6,
+        "y": 651.2,
+        "topTag": "BUTTON",
+        "topText": "网页查询",
+        "topClass": "pi-option-toggle",
+        "covered": false
+      },
+      "imageSettings": {
+        "x": 345.7,
+        "y": 651.2,
+        "topTag": "SPAN",
+        "topText": "生图设置",
+        "topClass": "",
+        "covered": false
+      }
+    },
+    "mainScroll": {
+      "clientWidth": 764,
+      "clientHeight": 487,
+      "scrollWidth": 764,
+      "scrollHeight": 487,
+      "overflowY": "auto"
+    },
+    "controls": {
+      "visibleCount": 19,
+      "visibleOutsideRoot": [],
+      "partiallyClippedVisible": [],
+      "rawOutsideRootCount": 0
+    },
+    "scrollables": [
+      {
+        "className": "pi-transcript",
+        "id": "",
+        "clientHeight": 233,
+        "scrollHeight": 493,
+        "scrollTop": 260,
+        "maxScroll": 260,
+        "overflowY": "auto"
+      }
+    ],
+    "typography": {
+      "scale": "100",
+      "rootFontSize": "13px",
+      "body": {
+        "fontSize": "13px",
+        "fontWeight": "500",
+        "color": "rgb(241, 239, 232)",
+        "lineHeight": "normal"
+      },
+      "message": {
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "color": "rgb(241, 239, 232)",
+        "lineHeight": "25.2px"
+      },
+      "heading": null,
+      "strong": null,
+      "link": null,
+      "textarea": {
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "color": "rgb(241, 239, 232)",
+        "lineHeight": "23.1px"
+      }
+    },
+    "focus": {
+      "tag": "BUTTON",
+      "id": "",
+      "ariaLabel": "当前创作",
+      "className": "r4-topbar-drawer"
+    },
+    "theme": {
+      "htmlClass": "theme-dark",
+      "bodyClass": "",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(241, 239, 232)"
+    }
+  }
+}

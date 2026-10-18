@@ -1,0 +1,133 @@
+{
+  "mode": "read-only DOM labels/geometry from final packaged renderer; no message body values read",
+  "target": {
+    "id": "8BD2BBACD9FEF23D9662C5D03C3D5CC9",
+    "title": "绘世 · NAI WorldPainter",
+    "url": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/.tmp/agent-preset-unification-20261018/package/win-unpacked/resources/app.asar/dist/index.html"
+  },
+  "ui": {
+    "viewport": {
+      "width": 1386,
+      "height": 902,
+      "dpr": 1.25
+    },
+    "surfaces": {
+      "composerFound": true,
+      "resourcePresetPanelFound": true,
+      "composerAssistantPresetControlCount": 0,
+      "allAssistantPresetControls": 1,
+      "composerHasAssistantPresetLabel": false,
+      "composerButtons": [
+        "添加附件",
+        "发送并排队"
+      ],
+      "resourceButtons": [
+        "导入预设",
+        "已是新会话默认",
+        "合成助手预设 · 长标题压力测试 · 保留暖金暗色主题与明亮主题的工作台布局 原始名称：合成助手预设 · 长标题压力测试 · 保留暖金暗色主题与明亮主题的工作台布局 ID: synthetic-agent-layout-preset",
+        "技术详情: 合成助手预设 · 长标题压力测试 · 保留暖金暗色主题与明亮主题的工作台布局",
+        "夏瑾 天琴座 Beta 3.8 原始名称：夏瑾 天琴座 Beta 3.8 ID: tavern:builtin-lyra-beta-3-8-sampler",
+        "技术详情: 夏瑾 天琴座 Beta 3.8",
+        "综合生图预设 原始名称：presetComplete ID: studio-complete",
+        "技术详情: 综合生图预设",
+        "无限四代（生图适配） 原始名称：presetInfinite ID: dsh-infinite-gen-4",
+        "技术详情: 无限四代（生图适配）",
+        "无限五代 · 生图适配 原始名称：presetInfiniteFive ID: dsh-infinite-gen-5",
+        "技术详情: 无限五代 · 生图适配"
+      ],
+      "presetRows": [
+        {
+          "label": "合成助手预设 · 长标题压力测试 · 保留暖金暗色主题与明亮主题的工作台布局 原始名称：合成助手预设 · 长标题压力测试 · 保留暖金暗色主题与明亮主题的工作台布局 ID: synthetic-agent-layout-preset",
+          "id": null
+        },
+        {
+          "label": "技术详情: 合成助手预设 · 长标题压力测试 · 保留暖金暗色主题与明亮主题的工作台布局",
+          "id": null
+        },
+        {
+          "label": "夏瑾 天琴座 Beta 3.8 原始名称：夏瑾 天琴座 Beta 3.8 ID: tavern:builtin-lyra-beta-3-8-sampler",
+          "id": null
+        },
+        {
+          "label": "技术详情: 夏瑾 天琴座 Beta 3.8",
+          "id": null
+        },
+        {
+          "label": "综合生图预设 原始名称：presetComplete ID: studio-complete",
+          "id": null
+        },
+        {
+          "label": "技术详情: 综合生图预设",
+          "id": null
+        },
+        {
+          "label": "无限四代（生图适配） 原始名称：presetInfinite ID: dsh-infinite-gen-4",
+          "id": null
+        },
+        {
+          "label": "技术详情: 无限四代（生图适配）",
+          "id": null
+        },
+        {
+          "label": "无限五代 · 生图适配 原始名称：presetInfiniteFive ID: dsh-infinite-gen-5",
+          "id": null
+        },
+        {
+          "label": "技术详情: 无限五代 · 生图适配",
+          "id": null
+        }
+      ],
+      "defaultButton": null
+    },
+    "boxes": {
+      "composer": {
+        "rect": {
+          "x": 262,
+          "y": 614.8,
+          "width": 754.4,
+          "height": 154,
+          "right": 1016.4,
+          "bottom": 768.8
+        },
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "clientWidth": 753,
+        "clientHeight": 152,
+        "scrollWidth": 753,
+        "scrollHeight": 152
+      },
+      "resourcePresetPanel": {
+        "rect": {
+          "x": 1042.4,
+          "y": 320.2,
+          "width": 316,
+          "height": 530.2,
+          "right": 1358.4,
+          "bottom": 850.4
+        },
+        "overflowX": "auto",
+        "overflowY": "auto",
+        "clientWidth": 311,
+        "clientHeight": 530,
+        "scrollWidth": 311,
+        "scrollHeight": 530
+      },
+      "root": {
+        "rect": {
+          "x": 18,
+          "y": 128.6,
+          "width": 1350.4,
+          "height": 731.8,
+          "right": 1368.4,
+          "bottom": 860.4
+        },
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "clientWidth": 1350,
+        "clientHeight": 732,
+        "scrollWidth": 1350,
+        "scrollHeight": 732
+      }
+    }
+  }
+}

@@ -764,13 +764,25 @@ export function invalidateAgentHistoryImage(id: string | readonly string[]): voi
   if (changed) writeAgentWorkspace(workspace);
 }
 
-export function writeAgentWorkspace(workspace: AgentWorkspaceData) {
+export function writeAgentWorkspace(workspace: AgentWorkspaceData, presetSelection?: {conversationId:string;presetId:string}) {
   // A still-open renderer editor may save a snapshot from before deletion.
   // Resolve identities at the write boundary too, not only on the next read.
   const normalized = resolvedWorkspace(normalizeAgentWorkspace({ ...workspace, updatedAt: now() }, true));
   return getAgentSqlStore().transaction((tx) => {
     const state = tx.getR4State();
-    const changed = syncLegacyAgentWorkspaceR4(state, normalized);
+    let changed = syncLegacyAgentWorkspaceR4(state, normalized);
+    if (presetSelection) {
+      const conversation = state.conversations[presetSelection.conversationId];
+      if (!conversation || !state.assistantPresets[presetSelection.presetId]) throw new Error('导入预设的会话或正文不存在。');
+      conversation.assistantPresetBinding = {
+        presetId: presetSelection.presetId,
+        enabled: conversation.assistantPresetBinding?.enabled ?? state.assistantPresetDefaultBinding?.enabled ?? true,
+      };
+      // Import selection affects future captures; existing queued snapshots stay intact.
+      delete conversation.config;
+      delete conversation.configurationIssue;
+      changed = true;
+    }
     tx.setWorkspace(normalized);
     if (changed) tx.setR4State(state);
     return tx.getWorkspace();
@@ -1108,8 +1120,8 @@ export async function importStudioPresetFiles():Promise<AgentWorkspaceMutationRe
   else {workspace.samplerPresets.push(preset);selectedIds.push(preset.id);}
  }
  const chat=workspace.conversations.find(item=>item.id===workspace.selectedConversationId&&!item.archivedAt);
- if(chat){chat.studioPresetId='tavern:'+selectedIds[0];workspace.studioDefaults=normalizeStudioDefaults({...workspace.studioDefaults,studioPresetId:chat.studioPresetId});}
- return {ok:true,workspace:writeAgentWorkspace(workspace),message:`${systemPromptImportText(language).import}: ${imported.length}${warnings.length?'\n'+warnings.join('\n'):''}`};
+ if(chat)chat.studioPresetId='tavern:'+selectedIds[0];
+ return {ok:true,workspace:writeAgentWorkspace(workspace,chat?{conversationId:chat.id,presetId:chat.studioPresetId!}:undefined),message:`${systemPromptImportText(language).import}: ${imported.length}${warnings.length?'\n'+warnings.join('\n'):''}`};
 }
 
 function uniquePath(directory: string, fileName: string) {

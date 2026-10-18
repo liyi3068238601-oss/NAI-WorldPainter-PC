@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-18T09:39:25.440Z",
+  "mode": "Actual packaged Windows app, isolated synthetic profile; native sky clicks; CDP read-only projection/geometry and explicitly emulated narrow viewport",
+  "isolation": {
+    "realUserProfileUsed": false,
+    "providerRequestsTriggered": false,
+    "existingUserWindowModified": false
+  },
+  "assets": [
+    "PiAgentPage-BdTDle1Y.js",
+    "PiAgentPage-BgWFD8nP.css"
+  ],
+  "checks": {
+    "onlyResourcePresetControl": true,
+    "footerPresetControlRemoved": true,
+    "presetSelectionMatchesConfig": true,
+    "enabledFalseAndTrueMatchConfig": true,
+    "historicalEnabledUnchanged": true,
+    "configurationPersistedAfterProcessRestart": true,
+    "defaultActionVisibleButNotClicked": true,
+    "textareaSendOverlap": false
+  },
+  "evidence": {
+    "nativeScreenshot": "screenshots/preset-resource-list-native.png",
+    "domAudit": "screenshots/preset-dom-audit.json",
+    "selected": "screenshots/builtin-selected.json",
+    "off": "screenshots/preset-off.json",
+    "on": "screenshots/preset-on.json",
+    "afterRestart": "screenshots/after-restart-idle-binding.json",
+    "nativeGeometry": "screenshots/resource-list-native-100.json",
+    "narrowGeometry": "screenshots/viewport-800x720-drawer-closed.json",
+    "narrowScreenshot": "screenshots/viewport-800x720-drawer-closed.png",
+    "stopReceipt": "stop-receipt.json"
+  },
+  "nativeViewport": {
+    "width": 1386,
+    "height": 902,
+    "dpr": 1.25
+  },
+  "narrowViewport": {
+    "width": 800,
+    "height": 720,
+    "mode": "CDP viewport emulation; not native resize"
+  },
+  "cleanup": {
+    "processAbsent": true,
+    "debugPortListening": false,
+    "alreadyAbsentWhenRootChecked": true
+  },
+  "limitations": [
+    "Synthetic running placeholder disabled chat switching; per-chat native switching was not accepted. Restart reads the requested original conversation ID explicitly, independent of selected chat.",
+    "No real model/send/generation request; default-setting action was observed, not clicked.",
+    "800px is renderer viewport emulation; Windows DPI was not changed."
+  ],
+  "reviewedByRoot": "Native screenshot, narrow screenshot, real-preload records, geometry, full test results and package hashes independently checked."
+}

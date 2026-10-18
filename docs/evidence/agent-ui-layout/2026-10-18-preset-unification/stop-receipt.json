@@ -1,0 +1,13 @@
+{
+  "createdAtUtc": "2026-10-18T09:39:25.3680127Z",
+  "pid": 47908,
+  "executable": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-preset-unification-20261018\\package\\win-unpacked\\NAI WorldPainter PC.exe",
+  "profile": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-preset-unification-20261018\\profile",
+  "processAlreadyAbsentBeforeThisReceipt": true,
+  "stopRequestedByThisReceipt": false,
+  "verifiedExpectedExecutableAndProfile": null,
+  "processAbsentAfterStop": true,
+  "debugPort": 9453,
+  "debugPortStillListening": false,
+  "otherUserProcessesTouched": false
+}

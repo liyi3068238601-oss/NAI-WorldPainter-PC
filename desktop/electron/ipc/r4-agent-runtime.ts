@@ -207,7 +207,7 @@ export class R4AgentRuntime{
       const turn=await (this.dependencies.completeTurn??completeStudioPiTurn)({settings,conversationId:item.conversationId,messageId,
         reasoningEffort:(item.conversationConfig.publicParameters.reasoningEffort??'auto') as AgentReasoningEffort,
         sessionOptions,configuredSystemPrompt:item.conversationConfig.enabled?item.conversationConfig.body??'':'',
-        resourceContext:studioCreativeReferenceData(workspace,causalChat,[]),worldpainterKnowledge:knowledge,skillDirectory,
+        resourceContext:studioCreativeReferenceData(workspace,causalChat,[],item.conversationConfig),worldpainterKnowledge:knowledge,skillDirectory,
         readSkill:id=>studioReadSkill(readAgentWorkspace(),causalChat,id,item.text),
         prompt:this.dependencies.images(transcript,item.conversationId,settings),
         toolHistory:Object.fromEntries(causal.filter(message=>message.tools.length).map(message=>[message.id,message.tools])),

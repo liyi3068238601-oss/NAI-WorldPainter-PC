@@ -69,6 +69,68 @@ afterEach(async()=>{
 });
 
 describe('actual R4 Pi / SQL / host / worker integration with local fake providers',()=>{
+  it('uses the queued preset snapshot for runtime metadata and body after the current selection changes',async()=>{
+    const host=getR4CreativeHost(),initial=host.read('chat');
+    const oldPresetId='queued-preset',newPresetId='current-preset',oldBody='frozen queued preset body';
+    fixture.store!.transaction(tx=>{
+      const state=tx.getR4State();
+      state.assistantPresets[oldPresetId]={id:oldPresetId,name:'Queued preset name',body:oldBody,revision:7,hash:'stale-stored-hash',source:'user'};
+      state.assistantPresets[newPresetId]={id:newPresetId,name:'Current preset name',body:'current preset body',revision:12,hash:'current-hash',source:'user'};
+      state.conversations.chat.assistantPresetBinding={presetId:oldPresetId,enabled:true};
+      delete state.conversations.chat.config;
+      const workspace=tx.getWorkspace();
+      workspace.conversations[0].studioPresetId='dsh-infinite-gen-4';
+      workspace.conversations[0].studioTemplateEnabled=true;
+      tx.setWorkspace(workspace);tx.setR4State(state);
+    });
+
+    const turnOptions:Record<string,any>[]=[];
+    const isolatedRuntime=new R4AgentRuntime({
+      emit:()=>{},activeRequests:new Map(),approvals:new StudioPiApprovals(),images:messages=>messages,
+      smoothEmitter:()=>({push:()=>{},flush:()=>{}}),
+      completeTurn:(async (options:unknown)=>{turnOptions.push(options as Record<string,any>);return {content:'queued turn completed'};}) as never,
+    });
+    const queue=isolatedRuntime.queue();
+    let release!:()=>void;
+    const heldWork=new Promise<void>(resolve=>{release=resolve;});
+    const hold=queue.withConversation('chat',()=>heldWork);
+    await Promise.resolve();
+    let frozenConfig:unknown;
+
+    try{
+      const admitted=isolatedRuntime.send({conversationId:'chat',creationId:initial.currentCreationId,text:'use the selected assistant preset'});
+      expect(admitted.ok).toBe(true);
+      const queued=fixture.store!.readR4State().messageQueue[admitted.queueId!]!;
+      expect(queued.conversationConfig).toMatchObject({presetId:oldPresetId,enabled:true,body:oldBody,revision:7});
+      frozenConfig=structuredClone(queued.conversationConfig);
+
+      const changed=await host.command({conversationId:'chat',type:'set_preset_binding',args:{presetId:newPresetId,enabled:true}});
+      expect(changed.ok).toBe(true);
+      fixture.store!.transaction(tx=>{
+        const workspace=tx.getWorkspace();
+        workspace.conversations[0].studioPresetId='dsh-infinite-gen-5';
+        tx.setWorkspace(workspace);
+      });
+      expect(getR4CreativeHost().read('chat').assistantPresetBinding).toMatchObject({presetId:newPresetId,enabled:true});
+      expect(fixture.store!.readR4State().conversations.chat.config).toMatchObject({presetId:newPresetId,body:'current preset body',revision:12});
+    }finally{
+      release();
+      await hold;
+      await queue.kick('chat');
+    }
+
+    expect(turnOptions).toHaveLength(1);
+    const options=turnOptions[0];
+    const resourceContext=JSON.parse(options.resourceContext);
+    expect(options.configuredSystemPrompt).toBe(oldBody);
+    expect(resourceContext.preset).toEqual({
+      id:oldPresetId,enabled:true,revision:7,hash:createHash('sha256').update(oldBody).digest('hex'),
+    });
+    expect(JSON.stringify(resourceContext.preset)).not.toContain('presetInfinite');
+    expect(JSON.stringify(resourceContext.preset)).not.toContain('Current preset name');
+    expect(Object.values(fixture.store!.readR4State().messageQueue)[0].conversationConfig).toEqual(frozenConfig);
+  });
+
   it('explicitly continues a fresh task through Pi and the worker without replaying or clearing a prior uncertain paid service',async()=>{
     const host=getR4CreativeHost(),initial=host.read('chat');
     fixture.store!.transaction(tx=>{const state=tx.getR4State();
