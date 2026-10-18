@@ -1,0 +1,521 @@
+{
+  "mode": "packaged Windows x64 cold-start; native physical Electron window 1386x902; uiTypography.scale=100 theme=dark; current-creation pane open; title/body/link/draft visible",
+  "target": {
+    "id": "727F3AB022D22ED77B3C6415A833E04D",
+    "title": "绘世 · NAI WorldPainter",
+    "url": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/.tmp/agent-ui-layout-20261018/package/win-unpacked/resources/app.asar/dist/index.html"
+  },
+  "buildAssets": [
+    "PiAgentPage-BOH_rexv.js",
+    "PiAgentPage-Bv4hgxH8.css"
+  ],
+  "screenshot": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-ui-layout-20261018\\screenshots\\final-package-body-link-native-1387x902.png",
+  "geometry": {
+    "viewport": {
+      "innerWidth": 1386,
+      "innerHeight": 902,
+      "devicePixelRatio": 1.25,
+      "screenWidth": 2048,
+      "screenHeight": 1152
+    },
+    "boxes": {
+      "root": {
+        "x": 18,
+        "y": 128.6,
+        "width": 1350.4,
+        "height": 731.8,
+        "right": 1368.4,
+        "bottom": 860.4,
+        "clientWidth": 1350,
+        "clientHeight": 732,
+        "scrollWidth": 1350,
+        "scrollHeight": 732,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "grid"
+      },
+      "main": {
+        "x": 18,
+        "y": 186.6,
+        "width": 1014.4,
+        "height": 673.8,
+        "right": 1032.4,
+        "bottom": 860.4,
+        "clientWidth": 1014,
+        "clientHeight": 674,
+        "scrollWidth": 1014,
+        "scrollHeight": 674,
+        "overflowX": "hidden",
+        "overflowY": "auto",
+        "display": "flex"
+      },
+      "transcript": {
+        "x": 18,
+        "y": 186.6,
+        "width": 1014.4,
+        "height": 402.6,
+        "right": 1032.4,
+        "bottom": 589.2,
+        "clientWidth": 1014,
+        "clientHeight": 403,
+        "scrollWidth": 1014,
+        "scrollHeight": 403,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "block"
+      },
+      "composeArea": {
+        "x": 18,
+        "y": 589.2,
+        "width": 1014.4,
+        "height": 271.2,
+        "right": 1032.4,
+        "bottom": 860.4,
+        "clientWidth": 1014,
+        "clientHeight": 271,
+        "scrollWidth": 1014,
+        "scrollHeight": 271,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "block"
+      },
+      "attachments": {
+        "x": 55.2,
+        "y": 597.2,
+        "width": 940,
+        "height": 63.6,
+        "right": 995.2,
+        "bottom": 660.8,
+        "clientWidth": 940,
+        "clientHeight": 64,
+        "scrollWidth": 940,
+        "scrollHeight": 64,
+        "overflowX": "auto",
+        "overflowY": "auto",
+        "display": "flex"
+      },
+      "shell": {
+        "x": 55.2,
+        "y": 660.8,
+        "width": 940,
+        "height": 108,
+        "right": 995.2,
+        "bottom": 768.8,
+        "clientWidth": 938,
+        "clientHeight": 106,
+        "scrollWidth": 938,
+        "scrollHeight": 106,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "flex"
+      },
+      "grip": {
+        "x": 56,
+        "y": 661.6,
+        "width": 938.4,
+        "height": 16,
+        "right": 994.4,
+        "bottom": 677.6,
+        "clientWidth": 938,
+        "clientHeight": 16,
+        "scrollWidth": 938,
+        "scrollHeight": 16,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "grid"
+      },
+      "composer": {
+        "x": 56,
+        "y": 677.6,
+        "width": 938.4,
+        "height": 90.4,
+        "right": 994.4,
+        "bottom": 768,
+        "clientWidth": 938,
+        "clientHeight": 90,
+        "scrollWidth": 938,
+        "scrollHeight": 90,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "textarea": {
+        "x": 106,
+        "y": 681.6,
+        "width": 780.8,
+        "height": 76.4,
+        "right": 886.8,
+        "bottom": 758,
+        "clientWidth": 781,
+        "clientHeight": 76,
+        "scrollWidth": 781,
+        "scrollHeight": 76,
+        "overflowX": "auto",
+        "overflowY": "auto",
+        "display": "block"
+      },
+      "send": {
+        "x": 894.8,
+        "y": 716,
+        "width": 89.6,
+        "height": 42,
+        "right": 984.4,
+        "bottom": 758,
+        "clientWidth": 88,
+        "clientHeight": 40,
+        "scrollWidth": 88,
+        "scrollHeight": 40,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "steer": null,
+      "stop": null,
+      "config": {
+        "x": 56.2,
+        "y": 776.8,
+        "width": 938,
+        "height": 32,
+        "right": 994.2,
+        "bottom": 808.8,
+        "clientWidth": 938,
+        "clientHeight": 32,
+        "scrollWidth": 938,
+        "scrollHeight": 32,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "model": {
+        "x": 56.2,
+        "y": 776.8,
+        "width": 324.6,
+        "height": 32,
+        "right": 380.8,
+        "bottom": 808.8,
+        "clientWidth": 325,
+        "clientHeight": 32,
+        "scrollWidth": 325,
+        "scrollHeight": 32,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "preset": {
+        "x": 390.8,
+        "y": 776.8,
+        "width": 539.2,
+        "height": 32,
+        "right": 930,
+        "bottom": 808.8,
+        "clientWidth": 539,
+        "clientHeight": 32,
+        "scrollWidth": 539,
+        "scrollHeight": 32,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "context": {
+        "x": 940,
+        "y": 776.8,
+        "width": 54.2,
+        "height": 32,
+        "right": 994.2,
+        "bottom": 808.8,
+        "clientWidth": 53,
+        "clientHeight": 30,
+        "scrollWidth": 53,
+        "scrollHeight": 30,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "actions": {
+        "x": 56.2,
+        "y": 815.8,
+        "width": 938,
+        "height": 34.6,
+        "right": 994.2,
+        "bottom": 850.4,
+        "clientWidth": 938,
+        "clientHeight": 35,
+        "scrollWidth": 938,
+        "scrollHeight": 35,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "modes": {
+        "x": 56.2,
+        "y": 816.8,
+        "width": 151.6,
+        "height": 33.6,
+        "right": 207.8,
+        "bottom": 850.4,
+        "clientWidth": 150,
+        "clientHeight": 32,
+        "scrollWidth": 150,
+        "scrollHeight": 32,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "web": {
+        "x": 217.8,
+        "y": 819.6,
+        "width": 78,
+        "height": 28,
+        "right": 295.8,
+        "bottom": 847.6,
+        "clientWidth": 78,
+        "clientHeight": 28,
+        "scrollWidth": 78,
+        "scrollHeight": 28,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "imageSettings": {
+        "x": 305.8,
+        "y": 819.6,
+        "width": 122.3,
+        "height": 28,
+        "right": 428.1,
+        "bottom": 847.6,
+        "clientWidth": 122,
+        "clientHeight": 28,
+        "scrollWidth": 122,
+        "scrollHeight": 28,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "flex"
+      },
+      "sidebar": {
+        "x": 18,
+        "y": 186.6,
+        "width": 0,
+        "height": 673.8,
+        "right": 18,
+        "bottom": 860.4,
+        "clientWidth": 0,
+        "clientHeight": 674,
+        "scrollWidth": 0,
+        "scrollHeight": 674,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "block"
+      },
+      "resources": {
+        "x": 1032.4,
+        "y": 186.6,
+        "width": 336,
+        "height": 673.8,
+        "right": 1368.4,
+        "bottom": 860.4,
+        "clientWidth": 336,
+        "clientHeight": 674,
+        "scrollWidth": 336,
+        "scrollHeight": 674,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "block"
+      },
+      "rightPanel": {
+        "x": 1032.4,
+        "y": 186.6,
+        "width": 336,
+        "height": 673.8,
+        "right": 1368.4,
+        "bottom": 860.4,
+        "clientWidth": 336,
+        "clientHeight": 674,
+        "scrollWidth": 336,
+        "scrollHeight": 674,
+        "overflowX": "hidden",
+        "overflowY": "hidden",
+        "display": "flex"
+      },
+      "assistantReply": {
+        "x": 334.6,
+        "y": -227,
+        "width": 574,
+        "height": 25.2,
+        "right": 908.6,
+        "bottom": -201.8,
+        "clientWidth": 574,
+        "clientHeight": 25,
+        "scrollWidth": 574,
+        "scrollHeight": 25,
+        "overflowX": "visible",
+        "overflowY": "visible",
+        "display": "block"
+      }
+    },
+    "overlap": {
+      "textareaSend": false
+    },
+    "hitTests": {
+      "textarea": {
+        "x": 496.4,
+        "y": 719.8,
+        "topTag": "TEXTAREA",
+        "topText": "",
+        "topClass": "",
+        "covered": false
+      },
+      "send": {
+        "x": 939.6,
+        "y": 737,
+        "topTag": "SPAN",
+        "topText": "排队发送",
+        "topClass": "",
+        "covered": false
+      },
+      "grip": {
+        "x": 525.2,
+        "y": 669.6,
+        "topTag": "SPAN",
+        "topText": "",
+        "topClass": "",
+        "covered": false
+      },
+      "config": {
+        "x": 525.2,
+        "y": 792.8,
+        "topTag": "SELECT",
+        "topText": "合成助手预设 · 长标题压力测试 · 保留暖金暗色主题与明亮主题的工作台布局 夏瑾 天琴座 Beta 3.8 综合生图预",
+        "topClass": "",
+        "covered": false
+      },
+      "actions": {
+        "x": 525.2,
+        "y": 833.1,
+        "topTag": "DIV",
+        "topText": "每次确认 全自动 网页查询 生图设置 High 可能消耗 Anlas",
+        "topClass": "pi-compose-actions-row",
+        "covered": false
+      },
+      "model": {
+        "x": 218.5,
+        "y": 792.8,
+        "topTag": "SPAN",
+        "topText": "绘世合成服务商（界面压力测试专用） · Synthetic Long-Name Model · 256K Context",
+        "topClass": "agent-model-picker-trigger-name",
+        "covered": false
+      },
+      "preset": {
+        "x": 660.4,
+        "y": 792.8,
+        "topTag": "SELECT",
+        "topText": "合成助手预设 · 长标题压力测试 · 保留暖金暗色主题与明亮主题的工作台布局 夏瑾 天琴座 Beta 3.8 综合生图预",
+        "topClass": "",
+        "covered": false
+      },
+      "context": {
+        "x": 967.1,
+        "y": 792.8,
+        "topTag": "BUTTON",
+        "topText": "1%",
+        "topClass": "pi-context-trigger",
+        "covered": false
+      },
+      "web": {
+        "x": 256.8,
+        "y": 833.6,
+        "topTag": "BUTTON",
+        "topText": "网页查询",
+        "topClass": "pi-option-toggle",
+        "covered": false
+      },
+      "imageSettings": {
+        "x": 366.9,
+        "y": 833.6,
+        "topTag": "SPAN",
+        "topText": "生图设置",
+        "topClass": "",
+        "covered": false
+      }
+    },
+    "mainScroll": {
+      "clientWidth": 1014,
+      "clientHeight": 674,
+      "scrollWidth": 1014,
+      "scrollHeight": 674,
+      "overflowY": "auto"
+    },
+    "controls": {
+      "visibleCount": 29,
+      "visibleOutsideRoot": [],
+      "partiallyClippedVisible": [],
+      "rawOutsideRootCount": 16
+    },
+    "scrollables": [
+      {
+        "className": "pi-transcript",
+        "id": "",
+        "clientHeight": 403,
+        "scrollHeight": 1841,
+        "scrollTop": 482.3999938964844,
+        "maxScroll": 1438,
+        "overflowY": "auto"
+      },
+      {
+        "className": "r4-creative-panel",
+        "id": "",
+        "clientHeight": 623,
+        "scrollHeight": 1115,
+        "scrollTop": 0,
+        "maxScroll": 492,
+        "overflowY": "auto"
+      }
+    ],
+    "typography": {
+      "scale": "100",
+      "rootFontSize": "13px",
+      "body": {
+        "fontSize": "13px",
+        "fontWeight": "500",
+        "color": "rgb(241, 239, 232)",
+        "lineHeight": "normal"
+      },
+      "message": {
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "color": "rgb(241, 239, 232)",
+        "lineHeight": "25.2px"
+      },
+      "heading": {
+        "fontSize": "16px",
+        "fontWeight": "600",
+        "color": "rgb(241, 239, 232)",
+        "lineHeight": "24px"
+      },
+      "strong": null,
+      "link": {
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "color": "color(srgb 0.957647 0.855686 0.564706)",
+        "lineHeight": "25.2px"
+      },
+      "textarea": {
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "color": "rgb(241, 239, 232)",
+        "lineHeight": "23.1px"
+      }
+    },
+    "focus": {
+      "tag": "BUTTON",
+      "id": "",
+      "ariaLabel": "生图智能体",
+      "className": "active"
+    },
+    "theme": {
+      "htmlClass": "theme-dark",
+      "bodyClass": "",
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(241, 239, 232)"
+    }
+  }
+}

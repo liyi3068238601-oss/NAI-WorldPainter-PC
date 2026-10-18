@@ -124,7 +124,7 @@ export function AgentModelPicker({registry,onSelect,onManage,disabled,language}:
     :activeProvider?`${providerName(activeProvider,activeIndex)} · ${localText.chooseModel}`:localText.chooseModel;
 
   return <>
-    <button ref={anchor} type="button" className="agent-model-picker-trigger" disabled={disabled} aria-expanded={open} aria-controls={panelId} aria-label={triggerLabel} onClick={toggle}>
+    <button ref={anchor} type="button" className="agent-model-picker-trigger" disabled={disabled} aria-expanded={open} aria-controls={panelId} aria-label={triggerLabel} title={triggerLabel} onClick={toggle}>
       <span className="agent-model-picker-trigger-name">{triggerLabel}</span><span aria-hidden="true" className="agent-model-picker-chevron">⌄</span>
     </button>
     {open&&<AnchoredPopover anchor={anchor} onClose={close} label={localText.chooseModel}>

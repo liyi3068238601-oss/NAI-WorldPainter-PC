@@ -1,0 +1,24 @@
+{
+  "mode": "read-only real preload projection on packaged app; synthetic isolated fixture",
+  "target": {
+    "id": "727F3AB022D22ED77B3C6415A833E04D",
+    "title": "绘世 · NAI WorldPainter",
+    "url": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/.tmp/agent-ui-layout-20261018/package/win-unpacked/resources/app.asar/dist/index.html"
+  },
+  "projection": {
+    "conversationId": "37cd3278-8847-4718-a4ca-cd14aeced1a3",
+    "currentCreationId": "synthetic-layout-current-creation",
+    "assistantPresetBinding": {
+      "presetId": "synthetic-agent-layout-preset",
+      "enabled": false
+    },
+    "config": {
+      "enabled": false,
+      "presetId": "synthetic-agent-layout-preset"
+    },
+    "historicalEnabled": [
+      true,
+      true
+    ]
+  }
+}

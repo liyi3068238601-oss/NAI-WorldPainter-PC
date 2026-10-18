@@ -15,4 +15,24 @@ describe('account selector preserves the application grid',()=>{
   expect(toolbar!.getText(source)).toContain('<NaiAccountManager />');
   const chrome=readFileSync('src/app/AppChrome.tsx','utf8');expect(chrome).toContain('children?: ReactNode');expect(chrome).toContain('{children}');
  });
+
+ it('compacts the shared chrome only on Agent while keeping scaled controls reachable',()=>{
+  const app=readFileSync('src/App.tsx','utf8');
+  expect(app).toContain('data-agent-chrome-compact={activeTab === "agent" ? "true" : undefined}');
+  const css=readFileSync('src/app/agent-compact-chrome.css','utf8');
+  const selectors=[...css.replace(/\/\*[\s\S]*?\*\//g,'').matchAll(/([^{}]+)\{[^{}]*\}/g)].map(match=>match[1].trim());
+  expect(selectors.length).toBeGreaterThan(0);
+  for(const selector of selectors) expect(selector.startsWith('html .app-shell[data-agent-chrome-compact="true"]')).toBe(true);
+  // Compaction must not shrink users' chosen text or make existing controls
+  // unreachable. Native geometry evidence checks the actual resulting sizes.
+  expect(css).not.toMatch(/font-size\s*:|display\s*:\s*none|visibility\s*:\s*hidden|pointer-events\s*:\s*none/);
+
+  const main=readFileSync('src/main.tsx','utf8');
+  expect(main.indexOf('import "./app/agent-compact-chrome.css"')).toBeGreaterThan(main.indexOf('import "./typography.css"'));
+  const chrome=readFileSync('src/app/AppChrome.tsx','utf8');
+  for(const entry of ['stream-preview-toggle','chromeText.outputDir','chromeText.settings','chromeText.docs']) expect(chrome).toContain(entry);
+  const navigation=readFileSync('src/app/AppTabBar.tsx','utf8');
+  expect(navigation).toContain('tab-overflow-control');
+  expect(navigation).toContain('tab-arrange-toggle');
+ });
 });

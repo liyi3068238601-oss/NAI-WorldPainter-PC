@@ -91,7 +91,11 @@ it('wires owned page controls to real preload APIs and keeps model setup out of 
   expect(source).toContain('onClick={()=>void continueEditingArtwork(artwork)}');
   expect(source).not.toContain('importAttachments([item.filePath])');
   expect(source).toContain('studioWebSearchEnabled:!sessionOptions.webSearchEnabled');
-  expect(source).toContain('studioTemplateEnabled:!sessionOptions.templateEnabled');
+  // R4's preset checkbox owns the actual frozen enabled flag. The old Tavern
+  // toggle only changed a legacy context marker and must not impersonate it.
+  expect(source).toContain('binding={creativeState?.assistantPresetBinding}');
+  expect(source).toContain('onChange={setPresetBinding}');
+  expect(source).not.toContain('studioTemplateEnabled:!sessionOptions.templateEnabled');
   expect(source).not.toMatch(/executeShell|readFileSync|mcpClient/);
 });
 

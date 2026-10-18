@@ -1,0 +1,23 @@
+{
+  "capturedAt": "2026-10-18T08:43:08.314Z",
+  "mode": "Synthetic fixture in isolated userData; actual Electron main/preload/renderer; no provider request",
+  "databaseRelativePath": "profile\\WorldPainterWorkspace\\agent-state.sqlite",
+  "conversationIds": {
+    "idle": "37cd3278-8847-4718-a4ca-cd14aeced1a3",
+    "running": "synthetic-layout-running-conversation"
+  },
+  "creationId": "synthetic-layout-current-creation",
+  "proposalRef": "synthetic-layout-proposal@1",
+  "providerId": "synthetic-agent-layout-provider",
+  "modelId": "synthetic-layout-model-v1",
+  "modelDisplayName": "Synthetic Long-Name Model · 256K Context · Reasoning High · Vision Enabled · UI Layout Stress Fixture 2026",
+  "presetId": "synthetic-agent-layout-preset",
+  "attachmentHashes": {
+    "reference": "7cb78149745c483871ebbe12998d96daa2cd785739ab397fee84407f52294502",
+    "output": "fc369ddcab163ab840cedec6270f9b8430ac0449d2dd4a4b23690629123f93b3",
+    "draft": "cb78c07fced426399dfaa1806a038c598842de6b224bd0f997176d1a685520c2"
+  },
+  "longReplyCharacters": 1286,
+  "synthetic": true,
+  "noProviderRequest": true
+}

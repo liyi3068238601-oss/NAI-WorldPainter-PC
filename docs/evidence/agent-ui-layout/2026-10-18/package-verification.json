@@ -1,0 +1,48 @@
+{
+  "checkedAt": "2026-10-18T08:55:37.981Z",
+  "packageDirectory": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-ui-layout-20261018\\package\\win-unpacked",
+  "executableSha256": "3b360ec5f206b2f4126a7a7d2b5eac41fc5e732cd83d392c5805384d43d6e12a",
+  "asarSha256": "c1dc6f91389a8da6c951cff832fce755063704bfd94f07295a818aadd8adaea6",
+  "matchedBuildFiles": [
+    {
+      "path": "dist-electron/electron/main.js",
+      "bytes": 79842,
+      "sha256": "d44562e9df70cf7af6066e0ea93a80321aa584ed144d3e77299822ebfda00507"
+    },
+    {
+      "path": "dist-electron/electron/preload.js",
+      "bytes": 34356,
+      "sha256": "2e90fbcae691e3aee685930bb88bd3dce60012379f96d20b9923f284057618f1"
+    },
+    {
+      "path": "dist-electron/shared/agent-ux-locales.json",
+      "bytes": 67999,
+      "sha256": "2f01bf579e02673e67af6e9cfbd4c5f025ee580221059396ce49898696e30245"
+    },
+    {
+      "path": "dist/assets/PiAgentPage-BOH_rexv.js",
+      "bytes": 324632,
+      "sha256": "cb7434d6e850ae9b8941232750d3f2d2616dcd7c3c1c7d192775241129090a4e"
+    },
+    {
+      "path": "dist/assets/PiAgentPage-Bv4hgxH8.css",
+      "bytes": 93530,
+      "sha256": "ffaec844488d56ca80427d5c7b102233274fc618884bb0cb2b50e5430a17c631"
+    },
+    {
+      "path": "dist/assets/index-C9tEex-C.css",
+      "bytes": 679990,
+      "sha256": "0a9d2da8ff6833d7907aa2163d5dab0681b870130d0741e5114270367abe9522"
+    },
+    {
+      "path": "dist/assets/index-KU5qv6Uy.js",
+      "bytes": 1321805,
+      "sha256": "38122a7a985727f834db70cfae986aac8379e226c9d0a61dcbf4b5dc79084e57"
+    },
+    {
+      "path": "dist/index.html",
+      "bytes": 1855,
+      "sha256": "1ccd5af4aee1456f05e451f72f5ccdee1fae0f2412bfec19f630650633d21c09"
+    }
+  ]
+}

@@ -7220,7 +7220,7 @@ function MainPage() {
   }, [toast, clearToast]);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-agent-chrome-compact={activeTab === "agent" ? "true" : undefined}>
       <AppTitleBar />
       <div className="app-notice-slot">
         <UpdateBanner />

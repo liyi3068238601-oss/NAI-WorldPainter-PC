@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "createdAtUtc": "2026-10-18T09:12:25.6549862Z",
+  "scope": "Native Windows Electron UI layout verification; production source not modified by this QA agent.",
+  "isolation": {
+    "runRoot": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-ui-layout-20261018",
+    "profile": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-ui-layout-20261018\\profile",
+    "fixture": "Synthetic local conversation, creation, model/preset labels and generated PNG attachments.",
+    "realUserProfileUsed": false,
+    "realModelOrPaidApiCalled": false,
+    "sendOrQueueTriggered": false
+  },
+  "packagedSmoke": {
+    "mode": "Actual packaged Windows x64 app cold start with main and preload; isolated profile.",
+    "executable": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-ui-layout-20261018\\package\\win-unpacked\\NAI WorldPainter PC.exe",
+    "rendererUrl": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/.tmp/agent-ui-layout-20261018/package/win-unpacked/resources/app.asar/dist/index.html",
+    "cssViewport": "1386x902",
+    "devicePixelRatio": 1.25,
+    "equivalentScreenshotPixels": "about 1733x1128",
+    "appTypographyScale": 100,
+    "theme": "dark / warm gold",
+    "loadedAssets": [
+      "PiAgentPage-BOH_rexv.js",
+      "PiAgentPage-Bv4hgxH8.css"
+    ],
+    "screenshot": "screenshots/final-package-body-link-native-1387x902.png",
+    "geometry": "screenshots/final-package-body-link-native-1387x902.json",
+    "mainOverflowY": "auto",
+    "textareaSendOverlap": false,
+    "visibleControlsOutsideRoot": [],
+    "partiallyClippedVisibleControls": [],
+    "messageTypography": "14px / 400",
+    "headingTypography": "16px / 600",
+    "linkColor": "warm gold, not browser default blue"
+  },
+  "nativeScaleEvidence": [
+    {
+      "scale": 150,
+      "method": "actual uiTypography.scale setting",
+      "mode": "native physical Electron window",
+      "viewport": "1386x902 CSS",
+      "geometry": "screenshots/final-scale150-native-1387x902.json",
+      "screenshot": "screenshots/final-scale150-native-1387x902.png",
+      "mainOverflowY": "auto",
+      "textareaSendOverlap": false,
+      "assets": [
+        "PiAgentPage-BOH_rexv.js",
+        "PiAgentPage-Bv4hgxH8.css"
+      ]
+    },
+    {
+      "scale": 200,
+      "method": "actual uiTypography.scale setting",
+      "mode": "native physical Electron window",
+      "viewport": "1386x902 CSS",
+      "geometry": "screenshots/final-scale200-native-1387x902.json",
+      "screenshot": "screenshots/final-scale200-native-1387x902.png",
+      "mainOverflowY": "auto",
+      "textareaSendOverlap": false,
+      "assets": [
+        "PiAgentPage-BOH_rexv.js",
+        "PiAgentPage-Bv4hgxH8.css"
+      ]
+    }
+  ],
+  "viewportEvidence": [
+    {
+      "viewport": "1280x720",
+      "mode": "CDP viewport emulation, not physical window resize",
+      "scale": 200,
+      "geometry": "screenshots/final-scale200-viewport-1280x720.json",
+      "screenshot": "screenshots/final-scale200-viewport-1280x720.png",
+      "mainOverflowY": "auto",
+      "textareaSendOverlap": false
+    },
+    {
+      "viewport": "800x720",
+      "mode": "CDP viewport emulation, not physical window resize",
+      "scale": 200,
+      "drawer": "closed for composer/control reachability",
+      "geometry": "screenshots/final-scale200-viewport-800x720-panel-closed.json",
+      "screenshot": "screenshots/final-scale200-viewport-800x720-panel-closed.png",
+      "mainOverflowY": "auto",
+      "textareaSendOverlap": false,
+      "textareaSendAndVisibleControlsHitTestsCovered": false
+    },
+    {
+      "viewport": "800x720",
+      "mode": "CDP viewport emulation",
+      "scale": 200,
+      "drawer": "open as intended aria-modal dialog with scrim",
+      "geometry": "screenshots/final-scale200-viewport-800x720.json",
+      "screenshot": "screenshots/final-scale200-viewport-800x720.png",
+      "escapeClosedDrawerAndDraftPersisted": true
+    }
+  ],
+  "themeEvidence": {
+    "dark": "Packaged final screenshot; warm-gold accent and link preserved.",
+    "light": {
+      "mode": "native physical Electron",
+      "scale": 100,
+      "geometry": "screenshots/final-light-native-1387x902.json",
+      "screenshot": "screenshots/final-light-native-1387x902.png",
+      "background": "rgb(245, 247, 251)",
+      "textareaSendOverlap": false
+    }
+  },
+  "gripEvidence": {
+    "mode": "native sky keyboard interaction on packaged final build",
+    "home": {
+      "geometry": "screenshots/final-package-home-1387x902.json",
+      "ariaValueNow": 108,
+      "shellHeight": 108
+    },
+    "end": {
+      "geometry": "screenshots/final-package-end-1387x902.json",
+      "ariaValueNow": 337,
+      "ariaValueMax": 337,
+      "shellHeight": 337
+    },
+    "homeAndEndAriaMatchActualShell": true,
+    "mainOverflowY": "auto"
+  },
+  "interactionAssertions": {
+    "nativeSkyTypedDraft": "Visible in final screenshot; textarea remained editable; no submit.",
+    "modelMenu": "Opened and inspected; screenshots/final-native-model-menu-1387x902.jpg",
+    "context": "Opened and inspected; screenshots/final-native-context-popover-1387x902.jpg",
+    "imageSettings": "Effort settings popover opened and closed; screenshots/final-native-image-settings-1387x902.jpg",
+    "assistantPreset": {
+      "pre": "screenshots/final-package-preset-before.json",
+      "disabled": "screenshots/final-package-preset-disabled.json",
+      "restored": "screenshots/final-package-preset-restored.json",
+      "observed": "true -> false -> true in real getAgentCreativeState preload projection",
+      "restoredEnabled": true,
+      "currentCreationId": "synthetic-layout-current-creation",
+      "historicalMessageEnabled": [
+        true,
+        true
+      ]
+    },
+    "executionMode": "Full-auto -> per-action confirmation -> full-auto restored; no action executed.",
+    "webSearch": "Toggled off and restored on; no search was run.",
+    "sidebar": "Left conversation sidebar and current-creation pane opened/closed; drawer close returned focus to usable composer.",
+    "template": "Synthetic template label visible in fixture; no generation invoked.",
+    "sendGuideStop": "Send control visible and geometrically reachable; guide/stop controls were not active in idle state. No task was started to expose active-state controls."
+  },
+  "rendererErrors": {
+    "file": "screenshots/renderer-errors.json",
+    "events": []
+  },
+  "processStopReceipt": "stop-receipt.json",
+  "limitations": [
+    "1920x1080 was not separately captured in this final packaged smoke. Native package capture was at 1386x902 CSS (DPR 1.25), about 1733x1128 screenshot pixels; 1280x720 and 800x720 are explicitly viewport emulations.",
+    "Active guide/stop state was not entered because that would require starting a task; send/queue was left untouched."
+  ]
+}

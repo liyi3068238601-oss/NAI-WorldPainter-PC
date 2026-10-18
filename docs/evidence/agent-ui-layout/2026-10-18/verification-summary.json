@@ -1,0 +1,159 @@
+{
+  "checkedAt": "2026-10-18T09:13:21.723Z",
+  "baselineCommit": "cf1205c04ec76701f6e58960a5e0956958804dfe",
+  "scope": "Agent UI layout only; isolated synthetic profile; no real provider request",
+  "automated": {
+    "testFiles": 480,
+    "total": 4351,
+    "passed": 4349,
+    "failed": 0,
+    "skipped": 2,
+    "fullReport": "vitest-final.json",
+    "observedExecutionReceipts": [
+      {
+        "command": "npm run typecheck",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run build (plus final renderer and Electron rebuilds)",
+        "exitCode": 0
+      },
+      {
+        "command": "electron-builder --win --x64 --dir --config .tmp/agent-ui-layout-20261018/electron-builder.config.json",
+        "exitCode": 0
+      }
+    ],
+    "note": "Execution receipt statuses were observed in this task. This summary does not fabricate or replace complete terminal logs."
+  },
+  "geometryChecks": [
+    {
+      "file": "final-package-body-link-native-1387x902.json",
+      "viewport": {
+        "innerWidth": 1386,
+        "innerHeight": 902,
+        "devicePixelRatio": 1.25,
+        "screenWidth": 2048,
+        "screenHeight": 1152
+      },
+      "applicationTextScale": "100",
+      "textareaSendOverlap": false,
+      "toolbarOutsideInput": true,
+      "actionsWithinRoot": true,
+      "mainOverflowY": "auto",
+      "loadedAgentAssets": [
+        "PiAgentPage-BOH_rexv.js",
+        "PiAgentPage-Bv4hgxH8.css"
+      ]
+    },
+    {
+      "file": "final-scale150-native-1387x902.json",
+      "viewport": {
+        "innerWidth": 1386,
+        "innerHeight": 902,
+        "devicePixelRatio": 1.25,
+        "screenWidth": 2048,
+        "screenHeight": 1152
+      },
+      "applicationTextScale": "150",
+      "textareaSendOverlap": false,
+      "toolbarOutsideInput": true,
+      "actionsWithinRoot": true,
+      "mainOverflowY": "auto",
+      "loadedAgentAssets": [
+        "PiAgentPage-BOH_rexv.js",
+        "PiAgentPage-Bv4hgxH8.css"
+      ]
+    },
+    {
+      "file": "final-scale200-native-1387x902.json",
+      "viewport": {
+        "innerWidth": 1386,
+        "innerHeight": 902,
+        "devicePixelRatio": 1.25,
+        "screenWidth": 2048,
+        "screenHeight": 1152
+      },
+      "applicationTextScale": "200",
+      "textareaSendOverlap": false,
+      "toolbarOutsideInput": true,
+      "actionsWithinRoot": true,
+      "mainOverflowY": "auto",
+      "loadedAgentAssets": [
+        "PiAgentPage-BOH_rexv.js",
+        "PiAgentPage-Bv4hgxH8.css"
+      ]
+    },
+    {
+      "file": "final-scale200-viewport-1280x720.json",
+      "viewport": {
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "devicePixelRatio": 1.0000000149011612,
+        "screenWidth": 2048,
+        "screenHeight": 1152
+      },
+      "applicationTextScale": "200",
+      "textareaSendOverlap": false,
+      "toolbarOutsideInput": true,
+      "actionsWithinRoot": true,
+      "mainOverflowY": "auto",
+      "loadedAgentAssets": [
+        "PiAgentPage-BOH_rexv.js",
+        "PiAgentPage-Bv4hgxH8.css"
+      ]
+    },
+    {
+      "file": "final-scale200-viewport-800x720-panel-closed.json",
+      "viewport": {
+        "innerWidth": 800,
+        "innerHeight": 720,
+        "devicePixelRatio": 1.0000000149011612,
+        "screenWidth": 2048,
+        "screenHeight": 1152
+      },
+      "applicationTextScale": "200",
+      "textareaSendOverlap": false,
+      "toolbarOutsideInput": true,
+      "actionsWithinRoot": true,
+      "mainOverflowY": "auto",
+      "loadedAgentAssets": [
+        "PiAgentPage-BOH_rexv.js",
+        "PiAgentPage-Bv4hgxH8.css"
+      ]
+    },
+    {
+      "file": "final-light-native-1387x902.json",
+      "viewport": {
+        "innerWidth": 1386,
+        "innerHeight": 902,
+        "devicePixelRatio": 1.25,
+        "screenWidth": 2048,
+        "screenHeight": 1152
+      },
+      "applicationTextScale": "100",
+      "textareaSendOverlap": false,
+      "toolbarOutsideInput": true,
+      "actionsWithinRoot": true,
+      "mainOverflowY": "auto",
+      "loadedAgentAssets": [
+        "PiAgentPage-BOH_rexv.js",
+        "PiAgentPage-Bv4hgxH8.css"
+      ]
+    }
+  ],
+  "packagedKeyboardHeight": {
+    "Home": 108,
+    "End": 337,
+    "ariaMatchesVisibleHeight": true
+  },
+  "packagedRendererErrorsInMonitoredInterval": 0,
+  "packageHashesRechecked": true,
+  "packageBuildFilesMatched": 8,
+  "isolatedTestProcessesStopped": true,
+  "limitations": [
+    "No real provider or paid generation request",
+    "No Windows DPI change; actual app typography 150/200 tested",
+    "800px is CDP renderer viewport emulation; native minimum width remains 1120px",
+    "Scrollable content may be partially visible at viewport edges"
+  ]
+}

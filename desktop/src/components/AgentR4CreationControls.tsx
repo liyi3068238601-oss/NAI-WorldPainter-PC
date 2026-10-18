@@ -1,6 +1,35 @@
 import type {R4AssistantPreset, R4AssistantPresetBinding, R4ConversationConfigSnapshot, R4Creation, R4QueuedMessage} from '../agent/r4-types';
 import {r4Text} from '../agent/r4-ui';
+import {studioUxText} from '../agent/ux';
 import {LuChevronDown, LuLayers, LuListChecks, LuMessageSquare, LuPlus, LuPanelLeftOpen, LuPanelRightOpen, LuSparkles} from 'react-icons/lu';
+
+const BUILTIN_PRESET_LABELS: Record<string, {name: string; localeKey: string}> = {
+  'dsh-infinite-gen-5': {name: 'presetInfiniteFive', localeKey: 'presetInfiniteFive'},
+  'dsh-infinite-gen-4': {name: 'presetInfinite', localeKey: 'presetInfinite'},
+  'studio-complete': {name: 'presetComplete', localeKey: 'presetComplete'},
+};
+
+function assistantPresetLabel(language: unknown, preset: R4AssistantPreset): string {
+  const builtin = BUILTIN_PRESET_LABELS[preset.id];
+  if (preset.source === 'builtin' && builtin?.name === preset.name) return studioUxText(language, builtin.localeKey);
+  return preset.name;
+}
+
+function assistantPresetTitle(language: unknown, preset: R4AssistantPreset, label: string): string {
+  return `${label}\n${r4Text(language, `原始名称：${preset.name}`, `Original name: ${preset.name}`)}\nID: ${preset.id}`;
+}
+
+function creationTitle(language: unknown, creation: R4Creation): string {
+  const name = creation.title || r4Text(language, '未命名创作', 'Untitled creation');
+  const details = [
+    r4Text(language, `创作：${name}`, `Creation: ${name}`),
+    r4Text(language, `输入修订：v${creation.inputRevision}`, `Input revision: v${creation.inputRevision}`),
+    r4Text(language, `关联作品：${creation.artworkIds.length}`, `Linked artworks: ${creation.artworkIds.length}`),
+    studioUxText(language, 'creationScopeHint'),
+  ];
+  if (creation.legacyStatus === 'legacy_unversioned') details.push(studioUxText(language, 'legacyCreationHint'));
+  return details.join('\n');
+}
 
 export function AgentR4CreationControls(props: {
   language: unknown;
@@ -27,10 +56,10 @@ export function AgentR4CreationControls(props: {
       <div className="r4-chat-title"><LuMessageSquare aria-hidden/><span title={conversationTitle}>{conversationTitle || r4Text(language, '新对话', 'New chat')}</span></div>
     </div>
     <div className="r4-topbar-center">
-      <label className="r4-creation-select"><span><LuLayers aria-hidden/>{r4Text(language, '当前创作', 'Current creation')}</span>
-        <select aria-label={r4Text(language, '当前创作', 'Current creation')} disabled={disabled} value={currentCreationId ?? ''} onChange={event => {if(event.target.value)props.onSelectCreation(event.target.value);}}>
+      <label className="r4-creation-select"><span title={studioUxText(language, 'creationScopeHint')}><LuLayers aria-hidden/>{r4Text(language, '当前创作', 'Current creation')}</span>
+        <select aria-label={r4Text(language, '当前创作', 'Current creation')} title={current ? creationTitle(language, current) : studioUxText(language, 'creationScopeHint')} disabled={disabled} value={currentCreationId ?? ''} onChange={event => {if(event.target.value)props.onSelectCreation(event.target.value);}}>
           {!current&&<option value="">{creations.length ? r4Text(language, '选择创作', 'Choose a creation') : r4Text(language, '暂无创作', 'No creations')}</option>}
-          {creations.map((creation,index)=><option key={creation.id} value={creation.id}>{creation.title || `${r4Text(language, '创作', 'Creation')} ${index+1}`}</option>)}
+          {creations.map((creation,index)=><option key={creation.id} value={creation.id} title={creationTitle(language, creation)}>{creation.title || `${r4Text(language, '创作', 'Creation')} ${index+1}`}</option>)}
         </select><LuChevronDown aria-hidden/>
       </label>
       <button type="button" className="r4-create-creation" disabled={disabled} onClick={props.onCreateCreation}><LuPlus/><span>{r4Text(language, '新建创作', 'New creation')}</span></button>
@@ -65,15 +94,17 @@ export function AgentR4AssistantPresetControl(props: {
   const selectedId = effectiveBinding?.presetId ?? '';
   const enabled = effectiveBinding?.enabled ?? false;
   const selectedPreset = selectedId ? presets[selectedId] : undefined;
+  const presetLabel = studioUxText(language, 'assistantRolePreset');
+  const presetHint = studioUxText(language, 'assistantRolePresetHint');
   const isEnglish = typeof language === 'string' && language.toLowerCase().startsWith('en');
   const unknownLegacy = Boolean(effectiveBinding?.legacyStatus || (selectedId && !selectedPreset));
   const defaultMatches = defaults?.presetId === selectedId && defaults.enabled === enabled;
-  return <div className="r4-preset-control" aria-label={r4Text(language, '助手预设', 'Assistant preset')}>
-    <label className="r4-preset-choice"><span><LuSparkles aria-hidden/>{r4Text(language, '助手预设', 'Assistant preset')}</span>
-      <select aria-label={r4Text(language, '助手预设', 'Assistant preset')} disabled={disabled} value={selectedId} onChange={event=>{if(event.target.value)props.onChange(event.target.value,enabled);}}>
+  return <div className="r4-preset-control" aria-label={presetLabel} title={presetHint}>
+    <label className="r4-preset-choice"><span title={presetHint}><LuSparkles aria-hidden/>{presetLabel}</span>
+      <select aria-label={presetLabel} title={selectedPreset ? assistantPresetTitle(language, selectedPreset, assistantPresetLabel(language, selectedPreset)) : presetHint} disabled={disabled} value={selectedId} onChange={event=>{if(event.target.value)props.onChange(event.target.value,enabled);}}>
         {!selectedId&&<option value="" disabled>{props.restoredConfig?.presetId===null?(isEnglish?'Restored config has no preset':'恢复配置未使用预设'):isEnglish?'Preset is initializing':'预设初始化中'}</option>}
-        {selectedId&&!selectedPreset&&<option value={selectedId} disabled>{isEnglish?'Unavailable legacy preset':'不可用的历史预设'}</option>}
-        {Object.values(presets).sort((a,b)=>a.name.localeCompare(b.name)).map(preset=><option key={preset.id} value={preset.id}>{preset.name}{preset.legacyStatus?' · legacy':''}</option>)}
+        {selectedId&&!selectedPreset&&<option value={selectedId} disabled title={`ID: ${selectedId}`}>{isEnglish?'Unavailable legacy preset':'不可用的历史预设'}</option>}
+        {Object.values(presets).sort((a,b)=>a.name.localeCompare(b.name)).map(preset=>{const label=assistantPresetLabel(language,preset);return <option key={preset.id} value={preset.id} title={assistantPresetTitle(language,preset,label)}>{label}{preset.legacyStatus?' · legacy':''}</option>;})}
       </select>
     </label>
     <label className="r4-preset-enabled"><input type="checkbox" checked={enabled} disabled={disabled||!selectedId||unknownLegacy} onChange={event=>props.onChange(selectedId,event.target.checked)}/><span>{r4Text(language, '启用', 'Enabled')}</span></label>

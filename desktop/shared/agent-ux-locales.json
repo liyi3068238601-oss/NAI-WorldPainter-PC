@@ -1169,11 +1169,39 @@
     "관찰과 추측을 구분하고 지정한 특징을 유지합니다."
   ],
   "presetSwitchHint": [
-    "启用右侧选中的对话预设，影响回复与提示词处理；不会把正文填入输入框，也不改变执行确认方式。",
-    "啟用右側所選的對話預設，影響回覆與提示詞處理；不填入輸入框，也不變更執行確認方式。",
-    "Use the selected conversational preset for replies and prompt processing. It does not paste into the input or change execution approval.",
-    "右側の会話プリセットを応答・プロンプト処理に使用。入力欄への貼付けや実行承認の変更はしません。",
-    "선택한 대화 프리셋을 답변과 프롬프트 처리에 사용합니다. 입력란에 붙여 넣거나 실행 승인 방식을 바꾸지 않습니다."
+    "旧版对话模板开关；R4 助手请求使用“助手角色预设”控件中启用的预设，并按发送时配置执行。模板列表仍可在右侧资源面板切换。",
+    "舊版對話範本開關；R4 助手請求使用「助手角色預設」控件中啟用的預設，並依傳送時設定執行。範本清單仍可在右側資源面板切換。",
+    "Legacy chat-template setting. R4 assistant requests use the enabled preset in the assistant persona control, captured when sent. Presets remain selectable in the right resource panel.",
+    "旧版会話テンプレート設定です。R4のアシスタントリクエストでは、送信時に記録された役割プリセットの有効状態を使用します。プリセットは右側のリソースパネルから選択できます。",
+    "레거시 대화 템플릿 설정입니다. R4 어시스턴트 요청은 전송 시 저장된 역할 프리셋의 활성 상태를 사용합니다. 프리셋은 오른쪽 리소스 패널에서 계속 선택할 수 있습니다."
+  ],
+  "assistantRolePreset": [
+    "助手预设",
+    "助手預設",
+    "Assistant preset",
+    "アシスタント設定",
+    "어시스턴트 프리셋"
+  ],
+  "assistantRolePresetHint": [
+    "设置当前会话的助手角色与创作方法；切换后从下一条消息生效。",
+    "設定目前會話的助手角色與創作方法；切換後從下一則訊息生效。",
+    "Sets the assistant role and creative approach for this chat. Changes apply to the next message.",
+    "この会話での役割と創作方針を設定します。変更は次のメッセージから適用されます。",
+    "이 대화의 어시스턴트 역할과 창작 방식을 설정합니다. 변경은 다음 메시지부터 적용됩니다."
+  ],
+  "creationScopeHint": [
+    "一个会话可以包含多个独立创作；每个创作分别保存提示词、方案和作品。",
+    "一個會話可以包含多個獨立創作；每個創作分別保存提示詞、方案和作品。",
+    "A chat can contain multiple creations. Each one keeps its own prompts, proposals, and artworks.",
+    "1つの会話に複数の創作を保存できます。プロンプト、提案、作品は創作ごとに管理されます。",
+    "한 대화에 여러 창작을 담을 수 있습니다. 프롬프트, 제안, 작품은 창작별로 관리됩니다."
+  ],
+  "legacyCreationHint": [
+    "这是为已有消息建立的创作；旧消息归入此创作，但尚未按创作版本追踪。",
+    "這是為既有訊息建立的創作；舊訊息歸入此創作，但尚未按創作版本追蹤。",
+    "This creation was added for existing chat messages. Those messages are grouped here but are not versioned to this creation.",
+    "既存メッセージ用に作成された創作です。メッセージはここにまとめられますが、この創作の版としては追跡されません。",
+    "기존 대화 메시지를 위해 만든 창작입니다. 메시지는 여기에 묶이지만 이 창작의 버전으로 추적되지는 않습니다."
   ],
   "tavernPresets": [
     "酒馆现有预设",
@@ -1358,11 +1386,11 @@
     "Anlas 사용 가능"
   ],
   "presetToggle": [
-    "使用酒馆",
-    "使用酒館",
-    "Use Tavern",
-    "酒館を使用",
-    "타번 사용"
+    "旧版对话模板",
+    "舊版對話範本",
+    "Legacy chat template",
+    "旧版会話テンプレート",
+    "레거시 대화 템플릿"
   ],
   "webToggleHint": [
     "开启后允许助手按需查询公开网页摘要；不会自动复制长指令。",

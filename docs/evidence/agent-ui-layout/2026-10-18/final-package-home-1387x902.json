@@ -1,0 +1,44 @@
+{
+  "mode": "Native sky Home key on packaged app at scale100; records actual aria range and shell geometry",
+  "target": {
+    "id": "727F3AB022D22ED77B3C6415A833E04D",
+    "title": "绘世 · NAI WorldPainter",
+    "url": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/.tmp/agent-ui-layout-20261018/package/win-unpacked/resources/app.asar/dist/index.html"
+  },
+  "state": {
+    "viewport": {
+      "width": 1386,
+      "height": 902,
+      "devicePixelRatio": 1.25
+    },
+    "typography": {
+      "font": "default",
+      "scale": 100
+    },
+    "theme": "dark",
+    "active": {
+      "tag": "DIV",
+      "role": "separator",
+      "aria": "上下拖动调整输入区高度；方向键调整。",
+      "now": "108",
+      "class": "pi-composer-grip"
+    },
+    "grip": {
+      "role": "separator",
+      "label": "上下拖动调整输入区高度；方向键调整。",
+      "now": 108,
+      "max": 337,
+      "tabIndex": 0
+    },
+    "shellHeight": 108,
+    "main": {
+      "overflowY": "auto",
+      "clientHeight": 674,
+      "scrollHeight": 674
+    },
+    "buildAssets": [
+      "PiAgentPage-BOH_rexv.js",
+      "PiAgentPage-Bv4hgxH8.css"
+    ]
+  }
+}

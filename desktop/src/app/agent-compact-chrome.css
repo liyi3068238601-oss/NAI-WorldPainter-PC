@@ -1,0 +1,29 @@
+/* Reclaim a small amount of vertical room for the chat surface while letting
+   larger text settings and wrapped navigation grow naturally. */
+html .app-shell[data-agent-chrome-compact="true"] {
+  grid-template-rows: 38px auto minmax(38px, auto) auto minmax(0, 1fr) 26px;
+}
+
+html .app-shell[data-agent-chrome-compact="true"] > .menu-bar.compact-toolbar {
+  min-height: 38px;
+  padding-block: 2px;
+}
+
+html .app-shell[data-agent-chrome-compact="true"] > .responsive-tab-navigation:not([data-editing="true"]) {
+  min-height: 42px;
+}
+
+html .app-shell[data-agent-chrome-compact="true"] > .responsive-tab-navigation:not([data-editing="true"]) .tab-navigation-row {
+  min-height: 42px;
+}
+
+html .app-shell[data-agent-chrome-compact="true"] > .responsive-tab-navigation:not([data-editing="true"]) .tab-navigation-row > .tab-bar {
+  padding-block: 5px;
+  overflow: visible;
+}
+
+html .app-shell[data-agent-chrome-compact="true"] > .responsive-tab-navigation:not([data-editing="true"]) .tab-navigation-row > .tab-bar > button {
+  height: auto;
+  min-height: 32px;
+  padding-block: 4px;
+}

@@ -13,6 +13,7 @@ import "./studio-interactions.css";
 import "./studio-typography.css";
 import "./studio-controls.css";
 import "./typography.css";
+import "./app/agent-compact-chrome.css";
 import {FavoritesNoticeSupport} from "./components/LocalFavorites";
 import {McpEventSupport} from "./components/McpServerSettings";
 import {installStudioAgent} from './studio-agent';

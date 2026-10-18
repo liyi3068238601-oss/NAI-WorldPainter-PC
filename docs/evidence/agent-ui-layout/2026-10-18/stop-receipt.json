@@ -1,0 +1,22 @@
+{
+  "createdAtUtc": "2026-10-18T09:11:54.1202582Z",
+  "package": {
+    "pid": 6340,
+    "executable": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-ui-layout-20261018\\package\\win-unpacked\\NAI WorldPainter PC.exe",
+    "commandLine": "\"E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-ui-layout-20261018\\package\\win-unpacked\\NAI WorldPainter PC.exe\" --remote-debugging-address=127.0.0.1 --remote-debugging-port=9448",
+    "verifiedExpectedExecutable": true,
+    "stopRequested": true,
+    "processAbsentAfterStop": true,
+    "debugPort": 9448,
+    "debugPortStillListening": false
+  },
+  "source": {
+    "pid": 48204,
+    "executable": "E:\\NAI-WorldPainter\\PC端\\desktop\\node_modules\\electron\\dist\\electron.exe",
+    "isolatedProfile": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\agent-ui-layout-20261018\\profile",
+    "processAbsentAtReceipt": true,
+    "debugPort": 9447,
+    "stopWasPreviouslyConfirmed": true
+  },
+  "otherProcessesTouched": false
+}
