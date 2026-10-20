@@ -1,0 +1,14 @@
+
+> nai-worldpainter-pc@0.1.0 test
+> vitest run src/ui-consistency.test.ts src/metadata-selection.test.ts src/prompt-template-audit.test.ts electron/ipc/pi-agent-core.test.ts --reporter=dot
+
+
+ RUN  v4.1.11 E:/Codex鏃犻」鐩枃浠跺す/2026-10-20/task/uiux-workspace/desktop
+
+路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路路
+
+ Test Files  4 passed (4)
+      Tests  116 passed (116)
+   Start at  17:17:07
+   Duration  1.38s (transform 751ms, setup 0ms, import 2.16s, tests 469ms, environment 0ms)
+

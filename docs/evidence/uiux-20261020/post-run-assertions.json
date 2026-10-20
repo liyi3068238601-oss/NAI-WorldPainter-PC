@@ -1,0 +1,13 @@
+{
+  "syntheticProfileOnly": true,
+  "historyCount": 1,
+  "params": {
+    "model": "nai-diffusion-4-5-full",
+    "positivePrompt": "uiux_fixture, blue square",
+    "negativePrompt": "text, watermark, blurry, low quality",
+    "stylePrompt": "artist:synthetic_example, storybook ink, warm paper texture",
+    "seed": 424242,
+    "seedMode": "fixed"
+  },
+  "generationAccountConfigured": false
+}

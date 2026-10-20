@@ -1,0 +1,980 @@
+[
+  {
+    "at": "2026-10-20T08:42:59.332Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T08:43:53.346Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "generate-1280x720-dark",
+    "screenshot": "003-generate-1280x720-dark.png"
+  },
+  {
+    "at": "2026-10-20T08:44:07.391Z",
+    "action": "wheel",
+    "x": 240,
+    "y": 400,
+    "dy": 550,
+    "label": "prompt-discovery-scroll",
+    "screenshot": "004-prompt-discovery-scroll.png"
+  },
+  {
+    "at": "2026-10-20T08:44:22.579Z",
+    "action": "wheel",
+    "x": 240,
+    "y": 360,
+    "dy": -240,
+    "label": "prompt-editor-reached",
+    "screenshot": "005-prompt-editor-reached.png"
+  },
+  {
+    "at": "2026-10-20T08:44:39.542Z",
+    "action": "click",
+    "x": 140,
+    "y": 365,
+    "label": "positive-focus",
+    "screenshot": "006-positive-focus.png"
+  },
+  {
+    "at": "2026-10-20T08:44:53.172Z",
+    "action": "type",
+    "text": "storybook illustration, a small cat, mountain cabin, warm morning light, blue scarf",
+    "label": "positive-entered",
+    "screenshot": "007-positive-entered.png"
+  },
+  {
+    "at": "2026-10-20T08:45:15.241Z",
+    "action": "click",
+    "x": 290,
+    "y": 298,
+    "label": "negative-tab",
+    "screenshot": "008-negative-tab.png"
+  },
+  {
+    "at": "2026-10-20T08:45:27.987Z",
+    "action": "click",
+    "x": 150,
+    "y": 360,
+    "label": "negative-focus",
+    "screenshot": "009-negative-focus.png"
+  },
+  {
+    "at": "2026-10-20T08:45:39.170Z",
+    "action": "type",
+    "text": "text, watermark, blurry, low quality",
+    "label": "negative-entered",
+    "screenshot": "010-negative-entered.png"
+  },
+  {
+    "at": "2026-10-20T08:45:52.253Z",
+    "action": "resize",
+    "width": 1440,
+    "height": 900,
+    "label": "generate-1440x900-dark",
+    "screenshot": "011-generate-1440x900-dark.png"
+  },
+  {
+    "at": "2026-10-20T08:46:05.488Z",
+    "action": "wheel",
+    "x": 220,
+    "y": 380,
+    "dy": -1100,
+    "label": "model-return-top",
+    "screenshot": "012-model-return-top.png"
+  },
+  {
+    "at": "2026-10-20T08:46:17.602Z",
+    "action": "click",
+    "x": 205,
+    "y": 330,
+    "label": "model-options",
+    "screenshot": "013-model-options.png"
+  },
+  {
+    "at": "2026-10-20T08:46:27.975Z",
+    "action": "click",
+    "x": 200,
+    "y": 445,
+    "label": "model-v45-selected",
+    "screenshot": "014-model-v45-selected.png"
+  },
+  {
+    "at": "2026-10-20T08:46:51.883Z",
+    "action": "click",
+    "x": 760,
+    "y": 606,
+    "label": "model-notice-kept-current",
+    "screenshot": "015-model-notice-kept-current.png"
+  },
+  {
+    "at": "2026-10-20T08:47:10.323Z",
+    "action": "snapshot",
+    "label": "model-notice-settled",
+    "screenshot": "016-model-notice-settled.png"
+  },
+  {
+    "at": "2026-10-20T08:47:30.911Z",
+    "action": "click",
+    "x": 180,
+    "y": 400,
+    "label": "artist-style-focus",
+    "screenshot": "017-artist-style-focus.png"
+  },
+  {
+    "at": "2026-10-20T08:47:44.483Z",
+    "action": "type",
+    "text": "artist:synthetic_example, storybook ink, warm paper texture",
+    "label": "artist-style-entered",
+    "screenshot": "018-artist-style-entered.png"
+  },
+  {
+    "at": "2026-10-20T08:47:59.683Z",
+    "action": "wheel",
+    "x": 220,
+    "y": 500,
+    "dy": 950,
+    "label": "parameters-seed-discovery",
+    "screenshot": "019-parameters-seed-discovery.png"
+  },
+  {
+    "at": "2026-10-20T08:48:54.553Z",
+    "action": "wheel",
+    "x": 376,
+    "y": 535,
+    "dy": 700,
+    "label": "parameters-scroll-second",
+    "screenshot": "020-parameters-scroll-second.png"
+  },
+  {
+    "at": "2026-10-20T08:49:10.725Z",
+    "action": "wheel",
+    "x": 376,
+    "y": 535,
+    "dy": -360,
+    "label": "seed-discovered",
+    "screenshot": "021-seed-discovered.png"
+  },
+  {
+    "at": "2026-10-20T08:49:31.360Z",
+    "action": "click",
+    "x": 295,
+    "y": 462,
+    "label": "fixed-seed-mode",
+    "screenshot": "022-fixed-seed-mode.png"
+  },
+  {
+    "at": "2026-10-20T08:49:50.947Z",
+    "action": "click",
+    "x": 150,
+    "y": 533,
+    "label": "seed-focus",
+    "screenshot": "023-seed-focus.png"
+  },
+  {
+    "at": "2026-10-20T08:49:54.585Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "seed-select",
+    "screenshot": "024-seed-select.png"
+  },
+  {
+    "at": "2026-10-20T08:49:57.950Z",
+    "action": "type",
+    "text": "4242",
+    "label": "seed-4242",
+    "screenshot": "025-seed-4242.png"
+  },
+  {
+    "at": "2026-10-20T08:50:41.605Z",
+    "action": "click",
+    "x": 151,
+    "y": 108,
+    "label": "inpaint-entry",
+    "screenshot": "026-inpaint-entry.png"
+  },
+  {
+    "at": "2026-10-20T08:51:04.041Z",
+    "action": "snapshot",
+    "label": "inpaint-settled",
+    "screenshot": "027-inpaint-settled.png"
+  },
+  {
+    "at": "2026-10-20T08:51:28.046Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T08:52:18.117Z",
+    "action": "click",
+    "x": 150,
+    "y": 108,
+    "label": "inpaint-open",
+    "screenshot": "029-inpaint-open.png"
+  },
+  {
+    "at": "2026-10-20T08:52:21.515Z",
+    "action": "dialog-fixture",
+    "path": "E:\\Codex无项目文件夹\\2026-10-20\\task\\uiux-workspace\\desktop\\.tmp\\native-m4-fixtures\\image_assets\\sha256\\a2\\a2e2fa974e81562006bf2b842390673b32bf258e64f5f1e504365d8702badca3.png",
+    "label": "synthetic-file-dialog-setup",
+    "screenshot": "030-synthetic-file-dialog-setup.png"
+  },
+  {
+    "at": "2026-10-20T08:52:37.985Z",
+    "action": "click",
+    "x": 202,
+    "y": 312,
+    "label": "inpaint-image-loaded",
+    "screenshot": "031-inpaint-image-loaded.png"
+  },
+  {
+    "at": "2026-10-20T08:53:15.003Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T08:53:46.732Z",
+    "action": "click",
+    "x": 150,
+    "y": 108,
+    "label": "inpaint-reentry",
+    "screenshot": "033-inpaint-reentry.png"
+  },
+  {
+    "at": "2026-10-20T08:53:50.402Z",
+    "action": "dialog-fixture",
+    "path": "E:\\Codex无项目文件夹\\2026-10-20\\task\\uiux-workspace\\desktop\\.tmp\\native-m4-fixtures\\image_assets\\sha256\\a2\\a2e2fa974e81562006bf2b842390673b32bf258e64f5f1e504365d8702badca3.png",
+    "label": "synthetic-dialog-ready",
+    "screenshot": "034-synthetic-dialog-ready.png"
+  },
+  {
+    "at": "2026-10-20T08:53:53.810Z",
+    "action": "click",
+    "x": 202,
+    "y": 312,
+    "label": "inpaint-synthetic-visible",
+    "screenshot": "035-inpaint-synthetic-visible.png"
+  },
+  {
+    "at": "2026-10-20T08:54:09.455Z",
+    "action": "drag",
+    "points": [
+      [
+        655,
+        540
+      ],
+      [
+        678,
+        558
+      ],
+      [
+        700,
+        576
+      ],
+      [
+        725,
+        590
+      ]
+    ],
+    "label": "inpaint-mask-painted",
+    "screenshot": "036-inpaint-mask-painted.png"
+  },
+  {
+    "at": "2026-10-20T08:54:28.568Z",
+    "action": "click",
+    "x": 594,
+    "y": 182,
+    "label": "inpaint-eraser-selected",
+    "screenshot": "037-inpaint-eraser-selected.png"
+  },
+  {
+    "at": "2026-10-20T08:54:42.778Z",
+    "action": "drag",
+    "points": [
+      [
+        674,
+        555
+      ],
+      [
+        686,
+        565
+      ],
+      [
+        699,
+        576
+      ]
+    ],
+    "label": "inpaint-mask-erased",
+    "screenshot": "038-inpaint-mask-erased.png"
+  },
+  {
+    "at": "2026-10-20T08:54:59.548Z",
+    "action": "key",
+    "key": "Control+z",
+    "label": "inpaint-undo-keyboard",
+    "screenshot": "039-inpaint-undo-keyboard.png"
+  },
+  {
+    "at": "2026-10-20T08:55:16.296Z",
+    "action": "click",
+    "x": 503,
+    "y": 183,
+    "label": "inpaint-region-entry",
+    "screenshot": "040-inpaint-region-entry.png"
+  },
+  {
+    "at": "2026-10-20T08:55:38.242Z",
+    "action": "drag",
+    "points": [
+      [
+        625,
+        480
+      ],
+      [
+        665,
+        520
+      ],
+      [
+        720,
+        565
+      ],
+      [
+        780,
+        625
+      ]
+    ],
+    "label": "inpaint-region-drag",
+    "screenshot": "041-inpaint-region-drag.png"
+  },
+  {
+    "at": "2026-10-20T08:56:01.020Z",
+    "action": "click",
+    "x": 1245,
+    "y": 59,
+    "label": "settings-open",
+    "screenshot": "042-settings-open.png"
+  },
+  {
+    "at": "2026-10-20T08:56:16.743Z",
+    "action": "click",
+    "x": 238,
+    "y": 303,
+    "label": "legacy-import-entry",
+    "screenshot": "043-legacy-import-entry.png"
+  },
+  {
+    "at": "2026-10-20T08:56:34.707Z",
+    "action": "dialog-fixture",
+    "path": "E:\\Codex无项目文件夹\\2026-10-20\\task\\uiux-workspace\\desktop\\.tmp\\native-m4-fixtures\\workspace.sqlite",
+    "label": "synthetic-workspace-dialog",
+    "screenshot": "044-synthetic-workspace-dialog.png"
+  },
+  {
+    "at": "2026-10-20T08:56:38.349Z",
+    "action": "click",
+    "x": 470,
+    "y": 277,
+    "label": "legacy-import-preview",
+    "screenshot": "045-legacy-import-preview.png"
+  },
+  {
+    "at": "2026-10-20T08:56:53.744Z",
+    "action": "click",
+    "x": 475,
+    "y": 723,
+    "label": "synthetic-import-confirmed",
+    "screenshot": "046-synthetic-import-confirmed.png"
+  },
+  {
+    "at": "2026-10-20T08:57:12.806Z",
+    "action": "click",
+    "x": 740,
+    "y": 625,
+    "label": "import-refresh-workbench",
+    "screenshot": "047-import-refresh-workbench.png"
+  },
+  {
+    "at": "2026-10-20T08:57:31.876Z",
+    "action": "click",
+    "x": 1115,
+    "y": 470,
+    "button": "right",
+    "label": "gallery-context-menu",
+    "screenshot": "048-gallery-context-menu.png"
+  },
+  {
+    "at": "2026-10-20T08:57:47.313Z",
+    "action": "click",
+    "x": 1168,
+    "y": 412,
+    "label": "gallery-more-actions",
+    "screenshot": "049-gallery-more-actions.png"
+  },
+  {
+    "at": "2026-10-20T08:58:05.358Z",
+    "action": "key",
+    "key": "Escape",
+    "label": "gallery-menu-escape",
+    "screenshot": "050-gallery-menu-escape.png"
+  },
+  {
+    "at": "2026-10-20T08:58:08.726Z",
+    "action": "click",
+    "x": 1168,
+    "y": 412,
+    "label": "gallery-menu-reopen",
+    "screenshot": "051-gallery-menu-reopen.png"
+  },
+  {
+    "at": "2026-10-20T08:58:12.354Z",
+    "action": "click",
+    "x": 1110,
+    "y": 474,
+    "label": "gallery-metadata-open",
+    "screenshot": "052-gallery-metadata-open.png"
+  },
+  {
+    "at": "2026-10-20T08:59:54.659Z",
+    "action": "click",
+    "x": 202,
+    "y": 435,
+    "label": "metadata-offline-recovery",
+    "screenshot": "053-metadata-offline-recovery.png"
+  },
+  {
+    "at": "2026-10-20T09:00:31.404Z",
+    "action": "dialog-fixture",
+    "path": "E:\\Codex无项目文件夹\\2026-10-20\\task\\uiux-workspace\\desktop\\.tmp\\uiux-fixtures\\metadata-fixture.png",
+    "label": "metadata-synthetic-dialog",
+    "screenshot": "054-metadata-synthetic-dialog.png"
+  },
+  {
+    "at": "2026-10-20T09:00:35.530Z",
+    "action": "click",
+    "x": 1290,
+    "y": 525,
+    "label": "metadata-fixture-read",
+    "screenshot": "055-metadata-fixture-read.png"
+  },
+  {
+    "at": "2026-10-20T09:01:09.167Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T09:01:41.633Z",
+    "action": "click",
+    "x": 515,
+    "y": 108,
+    "label": "metadata-entry-direct",
+    "screenshot": "057-metadata-entry-direct.png"
+  },
+  {
+    "at": "2026-10-20T09:01:59.648Z",
+    "action": "dialog-fixture",
+    "path": "E:\\Codex无项目文件夹\\2026-10-20\\task\\uiux-workspace\\desktop\\.tmp\\uiux-fixtures\\metadata-fixture.png",
+    "label": "metadata-input-fixture-ready",
+    "screenshot": "058-metadata-input-fixture-ready.png"
+  },
+  {
+    "at": "2026-10-20T09:02:16.271Z",
+    "action": "click",
+    "x": 1290,
+    "y": 525,
+    "label": "metadata-png-selected",
+    "screenshot": "059-metadata-png-selected.png"
+  },
+  {
+    "at": "2026-10-20T09:02:33.202Z",
+    "action": "snapshot",
+    "label": "metadata-png-decoded",
+    "screenshot": "060-metadata-png-decoded.png"
+  },
+  {
+    "at": "2026-10-20T09:02:50.188Z",
+    "action": "wheel",
+    "x": 1260,
+    "y": 700,
+    "dy": 590,
+    "label": "metadata-apply-fields",
+    "screenshot": "061-metadata-apply-fields.png"
+  },
+  {
+    "at": "2026-10-20T09:03:10.572Z",
+    "action": "click",
+    "x": 133,
+    "y": 221,
+    "label": "metadata-none-selected",
+    "screenshot": "062-metadata-none-selected.png"
+  },
+  {
+    "at": "2026-10-20T09:03:13.930Z",
+    "action": "click",
+    "x": 62,
+    "y": 303,
+    "label": "metadata-positive-selected",
+    "screenshot": "063-metadata-positive-selected.png"
+  },
+  {
+    "at": "2026-10-20T09:03:17.305Z",
+    "action": "click",
+    "x": 586,
+    "y": 403,
+    "label": "metadata-seed-selected",
+    "screenshot": "064-metadata-seed-selected.png"
+  },
+  {
+    "at": "2026-10-20T09:03:36.135Z",
+    "action": "click",
+    "x": 100,
+    "y": 650,
+    "label": "metadata-selected-apply",
+    "screenshot": "065-metadata-selected-apply.png"
+  },
+  {
+    "at": "2026-10-20T09:03:58.809Z",
+    "action": "click",
+    "x": 959,
+    "y": 108,
+    "label": "agent-entry",
+    "screenshot": "066-agent-entry.png"
+  },
+  {
+    "at": "2026-10-20T09:04:16.276Z",
+    "action": "snapshot",
+    "label": "agent-ready",
+    "screenshot": "067-agent-ready.png"
+  },
+  {
+    "at": "2026-10-20T09:04:36.271Z",
+    "action": "click",
+    "x": 424,
+    "y": 734,
+    "label": "agent-attachment-menu",
+    "screenshot": "068-agent-attachment-menu.png"
+  },
+  {
+    "at": "2026-10-20T09:04:54.328Z",
+    "action": "click",
+    "x": 1240,
+    "y": 197,
+    "label": "agent-model-config-entry",
+    "screenshot": "069-agent-model-config-entry.png"
+  },
+  {
+    "at": "2026-10-20T09:05:15.243Z",
+    "action": "snapshot",
+    "label": "agent-model-config-ready",
+    "screenshot": "070-agent-model-config-ready.png"
+  },
+  {
+    "at": "2026-10-20T09:06:20.788Z",
+    "action": "click",
+    "x": 750,
+    "y": 334,
+    "label": "mock-api-url-focus",
+    "screenshot": "071-mock-api-url-focus.png"
+  },
+  {
+    "at": "2026-10-20T09:06:39.174Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "mock-url-select",
+    "screenshot": "072-mock-url-select.png"
+  },
+  {
+    "at": "2026-10-20T09:06:42.548Z",
+    "action": "type",
+    "text": "http://127.0.0.1:42377/v1",
+    "label": "mock-url-entered",
+    "screenshot": "073-mock-url-entered.png"
+  },
+  {
+    "at": "2026-10-20T09:06:46.140Z",
+    "action": "click",
+    "x": 750,
+    "y": 418,
+    "label": "mock-key-focus",
+    "screenshot": "074-mock-key-focus.png"
+  },
+  {
+    "at": "2026-10-20T09:06:49.481Z",
+    "action": "type",
+    "text": "uiux-local-fixture-only",
+    "label": "mock-key-entered",
+    "screenshot": "075-mock-key-entered.png"
+  },
+  {
+    "at": "2026-10-20T09:06:52.826Z",
+    "action": "click",
+    "x": 750,
+    "y": 498,
+    "label": "agent-protocol-options",
+    "screenshot": "076-agent-protocol-options.png"
+  },
+  {
+    "at": "2026-10-20T09:08:00.707Z",
+    "action": "key",
+    "key": "ArrowDown",
+    "label": "protocol-next-option",
+    "screenshot": "077-protocol-next-option.png"
+  },
+  {
+    "at": "2026-10-20T09:08:04.088Z",
+    "action": "key",
+    "key": "Enter",
+    "label": "protocol-option-selected",
+    "screenshot": "078-protocol-option-selected.png"
+  },
+  {
+    "at": "2026-10-20T09:08:23.571Z",
+    "action": "key",
+    "key": "Home",
+    "label": "protocol-first-option",
+    "screenshot": "079-protocol-first-option.png"
+  },
+  {
+    "at": "2026-10-20T09:08:26.922Z",
+    "action": "key",
+    "key": "Enter",
+    "label": "protocol-chat-selected",
+    "screenshot": "080-protocol-chat-selected.png"
+  },
+  {
+    "at": "2026-10-20T09:08:49.021Z",
+    "action": "key",
+    "key": "ArrowUp",
+    "label": "protocol-up-visible",
+    "screenshot": "081-protocol-up-visible.png"
+  },
+  {
+    "at": "2026-10-20T09:09:08.496Z",
+    "action": "click",
+    "x": 630,
+    "y": 548,
+    "label": "protocol-chat-chosen",
+    "screenshot": "082-protocol-chat-chosen.png"
+  },
+  {
+    "at": "2026-10-20T09:09:11.846Z",
+    "action": "wheel",
+    "x": 1070,
+    "y": 720,
+    "dy": 650,
+    "label": "agent-config-save-discovery",
+    "screenshot": "083-agent-config-save-discovery.png"
+  },
+  {
+    "at": "2026-10-20T09:09:34.047Z",
+    "action": "click",
+    "x": 750,
+    "y": 294,
+    "label": "alternate-model-focus",
+    "screenshot": "084-alternate-model-focus.png"
+  },
+  {
+    "at": "2026-10-20T09:09:37.373Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "alternate-model-select",
+    "screenshot": "085-alternate-model-select.png"
+  },
+  {
+    "at": "2026-10-20T09:09:40.716Z",
+    "action": "type",
+    "text": "uiux-alternate",
+    "label": "alternate-model-id",
+    "screenshot": "086-alternate-model-id.png"
+  },
+  {
+    "at": "2026-10-20T09:09:44.081Z",
+    "action": "click",
+    "x": 659,
+    "y": 356,
+    "label": "alternate-model-added",
+    "screenshot": "087-alternate-model-added.png"
+  },
+  {
+    "at": "2026-10-20T09:09:47.450Z",
+    "action": "click",
+    "x": 1058,
+    "y": 839,
+    "label": "mock-model-settings-saved",
+    "screenshot": "088-mock-model-settings-saved.png"
+  },
+  {
+    "at": "2026-10-20T09:10:07.933Z",
+    "action": "wheel",
+    "x": 1070,
+    "y": 720,
+    "dy": 900,
+    "label": "model-save-after-add-scroll",
+    "screenshot": "089-model-save-after-add-scroll.png"
+  },
+  {
+    "at": "2026-10-20T09:10:38.808Z",
+    "action": "click",
+    "x": 1058,
+    "y": 839,
+    "label": "mock-config-save-confirmed",
+    "screenshot": "090-mock-config-save-confirmed.png"
+  },
+  {
+    "at": "2026-10-20T09:10:59.449Z",
+    "action": "snapshot",
+    "label": "agent-model-saved",
+    "screenshot": "091-agent-model-saved.png"
+  },
+  {
+    "at": "2026-10-20T09:11:16.529Z",
+    "action": "click",
+    "x": 835,
+    "y": 825,
+    "label": "agent-model-switch-menu",
+    "screenshot": "092-agent-model-switch-menu.png"
+  },
+  {
+    "at": "2026-10-20T09:11:38.117Z",
+    "action": "click",
+    "x": 836,
+    "y": 650,
+    "label": "agent-vision-model-selected",
+    "screenshot": "093-agent-vision-model-selected.png"
+  },
+  {
+    "at": "2026-10-20T09:11:41.734Z",
+    "action": "click",
+    "x": 650,
+    "y": 750,
+    "label": "agent-prompt-focus",
+    "screenshot": "094-agent-prompt-focus.png"
+  },
+  {
+    "at": "2026-10-20T09:11:45.065Z",
+    "action": "type",
+    "text": "UIUX_CONFIRM 仅使用这张合成图片准备一个几何图形方案，等待我确认，不执行生图。",
+    "label": "agent-synthetic-request-entered",
+    "screenshot": "095-agent-synthetic-request-entered.png"
+  },
+  {
+    "at": "2026-10-20T09:12:03.153Z",
+    "action": "click",
+    "x": 1182,
+    "y": 734,
+    "label": "agent-request-sent",
+    "screenshot": "096-agent-request-sent.png"
+  },
+  {
+    "at": "2026-10-20T09:12:26.014Z",
+    "action": "snapshot",
+    "label": "agent-request-result",
+    "screenshot": "097-agent-request-result.png"
+  },
+  {
+    "at": "2026-10-20T09:12:57.428Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T09:13:34.771Z",
+    "action": "click",
+    "x": 959,
+    "y": 108,
+    "label": "agent-return-after-launcher-fix",
+    "screenshot": "099-agent-return-after-launcher-fix.png"
+  },
+  {
+    "at": "2026-10-20T09:13:38.109Z",
+    "action": "snapshot",
+    "label": "agent-resumed-draft",
+    "screenshot": "100-agent-resumed-draft.png"
+  },
+  {
+    "at": "2026-10-20T09:14:17.368Z",
+    "action": "click",
+    "x": 660,
+    "y": 748,
+    "label": "agent-retry-focus",
+    "screenshot": "101-agent-retry-focus.png"
+  },
+  {
+    "at": "2026-10-20T09:14:21.232Z",
+    "action": "type",
+    "text": "UIUX_CONFIRM 仅准备合成几何图形方案，等待确认，不真正生图。",
+    "label": "agent-retry-text",
+    "screenshot": "102-agent-retry-text.png"
+  },
+  {
+    "at": "2026-10-20T09:14:34.197Z",
+    "action": "click",
+    "x": 1182,
+    "y": 734,
+    "label": "agent-loopback-send",
+    "screenshot": "103-agent-loopback-send.png"
+  },
+  {
+    "at": "2026-10-20T09:14:35.707Z",
+    "action": "snapshot",
+    "label": "agent-loopback-response",
+    "screenshot": "104-agent-loopback-response.png"
+  },
+  {
+    "at": "2026-10-20T09:16:07.498Z",
+    "action": "snapshot",
+    "label": "agent-pending-bounded-check",
+    "screenshot": "105-agent-pending-bounded-check.png"
+  },
+  {
+    "at": "2026-10-20T09:17:36.842Z",
+    "action": "click",
+    "x": 812,
+    "y": 544,
+    "label": "agent-restore-failed-request",
+    "screenshot": "106-agent-restore-failed-request.png"
+  },
+  {
+    "at": "2026-10-20T09:18:28.922Z",
+    "action": "click",
+    "x": 1182,
+    "y": 734,
+    "label": "agent-host-loopback-send",
+    "screenshot": "107-agent-host-loopback-send.png"
+  },
+  {
+    "at": "2026-10-20T09:18:53.477Z",
+    "action": "snapshot",
+    "label": "agent-real-confirmation-card",
+    "screenshot": "108-agent-real-confirmation-card.png"
+  },
+  {
+    "at": "2026-10-20T09:19:23.699Z",
+    "action": "click",
+    "x": 967,
+    "y": 650,
+    "label": "agent-confirmation-cancelled",
+    "screenshot": "109-agent-confirmation-cancelled.png"
+  },
+  {
+    "at": "2026-10-20T09:19:27.290Z",
+    "action": "snapshot",
+    "label": "agent-cancel-complete",
+    "screenshot": "110-agent-cancel-complete.png"
+  },
+  {
+    "at": "2026-10-20T09:19:51.700Z",
+    "action": "click",
+    "x": 627,
+    "y": 108,
+    "label": "tools-entry",
+    "screenshot": "111-tools-entry.png"
+  },
+  {
+    "at": "2026-10-20T09:19:55.562Z",
+    "action": "snapshot",
+    "label": "tools-ready",
+    "screenshot": "112-tools-ready.png"
+  },
+  {
+    "at": "2026-10-20T09:20:57.568Z",
+    "action": "click",
+    "x": 180,
+    "y": 360,
+    "label": "comic-visible-entry",
+    "screenshot": "113-comic-visible-entry.png"
+  },
+  {
+    "at": "2026-10-20T09:21:01.149Z",
+    "action": "snapshot",
+    "label": "comic-ready",
+    "screenshot": "114-comic-ready.png"
+  },
+  {
+    "at": "2026-10-20T09:21:23.865Z",
+    "action": "click",
+    "x": 1245,
+    "y": 59,
+    "label": "settings-from-comic",
+    "screenshot": "115-settings-from-comic.png"
+  },
+  {
+    "at": "2026-10-20T09:21:27.254Z",
+    "action": "click",
+    "x": 240,
+    "y": 626,
+    "label": "appearance-settings",
+    "screenshot": "116-appearance-settings.png"
+  },
+  {
+    "at": "2026-10-20T09:21:46.965Z",
+    "action": "click",
+    "x": 700,
+    "y": 228,
+    "label": "theme-options",
+    "screenshot": "117-theme-options.png"
+  },
+  {
+    "at": "2026-10-20T09:21:50.327Z",
+    "action": "snapshot",
+    "label": "theme-options-visible",
+    "screenshot": "118-theme-options-visible.png"
+  },
+  {
+    "at": "2026-10-20T09:22:31.159Z",
+    "action": "click",
+    "x": 430,
+    "y": 274,
+    "label": "light-theme-selected",
+    "screenshot": "119-light-theme-selected.png"
+  },
+  {
+    "at": "2026-10-20T09:22:34.513Z",
+    "action": "click",
+    "x": 1194,
+    "y": 773,
+    "label": "settings-close-light",
+    "screenshot": "120-settings-close-light.png"
+  },
+  {
+    "at": "2026-10-20T09:22:37.864Z",
+    "action": "resize",
+    "width": 1920,
+    "height": 1080,
+    "label": "comic-1920x1080-light",
+    "screenshot": "121-comic-1920x1080-light.png"
+  },
+  {
+    "at": "2026-10-20T09:23:12.193Z",
+    "action": "snapshot",
+    "label": "light-wide-settled",
+    "screenshot": "122-light-wide-settled.png"
+  },
+  {
+    "at": "2026-10-20T09:24:25.893Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "light-1280-request",
+    "screenshot": "123-light-1280-request.png"
+  },
+  {
+    "at": "2026-10-20T09:24:29.230Z",
+    "action": "click",
+    "x": 65,
+    "y": 108,
+    "label": "generate-light-entry",
+    "screenshot": "124-generate-light-entry.png"
+  },
+  {
+    "at": "2026-10-20T09:24:32.504Z",
+    "action": "snapshot",
+    "label": "generate-light-settled",
+    "screenshot": "125-generate-light-settled.png"
+  },
+  {
+    "at": "2026-10-20T09:26:01.903Z",
+    "action": "close",
+    "closed": true
+  }
+]

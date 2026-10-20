@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "sha256": "ba67dd1b4a56afb2d151e12044d849637f60e6b7f27c3e330b5a5569d270f5c2",
+  "bytes": 19630,
+  "fields": {
+    "Software": "NovelAI",
+    "Source": "NovelAI Diffusion V4.5",
+    "Description": "uiux_fixture, blue square",
+    "Comment": "{\"prompt\":\"uiux_fixture, blue square\",\"uc\":\"uiux_fixture_negative\",\"seed\":424242,\"steps\":28,\"scale\":5,\"width\":512,\"height\":768,\"sampler\":\"k_euler_ancestral\"}"
+  }
+}
