@@ -1,0 +1,11 @@
+{
+  "positivePrompt": "UIUX_A_POSITIVE_KEEP, blue square, soft light",
+  "negativePrompt": "UIUX_A_NEGATIVE_KEEP, blurry",
+  "stylePrompt": "artist:uiux_synthetic, watercolor",
+  "width": 1024,
+  "height": 1216,
+  "seed": 424242,
+  "seedMode": "fixed",
+  "model": "nai-diffusion-5-full",
+  "effort": "high"
+}

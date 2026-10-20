@@ -30,6 +30,8 @@ async function snap(label) {
 }
 async function action(command) {
   let checks;
+  await windowHandle.evaluate(win=>{if(win.isMinimized()){win.restore();win.show();win.focus();}});
+  await page.waitForTimeout(150);
   switch (command.action) {
     case 'click': await page.mouse.click(command.x, command.y, {button: command.button || 'left', clickCount: command.count || 1}); break;
     case 'type': await page.keyboard.insertText(command.text); break;
@@ -43,6 +45,22 @@ async function action(command) {
       await application.evaluate(({dialog}, file) => {dialog.showOpenDialog = async () => ({canceled:false,filePaths:[file]});},file); break;
     }
     case 'snapshot': break;
+    case 'generation-check': {
+      checks=await page.evaluate(expected=>{
+        const panel=document.querySelector('#generate-parameter-fields');
+        const bar=document.querySelector('.generate-section-shortcuts');
+        if(!panel||!bar)throw Error('Generation form is not open');
+        const rect=el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom,right:r.right};};
+        const buttons=[...bar.querySelectorAll('button')].map(el=>{const r=rect(el),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return{text:el.textContent,rect:r,inside:r.x>=0&&r.y>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,hit:el===hit||el.contains(hit)};});
+        const focus=document.activeElement,pr=rect(panel),fr=focus?rect(focus):null;
+        const section=focus?.closest('[data-generation-section="model"]')?'model':focus?.matches('.prompt-editor textarea')?'prompt':focus?.closest('.resolution-tier-picker')?'size':null;
+        const visibleHeight=fr?Math.max(0,Math.min(fr.bottom,pr.bottom)-Math.max(fr.y,pr.y)):0;
+        return{buttons,panel:pr,scrollTop:panel.scrollTop,section,expected,focused:focus?{tag:focus.tagName,rect:fr,value:'value'in focus?focus.value:null}:null,visibleHeight,theme:document.documentElement.classList.contains('theme-dark')?'dark':'light'};
+      },command.expected||null);
+      if(checks.buttons.length!==3||checks.buttons.some(b=>!b.inside||!b.hit))throw Error('Generation shortcut covered/outside viewport: '+JSON.stringify(checks));
+      if(command.expected&&(checks.section!==command.expected||checks.visibleHeight<20))throw Error('Generation focus target is not reachable: '+JSON.stringify(checks));
+      break;
+    }
     // These assertions are used only after screenshot-led discovery. They
     // measure the discovered controls; they do not choose navigation targets.
     case 'provider-check': {
@@ -81,6 +99,6 @@ async function action(command) {
     if (!fs.existsSync(request)) continue;
     const command=JSON.parse(fs.readFileSync(request,'utf8').replace(/^\uFEFF/,'')); fs.unlinkSync(request);
     try {const result=await action(command);log.push({at:new Date().toISOString(),...command,...result});fs.writeFileSync(path.join(evidence,'actions.json'),JSON.stringify(log,null,2));fs.writeFileSync(path.join(run,'response.json'),JSON.stringify(result));console.log(JSON.stringify(result)); if(result.closed)break;}
-    catch(e){const result={error:e.message};fs.writeFileSync(path.join(run,'response.json'),JSON.stringify(result));console.log(JSON.stringify(result));}
+    catch(e){const result={error:e.message};log.push({at:new Date().toISOString(),...command,...result});fs.writeFileSync(path.join(evidence,'actions.json'),JSON.stringify(log,null,2));fs.writeFileSync(path.join(run,'response.json'),JSON.stringify(result));console.log(JSON.stringify(result));}
   }
 })().catch(async e=>{console.error(e.stack);await application?.close();process.exit(1)});
