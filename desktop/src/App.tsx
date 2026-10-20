@@ -1,6 +1,7 @@
 import { anlasBillingDisplay, visibleAnlasQuote, type ScopedAnlasQuote } from "./anlas-billing";
 import { McpServerSettings } from "./components/McpServerSettings";
 import { AgentProviderSettings } from "./components/AgentProviderSettings";
+import { useV5MigrationNotice } from "./use-v5-migration-notice";
 import { studioUxText } from './agent/ux';
 import WorldpainterMaterialImport from "./components/WorldpainterMaterialImport";
 import LocalSuperResolutionSettings from "./components/LocalSuperResolutionSettings";
@@ -6912,8 +6913,6 @@ function VersionedModeTemplateEditor({
   );
 }
 
-const V5_MIGRATION_NOTICE_KEY = "langbai.notice.v5-model-migration.seen";
-const V5_MIGRATION_NOTICE_LEGACY_KEY = "langbai.notice.v5-model-migration.v2";
 const V5_MIGRATION_NOTICE_TEXT = {
   "zh-CN": {
     eyebrow: "模型更新提醒",
@@ -6960,24 +6959,12 @@ const V5_MIGRATION_NOTICE_TEXT = {
 function V5MigrationNotice() {
   const paramsModel = useAppStore((state) => state.params.model);
   const settings = useAppStore((state) => state.settings);
+  const bootDone = useAppStore((state) => state.bootDone);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
   const captureMode = new URLSearchParams(window.location.search).has("uiCapture");
-  const [dismissed, setDismissed] = useState(() => captureMode
-    || localStorage.getItem(V5_MIGRATION_NOTICE_KEY) === "seen"
-    || localStorage.getItem(V5_MIGRATION_NOTICE_LEGACY_KEY) === "dismissed");
-  const shouldShow = Boolean(settings && !dismissed && !isNAIV5Model(paramsModel));
-  useEffect(() => {
-    if (!shouldShow) return;
-    // Mark as seen when the dialog is first presented, not only after a button
-    // click, so a force-close while it is open cannot make it recur forever.
-    localStorage.setItem(V5_MIGRATION_NOTICE_KEY, "seen");
-  }, [shouldShow]);
+  const { shouldShow, dismiss } = useV5MigrationNotice(Boolean(bootDone && settings), paramsModel, captureMode);
   if (!shouldShow || !settings) return null;
   const text = V5_MIGRATION_NOTICE_TEXT[settings.language ?? "zh-CN"] ?? V5_MIGRATION_NOTICE_TEXT["zh-CN"];
-  const dismiss = () => {
-    localStorage.setItem(V5_MIGRATION_NOTICE_KEY, "seen");
-    setDismissed(true);
-  };
   return (
     <AppPortal>
       <div className="modal-backdrop v5-migration-backdrop">
