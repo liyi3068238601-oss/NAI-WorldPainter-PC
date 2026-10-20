@@ -1,0 +1,62 @@
+[
+  {
+    "path": "desktop\\src\\data\\prompt-edit-templates.ts",
+    "sha256": "4291fd9961098a474877d892bb17b2df61f3226fc7e95f4c740b6ba24d258947",
+    "bytes": 3243,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop\\src\\data\\prompt-mode-derived.ts",
+    "sha256": "22be50ecbf3542161b7971b668bce4f385384505c569fea5f2df0b8586936b3c",
+    "bytes": 3383,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop\\src\\data\\prompt-template-migration.ts",
+    "sha256": "e824ea77f605e6a9e7c1321c145f26b172f0068fc68965df730f071be395f58c",
+    "bytes": 1108,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop\\src\\data\\prompt-template-sources-20260926.json",
+    "sha256": "d7b2e22f83af2564d5d6dee7b79505320eac86e8d2ebd5a66f91cbccdeb2bab9",
+    "bytes": 16740,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop\\src\\data\\prompt-template-v3.json",
+    "sha256": "21dd742db85dbc738edfb91a7e2f7368621f764a3240fdcbba43acf1264f7034",
+    "bytes": 28179,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop\\src\\data\\prompt-templates-pre-v3.json",
+    "sha256": "8f309b57137740ab28ea10bb7ff6f42c0d6c275883a591c0911df0cf1981ebcc",
+    "bytes": 17321,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop\\src\\data\\prompt-templates-previous-v5.ts",
+    "sha256": "824a2273f192c2554675c264062162e76f083a3d83d0f912d9a3db04d1d51cc0",
+    "bytes": 25515,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop\\src\\data\\prompt-templates-v45.ts",
+    "sha256": "e70f2e339dd31dc57235541a8d74aa793d8f20aef757afc8e2b5aa59a05491af",
+    "bytes": 80690,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop\\src\\data\\prompt-templates.ts",
+    "sha256": "ce0f1fecdc584039a0bfb3abcae0819eb71cc068f90808e8df2ae6c3ba18c559",
+    "bytes": 22644,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  },
+  {
+    "path": "desktop/electron/data/tag-dictionary.ts",
+    "sha256": "23521b9426e9d279f4bb3f2225be63bf7f95a68e638ea663bf5b1f658620acc0",
+    "bytes": 19382,
+    "sourceCommit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7"
+  }
+]

@@ -55,4 +55,10 @@ Desktop.ini
 !desktop/data/
 !desktop/data/reference-catalog-name-overrides.json
 !desktop/data/reference-catalog-locales.json
+# Bundled prompt source modules are code, not runtime user data.
+!desktop/src/data/
+!desktop/src/data/*.ts
+!desktop/src/data/*.json
+!desktop/electron/data/
+!desktop/electron/data/tag-dictionary.ts
 desktop/dist-electron/
