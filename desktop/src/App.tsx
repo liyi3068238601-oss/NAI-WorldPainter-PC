@@ -1,6 +1,7 @@
 import { anlasBillingDisplay, visibleAnlasQuote, type ScopedAnlasQuote } from "./anlas-billing";
 import { McpServerSettings } from "./components/McpServerSettings";
 import { AgentProviderSettings } from "./components/AgentProviderSettings";
+import { GenerationSectionShortcuts } from "./components/GenerationSectionShortcuts";
 import { useV5MigrationNotice } from "./use-v5-migration-notice";
 import { studioUxText } from './agent/ux';
 import WorldpainterMaterialImport from "./components/WorldpainterMaterialImport";
@@ -2018,7 +2019,7 @@ export function PromptAndParams({
   return (
     <>
       {includeModel && (
-        <div className="field">
+        <div className="field" data-generation-section="model">
           <div className="compact-model-label"><span>{generateText.prompt.model}</span><FurryModeSwitch checked={modelMode === "furry"} label={generateText.prompt.furryMode} onChange={checked=>switchModelMode(checked?"furry":"anime").catch(error=>setToast(String(error)))}/></div>
           <SelectMenuCompat value={params.model} onChange={(e) => setParam("model", e.target.value as GenerateParams["model"])}>
             {NAI_MODELS.filter((m) => supportsNAIModelMode(m.value, modelMode)).map((m) => (
@@ -2203,7 +2204,7 @@ export function PromptAndParams({
               </div>
             )}
       </CapsuleEditor>}
-      <div className="prompt-tabs">
+      <div className="prompt-tabs" data-generation-section="prompt">
         <button className={clsx(promptTab === "positive" && "active")} onClick={() => setPromptTab("positive")}>
           {generateText.prompt.positivePrompt}
         </button>
@@ -3242,6 +3243,7 @@ function AccountAndRunButton({
 
 // ── Generate panel (T2I) ──────────────────────────────────────────────────────
 function GeneratePanel({openSettings}:{openSettings:()=>void}) {
+  const panelRef = useRef<HTMLDivElement>(null);
   const imageProvider = useAppStore(state=>state.settings?.imageProvider);
   const language = useAppStore((state) => state.settings?.language);
   const generate = useAppStore((state) => state.generate);
@@ -3264,7 +3266,8 @@ function GeneratePanel({openSettings}:{openSettings:()=>void}) {
 
   return (
     <>
-      <div className="panel-scroll">
+      <GenerationSectionShortcuts panelRef={panelRef} language={language} />
+      <div ref={panelRef} id="generate-parameter-fields" className="panel-scroll">
         <AutomaticComparisonControl surface="generate:t2i" />
         <PromptAndParams />
         <CommittedNumberInput label={t("generate.batchCount")} value={batchCount} min={1} max={999} normalize={(value) => Math.max(1, Math.min(999, Math.round(value)))} onCommit={setBatchCount} />
