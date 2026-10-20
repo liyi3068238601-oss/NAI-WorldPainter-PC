@@ -1,0 +1,25 @@
+{
+  "summaries": [
+    {
+      "directory": "uiux-phase2-20261020",
+      "screenshots": 64,
+      "actions": 64,
+      "bytes": 13343789
+    },
+    {
+      "directory": "uiux-prototype-20261020",
+      "screenshots": 44,
+      "actions": 44,
+      "bytes": 3455945
+    }
+  ],
+  "providerChecksPassed": 8,
+  "scrollKeepsActionPosition": true,
+  "savedContextAfterSaveAndCancel": 64000,
+  "newAndLegacySavedModel": "nai-diffusion-4-5-full",
+  "productHistoryCounts": [
+    0,
+    0
+  ],
+  "visualReview": "See report: assertions do not replace visual acceptance"
+}

@@ -1,0 +1,2139 @@
+[
+  {
+    "at": "2026-10-20T09:50:44.986Z",
+    "action": "click",
+    "x": 1105,
+    "y": 185,
+    "label": "before-skip-welcome",
+    "screenshot": {
+      "file": "002-before-skip-welcome.png",
+      "pixels": {
+        "width": 1733,
+        "height": 1128
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 903
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 902
+      },
+      "viewport": {
+        "width": 1386,
+        "height": 902,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:51:01.263Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "before-1280-workbench",
+    "screenshot": {
+      "file": "003-before-1280-workbench.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:51:12.862Z",
+    "action": "click",
+    "x": 212,
+    "y": 332,
+    "label": "before-model-menu",
+    "screenshot": {
+      "file": "004-before-model-menu.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:51:24.842Z",
+    "action": "click",
+    "x": 195,
+    "y": 447,
+    "label": "before-manual-v45-unwanted-notice",
+    "screenshot": {
+      "file": "005-before-manual-v45-unwanted-notice.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:51:38.420Z",
+    "action": "click",
+    "x": 683,
+    "y": 517,
+    "label": "before-keep-model",
+    "screenshot": {
+      "file": "006-before-keep-model.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:51:40.997Z",
+    "action": "click",
+    "x": 951,
+    "y": 108,
+    "label": "before-open-agent",
+    "screenshot": {
+      "file": "007-before-open-agent.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:51:53.492Z",
+    "action": "click",
+    "x": 1135,
+    "y": 198,
+    "label": "before-agent-provider-dialog",
+    "screenshot": {
+      "file": "008-before-agent-provider-dialog.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:52:05.757Z",
+    "action": "click",
+    "x": 605,
+    "y": 640,
+    "label": "before-add-second-model",
+    "screenshot": {
+      "file": "009-before-add-second-model.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:52:20.573Z",
+    "action": "click",
+    "x": 700,
+    "y": 578,
+    "label": "before-model-id-focus",
+    "screenshot": {
+      "file": "010-before-model-id-focus.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:52:22.906Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "before-select-model-id",
+    "screenshot": {
+      "file": "011-before-select-model-id.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:52:25.483Z",
+    "action": "type",
+    "text": "uiux-second-model",
+    "label": "before-synthetic-model-id",
+    "screenshot": {
+      "file": "012-before-synthetic-model-id.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:52:28.073Z",
+    "action": "click",
+    "x": 605,
+    "y": 640,
+    "label": "before-two-models-top",
+    "screenshot": {
+      "file": "013-before-two-models-top.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:52:30.651Z",
+    "action": "wheel",
+    "x": 929,
+    "y": 598,
+    "dy": 1500,
+    "label": "before-two-models-bottom",
+    "screenshot": {
+      "file": "014-before-two-models-bottom.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:52:49.440Z",
+    "action": "click",
+    "x": 1004,
+    "y": 658,
+    "label": "before-save-two-synthetic-models",
+    "screenshot": {
+      "file": "015-before-save-two-synthetic-models.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:52:51.030Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T09:54:32.572Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "u04-after-1280",
+    "screenshot": {
+      "file": "017-u04-after-1280.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:54:35.148Z",
+    "action": "click",
+    "x": 951,
+    "y": 108,
+    "label": "u04-after-agent",
+    "screenshot": {
+      "file": "018-u04-after-agent.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:54:37.714Z",
+    "action": "click",
+    "x": 1135,
+    "y": 198,
+    "label": "u04-after-dialog-top",
+    "screenshot": {
+      "file": "019-u04-after-dialog-top.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:54:40.270Z",
+    "action": "provider-check",
+    "label": "u04-after-actions-visible",
+    "screenshot": {
+      "file": "020-u04-after-actions-visible.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "取消",
+          "rect": {
+            "x": 920,
+            "y": 639.6000366210938,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 677.6000366210938,
+            "right": 973.6000022888184
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "保存",
+          "rect": {
+            "x": 981.6000366210938,
+            "y": 639.6000366210938,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 677.6000366210938,
+            "right": 1035.200038909912
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "fields": {
+        "x": 244.8000030517578,
+        "y": 151.1999969482422,
+        "width": 790.4000244140625,
+        "height": 451.6000061035156,
+        "bottom": 602.8000030517578,
+        "right": 1035.2000274658203
+      },
+      "scrollTop": 0,
+      "scrollHeight": 1276,
+      "clientHeight": 452
+    }
+  },
+  {
+    "at": "2026-10-20T09:54:56.068Z",
+    "action": "wheel",
+    "x": 928,
+    "y": 500,
+    "dy": 2000,
+    "label": "u04-after-fields-bottom",
+    "screenshot": {
+      "file": "021-u04-after-fields-bottom.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:54:58.376Z",
+    "action": "provider-check",
+    "label": "u04-after-bottom-actions",
+    "screenshot": {
+      "file": "022-u04-after-bottom-actions.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "取消",
+          "rect": {
+            "x": 920,
+            "y": 639.6000366210938,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 677.6000366210938,
+            "right": 973.6000022888184
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "保存",
+          "rect": {
+            "x": 981.6000366210938,
+            "y": 639.6000366210938,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 677.6000366210938,
+            "right": 1035.200038909912
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "fields": {
+        "x": 244.8000030517578,
+        "y": 151.1999969482422,
+        "width": 790.4000244140625,
+        "height": 451.6000061035156,
+        "bottom": 602.8000030517578,
+        "right": 1035.2000274658203
+      },
+      "scrollTop": 824,
+      "scrollHeight": 1276,
+      "clientHeight": 452
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:18.704Z",
+    "action": "click",
+    "x": 690,
+    "y": 350,
+    "label": "u04-edit-context",
+    "screenshot": {
+      "file": "023-u04-edit-context.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:21.268Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "u04-select-context",
+    "screenshot": {
+      "file": "024-u04-select-context.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:23.829Z",
+    "action": "type",
+    "text": "64000",
+    "label": "u04-pending-context",
+    "screenshot": {
+      "file": "025-u04-pending-context.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:26.402Z",
+    "action": "click",
+    "x": 1007,
+    "y": 660,
+    "label": "u04-save-blur-commit",
+    "screenshot": {
+      "file": "026-u04-save-blur-commit.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:28.992Z",
+    "action": "click",
+    "x": 1135,
+    "y": 198,
+    "label": "u04-reopen-saved",
+    "screenshot": {
+      "file": "027-u04-reopen-saved.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:31.578Z",
+    "action": "wheel",
+    "x": 928,
+    "y": 500,
+    "dy": 2000,
+    "label": "u04-saved-context-visible",
+    "screenshot": {
+      "file": "028-u04-saved-context-visible.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:34.162Z",
+    "action": "click",
+    "x": 700,
+    "y": 546,
+    "label": "u04-last-reasoning-menu",
+    "screenshot": {
+      "file": "029-u04-last-reasoning-menu.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:56.679Z",
+    "action": "key",
+    "key": "Escape",
+    "label": "u04-menu-dismiss",
+    "screenshot": {
+      "file": "030-u04-menu-dismiss.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:55:59.247Z",
+    "action": "click",
+    "x": 690,
+    "y": 350,
+    "label": "u04-cancel-edit-focus",
+    "screenshot": {
+      "file": "031-u04-cancel-edit-focus.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:01.829Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "u04-cancel-select",
+    "screenshot": {
+      "file": "032-u04-cancel-select.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:04.136Z",
+    "action": "type",
+    "text": "96000",
+    "label": "u04-cancel-draft",
+    "screenshot": {
+      "file": "033-u04-cancel-draft.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:06.455Z",
+    "action": "click",
+    "x": 947,
+    "y": 660,
+    "label": "u04-cancel-with-pending-edit",
+    "screenshot": {
+      "file": "034-u04-cancel-with-pending-edit.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:08.773Z",
+    "action": "click",
+    "x": 1135,
+    "y": 198,
+    "label": "u04-reopen-after-cancel",
+    "screenshot": {
+      "file": "035-u04-reopen-after-cancel.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:11.324Z",
+    "action": "wheel",
+    "x": 928,
+    "y": 500,
+    "dy": 2000,
+    "label": "u04-cancel-preserved-64000",
+    "screenshot": {
+      "file": "036-u04-cancel-preserved-64000.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:13.654Z",
+    "action": "resize",
+    "width": 1440,
+    "height": 900,
+    "label": "u04-1440-dialog",
+    "screenshot": {
+      "file": "037-u04-1440-dialog.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:15.985Z",
+    "action": "provider-check",
+    "label": "u04-1440-actions",
+    "screenshot": {
+      "file": "038-u04-1440-actions.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "取消",
+          "rect": {
+            "x": 1000,
+            "y": 767.2000122070312,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 805.2000122070312,
+            "right": 1053.6000022888184
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "保存",
+          "rect": {
+            "x": 1061.5999755859375,
+            "y": 767.2000122070312,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 805.2000122070312,
+            "right": 1115.1999778747559
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "fields": {
+        "x": 324.8000183105469,
+        "y": 201.1999969482422,
+        "width": 790.4000244140625,
+        "height": 529.2000122070312,
+        "bottom": 730.4000091552734,
+        "right": 1115.2000427246094
+      },
+      "scrollTop": 746.4000244140625,
+      "scrollHeight": 1276,
+      "clientHeight": 529
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:26.396Z",
+    "action": "resize",
+    "width": 1920,
+    "height": 1080,
+    "label": "u04-1920-dialog",
+    "screenshot": {
+      "file": "039-u04-1920-dialog.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:28.756Z",
+    "action": "provider-check",
+    "label": "u04-1920-actions",
+    "screenshot": {
+      "file": "040-u04-1920-actions.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "取消",
+          "rect": {
+            "x": 1240,
+            "y": 857.2000122070312,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 895.2000122070312,
+            "right": 1293.6000022888184
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "保存",
+          "rect": {
+            "x": 1301.5999755859375,
+            "y": 857.2000122070312,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 895.2000122070312,
+            "right": 1355.1999778747559
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "fields": {
+        "x": 564.7999877929688,
+        "y": 291.20001220703125,
+        "width": 790.4000244140625,
+        "height": 529.2000122070312,
+        "bottom": 820.4000244140625,
+        "right": 1355.2000122070312
+      },
+      "scrollTop": 746.4000244140625,
+      "scrollHeight": 1276,
+      "clientHeight": 529
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:31.082Z",
+    "action": "key",
+    "key": "Escape",
+    "label": "u04-close-dialog",
+    "screenshot": {
+      "file": "041-u04-close-dialog.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:33.350Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "u04-settings-1280",
+    "screenshot": {
+      "file": "042-u04-settings-1280.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:35.692Z",
+    "action": "click",
+    "x": 1140,
+    "y": 60,
+    "label": "u04-open-global-settings",
+    "screenshot": {
+      "file": "043-u04-open-global-settings.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:52.153Z",
+    "action": "click",
+    "x": 190,
+    "y": 378,
+    "label": "u04-global-agent-models",
+    "screenshot": {
+      "file": "044-u04-global-agent-models.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:54.441Z",
+    "action": "provider-check",
+    "label": "u04-global-actions-visible",
+    "screenshot": {
+      "file": "045-u04-global-actions-visible.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "取消",
+          "rect": {
+            "x": 1059,
+            "y": 570.4000244140625,
+            "width": 45.60000228881836,
+            "height": 36.400001525878906,
+            "bottom": 606.8000259399414,
+            "right": 1104.6000022888184
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "保存",
+          "rect": {
+            "x": 1113.5999755859375,
+            "y": 570.4000244140625,
+            "width": 45.60000228881836,
+            "height": 36.400001525878906,
+            "bottom": 606.8000259399414,
+            "right": 1159.1999778747559
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "fields": {
+        "x": 330.8000183105469,
+        "y": 176,
+        "width": 828.4000244140625,
+        "height": 361.6000061035156,
+        "bottom": 537.6000061035156,
+        "right": 1159.2000427246094
+      },
+      "scrollTop": 0,
+      "scrollHeight": 1163,
+      "clientHeight": 362
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:56.738Z",
+    "action": "wheel",
+    "x": 1000,
+    "y": 490,
+    "dy": 2000,
+    "label": "u04-global-fields-bottom",
+    "screenshot": {
+      "file": "046-u04-global-fields-bottom.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:56:59.050Z",
+    "action": "provider-check",
+    "label": "u04-global-bottom-actions",
+    "screenshot": {
+      "file": "047-u04-global-bottom-actions.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "取消",
+          "rect": {
+            "x": 1059,
+            "y": 570.4000244140625,
+            "width": 45.60000228881836,
+            "height": 36.400001525878906,
+            "bottom": 606.8000259399414,
+            "right": 1104.6000022888184
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "保存",
+          "rect": {
+            "x": 1113.5999755859375,
+            "y": 570.4000244140625,
+            "width": 45.60000228881836,
+            "height": 36.400001525878906,
+            "bottom": 606.8000259399414,
+            "right": 1159.1999778747559
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "fields": {
+        "x": 330.8000183105469,
+        "y": 176,
+        "width": 828.4000244140625,
+        "height": 361.6000061035156,
+        "bottom": 537.6000061035156,
+        "right": 1159.2000427246094
+      },
+      "scrollTop": 801.5999755859375,
+      "scrollHeight": 1163,
+      "clientHeight": 362
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:07.656Z",
+    "action": "click",
+    "x": 190,
+    "y": 559,
+    "label": "u04-appearance-regression",
+    "screenshot": {
+      "file": "048-u04-appearance-regression.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:22.493Z",
+    "action": "click",
+    "x": 700,
+    "y": 159,
+    "label": "u04-theme-menu",
+    "screenshot": {
+      "file": "049-u04-theme-menu.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:38.921Z",
+    "action": "click",
+    "x": 365,
+    "y": 205,
+    "label": "u04-light-appearance",
+    "screenshot": {
+      "file": "050-u04-light-appearance.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:41.494Z",
+    "action": "click",
+    "x": 190,
+    "y": 378,
+    "label": "u04-light-global-agent",
+    "screenshot": {
+      "file": "051-u04-light-global-agent.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:44.040Z",
+    "action": "provider-check",
+    "label": "u04-light-global-actions",
+    "screenshot": {
+      "file": "052-u04-light-global-actions.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "取消",
+          "rect": {
+            "x": 1059,
+            "y": 570.4000244140625,
+            "width": 45.60000228881836,
+            "height": 36.400001525878906,
+            "bottom": 606.8000259399414,
+            "right": 1104.6000022888184
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "保存",
+          "rect": {
+            "x": 1113.5999755859375,
+            "y": 570.4000244140625,
+            "width": 45.60000228881836,
+            "height": 36.400001525878906,
+            "bottom": 606.8000259399414,
+            "right": 1159.1999778747559
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "fields": {
+        "x": 330.8000183105469,
+        "y": 176,
+        "width": 828.4000244140625,
+        "height": 361.6000061035156,
+        "bottom": 537.6000061035156,
+        "right": 1159.2000427246094
+      },
+      "scrollTop": 0,
+      "scrollHeight": 1163,
+      "clientHeight": 362
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:46.608Z",
+    "action": "click",
+    "x": 1150,
+    "y": 660,
+    "label": "u04-close-global-settings",
+    "screenshot": {
+      "file": "053-u04-close-global-settings.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:49.194Z",
+    "action": "click",
+    "x": 1135,
+    "y": 198,
+    "label": "u04-light-agent-dialog",
+    "screenshot": {
+      "file": "054-u04-light-agent-dialog.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:51.505Z",
+    "action": "provider-check",
+    "label": "u04-light-agent-actions",
+    "screenshot": {
+      "file": "055-u04-light-agent-actions.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "取消",
+          "rect": {
+            "x": 920,
+            "y": 639.6000366210938,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 677.6000366210938,
+            "right": 973.6000022888184
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "保存",
+          "rect": {
+            "x": 981.6000366210938,
+            "y": 639.6000366210938,
+            "width": 53.60000228881836,
+            "height": 38,
+            "bottom": 677.6000366210938,
+            "right": 1035.200038909912
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "fields": {
+        "x": 244.8000030517578,
+        "y": 151.1999969482422,
+        "width": 790.4000244140625,
+        "height": 451.6000061035156,
+        "bottom": 602.8000030517578,
+        "right": 1035.2000274658203
+      },
+      "scrollTop": 0,
+      "scrollHeight": 1276,
+      "clientHeight": 452
+    }
+  },
+  {
+    "at": "2026-10-20T09:57:52.697Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:02:05.932Z",
+    "action": "click",
+    "x": 1105,
+    "y": 185,
+    "label": "u05-new-profile-skip-welcome",
+    "screenshot": {
+      "file": "057-u05-new-profile-skip-welcome.png",
+      "pixels": {
+        "width": 1733,
+        "height": 1128
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 903
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 902
+      },
+      "viewport": {
+        "width": 1386,
+        "height": 902,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:02:07.471Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "u05-new-v5-default",
+    "screenshot": {
+      "file": "058-u05-new-v5-default.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:02:09.024Z",
+    "action": "click",
+    "x": 212,
+    "y": 332,
+    "label": "u05-after-model-menu",
+    "screenshot": {
+      "file": "059-u05-after-model-menu.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:02:10.567Z",
+    "action": "click",
+    "x": 195,
+    "y": 447,
+    "label": "u05-after-manual-v45-no-notice",
+    "screenshot": {
+      "file": "060-u05-after-manual-v45-no-notice.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:02:23.294Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:03:15.497Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:04:29.517Z",
+    "action": "click",
+    "x": 737,
+    "y": 607,
+    "label": "u05-legacy-keep-model",
+    "screenshot": {
+      "file": "063-u05-legacy-keep-model.png",
+      "pixels": {
+        "width": 1733,
+        "height": 1128
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 903
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 902
+      },
+      "viewport": {
+        "width": 1386,
+        "height": 902,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:04:41.968Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:05:23.130Z",
+    "action": "close",
+    "closed": true
+  }
+]

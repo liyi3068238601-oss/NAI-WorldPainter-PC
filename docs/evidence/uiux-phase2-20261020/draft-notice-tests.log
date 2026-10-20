@@ -1,0 +1,13 @@
+
+> nai-worldpainter-pc@0.1.0 test
+> vitest run src/use-v5-migration-notice.test.ts src/retained-prompts.test.ts
+
+
+ RUN  v4.1.11 E:/Codex鏃犻」鐩枃浠跺す/2026-10-20/task/uiux-workspace/desktop
+
+
+ Test Files  2 passed (2)
+      Tests  15 passed (15)
+   Start at  18:16:18
+   Duration  632ms (transform 442ms, setup 0ms, import 581ms, tests 17ms, environment 0ms)
+
