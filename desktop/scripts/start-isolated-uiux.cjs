@@ -34,7 +34,7 @@ async function smoke(){
  finally{if(app){await app.close();report.closedOwnInstance=true;}fs.writeFileSync(path.join(proof,'launcher-smoke.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));}
 }
 function start(){
- const {launch,dataRoot}=configuration();const child=spawn(launch.executablePath,launch.args,{cwd:launch.cwd,env:launch.env,detached:true,stdio:'ignore',windowsHide:true});
+ const {launch,dataRoot}=configuration();const child=spawn(launch.executablePath,launch.args,{cwd:launch.cwd,env:launch.env,detached:true,stdio:'ignore',windowsHide:false});
  child.once('error',error=>{console.error(error.message);process.exitCode=1;});child.once('spawn',()=>{const record={at:new Date().toISOString(),pid:child.pid,executable:launch.executablePath,cwd:launch.cwd,dataRoot,userData:launch.env.WORLDPAINTER_DATA_DIR};fs.writeFileSync(path.join(dataRoot,'last-launch.json'),JSON.stringify(record,null,2));child.unref();console.log('Started this checkout. Isolated application data: '+dataRoot);});
 }
 module.exports={configuration};
