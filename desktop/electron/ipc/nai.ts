@@ -1,3 +1,4 @@
+import { prepareMobileInpaintRequest, applyMobileOfficialInpaintParameters, decodeMobilePng, normalizeMobileInpaintParams } from './mobile-inpaint';
 import {localGenerationTime} from "./history-generation-time";
 import {extractEmbeddedImageMetadata} from '../image-metadata';
 import {prepareGooglePromptTranslation} from '../../src/google-prompt-translation';
@@ -4905,6 +4906,33 @@ export async function inpaintImage(
   } finally {
     job.end();
   }
+}
+
+/** Independent full-frame mobile flow. The legacy inpaint implementation remains unchanged. */
+export async function generateMobileInpaint(request: import('../../src/types').MobileInpaintRequest): Promise<GenerateResult> {
+  let input: ReturnType<typeof prepareMobileInpaintRequest>;
+  try { input = prepareMobileInpaintRequest(request); }
+  catch (error) { return { ok: false, items: [], message: error instanceof Error ? error.message : '新版重绘输入无效。' }; }
+  const params = normalizeMobileInpaintParams(request);
+  if (!getToken()) return { ok: false, items: [], message: '请先配置 API Token。' };
+  if (!params.positivePrompt.trim()) return { ok: false, items: [], message: '请输入正面提示词。' };
+  const job = beginJob();
+  try {
+    const actualSeed = params.seedMode !== 'random' && params.seed >= 0 ? params.seed : crypto.randomInt(1, 2_147_483_647);
+    const payload = buildPayload({ ...params, model: request.model } as PayloadParams, actualSeed);
+    payload.action = 'infill';
+    applyMobileOfficialInpaintParameters(payload.parameters, input);
+    const buffers = await postGenerateImage(payload, job.controller.signal);
+    if (!buffers.length) return { ok: false, items: [], message: '重绘请求未返回图片。' };
+    for (const buffer of buffers) {
+      const output = decodeMobilePng(buffer.toString('base64'), 1920 * 1920);
+      if (output.width !== input.width || output.height !== input.height) throw Error('重绘结果尺寸与输出框不一致，未自动缩放或贴回。');
+    }
+    const items = await saveBuffers(buffers, params, actualSeed, 'mobile-inpaint', request.model);
+    void refreshStoredAccount();
+    return { ok: true, items, actualSeed, message: `新版局部重绘完成，已保存 ${items.length} 张输出框结果。` };
+  } catch (error) { return handleGenerateError(error, '新版局部重绘失败'); }
+  finally { job.end(); }
 }
 
 export async function upscaleImg(

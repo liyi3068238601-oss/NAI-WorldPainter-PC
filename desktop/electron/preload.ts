@@ -392,6 +392,10 @@ contextBridge.exposeInMainWorld("naiDesktop", {
       noise,
       region,
     ),
+  pickMobileInpaintSource: () => ipcRenderer.invoke('mobile-inpaint:pick-source'),
+  readMobileInpaintSource: (filePath: string) => ipcRenderer.invoke('mobile-inpaint:read-source', filePath),
+  mobileInpaint: (request: import('../src/types').MobileInpaintRequest) => ipcRenderer.invoke('nai:mobileInpaint', request),
+  saveMobileInpaint: (base64: string) => ipcRenderer.invoke('mobile-inpaint:save', base64),
   upscaleImage: (scale: UpscaleScale, model: string) =>
     ipcRenderer.invoke("nai:upscale", scale, model),
   augmentImage: (tool: DirectorTool, options: AugmentOptions) =>

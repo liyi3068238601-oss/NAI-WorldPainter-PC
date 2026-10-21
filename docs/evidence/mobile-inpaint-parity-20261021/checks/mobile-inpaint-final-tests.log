@@ -1,0 +1,66 @@
+
+> nai-worldpainter-pc@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 E:/Codex无项目文件夹/2026-10-20/task/uiux-workspace/desktop
+
+ ❯ src/version-consistency.test.ts (4 tests | 1 failed) 27ms
+     × keeps the desktop version current and the upstream mobile fixture version pinned 11ms (retry x2)
+ ❯ src/builtin-fonts.test.ts (4 tests | 1 failed) 407ms
+     × mobile normalization and runtime assets register the same IDs without OS font installation 7ms (retry x2)
+ ❯ electron/ipc/preflight-network.test.ts (0 test)
+FULL_POOL_SAMPLER: candidates=600000; recipes=8; milliseconds=65
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  electron/ipc/preflight-network.test.ts [ electron/ipc/preflight-network.test.ts ]
+Error: ENOENT: no such file or directory, open 'E:\Codex无项目文件夹\2026-10-20\task\uiux-workspace\desktop\shared\issue-network-fixtures\public-test-cert.pem'
+ ❯ electron/ipc/preflight-network.test.ts:9:12
+      7| import {describe,it,expect} from 'vitest';
+      8| import {compactRemoteErrorText} from '../../src/error-message';
+      9| const cert=readFileSync('shared/issue-network-fixtures/public-test-cer…
+       |            ^
+     10| const key=readFileSync('shared/issue-network-fixtures/public-test-key.…
+     11| function production(selected=true) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/builtin-fonts.test.ts > bundled style fonts > mobile normalization and runtime assets register the same IDs without OS font installation
+ FAIL  src/builtin-fonts.test.ts > bundled style fonts > mobile normalization and runtime assets register the same IDs without OS font installation
+ FAIL  src/builtin-fonts.test.ts > bundled style fonts > mobile normalization and runtime assets register the same IDs without OS font installation
+Error: ENOENT: no such file or directory, open 'E:\Codex无项目文件夹\2026-10-20\task\uiux-workspace\desktop\mobile\lib\models\builtin_ui_fonts.dart'
+ ❯ src/builtin-fonts.test.ts:30:17
+     28|  });
+     29|  it('mobile normalization and runtime assets register the same IDs wit…
+     30|   const dart=fs.readFileSync('mobile/lib/models/builtin_ui_fonts.dart'…
+       |                 ^
+     31|   expect(fs.readFileSync('mobile/pubspec.yaml','utf8')).toContain('   …
+     32|  });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/version-consistency.test.ts > release version consistency > keeps the desktop version current and the upstream mobile fixture version pinned
+ FAIL  src/version-consistency.test.ts > release version consistency > keeps the desktop version current and the upstream mobile fixture version pinned
+ FAIL  src/version-consistency.test.ts > release version consistency > keeps the desktop version current and the upstream mobile fixture version pinned
+Error: ENOENT: no such file or directory, open 'E:\Codex无项目文件夹\2026-10-20\task\uiux-workspace\desktop\mobile\lib\models\nai_models.dart'
+ ❯ read src/version-consistency.test.ts:17:13
+     15|
+     16| function read(relativePath: string): string {
+     17|   return fs.readFileSync(path.join(root, relativePath), "utf8");
+       |             ^
+     18| }
+     19|
+ ❯ src/version-consistency.test.ts:25:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+
+ Test Files  3 failed | 454 passed | 1 skipped (458)
+      Tests  2 failed | 4184 passed | 2 skipped (4188)
+   Start at  10:36:04
+   Duration  26.89s (transform 44.95s, setup 0ms, import 147.48s, tests 218.23s, environment 51ms)
+

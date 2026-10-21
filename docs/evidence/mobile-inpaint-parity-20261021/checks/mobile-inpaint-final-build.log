@@ -1,0 +1,50 @@
+Command: npm.cmd run build
+
+> nai-worldpainter-pc@0.1.0 build
+> npm run build:renderer && npm run build:electron
+
+
+> nai-worldpainter-pc@0.1.0 build:renderer
+> vite build
+
+vite v8.0.16 building client environment for production...
+[2Ktransforming...✓ 904 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                        1.93 kB │ gzip:   0.85 kB
+dist/assets/mobile-inpaint-worker-ChDKDvKH.js          8.05 kB
+dist/assets/official-metadata-worker-KL90Qa0M.js      55.70 kB
+dist/assets/MetadataInspector-CsoT4IvL.css             1.21 kB │ gzip:   0.47 kB
+dist/assets/ArtistLab-B4xElAJD.css                     3.54 kB │ gzip:   0.96 kB
+dist/assets/PiAgentPage-BIJDg8ob.css                  59.92 kB │ gzip:  10.50 kB
+dist/assets/index-CM-KmteT.css                       688.61 kB │ gzip: 109.65 kB
+dist/assets/ArtistStringWeightDraw-CLXTq_KG.js         0.19 kB │ gzip:   0.17 kB
+dist/assets/RangeInput-Bf8eeEPr.js                     0.62 kB │ gzip:   0.40 kB
+dist/assets/official-metadata-online-BlftGaxj.js       6.79 kB │ gzip:   3.21 kB
+dist/assets/ToolsHub-CcxnA6ZI.js                       7.03 kB │ gzip:   2.51 kB
+dist/assets/PromptCodex-BBM9IfOr.js                   10.80 kB │ gzip:   4.51 kB
+dist/assets/MobileInpaintCanvas-B5OnIIg_.js           14.93 kB │ gzip:   5.28 kB
+dist/assets/InpaintCanvas-CLpYo6Tp.js                 17.00 kB │ gzip:   5.32 kB
+dist/assets/ui-N6kEOK6L.js                            18.77 kB │ gzip:   6.64 kB
+dist/assets/random-custom-tag-library-CTJPQBED.js     34.19 kB │ gzip:  10.92 kB
+dist/assets/icons-CiuoxhNL.js                         41.12 kB │ gzip:  11.24 kB
+dist/assets/ComicGenerator-Dm_62Qjm.js                41.66 kB │ gzip:  10.55 kB
+dist/assets/MetadataInspector-CiWd4FSj.js             43.25 kB │ gzip:  14.81 kB
+dist/assets/V5ArtistWeightRepair-2lcRlt1Z.js          58.03 kB │ gzip:  19.56 kB
+dist/assets/TagComicGenerator-Cht5llj2.js             62.28 kB │ gzip:  19.39 kB
+dist/assets/OnlineGalleryPage-oLHgvSYG.js             85.78 kB │ gzip:  26.63 kB
+dist/assets/ArtistLab-B6QXoM-V.js                    144.92 kB │ gzip:  46.84 kB
+dist/assets/PiAgentPage-Cfws5idT.js                  244.07 kB │ gzip:  74.93 kB
+dist/assets/jsx-runtime-DhtPO137.js                  816.00 kB │ gzip: 268.47 kB
+dist/assets/index-S_J1k2_b.js                      1,364.30 kB │ gzip: 429.90 kB
+
+✓ built in 665ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+> nai-worldpainter-pc@0.1.0 build:electron
+> tsc -p tsconfig.electron.json
+

@@ -1,0 +1,5 @@
+Command: npm.cmd run typecheck
+
+> nai-worldpainter-pc@0.1.0 typecheck
+> tsc --noEmit && tsc -p tsconfig.electron.json --noEmit
+

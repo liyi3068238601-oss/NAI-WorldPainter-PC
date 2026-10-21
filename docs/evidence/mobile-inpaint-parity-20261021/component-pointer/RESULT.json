@@ -1,0 +1,37 @@
+{
+  "checks": [
+    {
+      "name": "held frame drag changes its position",
+      "pass": true
+    },
+    {
+      "name": "moving to and typing in left prompt leaves frame unchanged",
+      "pass": true
+    },
+    {
+      "name": "zero-button hover terminates stale frame capture without moving or snapping",
+      "pass": true
+    },
+    {
+      "name": "later hover cannot resume the terminated pan",
+      "pass": true
+    },
+    {
+      "name": "zero-button brush cleanup commits the existing stroke once",
+      "pass": true
+    },
+    {
+      "name": "hover after brush cleanup adds no further stroke",
+      "pass": true
+    },
+    {
+      "name": "released middle-button global pan stays fixed over the left panel",
+      "pass": true
+    }
+  ],
+  "passed": 7,
+  "total": 7,
+  "automation": "Electron CDP with the real MobileInpaintCanvas and store; explicit synthetic zero-button capture loss",
+  "physicalPointerTested": false,
+  "realPaidCalls": false
+}

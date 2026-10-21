@@ -1,0 +1,10 @@
+Command: node node_modules/vitest/vitest.mjs run inpaint src/feature-i18n.test.ts --retry 0
+
+ RUN  v4.1.11 E:/Codex无项目文件夹/2026-10-20/task/uiux-workspace/desktop
+
+
+ Test Files  22 passed (22)
+      Tests  724 passed (724)
+   Start at  11:19:54
+   Duration  3.46s (transform 9.52s, setup 0ms, import 15.23s, tests 8.42s, environment 2ms)
+

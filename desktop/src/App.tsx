@@ -1,3 +1,4 @@
+import {MobileInpaintWorkspace,InpaintModePanel} from './MobileInpaintWorkspace';
 import { anlasBillingDisplay, visibleAnlasQuote, type ScopedAnlasQuote } from "./anlas-billing";
 import { McpServerSettings } from "./components/McpServerSettings";
 import { AgentProviderSettings } from "./components/AgentProviderSettings";
@@ -4273,7 +4274,7 @@ function LeftPanel({ openSettings }: { openSettings: () => void }) {
               : <EnhancePanel openSettings={openSettings} />}
         </>
       )}
-      {activeTab === "inpaint" && <InpaintPanel openSettings={openSettings} />}
+      {activeTab === "inpaint" && <InpaintModePanel legacy={<InpaintPanel openSettings={openSettings} />} openSettings={openSettings}/>}
       {activeTab === "postprocess" && <PostprocessPanel openSettings={openSettings} />}
       {activeTab === "inspect" && <ReversePanel />}
       {activeTab === "convert" && <PromptConverterPanel />}
@@ -7241,7 +7242,7 @@ function MainPage() {
             </PersistentCanvasSurface>
             <PersistentCanvasSurface active={activeTab === "inpaint"}>
               <Suspense fallback={<div className="lazy-tool-loading">{t("tool.loadingInpaint")}</div>}>
-                <InpaintCanvas />
+                <MobileInpaintWorkspace><InpaintCanvas /></MobileInpaintWorkspace>
               </Suspense>
             </PersistentCanvasSurface>
           </div>
