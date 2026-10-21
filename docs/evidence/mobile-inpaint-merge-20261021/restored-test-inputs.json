@@ -1,0 +1,60 @@
+{
+  "recordedAt": "2026-10-21",
+  "source": {
+    "repository": "E:\\NAI-WorldPainter\\novelai-image-desktop",
+    "commit": "7bc76ded4f539949a52f29fba32e2d896d2f89b7",
+    "license": "MIT",
+    "licensePath": "LICENSE",
+    "licenseGitBlob": "0390cd4480fed3b871ada386c942e6fe2b7e7677",
+    "targetLicensePath": "desktop/LICENSE",
+    "targetIncludesExactSourceNotice": true,
+    "copiedBytes": "byte-for-byte from the clean source worktree checkout at the fixed commit; SHA-256 below hashes those exact copied bytes"
+  },
+  "files": [
+    {
+      "sourcePath": "shared/issue-network-fixtures/public-test-cert.pem",
+      "targetPath": "desktop/shared/issue-network-fixtures/public-test-cert.pem",
+      "mode": "100644",
+      "gitBlob": "155b5ddfe5f0fa4f6ba5abcaae6f759ee62c8857",
+      "sha256": "EE769CAEE858E38229E8A2ECB198E2753E0E8C6545CF6BADED23226DE33AF454",
+      "bytes": 2416,
+      "certificateBlocks": 2,
+      "privateKeyMarkers": 0,
+      "gitStoredBlob": "155b5ddfe5f0fa4f6ba5abcaae6f759ee62c8857",
+      "gitStoredSha256": "85db28f4e20c3df32ba8045e11f1a5b5cbec91cee030e6a291e4015a1217da1c"
+    },
+    {
+      "sourcePath": "mobile/lib/models/builtin_ui_fonts.dart",
+      "targetPath": "desktop/mobile/lib/models/builtin_ui_fonts.dart",
+      "mode": "100644",
+      "gitBlob": "41a5f4d4012d10f7b100d7975c65c9b2c55f96ee",
+      "sha256": "C60E83DCE69EB961FB41F475C9E4D9A3EECDF00B768A0E446C23BA54EB127763",
+      "bytes": 2425,
+      "gitStoredBlob": "41a5f4d4012d10f7b100d7975c65c9b2c55f96ee",
+      "gitStoredSha256": "3797bcc854e99d2750ea8dc8a67027f389673e51159ee99ed96d997e498db061"
+    },
+    {
+      "sourcePath": "mobile/lib/models/nai_models.dart",
+      "targetPath": "desktop/mobile/lib/models/nai_models.dart",
+      "mode": "100644",
+      "gitBlob": "107f746092b081d4dc1eb78417294a4de3557342",
+      "sha256": "7E92D4043A41A751D7A563C455E90CDB33663F83A741EB475E92EC89745265D7",
+      "bytes": 68464,
+      "gitStoredBlob": "036121c115beb6131ea9151ae15aac8741d9b519",
+      "gitStoredSha256": "47c9f86387b6fbb8c421503975687e975c80997e849050bf782c688681259aea"
+    },
+    {
+      "sourcePath": "shared/issue-network-fixtures/public-test-key.pem",
+      "targetPath": "desktop/shared/issue-network-fixtures/public-test-key.pem",
+      "mode": "100644",
+      "gitBlob": "2076b2414e8eea91a6cfce63866cbedff8835cdc",
+      "sha256": "1BD3A330A5BF53B63DE63A45BDF89EA2F7B454E197F2032B760755F17E1BE618",
+      "bytes": 1732,
+      "purpose": "Fixed-source test-only TLS private key paired with public-test-cert.pem; used by preflight-network.test.ts for an HTTPS listener and TCP proxy bound to 127.0.0.1 only. Not production or account material.",
+      "testFile": "desktop/electron/ipc/preflight-network.test.ts",
+      "gitStoredBlob": "38de729797c4e83137d4e2bec2a27c15a1714d10",
+      "gitStoredSha256": "a8f37653566c1afb7d7af29468c772062433946b27d25205b2a034e4f93e6052"
+    }
+  ],
+  "lineEndingNote": "sha256 records the exact copied source worktree bytes; gitStoredBlob/gitStoredSha256 identify the staged text after Git attribute normalization. Checkout line endings may vary."
+}

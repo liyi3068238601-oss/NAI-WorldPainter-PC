@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { WorkingImage } from "./types";
 import type { MobileLayer, MobilePixels, MobileRect, MobileStroke, MobileTransform } from "./mobile-inpaint";
+import { isMobileInpaintOutputSize, loadMobileInpaintPromptDrafts, loadMobileInpaintWorkspaceDrafts, saveMobileInpaintPromptDrafts, saveMobileInpaintWorkspaceDrafts } from "./mobile-inpaint-draft-storage";
 
 export interface MobileCandidate {
   id: string;
@@ -30,6 +31,7 @@ interface MobileInpaintState {
   transform: MobileTransform;
   viewport: Size;
   output: Size;
+  customOutputs: Size[];
   strokes: MobileStroke[];
   layers: MobileResultLayer[];
   candidates: MobileCandidate[];
@@ -59,6 +61,7 @@ interface MobileInpaintState {
   update: (patch: Partial<MobileInpaintState>) => void;
   importSource: (image: WorkingImage) => Promise<void>;
   setOutput: (output: Size) => void;
+  addCustomOutput: (output: Size) => boolean;
   setViewport: (viewport: Size) => void;
   setCandidates: (candidates: MobileCandidate[]) => void;
   checkpoint: () => void;
@@ -122,19 +125,31 @@ function fitted(source: Size, output: Size, viewport: Size) {
 const nearestSnap = (offsets: number[]) => offsets.filter(n => Math.abs(n) <= 8).sort((a, b) => Math.abs(a) - Math.abs(b))[0] ?? 0;
 const sameStrokes = (a: MobileStroke[], b: MobileStroke[]) => a.length === b.length && a.every((stroke, index) => stroke === b[index]);
 let sourceRevision = 0;
+const promptDrafts = loadMobileInpaintPromptDrafts();
+const workspaceDrafts = loadMobileInpaintWorkspaceDrafts();
 
 export const useMobileInpaintStore = create<MobileInpaintState>((set, get) => ({
   mode: "legacy", source: null, pixels: null,
   frame: { x: 0, y: 0, width: 512, height: 512 },
   transform: { scale: 1, offsetX: 0, offsetY: 0 },
-  viewport: { width: 600, height: 500 }, output: { width: 832, height: 1216 },
+  viewport: { width: 600, height: 500 }, output: workspaceDrafts.output, customOutputs: workspaceDrafts.customOutputs,
   strokes: [], layers: [], candidates: [], selectedCandidateId: null, reviewOpen: false,
   tool: "view", target: "mask", brushSize: 48, brushColor: "#ff4d4f", squareBrush: false,
   showMask: true, expand: 8, outwardFeather: 8,
-  scope: "region", prompt: "", negative: "", strength: 0.96, noise: 0,
+  scope: "region", prompt: promptDrafts.prompt, negative: promptDrafts.negative, strength: 0.96, noise: 0,
   ignoreSource: false, colorCorrection: true, busy: false, error: "",
   undoStack: [], redoStack: [], maskUndoStack: [], maskRedoStack: [],
-  update: patch => set(patch),
+  update: patch => set(state => {
+    const next = { ...patch };
+    if (patch.tool === "brush" || patch.tool === "erase") next.showMask = true;
+    if (Object.prototype.hasOwnProperty.call(patch, "prompt") || Object.prototype.hasOwnProperty.call(patch, "negative")) {
+      saveMobileInpaintPromptDrafts({
+        prompt: typeof patch.prompt === "string" ? patch.prompt : state.prompt,
+        negative: typeof patch.negative === "string" ? patch.negative : state.negative,
+      });
+    }
+    return next;
+  }),
   async importSource(source) {
     if (get().busy) return;
     const revision = ++sourceRevision;
@@ -150,9 +165,19 @@ export const useMobileInpaintStore = create<MobileInpaintState>((set, get) => ({
     } catch (error) { if (revision === sourceRevision) set({ busy: false, error: String((error as Error).message) }); }
   },
   setOutput(output) {
-    if (get().busy || ![output.width, output.height].every(value => Number.isSafeInteger(value) && value >= 64 && value <= 1920 && value % 64 === 0)) return;
-    const frame = get().frame, height = frame.width * output.height / output.width;
+    const state = get();
+    if (state.busy || !isMobileInpaintOutputSize(output)) return;
+    const frame = state.frame, height = frame.width * output.height / output.width;
     set({ output, frame: { ...frame, y: frame.y + (frame.height - height) / 2, height } });
+    saveMobileInpaintWorkspaceDrafts({ output, customOutputs: state.customOutputs });
+  },
+  addCustomOutput(output) {
+    const state = get();
+    if (!isMobileInpaintOutputSize(output) || state.customOutputs.some(item => item.width === output.width && item.height === output.height)) return false;
+    const customOutputs = [...state.customOutputs, { width: output.width, height: output.height }];
+    set({ customOutputs });
+    saveMobileInpaintWorkspaceDrafts({ output: state.output, customOutputs });
+    return true;
   },
   setViewport(viewport) {
     const old = get().viewport;

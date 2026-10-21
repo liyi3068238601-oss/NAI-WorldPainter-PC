@@ -32,6 +32,13 @@ outputs/
 cache/
 logs/
 models/
+# Tracked test fixtures restored from the MIT desktop migration source.
+!desktop/mobile/lib/models/
+desktop/mobile/lib/models/*
+!desktop/mobile/lib/models/builtin_ui_fonts.dart
+!desktop/mobile/lib/models/nai_models.dart
+!desktop/shared/issue-network-fixtures/public-test-cert.pem
+!desktop/shared/issue-network-fixtures/public-test-key.pem
 *.db
 *.db-*
 *.sqlite

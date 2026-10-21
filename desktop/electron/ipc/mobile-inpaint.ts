@@ -36,10 +36,13 @@ export function prepareMobileInpaintRequest(request: MobileInpaintRequest) {
   const mask = decodeMobilePng(request.maskBase64, 1920 * 1920);
   if (image.width !== width || image.height !== height || mask.width !== width || mask.height !== height) throw Error('处理图片、蒙版与请求尺寸必须一致。');
   if (!Number.isFinite(request.strength)) throw Error('重绘强度无效。');
+  const sampling = request.sampling;
+  if (sampling && (!['k_euler','k_euler_ancestral','k_dpm_2','k_dpm_2_ancestral','k_dpmpp_2m','k_dpmpp_2m_sde','k_dpmpp_2s_ancestral','k_dpmpp_sde','ddim','ddim_v3'].includes(sampling.sampler)
+    || !['native','karras','exponential','polyexponential'].includes(sampling.noiseSchedule))) throw Error('手机重绘采样参数无效。');
   let painted = false;
   for (let i = 0; i < mask.png.data.length; i += 4) if (mask.png.data[i] > 0 && mask.png.data[i+3] > 0) { painted = true; break; }
   if (!painted) throw Error('输出框内没有重绘蒙版。');
-  return { imageBase64: image.bytes.toString('base64'), maskBase64: mask.bytes.toString('base64'), strength: Math.min(1, Math.max(.01, request.strength)), width, height };
+  return { imageBase64: image.bytes.toString('base64'), maskBase64: mask.bytes.toString('base64'), strength: Math.min(1, Math.max(.01, request.strength)), width, height, sampling, model: request.model };
 }
 
 /** Saved replay parameters describe the actual inpaint checkpoint, never a different main-tab model. */
@@ -48,7 +51,7 @@ export function normalizeMobileInpaintParams(request: MobileInpaintRequest): Gen
     model: normalizeNAIBaseModel(request.model) as GenerateParams['model'],
     metadataReplay: undefined,
   });
-  return { ...params, steps: isNAIV5Model(params.model) ? Math.min(28, params.steps) : params.steps };
+  return { ...params, ...(request.sampling ? {sampler: request.sampling.sampler as GenerateParams['sampler'], noiseSchedule: request.sampling.noiseSchedule} : {}), steps: isNAIV5Model(params.model) ? Math.min(28, params.steps) : params.steps };
 }
 
 /** Mobile official API semantics. Its source/color checkboxes are not transported on this channel. */
@@ -56,6 +59,10 @@ export function applyMobileOfficialInpaintParameters(parameters: Record<string, 
   parameters.image = input.imageBase64;
   parameters.mask = input.maskBase64;
   parameters.strength = input.strength;
+  if (input.sampling) {
+    parameters.sampler = input.sampling.sampler;
+    parameters.noise_schedule = isNAIV5Model(input.model) ? 'karras' : input.sampling.noiseSchedule;
+  }
   // Phone official transport fixes these four values after authored captions are built.
   // Keep PC-side tag insertion disabled in saved params; do not append quality/UC text locally.
   parameters.qualityToggle = true;

@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('worldpainter', {
     selectProfile: id => ipcRenderer.invoke('gatewayWorkbench:selectProfile',id),
     removeProfile: id => ipcRenderer.invoke('gatewayWorkbench:removeProfile',id),
     prepare: request => ipcRenderer.invoke('gatewayWorkbench:prepare',request),
+    prepareMobileInpaint: request => ipcRenderer.invoke('gatewayWorkbench:prepareMobileInpaint',request),
     generate: input => ipcRenderer.invoke('gatewayWorkbench:generate',input),
     cancel: id => ipcRenderer.invoke('gatewayWorkbench:cancel',id),
   },

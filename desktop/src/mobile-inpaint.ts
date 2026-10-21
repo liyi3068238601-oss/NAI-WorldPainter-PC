@@ -94,24 +94,37 @@ function over(data: Uint8ClampedArray, n: number, r: number, g: number, b: numbe
   data[n] = round((r * a + data[n] * oldA * (1 - a)) / outA); data[n + 1] = round((g * a + data[n + 1] * oldA * (1 - a)) / outA);
   data[n + 2] = round((b * a + data[n + 2] * oldA * (1 - a)) / outA); data[n + 3] = round(outA * 255);
 }
+/** World-space 8px cells used by both the live square brush and request rasterizer. */
+export function mobileSquareBrushCells(points: MobilePoint[], size: number): MobilePoint[] {
+  if (!Number.isFinite(size) || size <= 0) return [];
+  const validPoints = points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+  if (!validPoints.length) return [];
+  const diameter = Math.max(1, round(size / 8)), half = Math.floor(diameter / 2), shift = diameter % 2 === 0 ? .5 : 0, cells = new Set<string>();
+  const grid = validPoints.map(p => ({ x: Math.floor(p.x / 8 + shift), y: Math.floor(p.y / 8 + shift) }));
+  for (let i = 0; i < grid.length; i++) {
+    const a = grid[Math.max(0, i - 1)], b = grid[i]; let x = a.x, y = a.y;
+    const dx = Math.abs(b.x - x), dy = Math.abs(b.y - y), stepX = x < b.x ? 1 : -1, stepY = y < b.y ? 1 : -1; let error = dx - dy;
+    while (true) {
+      for (let yy = -half; yy < diameter - half; yy++) for (let xx = -half; xx < diameter - half; xx++) cells.add(`${x + xx},${y + yy}`);
+      if (x === b.x && y === b.y) break; const twice = error * 2;
+      if (twice > -dy) { error -= dy; x += stepX; } if (twice < dx) { error += dx; y += stepY; }
+    }
+  }
+  return [...cells].map(cell => { const [x, y] = cell.split(',').map(Number); return { x, y }; });
+}
+export function mobileSquareBrushStamp(point: MobilePoint, size: number): MobileRect | null {
+  if (!Number.isFinite(size) || size <= 0 || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return null;
+  const diameter = Math.max(1, round(size / 8)), half = Math.floor(diameter / 2), shift = diameter % 2 === 0 ? .5 : 0;
+  const x = Math.floor(point.x / 8 + shift) - half, y = Math.floor(point.y / 8 + shift) - half;
+  return { x: x * 8, y: y * 8, width: diameter * 8, height: diameter * 8 };
+}
 function draw(stroke: MobileStroke, rect: MobileRect, output: MobileSize, paint: (x: number, y: number) => void) {
   if (!Number.isFinite(stroke.size) || stroke.size <= 0) return;
   const points = stroke.points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y)); if (!points.length) return;
   const sx = output.width / rect.width, sy = output.height / rect.height;
   if (stroke.square) {
-    const diameter = Math.max(1, round(stroke.size / 8)), half = Math.floor(diameter / 2), shift = diameter % 2 === 0 ? .5 : 0, cells = new Set<string>();
-    const grid = points.map(p => ({ x: Math.floor(p.x / 8 + shift), y: Math.floor(p.y / 8 + shift) }));
-    for (let i = 0; i < grid.length; i++) {
-      const a = grid[Math.max(0, i - 1)], b = grid[i]; let x = a.x, y = a.y;
-      const dx = Math.abs(b.x - x), dy = Math.abs(b.y - y), stepX = x < b.x ? 1 : -1, stepY = y < b.y ? 1 : -1; let error = dx - dy;
-      while (true) {
-        for (let yy = -half; yy < diameter - half; yy++) for (let xx = -half; xx < diameter - half; xx++) cells.add(`${x + xx},${y + yy}`);
-        if (x === b.x && y === b.y) break; const twice = error * 2;
-        if (twice > -dy) { error -= dy; x += stepX; } if (twice < dx) { error += dx; y += stepY; }
-      }
-    }
-    for (const cell of cells) {
-      const [x, y] = cell.split(',').map(Number), left = Math.floor((x * 8 - rect.x) * sx), top = Math.floor((y * 8 - rect.y) * sy);
+    for (const { x, y } of mobileSquareBrushCells(points, stroke.size)) {
+      const left = Math.floor((x * 8 - rect.x) * sx), top = Math.floor((y * 8 - rect.y) * sy);
       const right = Math.max(left, Math.ceil(((x + 1) * 8 - rect.x) * sx) - 1), bottom = Math.max(top, Math.ceil(((y + 1) * 8 - rect.y) * sy) - 1);
       for (let yy = Math.max(0, top); yy <= Math.min(output.height - 1, bottom); yy++) for (let xx = Math.max(0, left); xx <= Math.min(output.width - 1, right); xx++) paint(xx, yy);
     }

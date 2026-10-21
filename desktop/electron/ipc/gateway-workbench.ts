@@ -3,9 +3,11 @@ import axios from 'axios';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { MAX_NAI_SEED, normalizeGenerateParams, type GenerateParams, type HistoryItem, type ModelMode } from '../../src/types';
-import type { GatewayPlanPreview, GatewayPlanRequest, GatewayProfileInput, GatewayProtocol, GatewayJobResult } from '../../src/gateway-workbench';
+import { MAX_NAI_SEED, isNAIV5Model, normalizeGenerateParams, normalizeNAIBaseModel, type GenerateParams, type HistoryItem, type MobileInpaintRequest, type ModelMode } from '../../src/types';
+import type { GatewayMobileInpaintPlanRequest, GatewayPlanPreview, GatewayPlanRequest, GatewayProfileInput, GatewayProtocol, GatewayJobResult } from '../../src/gateway-workbench';
 import { buildPayload } from './nai';
+import { prepareMobileInpaintRequest } from './mobile-inpaint';
+import { buildMobileInpaintGatewayRequest } from './mobile-inpaint-gateway-codec';
 import { getSettings, addHistory } from './store';
 import { toLocalMediaUrl } from './local-media-protocol';
 import { proxyConfigForUrl } from './proxy';
@@ -28,6 +30,8 @@ interface PlannedRun {
   preview: GatewayPlanPreview;
   profileRevision: string;
   params: GenerateParams;
+  /** Kept in the main process so large source/mask bytes are not echoed to the renderer. */
+  requestPayload?: Record<string, unknown>;
   state: 'ready' | 'running' | 'cancelled' | 'finished';
   controller?: AbortController;
   submitted?: boolean;
@@ -121,8 +125,12 @@ class PartialHistoryFailure extends Error {
 async function persistGatewayImage(
   bytes: Buffer, params: GenerateParams, model: string, seed: number,
   outputDir: string, now: Date, appendHistory: (item: HistoryItem) => void,
+  expectedSize?: { width: number; height: number },
 ): Promise<HistoryItem> {
   const image = await validateImage(bytes);
+  if (expectedSize && (image.width !== expectedSize.width || image.height !== expectedSize.height)) {
+    throw new GatewayOutputSizeMismatch(expectedSize, image);
+  }
   const date = dateStamp(now);
   const directory = path.join(outputDir, date);
   await fs.promises.mkdir(directory, { recursive: true });
@@ -140,6 +148,147 @@ async function persistGatewayImage(
   try { appendHistory(item); }
   catch { throw new PartialHistoryFailure(item); }
   return item;
+}
+
+class GatewayOutputSizeMismatch extends Error {
+  constructor(expected: { width: number; height: number }, actual: { width: number; height: number }) {
+    super(`网关返回 ${actual.width}×${actual.height} 图片，与本次重绘输出 ${expected.width}×${expected.height} 不一致；图片未保存。请核对网关记录后再决定是否重试。`);
+  }
+}
+
+interface ValidatedMobileInpaintPlan {
+  profileId: string;
+  request: MobileInpaintRequest;
+  model: string;
+  prompt: string;
+  negativePrompt: string;
+  width: number;
+  height: number;
+  steps: number;
+  scale: number;
+  cfgRescale: number;
+  sampler: string;
+  noiseSchedule: string;
+  seed: number;
+  params: GenerateParams;
+  imageBase64: string;
+  maskBase64: string;
+  strength: number;
+}
+
+function validateMobileInpaintPlan(raw: GatewayMobileInpaintPlanRequest, protocol: GatewayProtocol, randomSeed: () => number): ValidatedMobileInpaintPlan {
+  if (!isObject(raw) || typeof raw.profileId !== 'string' || !isObject(raw.request)) {
+    throw new Error('当前新版重绘请求无效，请回到工作区重新预览。');
+  }
+  const request = raw.request as MobileInpaintRequest;
+  // This validates model, PNG inputs, source/mask dimensions and a non-empty mask
+  // without consulting or inheriting the official NovelAI account snapshot.
+  const prepared = prepareMobileInpaintRequest(request);
+  const source = request.params as Partial<GenerateParams> | undefined;
+  if (!isObject(source)) throw new Error('新版重绘参数无效，请回到工作区重新读取。');
+  const prompt = typeof source.positivePrompt === 'string' ? source.positivePrompt.trim() : '';
+  const negativePrompt = typeof source.negativePrompt === 'string' ? source.negativePrompt.trim() : '';
+  if (!prompt || prompt.length > MAX_PROMPT_CHARS || negativePrompt.length > MAX_PROMPT_CHARS) {
+    throw new Error('请填写正向重绘词，且正负提示词各不超过 30,000 字符。');
+  }
+  if (typeof source.stylePrompt === 'string' && source.stylePrompt.trim()) {
+    throw new Error('新版重绘不使用文生图画师串；请清除画师串后重新预览。');
+  }
+  const width = prepared.width;
+  const height = prepared.height;
+  const model = request.model;
+  const baseModel = normalizeNAIBaseModel(model);
+  const v5 = isNAIV5Model(baseModel);
+  // Keep only the inpaint input-safety bounds from prepareMobileInpaintRequest.
+  // _generateInner's Ikun/V5 guards belong to the regular generation flow and
+  // are bypassed by the phone's dedicated inpaint workspace pipeline.
+  const steps = source.steps;
+  const scale = source.cfgScale;
+  const cfgRescale = source.cfgRescale;
+  if (!Number.isInteger(steps) || (steps as number) < 1 || (steps as number) > (v5 ? 28 : 50) ||
+      !Number.isFinite(scale) || (scale as number) < 0 || (scale as number) > 10 ||
+      !Number.isFinite(cfgRescale) || (cfgRescale as number) < 0 || (cfgRescale as number) > 1) {
+    throw new Error('新版重绘步数、CFG 或 CFG 重标定参数无效。');
+  }
+  if (typeof request.ignoreSource !== 'boolean' || typeof request.colorCorrection !== 'boolean') {
+    throw new Error('新版重绘选项无效，请回到工作区重新预览。');
+  }
+  const rawSampler = request.sampling?.sampler ?? source.sampler;
+  if (typeof rawSampler !== 'string' || !rawSampler.trim()) throw new Error('新版重绘采样器无效。');
+  const sampler = rawSampler.trim().toLowerCase();
+  const rawNoiseSchedule = request.sampling?.noiseSchedule ?? source.noiseSchedule;
+  const noiseSchedule = typeof rawNoiseSchedule === 'string' ? rawNoiseSchedule.trim().toLowerCase() : '';
+  const seedMode = source.seedMode;
+  const sourceSeed = source.seed;
+  const seed = seedMode === 'fixed'
+    ? sourceSeed
+    : seedMode === 'random' ? randomSeed() : undefined;
+  if (!Number.isInteger(seed) || (seed as number) < 0 || (seed as number) > MAX_NAI_SEED) {
+    throw new Error('新版重绘 Seed 无效。');
+  }
+  // Avoid the general image-size fitting used by normalizeGenerateParams: the
+  // inpaint workspace owns its custom 64-pixel-multiple output dimensions.
+  const normalized = normalizeGenerateParams({
+    ...source,
+    model: normalizeNAIBaseModel(model) as GenerateParams['model'],
+    width,
+    height,
+    steps: steps as number,
+    cfgScale: scale as number,
+    cfgRescale: cfgRescale as number,
+    sampler: sampler as GenerateParams['sampler'],
+    noiseSchedule,
+    positivePrompt: prompt,
+    negativePrompt,
+    stylePrompt: '',
+    seed: seed as number,
+    seedMode: 'fixed',
+    metadataReplay: undefined,
+    qualityPreset: 'none',
+    qualityToggle: false,
+    ucPreset: 3,
+    transparentBackground: false,
+    smea: false,
+    smeaDyn: false,
+    variety: false,
+    effort: 'high',
+    preservePromptText: true,
+  });
+  const params: GenerateParams = {
+    ...normalized,
+    model: normalizeNAIBaseModel(model) as GenerateParams['model'],
+    width,
+    height,
+    steps: steps as number,
+    cfgScale: scale as number,
+    cfgRescale: cfgRescale as number,
+    sampler: sampler as GenerateParams['sampler'],
+    noiseSchedule,
+    positivePrompt: prompt,
+    negativePrompt,
+    stylePrompt: '',
+    seed: seed as number,
+    seedMode: 'fixed',
+  };
+  return {
+    profileId: raw.profileId,
+    request,
+    model,
+    prompt,
+    negativePrompt,
+    width,
+    height,
+    steps: steps as number,
+    scale: scale as number,
+    cfgRescale: cfgRescale as number,
+    sampler,
+    noiseSchedule,
+    seed: seed as number,
+    params,
+    imageBase64: prepared.imageBase64,
+    maskBase64: prepared.maskBase64,
+    strength: prepared.strength,
+  };
 }
 
 /** Testable isolated gateway workbench service. It never reads a NovelAI account token. */
@@ -226,6 +375,76 @@ export class GatewayWorkbenchService {
     return deepClone(preview);
   }
 
+  prepareMobileInpaint(raw: GatewayMobileInpaintPlanRequest): GatewayPlanPreview {
+    this.expirePlans();
+    if (!isObject(raw) || typeof raw.profileId !== 'string') {
+      throw new Error('请先选择网关档案，再预览新版重绘。');
+    }
+    const profile = this.dependencies.vault.list().find(item => item.id === raw.profileId);
+    if (!profile) throw new Error('网关档案已删除，请重新选择。');
+    if (!profile.selected) throw new Error('该网关档案尚未选中，请先选择后再预览。');
+    const validated = validateMobileInpaintPlan(raw, profile.protocol, this.randomSeed);
+    const binding = this.dependencies.vault.bind(profile.id);
+    if (!binding.profile.selected) throw new Error('该网关档案已切换，请重新选择后再预览。');
+    const gatewayRequest = buildMobileInpaintGatewayRequest({
+      protocol: profile.protocol,
+      model: validated.model,
+      prompt: validated.prompt,
+      negativePrompt: validated.negativePrompt,
+      imageBase64: validated.imageBase64,
+      maskBase64: validated.maskBase64,
+      strength: validated.strength,
+      disabledOriginalImage: validated.request.ignoreSource,
+      colorCorrect: validated.request.colorCorrection,
+      width: validated.width,
+      height: validated.height,
+      steps: validated.steps,
+      scale: validated.scale,
+      cfgRescale: validated.cfgRescale,
+      sampler: validated.sampler,
+      noiseSchedule: validated.noiseSchedule,
+      seed: validated.seed,
+    });
+    const endpoint = new URL(gatewayRequest.path, binding.profile.baseUrl).toString();
+    const planId = crypto.randomUUID();
+    const expiresAt = new Date(this.now().getTime() + PLAN_LIFETIME_MS).toISOString();
+    const previewPayload = { ...gatewayRequest.payload };
+    // Source pixels are frozen in the main-process plan, but never echoed back
+    // into UI state or confirmation-card snapshots.
+    if (typeof previewPayload.image === 'string') previewPayload.image = '[本轮源图已绑定]';
+    if (typeof previewPayload.mask === 'string') previewPayload.mask = '[本轮蒙版已绑定]';
+    const preview: GatewayPlanPreview = {
+      planId,
+      expiresAt,
+      profileId: profile.id,
+      profileName: profile.name,
+      protocol: profile.protocol,
+      endpoint,
+      model: validated.model,
+      prompt: validated.prompt,
+      negativePrompt: validated.negativePrompt,
+      width: validated.width,
+      height: validated.height,
+      steps: validated.steps,
+      scale: validated.scale,
+      cfgRescale: validated.cfgRescale,
+      sampler: validated.sampler,
+      noiseSchedule: validated.noiseSchedule,
+      seed: validated.seed,
+      operation: 'mobileInpaint',
+      requestPayload: previewPayload,
+    };
+    this.plans.set(planId, {
+      preview,
+      profileRevision: binding.secretRevision,
+      params: validated.params,
+      requestPayload: gatewayRequest.payload,
+      state: 'ready',
+    });
+    this.trimPlans();
+    return deepClone(preview);
+  }
+
   async generate(input: { planId: string; confirmed: true }): Promise<GatewayJobResult> {
     if (!isObject(input) || input.confirmed !== true || typeof input.planId !== 'string') {
       throw new Error('请先查看并确认参数计划。');
@@ -249,7 +468,8 @@ export class GatewayWorkbenchService {
     plan.submitted = false;
     plan.responseReceived = false;
     try {
-      const response = await this.dependencies.post(plan.preview.endpoint, deepClone(plan.preview.requestPayload), {
+      const response = await this.dependencies.post(plan.preview.endpoint,
+        plan.requestPayload ?? deepClone(plan.preview.requestPayload), {
         headers: {
           Authorization: `Bearer ${binding.token}`,
           Accept: 'application/json',
@@ -278,13 +498,19 @@ export class GatewayWorkbenchService {
         return { status: 'uncertain', message: error instanceof Error ? error.message : '网关返回内容无法识别；请核对服务端结果后再决定是否重试。' };
       }
       const item = await persistGatewayImage(bytes, plan.params, plan.preview.model, plan.preview.seed,
-        this.dependencies.outputDir(), this.now(), this.dependencies.appendHistory);
+        this.dependencies.outputDir(), this.now(), this.dependencies.appendHistory,
+        plan.preview.operation === 'mobileInpaint'
+          ? { width: plan.preview.width, height: plan.preview.height }
+          : undefined);
       plan.state = 'finished';
       return { status: 'succeeded', message: '网关生成完成，图片已写入绘世输出目录并加入历史记录。', items: [item] };
     } catch (error) {
       plan.state = 'finished';
       if (error instanceof PartialHistoryFailure) {
         return { status: 'uncertain', message: `图片已保存到 ${error.item.filePath}，但历史记录更新失败；请核对文件后再决定是否重试。`, items: [error.item] };
+      }
+      if (error instanceof GatewayOutputSizeMismatch) {
+        return { status: 'uncertain', message: error.message };
       }
       const status = Number((error as any)?.response?.status);
       if (status >= 400 && status < 500 && status !== 408) return { status: 'failed', message: `网关返回 HTTP ${status}；本次没有保存图片。` };
@@ -381,6 +607,7 @@ export function registerGatewayWorkbenchIpc(getWindow: () => BrowserWindow | nul
   ipcMain.handle('gatewayWorkbench:selectProfile', (event, id: unknown) => run(event, workbench => workbench.selectProfile(id)));
   ipcMain.handle('gatewayWorkbench:removeProfile', (event, id: unknown) => run(event, workbench => workbench.removeProfile(id)));
   ipcMain.handle('gatewayWorkbench:prepare', (event, request: GatewayPlanRequest) => run(event, workbench => workbench.prepare(request)));
+  ipcMain.handle('gatewayWorkbench:prepareMobileInpaint', (event, request: GatewayMobileInpaintPlanRequest) => run(event, workbench => workbench.prepareMobileInpaint(request)));
   ipcMain.handle('gatewayWorkbench:generate', (event, input: { planId: string; confirmed: true }) => run(event, workbench => workbench.generate(input)));
   ipcMain.handle('gatewayWorkbench:cancel', (event, id: unknown) => run(event, workbench => workbench.cancel(id)));
 }

@@ -1048,6 +1048,8 @@ export interface SingleImageResult {
 }
 
 export interface MobileInpaintRequest {
+  /** Phone sampling snapshot, kept outside the older desktop workbench enum. */
+  sampling?: {sampler: string; noiseSchedule: string};
   /** Runtime-only frozen account stamp; no credential material. A missing/stale stamp is rejected at IPC. */
   expectedAccountId?: string;
   expectedAccountRevision?: string;

@@ -5,6 +5,17 @@ import {buildPayload} from './nai';
 import {applyMobileOfficialInpaintParameters,normalizeMobileInpaintParams,prepareMobileInpaintRequest} from './mobile-inpaint';
 
 describe('phone official inpaint payload uses fixed transport flags and authored text',()=>{
+  it.each(['nai-diffusion-4-5-full-inpainting','nai-diffusion-5-full-inpainting'] as const)('retains phone-only sampling without extending other workbench modes: %s',model=>{
+    const png=new PNG({width:64,height:64});png.data.fill(255);
+    const base64=PNG.sync.write(png).toString('base64');
+    const request:MobileInpaintRequest={params:{...DEFAULT_PARAMS,width:64,height:64},model,imageBase64:base64,maskBase64:base64,strength:.96,noise:0,ignoreSource:false,colorCorrection:true,sampling:{sampler:'k_dpm_2',noiseSchedule:'polyexponential'}};
+    const payload=buildPayload({...normalizeMobileInpaintParams(request),model},4242);
+    applyMobileOfficialInpaintParameters(payload.parameters,prepareMobileInpaintRequest(request));
+    expect(payload.parameters.sampler).toBe('k_dpm_2');
+    expect(payload.parameters.noise_schedule).toBe(model.startsWith('nai-diffusion-5')?'karras':'polyexponential');
+    expect(request.params.sampler).toBe(DEFAULT_PARAMS.sampler);
+    expect(()=>prepareMobileInpaintRequest({...request,sampling:{sampler:'unexpected',noiseSchedule:'karras'}})).toThrow(/采样/);
+  });
   it.each(['nai-diffusion-3-inpainting','nai-diffusion-5-full-inpainting'] as const)('keeps raw prompt captions with %s',model=>{
     const png=new PNG({width:64,height:64});png.data.fill(255);
     const base64=PNG.sync.write(png).toString('base64');

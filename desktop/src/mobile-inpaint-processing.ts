@@ -1,10 +1,16 @@
 import {composeMobile,rasterizeMobile,alignMobileMask,maskMobileLayer,type MobilePixels,type MobileRect,type MobileStroke,type MobileLayer} from './mobile-inpaint';
 export type MobileProcessingRequest=
  | {kind:'prepare';source:MobilePixels;strokes:MobileStroke[];layers:MobileLayer[];worldRect:MobileRect;output:{width:number;height:number};expand:number}
+ | {kind:'mask-preview';source:MobilePixels;strokes:MobileStroke[];worldRect:MobileRect;output:{width:number;height:number};expand:number}
  | {kind:'layer';generated:MobilePixels;mask:MobilePixels;base:MobilePixels;outward:number}
  | {kind:'compose';source:MobilePixels;strokes:MobileStroke[];layers:MobileLayer[]};
+function finalMask(source:MobilePixels,strokes:MobileStroke[],worldRect:MobileRect,output:{width:number;height:number},expand:number){
+  const base=composeMobile(source,strokes,[]);
+  return alignMobileMask(rasterizeMobile(base,worldRect,output,strokes.filter(stroke=>stroke.target==='mask'),expand).mask);
+}
 export function computeMobilePixels(request:MobileProcessingRequest){
   if(request.kind==='compose')return composeMobile(request.source,request.strokes,request.layers.filter(layer=>layer.visible));
+  if(request.kind==='mask-preview')return finalMask(request.source,request.strokes,request.worldRect,request.output,request.expand);
   if(request.kind==='layer'){
     const image=maskMobileLayer(request.generated,request.mask,request.outward,undefined,request.base);
     const comparison=composeMobile(request.base,[],[{image,worldRect:{x:0,y:0,width:image.width,height:image.height},visible:true}]);

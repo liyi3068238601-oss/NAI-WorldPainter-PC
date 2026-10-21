@@ -59,3 +59,21 @@ it("applying another candidate in the same batch replaces exactly one result lay
   expect(store.getState().layers.map(layer => layer.id)).toEqual(["C"]);
   expect(store.getState().candidates.map(c => c.id)).toEqual(["A", "C"]);
 });
+
+it("automatically shows the mask when selecting either brush tool", () => {
+  store.getState().update({ showMask: false, tool: "brush" });
+  expect(store.getState().showMask).toBe(true);
+  store.getState().update({ showMask: false, tool: "erase" });
+  expect(store.getState().showMask).toBe(true);
+});
+
+it("persists valid selected/custom outputs and rejects invalid or duplicate custom sizes", () => {
+  store.getState().setOutput({ width: 1216, height: 832 });
+  expect(store.getState().output).toEqual({ width: 1216, height: 832 });
+  store.getState().setOutput({ width: 1000, height: 832 });
+  expect(store.getState().output).toEqual({ width: 1216, height: 832 });
+  expect(store.getState().addCustomOutput({ width: 1000, height: 832 })).toBe(false);
+  expect(store.getState().addCustomOutput({ width: 1024, height: 832 })).toBe(true);
+  expect(store.getState().addCustomOutput({ width: 1024, height: 832 })).toBe(false);
+  expect(store.getState().customOutputs).toEqual([{ width: 1024, height: 832 }]);
+});
