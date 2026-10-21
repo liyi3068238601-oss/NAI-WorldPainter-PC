@@ -13,12 +13,16 @@ const PRECONNECT = new Set(["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN"]);
  * account/endpoint and performs exactly one outbound POST using the same proxy
  * policy as ordinary generation. No redirects, remote-error echoes or fallback. */
 export async function startDetectiveGenerationBridge(binding: {
-  imageBaseUrl: string; token: string; settings: AppSettings; budget: number;
+  imageBaseUrl: string; token: string; settings: AppSettings; budget: number; allowCustomHttp?:boolean;
 }) {
   const base = new URL(normalizeNovelAiEndpoint(binding.imageBaseUrl, ""));
-  const local = ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname);
+  const host=base.hostname.toLowerCase();
+  const local = ["localhost", "127.0.0.1", "[::1]"].includes(host);
+  const official=host==="novelai.net"||host.endsWith(".novelai.net");
+  const optedInCustomHttp=base.protocol==="http:"&&!local&&!official&&
+    (binding.settings.allowCustomEndpoint===true||binding.allowCustomHttp===true);
   if (base.username || base.password || base.search || base.hash ||
-      !(base.protocol === "https:" || (base.protocol === "http:" && local)) ||
+      !(base.protocol === "https:" || (base.protocol === "http:" && (local||optedInCustomHttp))) ||
       !binding.token || !Number.isSafeInteger(binding.budget) || binding.budget < 1) {
     throw new Error("Invalid frozen iteration transport binding");
   }

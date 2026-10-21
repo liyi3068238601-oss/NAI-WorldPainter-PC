@@ -20,13 +20,28 @@ export interface NaiAccountInput extends Omit<NaiAccountProfile, 'id'|'imageBase
 export function normalizeNaiAccountInput(input:NaiAccountInput):NaiAccountInput & {imageBaseUrl:string} {
   return {...input,apiBaseUrl:input.apiBaseUrl.trim(),imageBaseUrl:input.imageBaseUrl?.trim() || (input.method==='relay'?input.apiBaseUrl.trim():'https://image.novelai.net')};
 }
+/** Validate an endpoint from the legacy single-account settings. Remote HTTP is
+ * accepted only when that legacy configuration already opted into custom hosts. */
+export function validateLegacyNaiEndpoint(value:string,allowCustomEndpoint:boolean):void {
+  const url=new URL(value),host=url.hostname.replace(/^\[|\]$/g,'').toLowerCase();
+  const loopback=host==='localhost'||host==='::1'||/^127(?:\.\d{1,3}){3}$/.test(host);
+  const official=host==='novelai.net'||host.endsWith('.novelai.net');
+  if(url.username||url.password||url.search||url.hash||
+    (url.protocol!=='https:'&&!(url.protocol==='http:'&&(loopback||allowCustomEndpoint&&!official)))) {
+    throw new Error('Use an HTTPS endpoint, or an explicitly configured custom HTTP endpoint');
+  }
+}
 export function validateAccountProfile(input: NaiAccountInput): void {
   input=normalizeNaiAccountInput(input);
   if (!['token','official-login','relay'].includes(input.method)) throw new Error('Unknown account method');
   if (!input.label.trim() || input.label.length > 120 || !input.token.trim() || input.token.length > 16384 || /[\r\n]/.test(input.token)) throw new Error('Invalid account fields');
   for (const [field, official] of [['apiBaseUrl','api.novelai.net'],['imageBaseUrl','image.novelai.net']] as const) {
     const url = new URL(input[field]!);
-    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || /\/(?:dashboard|login|sign-in)(?:\/|$)/i.test(url.pathname)) throw new Error('Use an explicit HTTPS API base, not a dashboard/login URL');
+    const officialHost=url.hostname==='novelai.net'||url.hostname.endsWith('.novelai.net');
+    if ((url.protocol !== 'https:' && !(input.method==='relay'&&url.protocol==='http:'&&!officialHost)) ||
+        url.username || url.password || url.search || url.hash || /\/(?:dashboard|login|sign-in)(?:\/|$)/i.test(url.pathname)) {
+      throw new Error('Use an explicit HTTPS API base, or a custom HTTP relay, not a dashboard/login URL');
+    }
     if (input.method !== 'relay' && (url.hostname !== official || url.port !== '' || url.pathname !== '/')) throw new Error('Official credentials require exact official endpoints');
     if (input.method === 'relay' && (url.hostname === 'novelai.net' || url.hostname.endsWith('.novelai.net'))) throw new Error('Relay credentials cannot use official endpoints');
   }
@@ -75,6 +90,6 @@ export function nextNaiAccountLabel(accounts:ReadonlyArray<Pick<NaiAccountProfil
 /** Explicit relay profile only: dashboard normalization is not protocol discovery. */
 export function relayDashboardOrigin(value: string): string {
   const url = new URL(value);
-  if (url.protocol !== 'https:' || url.username || url.password) throw new Error('Use HTTPS');
+  if (!['https:','http:'].includes(url.protocol) || url.username || url.password) throw new Error('Use HTTP(S)');
   return url.origin;
 }

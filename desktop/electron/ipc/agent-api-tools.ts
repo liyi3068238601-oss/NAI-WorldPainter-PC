@@ -10,7 +10,7 @@ const same=(a:ApiSnapshot,b:ApiSnapshot)=>revision(a)===revision(b);
 export function createApiTools(adapter:ApiAdapter,approve:(request:AgentToolBridgeRequest)=>Promise<boolean>,clock=()=>Date.now()){
  const pending=new Map<string,{id:string;profile:string;revision:string;expires:number}>();let tail:Promise<unknown>=Promise.resolve();
  const session=(id:unknown)=>{if(typeof id!=='string'||!/^[a-zA-Z0-9_.:-]{1,160}$/.test(id)||id==='studio-library-ui')throw Error('请先选择酒馆会话');return id;};
- const publicState=(profile:string,state:ApiSnapshot)=>({profile,title:API_PROFILES[profile].title,revision:revision(state),config:Object.fromEntries(Object.entries(state.config).map(([key,value])=>[key,API_PROFILES[profile].fields[key]?.type==='url'?(()=>{try{return apiUrl(value);}catch{return '地址格式需在软件中修正';}})():value])),credentialConfigured:!!state.secret,editableFields:API_PROFILES[profile].fields});
+ const publicState=(profile:string,state:ApiSnapshot)=>({profile,title:API_PROFILES[profile].title,revision:revision(state),config:Object.fromEntries(Object.entries(state.config).map(([key,value])=>[key,API_PROFILES[profile].fields[key]?.type==='url'?(()=>{try{return apiUrl(value,profile!=='novelai'||state.config.allowCustomEndpoint===true);}catch{return '地址格式需在软件中修正';}})():value])),credentialConfigured:!!state.secret,editableFields:API_PROFILES[profile].fields});
  async function run(request:AgentToolBridgeRequest):Promise<AgentToolBridgeResponse>{
   try{
    const {tool,args}=request;
@@ -28,12 +28,16 @@ export function createApiTools(adapter:ApiAdapter,approve:(request:AgentToolBrid
     return answer({saved:true,profile:item.profile,credentialConfigured:true,revision:revision(after)});
    }
    if(tool!=='langbai_api')throw Error('API 工具无效');
-   const a=validateApiRequest(args);
+   const requestedProfile=typeof args.profile==='string'&&Object.hasOwn(API_PROFILES,args.profile)?args.profile:'';
+   // This first pass validates the request shape. The actual NovelAI opt-in
+   // state is checked again against the saved configuration before any write.
+   const a=validateApiRequest(args,requestedProfile==='novelai'?{allowCustomEndpoint:true}:undefined);
    if(a.profile&&!adapter.profiles().includes(a.profile))throw Error('本平台没有这个独立 API 配置');
    if(a.action==='read'){const profiles=await Promise.all((a.profile?[a.profile]:adapter.profiles()).map(async p=>publicState(p,await adapter.read(p))));return answer({profiles,...(a.profile?profiles[0]:{}),instructions:'configure 修改接口/模型；credential 打开会话内私密输入；test 仅检查已保存地址的连接/模型列表，不创建收费对话。不要把密钥写进聊天。'});}
    const before=await adapter.read(a.profile);
+   if(a.action==='configure')validateApiRequest(args,before.config);
    if(a.action==='test'){
-    apiUrl(before.config.baseUrl);
+    apiUrl(before.config.baseUrl,a.profile!=='novelai'||before.config.allowCustomEndpoint===true);
     let result;try{result=await adapter.test(a.profile,before);}catch{throw Error('连接检查失败；请检查地址、凭据或网络，服务端原始内容未发送给模型');}
     if(result.status<200||result.status>=300)throw Error(`连接检查返回 HTTP ${result.status}，未跟随重定向或重试收费请求`);
     return answer({connected:true,status:result.status,profile:a.profile,models:(result.models??[]).filter(x=>typeof x==='string'&&x.length<200&&!/[\r\n]/.test(x)&&(!before.secret||!x.includes(before.secret))).slice(0,200),notice:'连接/模型列表可用不代表付费生成已验证；没有发起生成。'});
@@ -64,7 +68,7 @@ export function desktopApiAdapter():ApiAdapter {
    if(next.secret!==before.secret){if(spec.secret==='token'){if(next.secret)store.setToken(next.secret);else store.clearToken();}else store.setSetting(spec.secret as never,next.secret as never);}
    else {const current=store.readStore();store.writeStore({...current,settings:{...current.settings,...Object.fromEntries(Object.entries(next.config).map(([k,v])=>[spec.fields[k].key,v]))}});}
   },
-  async test(p,state){const base=apiUrl(state.config.baseUrl),protocol=state.config.protocol;const headers:Record<string,string>={Accept:'application/json'};
+  async test(p,state){const base=apiUrl(state.config.baseUrl,p!=='novelai'||state.config.allowCustomEndpoint===true),protocol=state.config.protocol;const headers:Record<string,string>={Accept:'application/json'};
    if(state.secret){if(protocol==='anthropic-messages'){headers['x-api-key']=state.secret;headers['anthropic-version']='2023-06-01';}else if(protocol==='google-gemini')headers['x-goog-api-key']=state.secret;else headers.Authorization='Bearer '+state.secret;}
    if(p==='novelai'&&!state.config.allowCustomEndpoint){const host=new URL(base).hostname;if(host!=='novelai.net'&&!host.endsWith('.novelai.net'))throw Error('自定义地址未确认');}
    const endpoint=p==='novelai'?base+'/user/subscription':p==='tags'?base:base+(protocol==='anthropic-messages'&&!base.endsWith('/v1')?'/v1/models':'/models');
