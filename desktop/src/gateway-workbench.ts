@@ -44,6 +44,8 @@ export interface GatewayPlanPreview {
   expiresAt: string;
   profileId: string;
   profileName: string;
+  /** Opaque credential revision, never the credential; freezes a mobile batch binding. */
+  profileRevision?: string;
   protocol: GatewayProtocol;
   endpoint: string;
   model: string;

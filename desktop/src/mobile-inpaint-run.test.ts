@@ -5,7 +5,11 @@ import type {MobilePixels} from './mobile-inpaint';
 
 const fixture=vi.hoisted(()=>({mobile:null as any,app:null as any,execute:vi.fn(),decode:vi.fn(),candidates:vi.fn()}));
 vi.mock('./store',()=>({
-  useAppStore:Object.assign(vi.fn(),{getState:()=>fixture.app}),
+  useAppStore:Object.assign(vi.fn(),{
+    getState:()=>fixture.app,
+    setState:(patch:any)=>{fixture.app={...fixture.app,...patch};},
+  }),
+  registerMobileGatewayCancellation:vi.fn(()=>()=>{}),
   executeMobileInpaintRequest:fixture.execute,
 }));
 vi.mock('./mobile-inpaint-store',async()=>{
@@ -35,7 +39,9 @@ beforeEach(()=>{
     strength:.96,expand:0,outwardFeather:0,ignoreSource:false,colorCorrection:true,busy:false,error:'',
     update:(patch:any)=>{fixture.mobile={...fixture.mobile,...patch};},setCandidates:fixture.candidates,
   };
-  fixture.app={isGenerating:false,batchCount:1,cancel:vi.fn(),inpaintModel:'nai-diffusion-5-full-inpainting',
+  fixture.app={isGenerating:false,activeGenerationRunId:null,generationPhase:'idle',statusText:'ready',toast:'',lastError:'',batchCount:1,
+    cancel:vi.fn(async()=>{fixture.app={...fixture.app,isGenerating:false,activeGenerationRunId:null,generationPhase:'idle',statusText:'cancelled'};}),
+    inpaintModel:'nai-diffusion-5-full-inpainting',
     params:{...DEFAULT_PARAMS,positivePrompt:'MAIN POSITIVE',negativePrompt:'MAIN NEGATIVE',stylePrompt:'MAIN STYLE',seedMode:'fixed',seed:12345,metadataReplay:{synthetic:'MAIN REPLAY'}},
     charCaptions:[{prompt:'MAIN CHARACTER'}],vibeImages:[{base64:'MAIN VIBE'}],preciseReferences:[{base64:'MAIN PRECISE'}],
   };
@@ -158,6 +164,22 @@ describe('mobile inpaint request lifecycle (all generation is mocked)',()=>{
     const candidates=fixture.candidates.mock.calls.at(-1)![0];
     expect(candidates).toHaveLength(2);
     expect(candidates[0].batchId).toBe(candidates[1].batchId);
+  });
+
+  it('reserves one official run identity before generation and holds it through every batch image',async()=>{
+    fixture.app.batchCount=3;
+    const ids:string[]=[];
+    fixture.execute.mockImplementation(async(_request:any,batchRunId:string)=>{
+      ids.push(batchRunId);
+      expect(fixture.app.isGenerating).toBe(true);
+      expect(fixture.app.activeGenerationRunId).toBe(batchRunId);
+      return success;
+    });
+    await runMobileInpaint();
+    expect(fixture.execute).toHaveBeenCalledTimes(3);
+    expect(ids[0]).toMatch(/^mobile-inpaint-/);
+    expect(new Set(ids)).toEqual(new Set([ids[0]]));
+    expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:null,generationPhase:'idle'});
   });
 
   it('cancels a pending batch without applying a late result or starting another request',async()=>{

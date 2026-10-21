@@ -36,9 +36,17 @@ export async function runMobileInpaint(options: MobileInpaintRunOptions = {}) {
   const gatewayRunner=options.gatewayProfileId
     ? createMobileGatewayRunner(options.gatewayProfileId,total,options.confirmGatewayBatch??confirmGatewayBatch)
     : undefined;
+  const officialBatchRunId=gatewayRunner?undefined:`mobile-inpaint-${crypto.randomUUID()}`;
+  if(!gatewayRunner){
+    const current=useAppStore.getState();
+    if(current.isGenerating)return;
+    useAppStore.setState({isGenerating:true,activeGenerationRunId:officialBatchRunId!,generationPhase:'preparing',currentAnlasSpent:null,lastAnlasSpent:null,lastError:'',statusText:'正在准备新版重绘…'});
+  }
   activeGatewayRunner=gatewayRunner;
   s.update({busy:true,error:''});
   try {
+    if(gatewayRunner&&!await gatewayRunner.start())return;
+    if(mobileRunRevision!==runRevision)return;
     const worldRect=frameToWorld(s.frame,s.transform);
     const raster=await processMobilePixels({kind:'prepare',source:s.pixels,strokes:s.strokes,layers:s.layers,worldRect,output:s.output,expand:s.expand}) as {image:MobilePixels;mask:MobilePixels;before:MobilePixels};
     const mask=raster.mask;
@@ -50,7 +58,7 @@ export async function runMobileInpaint(options: MobileInpaintRunOptions = {}) {
     const candidates=[];
     for(let index=0;index<total;index++){
       if(mobileRunRevision!==runRevision)break;
-      const result=await (gatewayRunner?gatewayRunner.run(request):executeMobileInpaintRequest(request));
+      const result=await (gatewayRunner?gatewayRunner.run(request):executeMobileInpaintRequest(request,officialBatchRunId!));
       if(mobileRunRevision!==runRevision||!result)break;
       if(!result.ok)throw Error(result.message||'重绘失败，未自动重试。');
       const added=await Promise.all(result.items.map(async item=>{
@@ -66,7 +74,12 @@ export async function runMobileInpaint(options: MobileInpaintRunOptions = {}) {
       useMobileInpaintStore.getState().setCandidates([...candidates]);
     }
   } catch(error) {useMobileInpaintStore.getState().update({error:error instanceof Error?error.message:String(error)});}
-  finally {if(activeGatewayRunner===gatewayRunner)activeGatewayRunner=undefined;useMobileInpaintStore.getState().update({busy:false});}
+  finally {
+    if(gatewayRunner)await gatewayRunner.finish();
+    else if(useAppStore.getState().activeGenerationRunId===officialBatchRunId)useAppStore.setState({isGenerating:false,activeGenerationRunId:null,generationPhase:'idle',currentAnlasSpent:null});
+    if(activeGatewayRunner===gatewayRunner)activeGatewayRunner=undefined;
+    useMobileInpaintStore.getState().update({busy:false});
+  }
 }
 
 export function MobileInpaintPanel({openSettings}:{openSettings:()=>void}) {

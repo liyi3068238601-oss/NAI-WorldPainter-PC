@@ -418,6 +418,7 @@ export class GatewayWorkbenchService {
       expiresAt,
       profileId: profile.id,
       profileName: profile.name,
+      profileRevision: binding.secretRevision,
       protocol: profile.protocol,
       endpoint,
       model: validated.model,

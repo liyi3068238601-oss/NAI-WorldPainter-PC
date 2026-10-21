@@ -75,6 +75,13 @@ let workbenchLoadRevision = 0;
 // Invalidates a slow post-generation balance refresh as soon as a newer run or
 // cancellation starts, so stale bookkeeping can never overwrite newer UI.
 let generationSettlementRevision = 0;
+let mobileGatewayCancellation: {runId:string;cancel:()=>Promise<void>} | undefined;
+/** The global Stop action must cancel the transport that owns the current run. */
+export function registerMobileGatewayCancellation(runId:string,cancel:()=>Promise<void>) {
+  const binding={runId,cancel};
+  mobileGatewayCancellation=binding;
+  return ()=>{if(mobileGatewayCancellation===binding)mobileGatewayCancellation=undefined;};
+}
 const storeIpcListenerOwner = {};
 const storeIpcListenerRegistryKey = "__langbaiNovelAiStoreIpcListeners";
 
@@ -2990,6 +2997,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   async cancel() {
+    if(mobileGatewayCancellation?.runId===get().activeGenerationRunId){
+      await mobileGatewayCancellation.cancel();
+      return;
+    }
     generationSettlementRevision += 1;
     const wasGenerateQueue = get().isGenerateQueueRunning;
     set((current) => ({
@@ -3144,10 +3155,13 @@ export const useAppStore = create<AppState>((set, get) => ({
 
 
 /** New mobile workspace keeps request/result pixels separate from the old workbench. */
-export async function executeMobileInpaintRequest(request: import('./types').MobileInpaintRequest): Promise<GenerateResult|null> {
+export async function executeMobileInpaintRequest(request: import('./types').MobileInpaintRequest,batchRunId?:string): Promise<GenerateResult|null> {
   const get=useAppStore.getState, set=useAppStore.setState, state=get();
-  if(state.isGenerating||!requireToken(set,state.account.hasToken,state.settings))return null;
-  const runId=`mobile-inpaint-${crypto.randomUUID()}`,settlement=++generationSettlementRevision;
+  // A batch owns this reservation through pixel preparation and between images.
+  // A cancelled/replaced batch cannot regain ownership by submitting its next image.
+  if(batchRunId?(!state.isGenerating||state.activeGenerationRunId!==batchRunId):state.isGenerating)return null;
+  if(!requireToken(set,state.account.hasToken,state.settings))return null;
+  const runId=batchRunId??`mobile-inpaint-${crypto.randomUUID()}`,settlement=++generationSettlementRevision;
   const current=()=>get().isGenerating&&get().activeGenerationRunId===runId&&generationSettlementRevision===settlement;
   const guardedSet=(value:Partial<AppState>)=>{if(current())set(value);};
   const boundRequest={...request,expectedAccountId:request.expectedAccountId??state.settings?.naiAccountId,expectedAccountRevision:request.expectedAccountRevision??state.settings?.naiAccountRevision};
@@ -3171,6 +3185,6 @@ export async function executeMobileInpaintRequest(request: import('./types').Mob
   if(!current())return null;
   const spent=anlasSpent(prepared.account.anlasBalance,account.anlasBalance);
   const message=withAnlasSpent(get().settings,result.message,spent);
-  guardedSet({isGenerating:false,activeGenerationRunId:null,generationPhase:'idle',currentAnlasSpent:null,lastAnlasSpent:spent,statusText:message,toast:message,lastError:result.ok?'':message});
+  guardedSet({isGenerating:Boolean(batchRunId),activeGenerationRunId:batchRunId??null,generationPhase:batchRunId?'preparing':'idle',currentAnlasSpent:null,lastAnlasSpent:spent,statusText:message,toast:message,lastError:result.ok?'':message});
   return result;
 }

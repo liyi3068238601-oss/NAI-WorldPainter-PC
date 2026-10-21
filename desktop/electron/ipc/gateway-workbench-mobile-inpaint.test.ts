@@ -206,6 +206,20 @@ describe('gateway workbench mobile inpaint plans', () => {
     expect(post).not.toHaveBeenCalled();
   });
 
+  it('exposes an opaque mobile binding revision and rejects an old plan after the same endpoint changes credentials', async () => {
+    const { vault, profile, service, post } = makeService();
+    const request = await makeRequest();
+    const first = service.prepareMobileInpaint({ profileId: profile.id, request });
+    expect(first.profileRevision).toMatch(/^[0-9a-f-]{36}$/);
+    const replacement = vault.add({ name: 'same endpoint', protocol: profile.protocol, baseUrl: profile.baseUrl, token: 'replacement-fixture-token' })[0];
+    expect(replacement.id).toBe(profile.id);
+    const second = service.prepareMobileInpaint({ profileId: profile.id, request });
+    expect(second.profileRevision).not.toBe(first.profileRevision);
+    expect(JSON.stringify(second)).not.toContain('replacement-fixture-token');
+    await expect(service.generate({ planId: first.planId, confirmed: true })).rejects.toThrow(/档案或令牌在预览后发生变化/);
+    expect(post).not.toHaveBeenCalled();
+  });
+
   it('cancels an in-flight request without retrying or hiding its uncertain result', async () => {
     const post = vi.fn((_url: string, _payload: Record<string, unknown>, options: any, onSubmitted: () => void) => {
       onSubmitted();

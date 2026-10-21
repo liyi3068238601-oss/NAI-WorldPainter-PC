@@ -21,6 +21,7 @@ vi.mock('./store',()=>({
       fixture.app={...fixture.app,...next};
     },
   }),
+  registerMobileGatewayCancellation:vi.fn(()=>()=>{}),
   executeMobileInpaintRequest:fixture.execute,
 }));
 vi.mock('./mobile-inpaint-store',()=>({
@@ -41,9 +42,9 @@ function deferred<T>() {
   const promise=new Promise<T>(r=>resolve=r);
   return {promise,resolve};
 }
-function plan(planId:string):GatewayPlanPreview {
+function plan(planId:string,profileRevision='synthetic-profile-revision'):GatewayPlanPreview {
   return {
-    planId,expiresAt:'2099-01-01T00:00:00.000Z',profileId:'synthetic-profile',profileName:'Synthetic Gateway',
+    planId,expiresAt:'2099-01-01T00:00:00.000Z',profileId:'synthetic-profile',profileName:'Synthetic Gateway',profileRevision,
     protocol:'ikun',endpoint:'http://127.0.0.1:8765/v1/images/generations',model:'nai-diffusion-5-full-inpainting',
     prompt:'synthetic positive',negativePrompt:'synthetic negative',width:64,height:64,steps:28,scale:5,cfgRescale:.2,
     sampler:'ddim_v3',noiseSchedule:'polyexponential',seed:4242,operation:'mobileInpaint',requestPayload:{image:'[redacted]',mask:'[redacted]'},
@@ -62,6 +63,7 @@ function request():MobileInpaintRequest {
 beforeEach(()=>{
   vi.clearAllMocks();
   fixture.gateway={
+    selectProfile:vi.fn().mockImplementation(async(profileId:string)=>[{id:profileId,name:'Synthetic Gateway',protocol:'ikun',baseUrl:'http://127.0.0.1:8765',selected:true}]),
     prepareMobileInpaint:vi.fn().mockResolvedValue(plan('synthetic-plan')),
     generate:vi.fn().mockResolvedValue({status:'succeeded',message:'Synthetic gateway success',items:[]}),
     cancel:vi.fn().mockResolvedValue({accepted:true,message:'Synthetic cancel'}),
@@ -100,9 +102,10 @@ describe('mobile inpaint gateway run lifecycle (all gateway calls explicitly moc
     const confirm=vi.fn().mockResolvedValue(true);
     const runner=createMobileGatewayRunner('synthetic-profile',3,confirm);
     const running=runner.run(request());
+    await vi.waitFor(()=>expect(fixture.gateway.prepareMobileInpaint).toHaveBeenCalledOnce());
     const oldRunId=fixture.app.activeGenerationRunId;
     await runner.cancel();
-    expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:null,generationPhase:'idle'});
+    expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:oldRunId,generationPhase:'idle'});
     fixture.app={...fixture.app,isGenerating:true,activeGenerationRunId:'synthetic-new-run',generationPhase:'requesting',statusText:'new run marker',lastError:'new run error'};
     pending.resolve(plan('late-plan'));
     expect(await running).toBeNull();
@@ -136,21 +139,105 @@ describe('mobile inpaint gateway run lifecycle (all gateway calls explicitly moc
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({planId:'synthetic-plan'}),3,expect.any(AbortSignal));
     expect(fixture.gateway.cancel).toHaveBeenCalledWith('synthetic-plan');
     expect(fixture.gateway.generate).not.toHaveBeenCalled();
+    expect(fixture.app).toMatchObject({isGenerating:true,generationPhase:'preparing'});
+    await runner.finish();
     expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:null,generationPhase:'idle'});
+  });
+
+  it('stops and cancels a later plan when the gateway credential revision changes within the confirmed batch',async()=>{
+    fixture.gateway.prepareMobileInpaint
+      .mockResolvedValueOnce(plan('revision-one-plan','credential-revision-one'))
+      .mockResolvedValueOnce(plan('revision-two-plan','credential-revision-two'));
+    const confirm=vi.fn().mockResolvedValue(true);
+    const runner=createMobileGatewayRunner('synthetic-profile',3,confirm);
+    expect((await runner.run(request()))?.ok).toBe(true);
+    expect(await runner.run(request())).toBeNull();
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(fixture.gateway.selectProfile).toHaveBeenCalledOnce();
+    expect(fixture.gateway.prepareMobileInpaint).toHaveBeenCalledTimes(2);
+    expect(fixture.gateway.generate).toHaveBeenCalledOnce();
+    expect(fixture.gateway.cancel).toHaveBeenCalledWith('revision-two-plan');
+    expect(fixture.app.lastError).toContain('凭据版本发生变化');
+    await runner.finish();
+  });
+
+  it('keeps the run lock for its owner but rejects another batch until the owner finishes',async()=>{
+    const first=createMobileGatewayRunner('synthetic-profile',1,vi.fn().mockResolvedValue(true));
+    const second=createMobileGatewayRunner('synthetic-profile',1,vi.fn().mockResolvedValue(true));
+    expect(first.begin()).toBe(true);
+    const firstRunId=fixture.app.activeGenerationRunId;
+    expect(second.begin()).toBe(false);
+    expect(await second.run(request())).toBeNull();
+    expect(fixture.gateway.prepareMobileInpaint).not.toHaveBeenCalled();
+    expect((await first.run(request()))?.ok).toBe(true);
+    expect(fixture.app).toMatchObject({isGenerating:true,activeGenerationRunId:firstRunId});
+    await first.finish();
+    expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:null});
+  });
+
+  it('shows the cancel acknowledgement and a late uncertain result while retaining ownership until finish',async()=>{
+    const pending=deferred<any>();
+    fixture.gateway.generate.mockReturnValue(pending.promise);
+    const cancelAck=deferred<{accepted:boolean;message:string}>();
+    fixture.gateway.cancel.mockReturnValue(cancelAck.promise);
+    const runner=createMobileGatewayRunner('synthetic-profile',1,vi.fn().mockResolvedValue(true));
+    const running=runner.run(request());
+    await vi.waitFor(()=>expect(fixture.gateway.generate).toHaveBeenCalledOnce());
+    const runId=fixture.app.activeGenerationRunId;
+    const cancelling=runner.cancel();
+    await vi.waitFor(()=>expect(fixture.gateway.cancel).toHaveBeenCalledWith('synthetic-plan'));
+    cancelAck.resolve({accepted:false,message:'网关取消未确认，任务可能仍在处理。'});
+    await cancelling;
+    expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:runId,statusText:'网关取消未确认，任务可能仍在处理。'});
+    pending.resolve({status:'uncertain',message:'网关结果状态不确定；请查任务记录。',items:[]});
+    expect(await running).toBeNull();
+    expect(fixture.app.statusText).toContain('网关取消未确认，任务可能仍在处理。');
+    expect(fixture.app.statusText).toContain('网关结果状态不确定');
+    expect(fixture.app.activeGenerationRunId).toBe(runId);
+    await runner.finish();
+    expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:null});
+  });
+
+  it('does not let a late uncertain result overwrite a newer run even after that run has finished',async()=>{
+    const pending=deferred<any>();
+    fixture.gateway.generate.mockReturnValue(pending.promise);
+    const runner=createMobileGatewayRunner('synthetic-profile',1,vi.fn().mockResolvedValue(true));
+    const running=runner.run(request());
+    await vi.waitFor(()=>expect(fixture.gateway.generate).toHaveBeenCalledOnce());
+    const oldRunId=fixture.app.activeGenerationRunId;
+    await runner.cancel();
+    expect(fixture.app.activeGenerationRunId).toBe(oldRunId);
+    fixture.app={...fixture.app,isGenerating:true,activeGenerationRunId:'newer-run',statusText:'new run in progress'};
+    fixture.app={...fixture.app,isGenerating:false,activeGenerationRunId:null,statusText:'new run completed',toast:'new run completed',lastError:''};
+    pending.resolve({status:'uncertain',message:'late result from old run',items:[]});
+    expect(await running).toBeNull();
+    expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:null,statusText:'new run completed',toast:'new run completed',lastError:''});
+    await runner.finish();
+    expect(fixture.app.statusText).toBe('new run completed');
   });
 
   it('confirms exactly once and submits each batch image serially',async()=>{
     const order:string[]=[];
     let nextPlan=0;
+    fixture.gateway.selectProfile.mockImplementation(async(profileId:string)=>{order.push('select');return [{id:profileId,name:'Synthetic Gateway',protocol:'ikun',baseUrl:'http://127.0.0.1:8765',selected:true}];});
     fixture.gateway.prepareMobileInpaint.mockImplementation(async()=>{order.push('prepare');return plan(`batch-${++nextPlan}`);});
     fixture.gateway.generate.mockImplementation(async({planId}:any)=>{order.push(`generate:${planId}`);return {status:'succeeded',message:'synthetic success',items:[]};});
     const confirm=vi.fn(async()=>{order.push('confirm');return true;});
     const runner=createMobileGatewayRunner('synthetic-profile',3,confirm);
-    for(let index=0;index<3;index++)expect((await runner.run(request()))?.ok).toBe(true);
+    let batchRunId:string|undefined;
+    for(let index=0;index<3;index++){
+      expect((await runner.run(request()))?.ok).toBe(true);
+      expect(fixture.app.isGenerating).toBe(true);
+      if(index===0)batchRunId=fixture.app.activeGenerationRunId;
+      expect(fixture.app.activeGenerationRunId).toBe(batchRunId);
+    }
     expect(confirm).toHaveBeenCalledOnce();
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({planId:'batch-1'}),3,expect.any(AbortSignal));
-    expect(order).toEqual(['prepare','confirm','generate:batch-1','prepare','generate:batch-2','prepare','generate:batch-3']);
+    expect(order).toEqual(['select','prepare','confirm','generate:batch-1','prepare','generate:batch-2','prepare','generate:batch-3']);
+    expect(fixture.gateway.selectProfile).toHaveBeenCalledOnce();
     expect(fixture.gateway.generate).toHaveBeenCalledTimes(3);
+    await runner.finish();
+    expect(fixture.app).toMatchObject({isGenerating:false,activeGenerationRunId:null,generationPhase:'idle'});
   });
 
   it('stops the paid batch after one uncertain result and never calls the official token/account path',async()=>{

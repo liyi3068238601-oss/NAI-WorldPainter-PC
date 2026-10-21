@@ -1,5 +1,5 @@
 import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
-import {executeMobileInpaintRequest,useAppStore} from './store';
+import {executeMobileInpaintRequest,registerMobileGatewayCancellation,useAppStore} from './store';
 import {DEFAULT_PARAMS,type MobileInpaintRequest} from './types';
 
 const syntheticAccount={hasToken:true,accountId:'synthetic-account',anlasBalance:100};
@@ -24,6 +24,41 @@ beforeEach(()=>{
 afterEach(()=>{useAppStore.setState(useAppStore.getInitialState(),true);vi.unstubAllGlobals();});
 
 describe('real mobile paid-run helper with an explicitly mocked desktop bridge',()=>{
+  it('routes global Stop to its active gateway transport and leaves unrelated runs on the official path',async()=>{
+    const cancelGateway=vi.fn().mockResolvedValue(undefined);
+    const unregister=registerMobileGatewayCancellation('synthetic-gateway-batch',cancelGateway);
+    try{
+      useAppStore.setState({isGenerating:true,activeGenerationRunId:'synthetic-gateway-batch'});
+      await useAppStore.getState().cancel();
+      expect(cancelGateway).toHaveBeenCalledOnce();
+      expect(desktop.cancel).not.toHaveBeenCalled();
+      replaceWithNewRun();
+      await useAppStore.getState().cancel();
+      expect(cancelGateway).toHaveBeenCalledOnce();
+      expect(desktop.cancel).toHaveBeenCalledOnce();
+    }finally{unregister();}
+  });
+
+  it('keeps one official batch reservation between images and prevents other generation from taking it',async()=>{
+    const batchRunId='synthetic-official-batch';
+    useAppStore.setState({isGenerating:true,activeGenerationRunId:batchRunId,generationPhase:'preparing'});
+    expect((await executeMobileInpaintRequest(request(),batchRunId))?.ok).toBe(true);
+    expect(useAppStore.getState()).toMatchObject({isGenerating:true,activeGenerationRunId:batchRunId,generationPhase:'preparing'});
+    expect(await executeMobileInpaintRequest(request())).toBeNull();
+    expect((await executeMobileInpaintRequest(request(),batchRunId))?.ok).toBe(true);
+    expect(desktop.mobileInpaint).toHaveBeenCalledTimes(2);
+  });
+
+  it('never reacquires a cancelled or replaced batch reservation',async()=>{
+    const batchRunId='synthetic-old-batch';
+    expect(await executeMobileInpaintRequest(request(),batchRunId)).toBeNull();
+    replaceWithNewRun();
+    expect(await executeMobileInpaintRequest(request(),batchRunId)).toBeNull();
+    expect(desktop.quoteAnlas).not.toHaveBeenCalled();
+    expect(desktop.mobileInpaint).not.toHaveBeenCalled();
+    expectNewRunUntouched();
+  });
+
   it('does not submit a generation when the quote reports insufficient balance',async()=>{
     desktop.quoteAnlas.mockResolvedValue({...sufficientQuote,amount:101,insufficient:true});
     expect(await executeMobileInpaintRequest(request())).toBeNull();
