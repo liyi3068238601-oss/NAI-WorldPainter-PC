@@ -1,0 +1,22 @@
+{
+  "syntheticFixture": true,
+  "generatedAt": "2026-10-20T08:50:27.388Z",
+  "schemaVersion": 1,
+  "workspaceFile": "workspace.sqlite",
+  "workspaceSha256": "214d5efbcec8d6eb0c7326e8b4e7aa0d4e46a39bf16322bc2598a1379e4a0838",
+  "workspaceBytes": 24576,
+  "imageFile": "image_assets/sha256/a2/a2e2fa974e81562006bf2b842390673b32bf258e64f5f1e504365d8702badca3.png",
+  "imageRef": "sha256/a2/a2e2fa974e81562006bf2b842390673b32bf258e64f5f1e504365d8702badca3.png",
+  "imageSha256": "a2e2fa974e81562006bf2b842390673b32bf258e64f5f1e504365d8702badca3",
+  "imageBytes": 8294,
+  "counts": {
+    "draft": 1,
+    "gallery": 1,
+    "styles": 1,
+    "artists": 1,
+    "approvedMemories": 1,
+    "pendingMemories": 1,
+    "sessions": 1
+  },
+  "credentials": "none; fixture contains only synthetic prompt and sample text"
+}

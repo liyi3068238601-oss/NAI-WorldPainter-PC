@@ -35,4 +35,16 @@
 .agent-provider-error { color: var(--danger); font-size: 13px; }
 .agent-provider-empty { padding: 30px 10px; color: var(--text-secondary); }
 .pi-agent.pi-modal:has(.agent-provider-settings) { width: min(840px, calc(100vw - 32px)); }
+/* Keep actions reachable while only the provider/model fields scroll. Scope both
+   hosts so other settings sections and Agent dialogs retain their own layout. */
+.pi-dialog-mask .pi-modal:has(> .agent-provider-settings) { display: flex; flex-direction: column; height: min(760px, calc(100dvh - 40px)); overflow: hidden; }
+.pi-dialog-mask .pi-modal:has(> .agent-provider-settings) > header { flex-shrink: 0; }
+.settings-content:has(> .agent-provider-settings) { display: flex; flex-direction: column; overflow: hidden; }
+.pi-dialog-mask .pi-modal > .agent-provider-settings,
+.settings-content > .agent-provider-settings { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+.agent-provider-settings > .agent-provider-layout { flex: 1; min-height: 0; overflow: auto; scrollbar-gutter: stable; }
+.agent-provider-settings > .agent-provider-hint,
+.agent-provider-settings > .agent-provider-error,
+.agent-provider-settings > [role="status"],
+.agent-provider-settings > .agent-provider-actions { flex-shrink: 0; }
 @media (max-width: 640px) { .agent-provider-layout { grid-template-columns: 1fr; }.agent-provider-sidebar { position: static; }.agent-provider-list { max-height: 160px; }.agent-provider-actions { flex-wrap: wrap; }.agent-provider-actions > small { max-width: 100%; width: 100%; } }

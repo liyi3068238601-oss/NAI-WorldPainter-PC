@@ -1,5 +1,4 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { isIP } from 'node:net';
 import type { GatewayProfile, GatewayProfileInput, GatewayProtocol } from '../../src/gateway-workbench';
 
 interface Cipher {
@@ -42,23 +41,17 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
-function isLoopback(host: string) {
-  const normalized = host.replace(/^\[|\]$/g, '').toLowerCase();
-  return normalized === 'localhost' || normalized === '::1' ||
-    (isIP(normalized) === 4 && normalized.startsWith('127.'));
-}
-
 /** Gateways always receive a fixed absolute request path; profiles store only a service origin. */
 export function normalizeGatewayBaseUrl(protocol: unknown, raw: unknown): { protocol: GatewayProtocol; baseUrl: string } {
   if (protocol !== 'gateway7877' && protocol !== 'ikun') throw new Error('请选择 7877 或 ikun 网关。');
   if (typeof raw !== 'string' || raw.trim().length < 8 || raw.length > 2048 || raw.includes('\\')) {
-    throw new Error('请输入 HTTPS 网关根地址；本地测试可使用回环 HTTP 地址。');
+    throw new Error('请输入 HTTP(S) 网关根地址。');
   }
   let url: URL;
   try { url = new URL(raw.trim()); } catch { throw new Error('网关地址格式无效。'); }
   if (!url.hostname || url.username || url.password || url.search || url.hash || url.pathname !== '/' ||
-      !(url.protocol === 'https:' || (url.protocol === 'http:' && isLoopback(url.hostname)))) {
-    throw new Error('请填写不含路径、账号、查询参数的 HTTPS 网关根地址；HTTP 仅限 localhost 或回环 IP。');
+      !(url.protocol === 'https:' || url.protocol === 'http:')) {
+    throw new Error('请填写不含路径、账号、查询参数的 HTTP(S) 网关根地址。');
   }
   return { protocol, baseUrl: url.origin };
 }

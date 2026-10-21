@@ -12,6 +12,7 @@ import {readDetectiveConfig,saveDetectiveConfig,detectiveProfile,updateDetective
 import {detectiveDownloadVariant} from './detective-download';
 import { detectiveBudget, detectiveParameters, detectiveRounds, type DetectiveRunRequest, type DetectiveSnapshot } from "../../src/artist-detective-contract";
 import {resolveNovelAiGenerationBaseUrl} from './nai';
+import {currentNaiAccount} from './nai-accounts-runtime';
 import {startDetectiveGenerationBridge} from './detective-generation-bridge';
 
 import {assertPortableIdle, registerPortableBusy} from './portable-projects';
@@ -97,6 +98,10 @@ export async function detectiveStart(value: DetectiveRunRequest) {
   // Freeze the configured generation endpoint alongside this run's token.
   // Passing it over stdin avoids credentials in argv, env, or persisted config.
   const imageBaseUrl = resolveNovelAiGenerationBaseUrl();
+  const transportSettings=getSettings();
+  const selectedAccount=currentNaiAccount();
+  const allowCustomHttp=transportSettings.allowCustomEndpoint===true||selectedAccount?.method==='relay'||
+    selectedAccount?.legacyConfiguration?.allowCustomEndpoint===true;
   const directory = path.join(app.getPath("userData"), "artist-detective-runs", randomUUID());
   fs.mkdirSync(directory, { recursive: true });
   const root = app.getAppPath();
@@ -105,7 +110,7 @@ export async function detectiveStart(value: DetectiveRunRequest) {
   starting = true;
   let bridge: Awaited<ReturnType<typeof startDetectiveGenerationBridge>>;
   try {
-    bridge = await startDetectiveGenerationBridge({imageBaseUrl,token,settings:getSettings(),budget});
+    bridge = await startDetectiveGenerationBridge({imageBaseUrl,token,settings:transportSettings,budget,allowCustomHttp});
     let log: number;
     try { log = fs.openSync(path.join(directory, "run.log"), "a"); }
     catch (error) { await bridge.close(); throw error; }

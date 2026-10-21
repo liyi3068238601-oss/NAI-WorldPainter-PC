@@ -1,0 +1,1380 @@
+{
+  "note": "Actual Windows Electron GUI, synthetic input and explicitly replaced generation IPC. Native save API and PNG filesystem writes were real; OS picker destination was stubbed. No service or AI upscale request. Layer pixel contracts were measured before the final phone single-feather correction; post-feather-composite separately exercises the final build. Numbered mock files can be replaced across sessions; requestEvidence gives verified phase-specific files.",
+  "outputs": [
+    {
+      "name": "synthetic-large-4096x4096.png",
+      "width": 4096,
+      "height": 4096,
+      "sha256": "625a852648d07931095ad0547b2d0aafc762f091e3becdfca0a1ee48a9adf623",
+      "rgbaHash": "2723443c281478149e17c03fe7599c07445c32885d653b517193081438f83c3f"
+    },
+    {
+      "name": "synthetic-upscaled-import-2048x1536.png",
+      "width": 2048,
+      "height": 1536,
+      "sha256": "3db49cdf3ee7cdf7d7cea8dcca51dd8a69938674bd0890c9a5f7d1c392d876d3",
+      "rgbaHash": "c7709c68d810d302ff86b711a5a75666ceb31668ad5ec3aa3a507b0855778174"
+    },
+    {
+      "name": "synthetic-over-limit-8192x4160.png",
+      "width": 8192,
+      "height": 4160,
+      "sha256": "ee4ba54613f12df3e1bdd048cd32dbee5d58d1c267dd9b61a0d6e7e72fc3b30f",
+      "rgbaHash": "a5314a06c138b9020836c88f9a707726633a8bdd2a3f22adf1672271d6ac955c"
+    },
+    {
+      "name": "final-composite-hidden.png",
+      "width": 4096,
+      "height": 4096,
+      "sha256": "f523c95b975b34def9b7c6ddac545bf74dab466450ab48ff81a70de5a4fd7468",
+      "rgbaHash": "2723443c281478149e17c03fe7599c07445c32885d653b517193081438f83c3f"
+    },
+    {
+      "name": "final-composite-visible.png",
+      "width": 4762,
+      "height": 4096,
+      "sha256": "43adb18f281614c3d0cf4830cbf70f0b6d5ac6bdf94b2ef096f1176b542807f7",
+      "rgbaHash": "ba3e474b7b0791e8ca5200c9c40745c713b7ae4977b52568e26bf3c03c630397"
+    },
+    {
+      "name": "post-feather-composite.png",
+      "width": 4929,
+      "height": 4096,
+      "sha256": "8579857ee087938b827d8b1febce3b45594cf083a64b9efb537b263e8a5ad5d8",
+      "rgbaHash": "004939f9506b60a4391904686689369882ee03da7df9500d7bb8c4fa359fa4f9"
+    }
+  ],
+  "requestEvidence": [
+    {
+      "mode": "final-success",
+      "count": 3,
+      "kind": "input",
+      "file": "outputs/original-4k-regional-input.png",
+      "sha256": "381933f60234a05f441c7019915468421e6705b06afd67b220ab965f3ef12214"
+    },
+    {
+      "mode": "final-success",
+      "count": 3,
+      "kind": "mask",
+      "file": "outputs/original-4k-regional-mask.png",
+      "sha256": "f6c8c2d13163f9698b75aad44d1f8d445752d9c41178c93a2e09443337ce0734"
+    },
+    {
+      "mode": "feather-final-success",
+      "count": 1,
+      "kind": "input",
+      "file": "outputs/post-feather-regional-input.png",
+      "sha256": "df3a10046153ea7ec4de932d8cc8abd77c0a70aa32ba7f0eda92983e1e5811dc"
+    },
+    {
+      "mode": "feather-final-success",
+      "count": 1,
+      "kind": "mask",
+      "file": "outputs/post-feather-regional-mask.png",
+      "sha256": "049ff77c93e0ed038a1dfc6a040768c5165a796d2d59e11bd277f1f7983f537f"
+    }
+  ],
+  "pixelChecks": {
+    "hiddenEqualsSource": true,
+    "changedSourcePixelsOutsideAppliedWorldRect": 0,
+    "changedSourcePixelsWithinAppliedWorldRect": 14131
+  },
+  "finalMockRequests": [
+    {
+      "count": 1,
+      "mode": "final-success",
+      "params": {
+        "model": "nai-diffusion-5-full",
+        "effort": "high",
+        "stylePrompt": "",
+        "positivePrompt": "final synthetic regional blue",
+        "negativePrompt": "final synthetic negative",
+        "width": 1024,
+        "height": 1024,
+        "steps": 28,
+        "cfgScale": 6,
+        "cfgRescale": 0,
+        "sampler": "k_euler_ancestral",
+        "noiseSchedule": "karras",
+        "seed": 0,
+        "seedMode": "random",
+        "ucPreset": 3,
+        "qualityPreset": "none",
+        "qualityToggle": false,
+        "transparentBackground": false,
+        "smea": false,
+        "smeaDyn": false,
+        "variety": false,
+        "fileNamePrefix": "",
+        "preservePromptText": true
+      },
+      "model": "nai-diffusion-5-full-inpainting",
+      "strength": 0.96,
+      "imageHash": "381933f60234a05f441c7019915468421e6705b06afd67b220ab965f3ef12214",
+      "maskHash": "f6c8c2d13163f9698b75aad44d1f8d445752d9c41178c93a2e09443337ce0734",
+      "note": "IPC replaced by explicit mock; no provider, token, or network request"
+    },
+    {
+      "count": 2,
+      "mode": "final-success",
+      "params": {
+        "model": "nai-diffusion-5-full",
+        "effort": "high",
+        "stylePrompt": "",
+        "positivePrompt": "final synthetic regional blue",
+        "negativePrompt": "final synthetic negative",
+        "width": 1024,
+        "height": 1024,
+        "steps": 28,
+        "cfgScale": 6,
+        "cfgRescale": 0,
+        "sampler": "k_euler_ancestral",
+        "noiseSchedule": "karras",
+        "seed": 0,
+        "seedMode": "random",
+        "ucPreset": 3,
+        "qualityPreset": "none",
+        "qualityToggle": false,
+        "transparentBackground": false,
+        "smea": false,
+        "smeaDyn": false,
+        "variety": false,
+        "fileNamePrefix": "",
+        "preservePromptText": true
+      },
+      "model": "nai-diffusion-5-full-inpainting",
+      "strength": 0.96,
+      "imageHash": "381933f60234a05f441c7019915468421e6705b06afd67b220ab965f3ef12214",
+      "maskHash": "f6c8c2d13163f9698b75aad44d1f8d445752d9c41178c93a2e09443337ce0734",
+      "note": "IPC replaced by explicit mock; no provider, token, or network request"
+    },
+    {
+      "count": 3,
+      "mode": "final-success",
+      "params": {
+        "model": "nai-diffusion-5-full",
+        "effort": "high",
+        "stylePrompt": "",
+        "positivePrompt": "final synthetic regional blue",
+        "negativePrompt": "final synthetic negative",
+        "width": 1024,
+        "height": 1024,
+        "steps": 28,
+        "cfgScale": 6,
+        "cfgRescale": 0,
+        "sampler": "k_euler_ancestral",
+        "noiseSchedule": "karras",
+        "seed": 0,
+        "seedMode": "random",
+        "ucPreset": 3,
+        "qualityPreset": "none",
+        "qualityToggle": false,
+        "transparentBackground": false,
+        "smea": false,
+        "smeaDyn": false,
+        "variety": false,
+        "fileNamePrefix": "",
+        "preservePromptText": true
+      },
+      "model": "nai-diffusion-5-full-inpainting",
+      "strength": 0.96,
+      "imageHash": "381933f60234a05f441c7019915468421e6705b06afd67b220ab965f3ef12214",
+      "maskHash": "f6c8c2d13163f9698b75aad44d1f8d445752d9c41178c93a2e09443337ce0734",
+      "note": "IPC replaced by explicit mock; no provider, token, or network request"
+    },
+    {
+      "count": 4,
+      "mode": "final-success",
+      "params": {
+        "model": "nai-diffusion-5-full",
+        "effort": "high",
+        "stylePrompt": "",
+        "positivePrompt": "final synthetic regional blue",
+        "negativePrompt": "final synthetic negative",
+        "width": 1024,
+        "height": 1024,
+        "steps": 28,
+        "cfgScale": 6,
+        "cfgRescale": 0,
+        "sampler": "k_euler_ancestral",
+        "noiseSchedule": "karras",
+        "seed": 0,
+        "seedMode": "random",
+        "ucPreset": 3,
+        "qualityPreset": "none",
+        "qualityToggle": false,
+        "transparentBackground": false,
+        "smea": false,
+        "smeaDyn": false,
+        "variety": false,
+        "fileNamePrefix": "",
+        "preservePromptText": true
+      },
+      "model": "nai-diffusion-5-full-inpainting",
+      "strength": 0.96,
+      "imageHash": "381933f60234a05f441c7019915468421e6705b06afd67b220ab965f3ef12214",
+      "maskHash": "f6c8c2d13163f9698b75aad44d1f8d445752d9c41178c93a2e09443337ce0734",
+      "note": "IPC replaced by explicit mock; no provider, token, or network request"
+    }
+  ],
+  "postFeatherMockRequests": [
+    {
+      "count": 1,
+      "mode": "feather-final-success",
+      "params": {
+        "model": "nai-diffusion-5-full",
+        "effort": "high",
+        "stylePrompt": "",
+        "positivePrompt": "synthetic geometry test",
+        "negativePrompt": "",
+        "width": 1024,
+        "height": 1024,
+        "steps": 28,
+        "cfgScale": 6,
+        "cfgRescale": 0,
+        "sampler": "k_euler_ancestral",
+        "noiseSchedule": "karras",
+        "seed": 0,
+        "seedMode": "random",
+        "ucPreset": 3,
+        "qualityPreset": "none",
+        "qualityToggle": false,
+        "transparentBackground": false,
+        "smea": false,
+        "smeaDyn": false,
+        "variety": false,
+        "fileNamePrefix": "",
+        "preservePromptText": true
+      },
+      "model": "nai-diffusion-5-full-inpainting",
+      "strength": 0.96,
+      "imageHash": "df3a10046153ea7ec4de932d8cc8abd77c0a70aa32ba7f0eda92983e1e5811dc",
+      "maskHash": "049ff77c93e0ed038a1dfc6a040768c5165a796d2d59e11bd277f1f7983f537f",
+      "note": "IPC replaced by explicit mock; no provider, token, or network request"
+    },
+    {
+      "count": 2,
+      "mode": "feather-final-success",
+      "params": {
+        "model": "nai-diffusion-5-full",
+        "effort": "high",
+        "stylePrompt": "",
+        "positivePrompt": "synthetic geometry test",
+        "negativePrompt": "",
+        "width": 1024,
+        "height": 1024,
+        "steps": 28,
+        "cfgScale": 6,
+        "cfgRescale": 0,
+        "sampler": "k_euler_ancestral",
+        "noiseSchedule": "karras",
+        "seed": 0,
+        "seedMode": "random",
+        "ucPreset": 3,
+        "qualityPreset": "none",
+        "qualityToggle": false,
+        "transparentBackground": false,
+        "smea": false,
+        "smeaDyn": false,
+        "variety": false,
+        "fileNamePrefix": "",
+        "preservePromptText": true
+      },
+      "model": "nai-diffusion-5-full-inpainting",
+      "strength": 0.96,
+      "imageHash": "df3a10046153ea7ec4de932d8cc8abd77c0a70aa32ba7f0eda92983e1e5811dc",
+      "maskHash": "049ff77c93e0ed038a1dfc6a040768c5165a796d2d59e11bd277f1f7983f537f",
+      "note": "IPC replaced by explicit mock; no provider, token, or network request"
+    }
+  ],
+  "originalSourceRepeatedAcrossAllFinalRequests": true,
+  "finalMatrix": [
+    {
+      "label": "final-matrix-dark-1440",
+      "file": "254-final-matrix-dark-1440.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-matrix-dark-1280-resize",
+      "file": "255-final-matrix-dark-1280-resize.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-matrix-dark-1280",
+      "file": "256-final-matrix-dark-1280.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-matrix-dark-1920-resize",
+      "file": "257-final-matrix-dark-1920-resize.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-matrix-dark-1920",
+      "file": "258-final-matrix-dark-1920.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-dpr15-dark-size",
+      "file": "259-final-dpr15-dark-size.png",
+      "pixels": {
+        "width": 1920,
+        "height": 1080
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1537,
+        "height": 865
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1536,
+        "height": 864
+      },
+      "viewport": {
+        "width": 1536,
+        "height": 864,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-dpr15-dark",
+      "file": "260-final-dpr15-dark.png",
+      "pixels": {
+        "width": 1920,
+        "height": 1080
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1537,
+        "height": 865
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1536,
+        "height": 864
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.5
+      }
+    },
+    {
+      "label": "final-dpr20-dark-size",
+      "file": "261-final-dpr20-dark-size.png",
+      "pixels": {
+        "width": 2560,
+        "height": 1440
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 2049,
+        "height": 1153
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 2048,
+        "height": 1152
+      },
+      "viewport": {
+        "width": 1707,
+        "height": 960,
+        "dpr": 1.5
+      }
+    },
+    {
+      "label": "final-dpr20-dark",
+      "file": "262-final-dpr20-dark.png",
+      "pixels": {
+        "width": 2560,
+        "height": 1440
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 2049,
+        "height": 1153
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 2048,
+        "height": 1152
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 2
+      }
+    },
+    {
+      "label": "final-matrix-light-1440",
+      "file": "238-final-matrix-light-1440.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-matrix-light-1280-resize",
+      "file": "239-final-matrix-light-1280-resize.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-matrix-light-1280",
+      "file": "240-final-matrix-light-1280.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-matrix-light-1920-resize",
+      "file": "241-final-matrix-light-1920-resize.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-matrix-light-1920",
+      "file": "242-final-matrix-light-1920.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-dpr15-light-size",
+      "file": "243-final-dpr15-light-size.png",
+      "pixels": {
+        "width": 1920,
+        "height": 1080
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1537,
+        "height": 865
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1536,
+        "height": 864
+      },
+      "viewport": {
+        "width": 1536,
+        "height": 864,
+        "dpr": 1.25
+      }
+    },
+    {
+      "label": "final-dpr15-light",
+      "file": "244-final-dpr15-light.png",
+      "pixels": {
+        "width": 1920,
+        "height": 1080
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1537,
+        "height": 865
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1536,
+        "height": 864
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.5
+      }
+    },
+    {
+      "label": "final-dpr20-light-size",
+      "file": "245-final-dpr20-light-size.png",
+      "pixels": {
+        "width": 2560,
+        "height": 1440
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 2049,
+        "height": 1153
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 2048,
+        "height": 1152
+      },
+      "viewport": {
+        "width": 1707,
+        "height": 960,
+        "dpr": 1.5
+      }
+    },
+    {
+      "label": "final-dpr20-light",
+      "file": "246-final-dpr20-light.png",
+      "pixels": {
+        "width": 2560,
+        "height": 1440
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 2049,
+        "height": 1153
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 2048,
+        "height": 1152
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 2
+      }
+    }
+  ],
+  "checks": [
+    {
+      "label": "legacy-source-mask-hashes-before",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "尚未导入图片框 0, 0 · 512 × 512滚轮缩放 · 空格/中键拖动整体"
+    },
+    {
+      "label": "mobile-frame-initial-measurement",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "尚未导入图片框 0, 0 · 512 × 512滚轮缩放 · 空格/中键拖动整体"
+    },
+    {
+      "label": "final-legacy-hashes-before",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "尚未导入图片框 0, 0 · 512 × 512滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-mobile-source-B-check",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 608, 160 · 832 × 1216滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "mobile-outpaint-state",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 1531, 160 · 832 × 1216滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "mobile-square-frame-center-check",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 1531, 352 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "mobile-two-candidates-review",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 1574, -502 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": true
+    },
+    {
+      "label": "mobile-one-applied-layer",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 1574, -502 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "mobile-single-layer-after-replacement",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 1574, -502 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "mobile-layer-hidden-state",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 1574, -502 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1显示移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "mobile-composite-save-state",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 1574, -502 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1显示移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "mobile-over-limit-draft-retained",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 2048 × 1536框 1574, -502 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "error": "图片尺寸无效或超过 32 MP 工作区限制。",
+      "layers": [
+        "重绘 1显示移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-old-mask-baseline-stable",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "尚未导入图片框 0, 0 · 512 × 512滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-large-4k-import-check",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 1632, 1440 · 832 × 1216滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-frame-before-fields",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-frame-after-fields-stable",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-large-candidate-review",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": true
+    },
+    {
+      "label": "final-large-single-layer-confirmed",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-large-hidden-layer-confirmed",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1显示移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-large-visible-layer-confirmed",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-composite-state",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-32mp-existing-draft-retained",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "error": "图片尺寸无效或超过 32 MP 工作区限制。",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-repeat-candidates-original-source",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": true
+    },
+    {
+      "label": "matrix-light-1280x720-controls",
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": true
+    },
+    {
+      "label": "matrix-light-1920x1080-controls",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": true
+    },
+    {
+      "label": "matrix-main-light-1280x720-state",
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "matrix-main-light-1920x1080-state",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "matrix-exact-light-1280x720",
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "matrix-dark-1440x900",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "matrix-dark-1280x722",
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "matrix-dark-1920x1080-check",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-legacy-mask-before-undo",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-legacy-mask-undone",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "07feb8f229cd55e95c26a6560b4e7264fd14842d3d70f8ddd783087b31c897b4",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-legacy-mask-restored",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-mobile-layer-removed",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "legacyMaskHash": "5faca3f296e1378ce1a430db11a5df8f9c0479f0dcaeb505a54b636d9443edd7",
+      "status": "底图 4096 × 4096框 3930, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "post-feather-initial-state",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 1632, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "post-feather-applied-layer",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 4096, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-dark-1440",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 4096, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-dark-1280",
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 4096, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-dark-1920",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 4096, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-light-1440",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 4096, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-light-1280",
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 4096, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-light-1920",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 4096, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-review-light-controls-1280x720-dpr2",
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 2
+      },
+      "status": "底图 4096 × 4096框 4096, 1632 · 832 × 832滚轮缩放 · 空格/中键拖动整体",
+      "layers": [
+        "重绘 1隐藏移除"
+      ],
+      "reviewOpen": true
+    },
+    {
+      "label": "final-v5-step-value-max-28",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 1632, 1440 · 832 × 1216滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-light-1440",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 1632, 1440 · 832 × 1216滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-light-1280",
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 1632, 1440 · 832 × 1216滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    },
+    {
+      "label": "final-matrix-light-1920",
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      },
+      "status": "底图 4096 × 4096框 1632, 1440 · 832 × 1216滚轮缩放 · 空格/中键拖动整体",
+      "layers": [],
+      "reviewOpen": false
+    }
+  ],
+  "finalV5StepInput": {
+    "label": "新版步数",
+    "value": "28",
+    "min": "1",
+    "max": "28"
+  },
+  "finalGuiClosed": true,
+  "finalTestResult": {
+    "files": 22,
+    "passed": 724,
+    "typecheck": "passed",
+    "build": "passed",
+    "realPaidCalls": 0
+  }
+}

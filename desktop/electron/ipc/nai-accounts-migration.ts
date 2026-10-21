@@ -1,5 +1,5 @@
 import type {NaiAccountInput} from '../../src/nai-accounts';
-import {nextNaiAccountLabel} from '../../src/nai-accounts';
+import {nextNaiAccountLabel,validateLegacyNaiEndpoint} from '../../src/nai-accounts';
 import type {NaiAccountsVault} from './nai-accounts-vault';
 
 export interface LegacyNaiConfiguration {
@@ -14,8 +14,8 @@ export function migrateLegacyNaiAccount(vault:NaiAccountsVault,data:LegacyNaiCon
   const url=new URL(value),host=url.hostname.toLowerCase();
   if(url.username||url.password||url.search||url.hash||/\/(dashboard|login|sign-in)(\/|$)/i.test(url.pathname))throw Error('旧接口地址不是 API 基址；凭据未改动。');
   const loopback=['localhost','127.0.0.1','[::1]','::1'].includes(host);
-  if(url.protocol!=='https:'&&!(url.protocol==='http:'&&loopback))throw Error('旧接口协议不受支持；凭据未改动。');
-  if(host==='novelai.net'||host.endsWith('.novelai.net'))return host===new URL(official).hostname?value:official;
+  try{validateLegacyNaiEndpoint(value,settings.allowCustomEndpoint);}catch{throw Error('旧接口协议不受支持；凭据未改动。');}
+  if(host==='novelai.net'||host.endsWith('.novelai.net'))return url.protocol==='https:'&&host===new URL(official).hostname?value:official;
   return settings.allowCustomEndpoint||loopback?value:official;
  };
  const apiBaseUrl=endpoint(settings.apiBaseUrl,'https://api.novelai.net');

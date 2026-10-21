@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 E:/Codex鏃犻」鐩枃浠跺す/2026-10-20/task/uiux-workspace/desktop
+
+
+ Test Files  4 passed (4)
+      Tests  30 passed (30)
+   Start at  11:04:58
+   Duration  546ms (transform 399ms, setup 0ms, import 533ms, tests 127ms, environment 0ms)
+
+Renderer TypeScript tsc --noEmit: PASS (exit 0)
+Electron TypeScript tsc -p tsconfig.electron.json --noEmit: PASS (exit 0)

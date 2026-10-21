@@ -1,0 +1,66 @@
+{
+  "commit": "8207dd22352b048a5ac356fa56ff17cb6f878a35",
+  "lineEndings": "Git normalizes text CRLF to LF per repository attributes; source hashes describe the verified pre-normalization copy",
+  "files": [
+    {
+      "path": "desktop/src/data/prompt-edit-templates.ts",
+      "sourceBytesSha256": "4291fd9961098a474877d892bb17b2df61f3226fc7e95f4c740b6ba24d258947",
+      "committedBytes": 3222,
+      "committedSha256": "633a572e708e9ba2270cf54086e01880077295b2fbee5f5c3200195bc438da5e"
+    },
+    {
+      "path": "desktop/src/data/prompt-mode-derived.ts",
+      "sourceBytesSha256": "22be50ecbf3542161b7971b668bce4f385384505c569fea5f2df0b8586936b3c",
+      "committedBytes": 3364,
+      "committedSha256": "27c4a1405ceaae39543f15b134e4d2bb16dfc40ea41a25d683c1b3a2dce98f7b"
+    },
+    {
+      "path": "desktop/src/data/prompt-template-migration.ts",
+      "sourceBytesSha256": "e824ea77f605e6a9e7c1321c145f26b172f0068fc68965df730f071be395f58c",
+      "committedBytes": 1096,
+      "committedSha256": "58d3c9cc7d1dcd8104ef58dd2c548a997813c3f58b135c4ad341a31889a24ef7"
+    },
+    {
+      "path": "desktop/src/data/prompt-template-sources-20260926.json",
+      "sourceBytesSha256": "d7b2e22f83af2564d5d6dee7b79505320eac86e8d2ebd5a66f91cbccdeb2bab9",
+      "committedBytes": 16737,
+      "committedSha256": "66278efea9c0408fc5c5cf3d8dc5d6f58861e8249633f648280915103e12d523"
+    },
+    {
+      "path": "desktop/src/data/prompt-template-v3.json",
+      "sourceBytesSha256": "21dd742db85dbc738edfb91a7e2f7368621f764a3240fdcbba43acf1264f7034",
+      "committedBytes": 28175,
+      "committedSha256": "4c0e46ced620edd4b8a3968ccd93bf59c4b93abc71c2e1c4e2a5aedbed288218"
+    },
+    {
+      "path": "desktop/src/data/prompt-templates-pre-v3.json",
+      "sourceBytesSha256": "8f309b57137740ab28ea10bb7ff6f42c0d6c275883a591c0911df0cf1981ebcc",
+      "committedBytes": 17317,
+      "committedSha256": "919edb4d70a6fa4d4f0bd20287cff2a761825f8ee13e08727b081a227678ed0f"
+    },
+    {
+      "path": "desktop/src/data/prompt-templates-previous-v5.ts",
+      "sourceBytesSha256": "824a2273f192c2554675c264062162e76f083a3d83d0f912d9a3db04d1d51cc0",
+      "committedBytes": 25305,
+      "committedSha256": "15df17110a0cec71c722ac6de50b543ded6c0ca4274eeebeb6fac14d6fef909b"
+    },
+    {
+      "path": "desktop/src/data/prompt-templates-v45.ts",
+      "sourceBytesSha256": "e70f2e339dd31dc57235541a8d74aa793d8f20aef757afc8e2b5aa59a05491af",
+      "committedBytes": 79267,
+      "committedSha256": "952b121f7ab4fa20ac6e8b7744c85f7a8b179515cda130007813c5d1d6e99001"
+    },
+    {
+      "path": "desktop/src/data/prompt-templates.ts",
+      "sourceBytesSha256": "ce0f1fecdc584039a0bfb3abcae0819eb71cc068f90808e8df2ae6c3ba18c559",
+      "committedBytes": 22535,
+      "committedSha256": "ed9bb11436963f5e046c02becf6544f69527546a55dc51fe3c2130cd9d430e66"
+    },
+    {
+      "path": "desktop/electron/data/tag-dictionary.ts",
+      "sourceBytesSha256": "23521b9426e9d279f4bb3f2225be63bf7f95a68e638ea663bf5b1f658620acc0",
+      "committedBytes": 19201,
+      "committedSha256": "26fc30b55280484d3ffa070cca6e7cb98bfa3865db0c6f65f499d06b628140e7"
+    }
+  ]
+}

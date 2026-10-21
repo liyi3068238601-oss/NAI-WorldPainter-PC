@@ -1,0 +1,13 @@
+
+> nai-worldpainter-pc@0.1.0 test
+> vitest run src/use-v5-migration-notice.test.ts src/ui-consistency.test.ts src/metadata-selection.test.ts src/prompt-template-audit.test.ts electron/ipc/pi-agent-core.test.ts
+
+
+ RUN  v4.1.11 E:/Codex鏃犻」鐩枃浠跺す/2026-10-20/task/uiux-workspace/desktop
+
+
+ Test Files  5 passed (5)
+      Tests  125 passed (125)
+   Start at  17:59:00
+   Duration  4.30s (transform 930ms, setup 0ms, import 2.93s, tests 2.21s, environment 0ms)
+

@@ -1,0 +1,1132 @@
+{
+  "kind": "real-electron-capturePage",
+  "physicalDisplayScale": 1.25,
+  "filenameIsIntentNotViewportProof": true,
+  "screenshots": [
+    {
+      "number": 1,
+      "file": "001-cold-start.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 484432,
+      "sha256": "79427bdd2654bc72ffcbb6d24cbf35355231b9275ca034faa2a5ca13e0dff5a2",
+      "note": ""
+    },
+    {
+      "number": 2,
+      "file": "002-cold-start.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 395744,
+      "sha256": "521599f04b12d040daba6aff8cf52bd5a20bfb4469334d1c480741a2a107c38e",
+      "note": ""
+    },
+    {
+      "number": 3,
+      "file": "003-generate-1280x720-dark.png",
+      "width": 1600,
+      "height": 903,
+      "bytes": 294513,
+      "sha256": "56cc639ac0cda9289892dcb8d71f3648cff13f7483573bc08dd0f51d28eb7025",
+      "note": "提示词首屏不可见"
+    },
+    {
+      "number": 4,
+      "file": "004-prompt-discovery-scroll.png",
+      "width": 1600,
+      "height": 903,
+      "bytes": 282739,
+      "sha256": "6e7c6262a6903d6c2c0b77d1ed3505153b84da31a090f6d8b837c7f00525f7b2",
+      "note": ""
+    },
+    {
+      "number": 5,
+      "file": "005-prompt-editor-reached.png",
+      "width": 1600,
+      "height": 903,
+      "bytes": 280462,
+      "sha256": "2a1a8ab48f66edfea7e05495af6710af8c7bf2d55a9ab54d2bc2052ff816b469",
+      "note": "滚动过头后回滚找到提示词"
+    },
+    {
+      "number": 6,
+      "file": "006-positive-focus.png",
+      "width": 1600,
+      "height": 903,
+      "bytes": 280667,
+      "sha256": "46cd78fe37e91a8763aa0afcb70d7cfcabd7c35d7631032ab0dd017a6ed668d0",
+      "note": ""
+    },
+    {
+      "number": 7,
+      "file": "007-positive-entered.png",
+      "width": 1600,
+      "height": 903,
+      "bytes": 287577,
+      "sha256": "2c244dea5b0e3300edb8a83a03a05dfbc22e3e245a7a2c1b8b2e3c4d5a7b63c7",
+      "note": ""
+    },
+    {
+      "number": 8,
+      "file": "008-negative-tab.png",
+      "width": 1600,
+      "height": 903,
+      "bytes": 281971,
+      "sha256": "e910be1a1df767924990c1e5ce3bbca92a05904444cd8fa5d493dcbe0a061672",
+      "note": ""
+    },
+    {
+      "number": 9,
+      "file": "009-negative-focus.png",
+      "width": 1600,
+      "height": 903,
+      "bytes": 282186,
+      "sha256": "ad14b883462527f20b889416d876000c1d1b597fa3da79db3295346fffaae00c",
+      "note": ""
+    },
+    {
+      "number": 10,
+      "file": "010-negative-entered.png",
+      "width": 1600,
+      "height": 903,
+      "bytes": 294088,
+      "sha256": "d63fb304995ae866fb5c13cd8d48bf70f3d02afe0db2dbcfa82100b2694011c2",
+      "note": ""
+    },
+    {
+      "number": 11,
+      "file": "011-generate-1440x900-dark.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 394374,
+      "sha256": "ceabc837c49ea7602d5320c2afe8afaa83918f5a4e7de6becfb90bad8971aeb8",
+      "note": ""
+    },
+    {
+      "number": 12,
+      "file": "012-model-return-top.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 403077,
+      "sha256": "72de0acafbc89103a220ac5d7939356d40484814810fb2746b4d87d545517da1",
+      "note": ""
+    },
+    {
+      "number": 13,
+      "file": "013-model-options.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 413221,
+      "sha256": "195cc94ec1ed41012238733be79b82286d419e91fd602d6e5deace1a36b70809",
+      "note": ""
+    },
+    {
+      "number": 14,
+      "file": "014-model-v45-selected.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 274631,
+      "sha256": "2195be12e41eb79eef8b2ea6f7fb30234c5a07e618c5039e662cca6fd81bc02b",
+      "note": "手动选旧模型触发V5提醒"
+    },
+    {
+      "number": 15,
+      "file": "015-model-notice-kept-current.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 323475,
+      "sha256": "debc5854e93e15eef4cf116737a122fbb6b20d1175953896b1baae790706af5b",
+      "note": ""
+    },
+    {
+      "number": 16,
+      "file": "016-model-notice-settled.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 388709,
+      "sha256": "b0008bf2915f96d8a652d9ef4e3fb291c0cdfe1f1cd74b2abd8985b78e5523a9",
+      "note": ""
+    },
+    {
+      "number": 17,
+      "file": "017-artist-style-focus.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 398157,
+      "sha256": "627d6c2a2e50223e347f92ca9cac56a925dcbd23d6c2415160574cc667d4350e",
+      "note": ""
+    },
+    {
+      "number": 18,
+      "file": "018-artist-style-entered.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 399162,
+      "sha256": "5d5eff56e6eab8a8d5d439fd1de9576a2cbcd2691db5308c56b8745c64c29469",
+      "note": ""
+    },
+    {
+      "number": 19,
+      "file": "019-parameters-seed-discovery.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 399162,
+      "sha256": "5d5eff56e6eab8a8d5d439fd1de9576a2cbcd2691db5308c56b8745c64c29469",
+      "note": ""
+    },
+    {
+      "number": 20,
+      "file": "020-parameters-scroll-second.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 398903,
+      "sha256": "5bd101b7261a7e259888e0cafa2d639e52d84cd4ffd4d1690b325714103f2f51",
+      "note": ""
+    },
+    {
+      "number": 21,
+      "file": "021-seed-discovered.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 390317,
+      "sha256": "31ff3aaa2b5ac296a69fa6a5085284cd93d2a185737f79fe1b6dc2ad5e372208",
+      "note": ""
+    },
+    {
+      "number": 22,
+      "file": "022-fixed-seed-mode.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 390566,
+      "sha256": "5bb04fb8b79df62272533690c3350a7a9a7fbfc25b2c88676e3cae7ae762d1ba",
+      "note": ""
+    },
+    {
+      "number": 23,
+      "file": "023-seed-focus.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 391479,
+      "sha256": "609c6d3c5a519a4ad40d799577a1149f5b8f2d027abf0c693b9caec8a0306315",
+      "note": ""
+    },
+    {
+      "number": 24,
+      "file": "024-seed-select.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 391500,
+      "sha256": "494ccf854b1f4660d0657cfa0deb3e82d7a9ce410fea3d22fc32c0107072095e",
+      "note": ""
+    },
+    {
+      "number": 25,
+      "file": "025-seed-4242.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 392077,
+      "sha256": "d5232f8638f3b05cb857148916c6dabcd329b7dca9a48a8c07b3a20cd1d9f7f5",
+      "note": "固定Seed4242"
+    },
+    {
+      "number": 26,
+      "file": "026-inpaint-entry.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 392089,
+      "sha256": "86c2f9d83aa2292b41337256746ca6c0aedd3ac1908a598f03c2e64666cd5b39",
+      "note": ""
+    },
+    {
+      "number": 27,
+      "file": "027-inpaint-settled.png",
+      "width": 1800,
+      "height": 1125,
+      "bytes": 429962,
+      "sha256": "be432073ead3d0f848a7f7b1acee8733781d48e5d4284a9a0135c478ea605ec2",
+      "note": ""
+    },
+    {
+      "number": 28,
+      "file": "028-cold-start.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 395384,
+      "sha256": "d1d43657974a76f8a2dd7a271aa72d8ded3cbb403270bbcfc5d2c859597ce92d",
+      "note": ""
+    },
+    {
+      "number": 29,
+      "file": "029-inpaint-open.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 415438,
+      "sha256": "5243a303760f3c247733e82d66dfdb6f6c27bf14d12ca6f82cdaaec4a57e3d9b",
+      "note": ""
+    },
+    {
+      "number": 30,
+      "file": "030-synthetic-file-dialog-setup.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 415438,
+      "sha256": "5243a303760f3c247733e82d66dfdb6f6c27bf14d12ca6f82cdaaec4a57e3d9b",
+      "note": ""
+    },
+    {
+      "number": 31,
+      "file": "031-inpaint-image-loaded.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 403562,
+      "sha256": "e159be45e03f68c03aecc2866a35168a2d0f771bca53e53bbfbbd002f9a81cfb",
+      "note": "测试防护误拦nai-local，排除产品缺陷"
+    },
+    {
+      "number": 32,
+      "file": "032-cold-start.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 395384,
+      "sha256": "d1d43657974a76f8a2dd7a271aa72d8ded3cbb403270bbcfc5d2c859597ce92d",
+      "note": ""
+    },
+    {
+      "number": 33,
+      "file": "033-inpaint-reentry.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 415438,
+      "sha256": "5243a303760f3c247733e82d66dfdb6f6c27bf14d12ca6f82cdaaec4a57e3d9b",
+      "note": ""
+    },
+    {
+      "number": 34,
+      "file": "034-synthetic-dialog-ready.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 415438,
+      "sha256": "5243a303760f3c247733e82d66dfdb6f6c27bf14d12ca6f82cdaaec4a57e3d9b",
+      "note": ""
+    },
+    {
+      "number": 35,
+      "file": "035-inpaint-synthetic-visible.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 395300,
+      "sha256": "74bdf025a52a5309b3aee8ff7fef0d24e2be7908249bdfc6d029412fcd88c186",
+      "note": "修正防护后合成图真实显示"
+    },
+    {
+      "number": 36,
+      "file": "036-inpaint-mask-painted.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 395723,
+      "sha256": "933df2546bb0ae9ebf2c4cc953ab6ee40f5ae2c86985e3eadc3f5cc2498e6b03",
+      "note": ""
+    },
+    {
+      "number": 37,
+      "file": "037-inpaint-eraser-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 395464,
+      "sha256": "9197e95f2c084354978f9e39d0559952133dde1ba8534fc85e11fba95b913008",
+      "note": ""
+    },
+    {
+      "number": 38,
+      "file": "038-inpaint-mask-erased.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 395726,
+      "sha256": "b3fda1447cdbf35ae555d02cb740038bdda508e9ded1f43b7b476a9ee383cc3c",
+      "note": ""
+    },
+    {
+      "number": 39,
+      "file": "039-inpaint-undo-keyboard.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 395069,
+      "sha256": "fad0492d0d490068a8607f721ddc1b475bbff7c6b7bdd82f91c4c0c8fa428bf5",
+      "note": "Ctrl+Z恢复擦除前蒙版"
+    },
+    {
+      "number": 40,
+      "file": "040-inpaint-region-entry.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 394667,
+      "sha256": "b3416fdcaa4d00643719377083417ba3be1b5fda7cdf055ee734a81461d45699",
+      "note": ""
+    },
+    {
+      "number": 41,
+      "file": "041-inpaint-region-drag.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 398945,
+      "sha256": "45d22276d17cc356efc686081d6bd500cf4bd8fd98adc6615cbb959a0fdf1838",
+      "note": "区域框可见"
+    },
+    {
+      "number": 42,
+      "file": "042-settings-open.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 196025,
+      "sha256": "4c1b1b51b22512dd2081b3b678b91131cda464475df8a98a200bd6eb1d9de0a1",
+      "note": ""
+    },
+    {
+      "number": 43,
+      "file": "043-legacy-import-entry.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 209564,
+      "sha256": "c30968c017071662be8e6a37abf66dcba4e248755224c61e2d32382d8dc7d719",
+      "note": ""
+    },
+    {
+      "number": 44,
+      "file": "044-synthetic-workspace-dialog.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 209564,
+      "sha256": "c30968c017071662be8e6a37abf66dcba4e248755224c61e2d32382d8dc7d719",
+      "note": ""
+    },
+    {
+      "number": 45,
+      "file": "045-legacy-import-preview.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 267847,
+      "sha256": "f57ac469edde8ed4c2f23d9998b1b519b9e95f95612ca03eb344789712950edb",
+      "note": "明确只读预览"
+    },
+    {
+      "number": 46,
+      "file": "046-synthetic-import-confirmed.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 236567,
+      "sha256": "912af7a1d1c9c9e5d5c3ff762c0a1985586cf990a4307e5a1eb9850688c06223",
+      "note": "追加导入，现有草稿跳过"
+    },
+    {
+      "number": 47,
+      "file": "047-import-refresh-workbench.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 312033,
+      "sha256": "2fbba91322c5276341c98e59523fa7a05ab554f38ac8f4ed0c5477be2033ee25",
+      "note": ""
+    },
+    {
+      "number": 48,
+      "file": "048-gallery-context-menu.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 313440,
+      "sha256": "b6d17d82e19bcf37065d37cf2166dbcb4b071a7994a2e257051d9b34d0204fd8",
+      "note": "右键未显示操作菜单"
+    },
+    {
+      "number": 49,
+      "file": "049-gallery-more-actions.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 319351,
+      "sha256": "01ae2fdfe6962993d8536b4b05543f444e22e1f4f6120e180a334f5aa53db079",
+      "note": ""
+    },
+    {
+      "number": 50,
+      "file": "050-gallery-menu-escape.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 313790,
+      "sha256": "e75371572b08f34c9a4833a5165fc951db7bdb9c3627be7b44edc9d8799dbe3c",
+      "note": ""
+    },
+    {
+      "number": 51,
+      "file": "051-gallery-menu-reopen.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 320244,
+      "sha256": "6982e7372ee85f7730270bf282f3b1cf6c990bd1c8b50e02838663aadf2d9929",
+      "note": ""
+    },
+    {
+      "number": 52,
+      "file": "052-gallery-metadata-open.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 217545,
+      "sha256": "7eeb0e3bf1d4e9cbe8d36b52e0897e566200fd36bbda4d38827fd802a43f02d9",
+      "note": "联网解析失败，有显式离线恢复"
+    },
+    {
+      "number": 53,
+      "file": "053-metadata-offline-recovery.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 212212,
+      "sha256": "b32b43c2b31fc65860aebfdaeeece9e06e9400c16cd0f6332247e207f2972819",
+      "note": ""
+    },
+    {
+      "number": 54,
+      "file": "054-metadata-synthetic-dialog.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 212212,
+      "sha256": "b32b43c2b31fc65860aebfdaeeece9e06e9400c16cd0f6332247e207f2972819",
+      "note": ""
+    },
+    {
+      "number": 55,
+      "file": "055-metadata-fixture-read.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 212826,
+      "sha256": "f51b09013f7db69f77f998b8416f2b472c783b89bc27576dacbb1f711f50c4a6",
+      "note": "第一次HTML选择器未接管，未完成读图"
+    },
+    {
+      "number": 56,
+      "file": "056-cold-start.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 312033,
+      "sha256": "2fbba91322c5276341c98e59523fa7a05ab554f38ac8f4ed0c5477be2033ee25",
+      "note": ""
+    },
+    {
+      "number": 57,
+      "file": "057-metadata-entry-direct.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 71040,
+      "sha256": "4d403493237f8337d5b80410f27b381651e3fda14b0464ac57b1bf6a3c3f7088",
+      "note": ""
+    },
+    {
+      "number": 58,
+      "file": "058-metadata-input-fixture-ready.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 157008,
+      "sha256": "24287c871beba18835fd18408dab427eb2597cbc9dcde4cf41f99a13420e14d7",
+      "note": ""
+    },
+    {
+      "number": 59,
+      "file": "059-metadata-png-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 158128,
+      "sha256": "d7fbb0cefabd8476972827b49190dfeea0f91ab7298ae5d11f0bd976bc3d3a5d",
+      "note": ""
+    },
+    {
+      "number": 60,
+      "file": "060-metadata-png-decoded.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 199247,
+      "sha256": "d0b7dbe0c31ce966ec548d7cbb208d73956e103044cdceb32f276b264b7ad16f",
+      "note": "正确HTML文件回执后识别NovelAI20参数"
+    },
+    {
+      "number": 61,
+      "file": "061-metadata-apply-fields.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 191802,
+      "sha256": "84f3c5c74212d2ac149e0e87bbad9bc6d0470984818088b348ef935fd9bff744",
+      "note": "默认全选包含清空参考"
+    },
+    {
+      "number": 62,
+      "file": "062-metadata-none-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 192166,
+      "sha256": "0636170a0a959109a3d07e73d942513db24c33eca8e140091ba2d6117ced44fc",
+      "note": ""
+    },
+    {
+      "number": 63,
+      "file": "063-metadata-positive-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 192375,
+      "sha256": "ca3fa81dd0c9125ae5722fd8db01efdc07afbadaee6543228e4fbb1aaa3fa4a6",
+      "note": ""
+    },
+    {
+      "number": 64,
+      "file": "064-metadata-seed-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 193478,
+      "sha256": "58eff278d3456a1effe86b46e77618654c0cd7389f704572272405abe2116d9c",
+      "note": "仅2/20字段选中"
+    },
+    {
+      "number": 65,
+      "file": "065-metadata-selected-apply.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 311854,
+      "sha256": "0197d64414a45efbb9ff6c53f02a3e25b775a114def8661d2240b5917e0164ad",
+      "note": "返回生成，正向词改变，画师串保持"
+    },
+    {
+      "number": 66,
+      "file": "066-agent-entry.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 68246,
+      "sha256": "6a403131cfabc0035b42d8f7e7711564fe2b69696e815f4bcd7ef710c0fd68f7",
+      "note": ""
+    },
+    {
+      "number": 67,
+      "file": "067-agent-ready.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 169302,
+      "sha256": "83049a22e0412128592984b309a6d18e0f17e1c584c7100742c3438d9333bf1a",
+      "note": ""
+    },
+    {
+      "number": 68,
+      "file": "068-agent-attachment-menu.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 174292,
+      "sha256": "4aae26b41d14ddfafb1fe6a49afd06aba09ddbf21b160fd5e33e9a4b6c7307af",
+      "note": ""
+    },
+    {
+      "number": 69,
+      "file": "069-agent-model-config-entry.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 260432,
+      "sha256": "8f039979674d2d57aa763a6dd63a2ce93be22dbe3b11ea43e6b9d1b2970dfa0c",
+      "note": ""
+    },
+    {
+      "number": 70,
+      "file": "070-agent-model-config-ready.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 179044,
+      "sha256": "92dbd2fb547dec3c129cd3ac18c5a2919f86643a3c0ee1d40a064a1520000057",
+      "note": "保存不在首屏"
+    },
+    {
+      "number": 71,
+      "file": "071-mock-api-url-focus.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 180725,
+      "sha256": "b83b42108045c270e97a193823a45cfd62dde36b4e0f5f0de89d30a6fc59c2a5",
+      "note": ""
+    },
+    {
+      "number": 72,
+      "file": "072-mock-url-select.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 179963,
+      "sha256": "c7cc8ea686b684f9f192c861fe0dccf04865e410b81d3e7f51a0fcb7096d22f5",
+      "note": ""
+    },
+    {
+      "number": 73,
+      "file": "073-mock-url-entered.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 180116,
+      "sha256": "615d88e88b99e1a5018610e79413ab5429de06f5f3ff35e3e3461a996700a477",
+      "note": ""
+    },
+    {
+      "number": 74,
+      "file": "074-mock-key-focus.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 179950,
+      "sha256": "452939cd7638b57ba52599c5dca5a20154a5bb852e0b68e4924a26e85f82ab65",
+      "note": ""
+    },
+    {
+      "number": 75,
+      "file": "075-mock-key-entered.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 180508,
+      "sha256": "317349d374fc13eec3488c95b4d6206d22df26d83d38545471864f4352e7317a",
+      "note": ""
+    },
+    {
+      "number": 76,
+      "file": "076-agent-protocol-options.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 179014,
+      "sha256": "273426e017f8dc301c3f756505b93f011c0491adeee12c1ace3183e84d738c1b",
+      "note": ""
+    },
+    {
+      "number": 77,
+      "file": "077-protocol-next-option.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 192777,
+      "sha256": "f2337068dae250215b262a2ca425a292b08318d6cea0b812396835f5ea2b5235",
+      "note": ""
+    },
+    {
+      "number": 78,
+      "file": "078-protocol-option-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 180946,
+      "sha256": "567a4ff6a4220db1314e2856cc39f7ee47c651a88103a8100362f1ef582665be",
+      "note": ""
+    },
+    {
+      "number": 79,
+      "file": "079-protocol-first-option.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 180759,
+      "sha256": "558a58eb937473ac1a7b0975f554fcb450aaeebe101f2dbaae9110ce257f72e6",
+      "note": ""
+    },
+    {
+      "number": 80,
+      "file": "080-protocol-chat-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 188526,
+      "sha256": "86ce3c271ce385928ad446b75c0c1da950b17b28b666847fc05c9b3bda9e7e6c",
+      "note": ""
+    },
+    {
+      "number": 81,
+      "file": "081-protocol-up-visible.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 193663,
+      "sha256": "6cd5a301c10295aa741fe48fa608236499e4e967739995ba8e25a15b3782fc67",
+      "note": ""
+    },
+    {
+      "number": 82,
+      "file": "082-protocol-chat-chosen.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 180112,
+      "sha256": "9375f494db8e2e16761bb1ee04ab459a96cde733eb5a96929f8fac32237b99f9",
+      "note": ""
+    },
+    {
+      "number": 83,
+      "file": "083-agent-config-save-discovery.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 169715,
+      "sha256": "787c5edaa0f1f5e9c522607c5d7a2d29729460cefb1ebb1999d54f14368b56a7",
+      "note": ""
+    },
+    {
+      "number": 84,
+      "file": "084-alternate-model-focus.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 172180,
+      "sha256": "f85d09a73e527c479eff826df00348b889a2e3fb11356d9b819be154fef9ccee",
+      "note": ""
+    },
+    {
+      "number": 85,
+      "file": "085-alternate-model-select.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 170561,
+      "sha256": "e5a48f22540e7ca5175acbaebd6d2541e014cdc43037b31b026b84297de7ef18",
+      "note": ""
+    },
+    {
+      "number": 86,
+      "file": "086-alternate-model-id.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 171295,
+      "sha256": "c1f817c92a90a5f01e191444dc99fc75a14a0df06584b1675d04dedd262e1c78",
+      "note": ""
+    },
+    {
+      "number": 87,
+      "file": "087-alternate-model-added.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 171398,
+      "sha256": "e76cdd5d8ccb27d7e0eef22120233bc266e6cccc806f3864decbc37881943040",
+      "note": ""
+    },
+    {
+      "number": 88,
+      "file": "088-mock-model-settings-saved.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 172200,
+      "sha256": "56cd5d9de86bafa085e35fc1ddcfb703170b81e88aa3380b8f09b7ad8ced0a23",
+      "note": "新增模型后旧保存位置不再有效；文件名是意图"
+    },
+    {
+      "number": 89,
+      "file": "089-model-save-after-add-scroll.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 172214,
+      "sha256": "156290091290a9b822963c0881b9f6b595855116a0083feb4d055e42745f1512",
+      "note": "再次滚动才看到保存"
+    },
+    {
+      "number": 90,
+      "file": "090-mock-config-save-confirmed.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 170220,
+      "sha256": "c14507acd4b51bf1b93bdb85ee48f2edde205c4e5d2c4f0fc9b4e6fe497ea41b",
+      "note": ""
+    },
+    {
+      "number": 91,
+      "file": "091-agent-model-saved.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 149959,
+      "sha256": "3171e85b67a310b650d2d9c87e3e4a3c13cce204933be31230480b2167e8e521",
+      "note": "配置真正保存完成"
+    },
+    {
+      "number": 92,
+      "file": "092-agent-model-switch-menu.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 168454,
+      "sha256": "b16f1828a5e39e2ea7c771e3e61c7831e4d5dbac3841ba712afff60673fce8c8",
+      "note": "模型/视觉标识可见"
+    },
+    {
+      "number": 93,
+      "file": "093-agent-vision-model-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 151230,
+      "sha256": "2a915ad7bb23b2310971c2fce4167bad89906a1657b9caad65c6e97a053fd616",
+      "note": ""
+    },
+    {
+      "number": 94,
+      "file": "094-agent-prompt-focus.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 150555,
+      "sha256": "bcbe4ae3e003caddca8e73f8233de83b32fb7046d25e65325d4e5bcf286bd804",
+      "note": ""
+    },
+    {
+      "number": 95,
+      "file": "095-agent-synthetic-request-entered.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 158402,
+      "sha256": "a3467be71b422b8563f85fbc5a354c70a0b4bc8d04d8d013378e65e8a88711e0",
+      "note": ""
+    },
+    {
+      "number": 96,
+      "file": "096-agent-request-sent.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 158395,
+      "sha256": "c157ddbf218b657762fafc6e54e86d71368df213b90c90c63f0492042f22c003",
+      "note": ""
+    },
+    {
+      "number": 97,
+      "file": "097-agent-request-result.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 177631,
+      "sha256": "2ccadbd64704a2df2eefd8a6c9c638a5cfbed6e6e1882af392d6bcc2a370d4f6",
+      "note": "测试包装器appPath错误，非产品缺陷；输入仍在"
+    },
+    {
+      "number": 98,
+      "file": "098-cold-start.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 305518,
+      "sha256": "6d65316fbfd4fc5603c0801db60069a7866bd84b566379e17633a0d02493726a",
+      "note": ""
+    },
+    {
+      "number": 99,
+      "file": "099-agent-return-after-launcher-fix.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 71189,
+      "sha256": "2750d45fa52b2e2af2990ea8fb73b629a395a8273be4cb5809053335b847fc1b",
+      "note": ""
+    },
+    {
+      "number": 100,
+      "file": "100-agent-resumed-draft.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 150741,
+      "sha256": "55f4122bea2b48c0adca140405f9ea82693a822afaf4cc3f2157e511d3039d07",
+      "note": "冷启动文字丢失，附件仍在"
+    },
+    {
+      "number": 101,
+      "file": "101-agent-retry-focus.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 150554,
+      "sha256": "a294c7a38a06b6d50f109c622b8595521c223b8ae8c3450a30bb892a89007e18",
+      "note": ""
+    },
+    {
+      "number": 102,
+      "file": "102-agent-retry-text.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 154828,
+      "sha256": "4b623b60ec89a613db608f35a1190f325fddd7e06213c6c4b3c8aec8130d9742",
+      "note": ""
+    },
+    {
+      "number": 103,
+      "file": "103-agent-loopback-send.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 154807,
+      "sha256": "f625d07d051906f02c6643811d675863a86648cf609082df30f162a5b830cbaa",
+      "note": ""
+    },
+    {
+      "number": 104,
+      "file": "104-agent-loopback-response.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 130376,
+      "sha256": "21441f4ef45bd9bdff66974258aac6a5d23a81a9c166ce1bbfdcd259b5ee0a69",
+      "note": ""
+    },
+    {
+      "number": 105,
+      "file": "105-agent-pending-bounded-check.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 142377,
+      "sha256": "e3c442fe31429d42fbf909d277945c97429b854b9890f91f38126d2d9caea303",
+      "note": "超时及恢复草稿入口"
+    },
+    {
+      "number": 106,
+      "file": "106-agent-restore-failed-request.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 147226,
+      "sha256": "7977fb2117e476d60a5e0532c1106a9d1adc1b35483f7d74aa18ada3f1851753",
+      "note": ""
+    },
+    {
+      "number": 107,
+      "file": "107-agent-host-loopback-send.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 107700,
+      "sha256": "a9505c5733ffd881eb264a44eef5499877aa8e3e34796c5c7686e2e610d90504",
+      "note": ""
+    },
+    {
+      "number": 108,
+      "file": "108-agent-real-confirmation-card.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 158413,
+      "sha256": "c06b3dfeda8daf743603868632dae1f6ceb6543c2e245214c3e2af8dc2ec134c",
+      "note": "真实产品待确认卡，模型传输模拟"
+    },
+    {
+      "number": 109,
+      "file": "109-agent-confirmation-cancelled.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 164132,
+      "sha256": "e2f8f0ac10d30a66bb1f5d6de75259ab0dbb0a0a53f9212c6b9d814712f0c94f",
+      "note": ""
+    },
+    {
+      "number": 110,
+      "file": "110-agent-cancel-complete.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 165355,
+      "sha256": "bb934fa6574e1dfbfdb48f8cba7264903f9e57691ecaf538665d965546562738",
+      "note": "取消后停止，无付费生成"
+    },
+    {
+      "number": 111,
+      "file": "111-tools-entry.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 71141,
+      "sha256": "f910b00b82f787191418b40ef14f53f2e98bbe35e22fa836cb08a4bc931e7177",
+      "note": ""
+    },
+    {
+      "number": 112,
+      "file": "112-tools-ready.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 343022,
+      "sha256": "fc4fc5e310ab4a64358b184a8388fd04337df81b790510f0fec631a914420fc0",
+      "note": ""
+    },
+    {
+      "number": 113,
+      "file": "113-comic-visible-entry.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 143299,
+      "sha256": "77fa278485c3138e5c85918df87a15a846142e7414c0e41b5bc42957c5ce0c20",
+      "note": ""
+    },
+    {
+      "number": 114,
+      "file": "114-comic-ready.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 143299,
+      "sha256": "77fa278485c3138e5c85918df87a15a846142e7414c0e41b5bc42957c5ce0c20",
+      "note": "漫画四步入口"
+    },
+    {
+      "number": 115,
+      "file": "115-settings-from-comic.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 241559,
+      "sha256": "0fe7099eff7c5c2bcb0ad9a1c633e35920e9de625c06c4492a8e778bc8e6aa3c",
+      "note": ""
+    },
+    {
+      "number": 116,
+      "file": "116-appearance-settings.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 212537,
+      "sha256": "c8ce68254bafab0f0ad99d15f7e786b6fd13e9a8507311a3e2409345311f2760",
+      "note": ""
+    },
+    {
+      "number": 117,
+      "file": "117-theme-options.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 207089,
+      "sha256": "7af61dfbf4cbf9a41b166342efaf2ed903b75183bc042fc689929f3406d6f536",
+      "note": ""
+    },
+    {
+      "number": 118,
+      "file": "118-theme-options-visible.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 207548,
+      "sha256": "ce20886b7e29cd3f35cfeac21f196af89bf0774d82037651babaeb7d67110d36",
+      "note": ""
+    },
+    {
+      "number": 119,
+      "file": "119-light-theme-selected.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 230458,
+      "sha256": "9621be3cfc94f2c0567fa4ea4ef458307a173e1f641b007cff32a76d3602c670",
+      "note": ""
+    },
+    {
+      "number": 120,
+      "file": "120-settings-close-light.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 138557,
+      "sha256": "db5393c07e3c70f018f3e2030cd39f5a47e293678e5d39d491752f71f2d2fb22",
+      "note": ""
+    },
+    {
+      "number": 121,
+      "file": "121-comic-1920x1080-light.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 138557,
+      "sha256": "db5393c07e3c70f018f3e2030cd39f5a47e293678e5d39d491752f71f2d2fb22",
+      "note": "请求1920×1080未确认生效，以PNG尺寸为准"
+    },
+    {
+      "number": 122,
+      "file": "122-light-wide-settled.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 138557,
+      "sha256": "db5393c07e3c70f018f3e2030cd39f5a47e293678e5d39d491752f71f2d2fb22",
+      "note": "核对后仍1733×1128，不计1920验收"
+    },
+    {
+      "number": 123,
+      "file": "123-light-1280-request.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 138557,
+      "sha256": "db5393c07e3c70f018f3e2030cd39f5a47e293678e5d39d491752f71f2d2fb22",
+      "note": "后期resize请求亦未确认"
+    },
+    {
+      "number": 124,
+      "file": "124-generate-light-entry.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 228453,
+      "sha256": "dd4d00a6cdfb555a8ce3d6557710b7247272e57d6439f43b3a2e76d4fc433c1d",
+      "note": ""
+    },
+    {
+      "number": 125,
+      "file": "125-generate-light-settled.png",
+      "width": 1733,
+      "height": 1128,
+      "bytes": 223970,
+      "sha256": "93214d6fd0f816b57a7e1f245caf961531168c27e90fed17d8c7378004489a10",
+      "note": "浅色真实生成页"
+    }
+  ]
+}

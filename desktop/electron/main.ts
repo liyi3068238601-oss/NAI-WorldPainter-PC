@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import {startMcpServer, type McpServerHandle} from "./ipc/mcp-server";
 import {readAgentClipboardFiles} from './ipc/agent-clipboard';
 import { registerNaiAccountsIpc, ensureNaiAccountsLoaded } from './ipc/nai-accounts';
-import { withNaiAccountOperation, rememberNaiProposal, assertNaiProposalAccount } from './ipc/nai-accounts-runtime';
+import { withNaiAccountOperation, rememberNaiProposal, assertNaiProposalAccount, currentNaiAccount, naiAccountRevision } from './ipc/nai-accounts-runtime';
 import {prepareBatchImageService} from './ipc/batch-image-service';
 import {cancelBatchRedraw} from './ipc/nai';
 import {prepareComicImageService} from './ipc/comic-image-service';
@@ -64,6 +64,7 @@ import {
   generateImage,
   redrawImage,
   inpaintImage,
+  generateMobileInpaint,
   loadImageFile,
   loadImageFromPath,
   listAiModels,
@@ -232,6 +233,7 @@ import { registerWorldpainterKnowledgeIpc } from "./ipc/worldpainter-knowledge";
 import { registerGatewayWorkbenchIpc } from "./ipc/gateway-workbench";
 import { registerWorldpainterLegacyImportIpc } from "./ipc/worldpainter-legacy-import";
 import { loadArtistPromptPresetLibrary, appendArtistPromptPresets } from "./ipc/artist-prompt-presets";
+import { saveMobileInpaint, assertMobileInpaintAccount, pickMobileInpaintSource, readMobileInpaintSource } from './ipc/mobile-inpaint';
 import { localSrGetStatus, localSrChooseRuntimeDirectory, localSrPickSource, localSrRun, localSrCancel } from "./ipc/local-super-resolution";
 import {
   downloadUpdate,
@@ -1070,6 +1072,14 @@ ipcMain.handle("artistDetective:downloadDirectory", () => detectiveDownloadDirec
       region?: import('../src/focused-inpaint').InpaintRegion,
     ) => inpaintImage(params, inpaintModel, maskBase64, strength, noise, region),
   );
+  accountBoundHandle('nai:mobileInpaint', (_event, request: import('../src/types').MobileInpaintRequest) => {
+    try { assertMobileInpaintAccount(request, { accountId: currentNaiAccount()?.id, revision: naiAccountRevision() }); }
+    catch (error) { return { ok: false, items: [], message: error instanceof Error ? error.message : '账户状态已变化，未提交。' }; }
+    return generateMobileInpaint(request);
+  });
+  ipcMain.handle('mobile-inpaint:pick-source', () => pickMobileInpaintSource());
+  ipcMain.handle('mobile-inpaint:read-source', (_event, filePath: string) => readMobileInpaintSource(filePath));
+  ipcMain.handle('mobile-inpaint:save', (_event, base64: string) => saveMobileInpaint(base64));
     accountBoundHandle("nai:upscale", (_event, scale: UpscaleScale, model: string) =>
       upscaleImg(scale, model),
     );

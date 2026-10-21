@@ -1,0 +1,16 @@
+[
+  {
+    "manifest": "agent-before.json",
+    "count": 59,
+    "missing": 0,
+    "changed": 0,
+    "manifestSha256": "00e42a7b8757e094d8a37bf8f63d9bfa525d3ed67ef9a3781c041dd4996ffc9a"
+  },
+  {
+    "manifest": "untracked-before.json",
+    "count": 178,
+    "missing": 0,
+    "changed": 0,
+    "manifestSha256": "4106927427b0f31ba006f1a5b6d1d7e7b832020636d0a50d0024dc1142394204"
+  }
+]

@@ -1,0 +1,4323 @@
+[
+  {
+    "at": "2026-10-20T10:28:29.944Z",
+    "action": "click",
+    "x": 1105,
+    "y": 185,
+    "label": "a-before-skip-welcome",
+    "screenshot": {
+      "file": "002-a-before-skip-welcome.png",
+      "pixels": {
+        "width": 1733,
+        "height": 1128
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 903
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 902
+      },
+      "viewport": {
+        "width": 1386,
+        "height": 902,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:28:32.570Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "a-before-1280-parameter-first",
+    "screenshot": {
+      "file": "003-a-before-1280-parameter-first.png",
+      "pixels": {
+        "width": 1733,
+        "height": 1128
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 903
+      },
+      "contentBounds": {
+        "x": -25593,
+        "y": -25600,
+        "width": 0,
+        "height": 0
+      },
+      "viewport": {
+        "width": 1386,
+        "height": 902,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:28:35.209Z",
+    "action": "wheel",
+    "x": 260,
+    "y": 430,
+    "dy": 376,
+    "label": "a-before-scroll-to-prompts",
+    "screenshot": {
+      "file": "004-a-before-scroll-to-prompts.png",
+      "pixels": {
+        "width": 1733,
+        "height": 1128
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1386,
+        "height": 903
+      },
+      "contentBounds": {
+        "x": -25593,
+        "y": -25600,
+        "width": 0,
+        "height": 0
+      },
+      "viewport": {
+        "width": 1386,
+        "height": 902,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:29:09.652Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:30:45.964Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "a-valid-before-1280",
+    "screenshot": {
+      "file": "006-a-valid-before-1280.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:31:36.738Z",
+    "action": "wheel",
+    "x": 260,
+    "y": 430,
+    "dy": 365,
+    "label": "a-valid-before-scroll-prompt",
+    "screenshot": {
+      "file": "007-a-valid-before-scroll-prompt.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:31:56.664Z",
+    "action": "click",
+    "x": 240,
+    "y": 510,
+    "label": "a-before-account-collapse",
+    "screenshot": {
+      "file": "008-a-before-account-collapse.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:32:14.368Z",
+    "action": "click",
+    "x": 240,
+    "y": 569,
+    "label": "a-before-account-restore-expanded",
+    "screenshot": {
+      "file": "009-a-before-account-restore-expanded.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:32:14.932Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:35:42.041Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "a-after-1280-parameter-first",
+    "screenshot": {
+      "file": "011-a-after-1280-parameter-first.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:09.078Z",
+    "action": "click",
+    "x": 240,
+    "y": 605,
+    "label": "a-after-account-expanded",
+    "screenshot": {
+      "file": "012-a-after-account-expanded.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:11.816Z",
+    "action": "click",
+    "x": 206,
+    "y": 269,
+    "label": "a-after-jump-prompt",
+    "screenshot": {
+      "file": "013-a-after-jump-prompt.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:14.549Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-after-prompt-reachable",
+    "screenshot": {
+      "file": "014-a-after-prompt-reachable.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": ""
+      },
+      "visibleHeight": 131.10000610351562,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:30.022Z",
+    "action": "type",
+    "text": "UIUX_A_POSITIVE_KEEP, blue square, soft light",
+    "label": "a-positive-draft",
+    "screenshot": {
+      "file": "015-a-positive-draft.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:33.054Z",
+    "action": "click",
+    "x": 290,
+    "y": 314,
+    "label": "a-negative-tab",
+    "screenshot": {
+      "file": "016-a-negative-tab.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:35.561Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "a-negative-select",
+    "screenshot": {
+      "file": "017-a-negative-select.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:38.576Z",
+    "action": "type",
+    "text": "UIUX_A_NEGATIVE_KEEP, blurry",
+    "label": "a-negative-draft",
+    "screenshot": {
+      "file": "018-a-negative-draft.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:41.343Z",
+    "action": "click",
+    "x": 79,
+    "y": 269,
+    "label": "a-return-model-from-negative",
+    "screenshot": {
+      "file": "019-a-return-model-from-negative.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:42.854Z",
+    "action": "generation-check",
+    "expected": "model",
+    "label": "a-model-reachable",
+    "error": "Generation focus target is not reachable: {\"buttons\":[{\"text\":\"模型 / 风格\",\"rect\":{\"x\":34.79999923706055,\"y\":254.40000915527344,\"width\":111.4625015258789,\"height\":27,\"bottom\":281.40000915527344,\"right\":146.26250076293945},\"inside\":true,\"hit\":true},{\"text\":\"提示词\",\"rect\":{\"x\":152.2624969482422,\"y\":254.40000915527344,\"width\":111.4749984741211,\"height\":27,\"bottom\":281.40000915527344,\"right\":263.7374954223633},\"inside\":true,\"hit\":true},{\"text\":\"尺寸 / Seed\",\"rect\":{\"x\":269.7375183105469,\"y\":254.40000915527344,\"width\":111.4625015258789,\"height\":27,\"bottom\":281.40000915527344,\"right\":381.2000198364258},\"inside\":true,\"hit\":true}],\"panel\":{\"x\":18.80000114440918,\"y\":288.20001220703125,\"width\":378.3999938964844,\"height\":189.5,\"bottom\":477.70001220703125,\"right\":397.19999504089355},\"scrollTop\":8,\"section\":null,\"expected\":\"model\",\"focused\":{\"tag\":\"BUTTON\",\"rect\":{\"x\":1136,\"y\":0,\"width\":48,\"height\":37.20000076293945,\"bottom\":37.20000076293945,\"right\":1184},\"value\":\"\"},\"visibleHeight\":0,\"theme\":\"dark\"}"
+  },
+  {
+    "at": "2026-10-20T10:36:46.121Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-return-prompt-keeps-negative",
+    "screenshot": {
+      "file": "020-a-return-prompt-keeps-negative.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:36:49.379Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-negative-tab-retained",
+    "screenshot": {
+      "file": "021-a-negative-tab-retained.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": ""
+      },
+      "visibleHeight": 131.10000610351562,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:38:12.937Z",
+    "action": "click",
+    "x": 79,
+    "y": 269,
+    "label": "a-model-focus-recheck",
+    "screenshot": {
+      "file": "022-a-model-focus-recheck.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:38:15.949Z",
+    "action": "generation-check",
+    "expected": "model",
+    "label": "a-model-focus-recheck-assert",
+    "screenshot": {
+      "file": "023-a-model-focus-recheck-assert.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 8,
+      "section": "model",
+      "expected": "model",
+      "focused": {
+        "tag": "BUTTON",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 345.20001220703125,
+          "width": 341.6000061035156,
+          "height": 34,
+          "bottom": 379.20001220703125,
+          "right": 376.4000053405762
+        },
+        "value": ""
+      },
+      "visibleHeight": 34,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:38:49.796Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-negative-focus-for-edit",
+    "screenshot": {
+      "file": "024-a-negative-focus-for-edit.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:38:52.558Z",
+    "action": "type",
+    "text": "UIUX_A_NEGATIVE_KEEP, blurry",
+    "label": "a-negative-entered-in-editor",
+    "screenshot": {
+      "file": "025-a-negative-entered-in-editor.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:38:55.314Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-negative-value-confirmed",
+    "screenshot": {
+      "file": "026-a-negative-value-confirmed.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_NEGATIVE_KEEP, blurry"
+      },
+      "visibleHeight": 131.10000610351562,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:38:58.043Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:40:19.675Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:42:16.811Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "a-final-1280-expanded",
+    "screenshot": {
+      "file": "029-a-final-1280-expanded.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:19.636Z",
+    "action": "click",
+    "x": 79,
+    "y": 269,
+    "label": "a-final-model-jump",
+    "screenshot": {
+      "file": "030-a-final-model-jump.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:22.406Z",
+    "action": "generation-check",
+    "expected": "model",
+    "label": "a-final-model-focus",
+    "screenshot": {
+      "file": "031-a-final-model-focus.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 8,
+      "section": "model",
+      "expected": "model",
+      "focused": {
+        "tag": "BUTTON",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 345.20001220703125,
+          "width": 341.6000061035156,
+          "height": 34,
+          "bottom": 379.20001220703125,
+          "right": 376.4000053405762
+        },
+        "value": ""
+      },
+      "visibleHeight": 34,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:25.157Z",
+    "action": "key",
+    "key": "Shift+Tab",
+    "label": "a-keyboard-model-to-furry",
+    "screenshot": {
+      "file": "032-a-keyboard-model-to-furry.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:27.914Z",
+    "action": "key",
+    "key": "Shift+Tab",
+    "label": "a-keyboard-to-size-link",
+    "screenshot": {
+      "file": "033-a-keyboard-to-size-link.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:30.933Z",
+    "action": "key",
+    "key": "Shift+Tab",
+    "label": "a-keyboard-to-prompt-link",
+    "screenshot": {
+      "file": "034-a-keyboard-to-prompt-link.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:33.678Z",
+    "action": "key",
+    "key": "Enter",
+    "label": "a-keyboard-activate-prompt",
+    "screenshot": {
+      "file": "035-a-keyboard-activate-prompt.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:36.687Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-final-keyboard-prompt-focus",
+    "screenshot": {
+      "file": "036-a-final-keyboard-prompt-focus.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_POSITIVE_KEEP, blue square, soft light"
+      },
+      "visibleHeight": 131.10000610351562,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:39.446Z",
+    "action": "click",
+    "x": 325,
+    "y": 269,
+    "label": "a-final-size-jump",
+    "screenshot": {
+      "file": "037-a-final-size-jump.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:42:42.491Z",
+    "action": "generation-check",
+    "expected": "size",
+    "label": "a-final-size-focus",
+    "screenshot": {
+      "file": "038-a-final-size-focus.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 765.5999755859375,
+      "section": "size",
+      "expected": "size",
+      "focused": {
+        "tag": "INPUT",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 406.6000061035156,
+          "width": 156.8000030517578,
+          "height": 40.79999923706055,
+          "bottom": 447.4000053405762,
+          "right": 191.60000228881836
+        },
+        "value": "832"
+      },
+      "visibleHeight": 40.79999923706055,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:43:07.324Z",
+    "action": "resize",
+    "width": 1440,
+    "height": 900,
+    "label": "a-final-1440-size",
+    "screenshot": {
+      "file": "039-a-final-1440-size.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:43:10.109Z",
+    "action": "generation-check",
+    "expected": "size",
+    "label": "a-final-1440-size-focus",
+    "screenshot": {
+      "file": "040-a-final-1440-size-focus.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 765.5999755859375,
+      "section": "size",
+      "expected": "size",
+      "focused": {
+        "tag": "INPUT",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 406.6000061035156,
+          "width": 156.8000030517578,
+          "height": 40.79999923706055,
+          "bottom": 447.4000053405762,
+          "right": 191.60000228881836
+        },
+        "value": "832"
+      },
+      "visibleHeight": 40.79999923706055,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:43:12.910Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "a-width-select",
+    "screenshot": {
+      "file": "041-a-width-select.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:43:15.703Z",
+    "action": "type",
+    "text": "1024",
+    "label": "a-width-uncommitted",
+    "screenshot": {
+      "file": "042-a-width-uncommitted.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:43:18.508Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-width-blur-via-prompt-link",
+    "screenshot": {
+      "file": "043-a-width-blur-via-prompt-link.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:43:21.556Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-width-edit-preserves-prompt",
+    "screenshot": {
+      "file": "044-a-width-edit-preserves-prompt.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 330.3999938964844,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 347.3999938964844,
+          "width": 340,
+          "height": 240,
+          "bottom": 587.3999938964844,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_POSITIVE_KEEP, blue square, soft light"
+      },
+      "visibleHeight": 240,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:43:25.190Z",
+    "action": "click",
+    "x": 325,
+    "y": 269,
+    "label": "a-size-return-for-seed",
+    "screenshot": {
+      "file": "045-a-size-return-for-seed.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:43:49.868Z",
+    "action": "click",
+    "x": 290,
+    "y": 490,
+    "label": "a-fixed-seed-mode",
+    "screenshot": {
+      "file": "046-a-fixed-seed-mode.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:44:19.608Z",
+    "action": "click",
+    "x": 155,
+    "y": 559,
+    "label": "a-seed-value-focus",
+    "screenshot": {
+      "file": "047-a-seed-value-focus.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:44:22.396Z",
+    "action": "key",
+    "key": "Control+A",
+    "label": "a-seed-select",
+    "screenshot": {
+      "file": "048-a-seed-select.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:44:25.677Z",
+    "action": "type",
+    "text": "424242",
+    "label": "a-seed-entered",
+    "screenshot": {
+      "file": "049-a-seed-entered.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:44:28.496Z",
+    "action": "click",
+    "x": 79,
+    "y": 269,
+    "label": "a-model-return-for-style",
+    "screenshot": {
+      "file": "050-a-model-return-for-style.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:44:31.270Z",
+    "action": "generation-check",
+    "expected": "model",
+    "label": "a-final-1440-model-focus",
+    "screenshot": {
+      "file": "051-a-final-1440-model-focus.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 8,
+      "section": "model",
+      "expected": "model",
+      "focused": {
+        "tag": "BUTTON",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 345.20001220703125,
+          "width": 341.6000061035156,
+          "height": 34,
+          "bottom": 379.20001220703125,
+          "right": 376.4000053405762
+        },
+        "value": ""
+      },
+      "visibleHeight": 34,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:03.756Z",
+    "action": "click",
+    "x": 175,
+    "y": 499,
+    "label": "a-style-focus",
+    "screenshot": {
+      "file": "052-a-style-focus.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:06.522Z",
+    "action": "type",
+    "text": "artist:uiux_synthetic, watercolor",
+    "label": "a-style-entered",
+    "screenshot": {
+      "file": "053-a-style-entered.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:09.228Z",
+    "action": "click",
+    "x": 520,
+    "y": 108,
+    "label": "a-switch-metadata-page",
+    "screenshot": {
+      "file": "054-a-switch-metadata-page.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:12.003Z",
+    "action": "click",
+    "x": 58,
+    "y": 108,
+    "label": "a-return-generation-page",
+    "screenshot": {
+      "file": "055-a-return-generation-page.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:15.025Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-prompt-after-page-switch",
+    "screenshot": {
+      "file": "056-a-prompt-after-page-switch.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:17.786Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-positive-after-page-switch",
+    "screenshot": {
+      "file": "057-a-positive-after-page-switch.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_POSITIVE_KEEP, blue square, soft light"
+      },
+      "visibleHeight": 240,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:20.808Z",
+    "action": "click",
+    "x": 290,
+    "y": 314,
+    "label": "a-negative-after-page-switch-tab",
+    "screenshot": {
+      "file": "058-a-negative-after-page-switch-tab.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:23.562Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-negative-after-page-switch-focus",
+    "screenshot": {
+      "file": "059-a-negative-after-page-switch-focus.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:26.581Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-negative-after-page-switch-value",
+    "screenshot": {
+      "file": "060-a-negative-after-page-switch-value.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_NEGATIVE_KEEP, blurry"
+      },
+      "visibleHeight": 240,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:52.493Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "a-theme-1280",
+    "screenshot": {
+      "file": "061-a-theme-1280.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:55.265Z",
+    "action": "click",
+    "x": 1140,
+    "y": 60,
+    "label": "a-open-settings",
+    "screenshot": {
+      "file": "062-a-open-settings.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:45:58.313Z",
+    "action": "click",
+    "x": 190,
+    "y": 559,
+    "label": "a-open-appearance",
+    "screenshot": {
+      "file": "063-a-open-appearance.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:01.011Z",
+    "action": "click",
+    "x": 700,
+    "y": 159,
+    "label": "a-theme-menu",
+    "screenshot": {
+      "file": "064-a-theme-menu.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:03.980Z",
+    "action": "click",
+    "x": 365,
+    "y": 205,
+    "label": "a-select-light",
+    "screenshot": {
+      "file": "065-a-select-light.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:06.726Z",
+    "action": "click",
+    "x": 1150,
+    "y": 660,
+    "label": "a-close-settings-light",
+    "screenshot": {
+      "file": "066-a-close-settings-light.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:09.507Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-light-prompt-jump",
+    "screenshot": {
+      "file": "067-a-light-prompt-jump.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:12.509Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-final-1280-light-prompt",
+    "screenshot": {
+      "file": "068-a-final-1280-light-prompt.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_NEGATIVE_KEEP, blurry"
+      },
+      "visibleHeight": 131.10000610351562,
+      "theme": "light"
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:15.266Z",
+    "action": "click",
+    "x": 325,
+    "y": 269,
+    "label": "a-light-size-jump",
+    "screenshot": {
+      "file": "069-a-light-size-jump.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:18.514Z",
+    "action": "generation-check",
+    "expected": "size",
+    "label": "a-final-1280-light-size",
+    "screenshot": {
+      "file": "070-a-final-1280-light-size.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 765.5999755859375,
+      "section": "size",
+      "expected": "size",
+      "focused": {
+        "tag": "INPUT",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 406.6000061035156,
+          "width": 156.8000030517578,
+          "height": 40.79999923706055,
+          "bottom": 447.4000053405762,
+          "right": 191.60000228881836
+        },
+        "value": "1024"
+      },
+      "visibleHeight": 40.79999923706055,
+      "theme": "light"
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:48.002Z",
+    "action": "click",
+    "x": 79,
+    "y": 269,
+    "label": "a-light-model-jump",
+    "screenshot": {
+      "file": "071-a-light-model-jump.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:50.754Z",
+    "action": "generation-check",
+    "expected": "model",
+    "label": "a-final-1280-light-model",
+    "screenshot": {
+      "file": "072-a-final-1280-light-model.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 189.5,
+        "bottom": 477.70001220703125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 8,
+      "section": "model",
+      "expected": "model",
+      "focused": {
+        "tag": "BUTTON",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 345.20001220703125,
+          "width": 341.6000061035156,
+          "height": 34,
+          "bottom": 379.20001220703125,
+          "right": 376.4000053405762
+        },
+        "value": ""
+      },
+      "visibleHeight": 34,
+      "theme": "light"
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:53.552Z",
+    "action": "resize",
+    "width": 1440,
+    "height": 900,
+    "label": "a-final-1440-light",
+    "screenshot": {
+      "file": "073-a-final-1440-light.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:56.575Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-1440-light-prompt-jump",
+    "screenshot": {
+      "file": "074-a-1440-light-prompt-jump.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:46:59.601Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-final-1440-light-prompt",
+    "screenshot": {
+      "file": "075-a-final-1440-light-prompt.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_NEGATIVE_KEEP, blurry"
+      },
+      "visibleHeight": 240,
+      "theme": "light"
+    }
+  },
+  {
+    "at": "2026-10-20T10:47:02.666Z",
+    "action": "resize",
+    "width": 1920,
+    "height": 1080,
+    "label": "a-final-1920-light",
+    "screenshot": {
+      "file": "076-a-final-1920-light.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:47:05.722Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-final-1920-light-prompt",
+    "screenshot": {
+      "file": "077-a-final-1920-light-prompt.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 547.1000366210938,
+        "bottom": 835.300048828125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_NEGATIVE_KEEP, blurry"
+      },
+      "visibleHeight": 240,
+      "theme": "light"
+    }
+  },
+  {
+    "at": "2026-10-20T10:47:49.266Z",
+    "action": "resize",
+    "width": 1280,
+    "height": 720,
+    "label": "a-return-small-for-dark",
+    "screenshot": {
+      "file": "078-a-return-small-for-dark.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:47:51.988Z",
+    "action": "click",
+    "x": 1140,
+    "y": 60,
+    "label": "a-settings-for-dark",
+    "screenshot": {
+      "file": "079-a-settings-for-dark.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:47:54.708Z",
+    "action": "click",
+    "x": 190,
+    "y": 559,
+    "label": "a-appearance-for-dark",
+    "screenshot": {
+      "file": "080-a-appearance-for-dark.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:47:57.443Z",
+    "action": "click",
+    "x": 700,
+    "y": 159,
+    "label": "a-dark-menu",
+    "screenshot": {
+      "file": "081-a-dark-menu.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:48:00.691Z",
+    "action": "click",
+    "x": 365,
+    "y": 239,
+    "label": "a-select-dark",
+    "screenshot": {
+      "file": "082-a-select-dark.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:48:03.702Z",
+    "action": "click",
+    "x": 1150,
+    "y": 660,
+    "label": "a-close-settings-dark",
+    "screenshot": {
+      "file": "083-a-close-settings-dark.png",
+      "pixels": {
+        "width": 1600,
+        "height": 903
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 723
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1280,
+        "height": 722
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 722,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:48:07.290Z",
+    "action": "resize",
+    "width": 1920,
+    "height": 1080,
+    "label": "a-final-1920-dark",
+    "screenshot": {
+      "file": "084-a-final-1920-dark.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:48:10.427Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-1920-dark-prompt-jump",
+    "screenshot": {
+      "file": "085-a-1920-dark-prompt-jump.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:48:13.771Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-final-1920-dark-prompt",
+    "screenshot": {
+      "file": "086-a-final-1920-dark-prompt.png",
+      "pixels": {
+        "width": 2400,
+        "height": 1350
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1921,
+        "height": 1081
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1920,
+        "height": 1080
+      },
+      "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 547.1000366210938,
+        "bottom": 835.300048828125,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_NEGATIVE_KEEP, blurry"
+      },
+      "visibleHeight": 240,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:48:15.692Z",
+    "action": "close",
+    "closed": true
+  },
+  {
+    "at": "2026-10-20T10:49:47.490Z",
+    "action": "resize",
+    "width": 1440,
+    "height": 900,
+    "label": "a-cold-1440-restored",
+    "screenshot": {
+      "file": "088-a-cold-1440-restored.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:49:50.589Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-cold-positive-jump",
+    "screenshot": {
+      "file": "089-a-cold-positive-jump.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:49:53.881Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-final-cold-positive-draft",
+    "screenshot": {
+      "file": "090-a-final-cold-positive-draft.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_POSITIVE_KEEP, blue square, soft light"
+      },
+      "visibleHeight": 240,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:49:56.924Z",
+    "action": "click",
+    "x": 290,
+    "y": 314,
+    "label": "a-cold-negative-tab",
+    "screenshot": {
+      "file": "091-a-cold-negative-tab.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:50:07.219Z",
+    "action": "click",
+    "x": 207,
+    "y": 269,
+    "label": "a-cold-negative-jump",
+    "screenshot": {
+      "file": "092-a-cold-negative-jump.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:50:26.555Z",
+    "action": "generation-check",
+    "expected": "prompt",
+    "label": "a-final-cold-negative-draft",
+    "screenshot": {
+      "file": "093-a-final-cold-negative-draft.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 331.20001220703125,
+      "section": "prompt",
+      "expected": "prompt",
+      "focused": {
+        "tag": "TEXTAREA",
+        "rect": {
+          "x": 35.60000228881836,
+          "y": 346.6000061035156,
+          "width": 340,
+          "height": 240,
+          "bottom": 586.6000061035156,
+          "right": 375.60000228881836
+        },
+        "value": "UIUX_A_NEGATIVE_KEEP, blurry"
+      },
+      "visibleHeight": 240,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:50:29.586Z",
+    "action": "click",
+    "x": 325,
+    "y": 269,
+    "label": "a-cold-size-seed-values",
+    "screenshot": {
+      "file": "094-a-cold-size-seed-values.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:50:33.641Z",
+    "action": "generation-check",
+    "expected": "size",
+    "label": "a-final-cold-width-draft",
+    "screenshot": {
+      "file": "095-a-final-cold-width-draft.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 765.5999755859375,
+      "section": "size",
+      "expected": "size",
+      "focused": {
+        "tag": "INPUT",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 406.6000061035156,
+          "width": 156.8000030517578,
+          "height": 40.79999923706055,
+          "bottom": 447.4000053405762,
+          "right": 191.60000228881836
+        },
+        "value": "1024"
+      },
+      "visibleHeight": 40.79999923706055,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:50:36.923Z",
+    "action": "click",
+    "x": 79,
+    "y": 269,
+    "label": "a-cold-style-visible",
+    "screenshot": {
+      "file": "096-a-cold-style-visible.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    }
+  },
+  {
+    "at": "2026-10-20T10:50:45.335Z",
+    "action": "generation-check",
+    "expected": "model",
+    "label": "a-final-cold-model-style",
+    "screenshot": {
+      "file": "097-a-final-cold-model-style.png",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 901
+      },
+      "contentBounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1440,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    "checks": {
+      "buttons": [
+        {
+          "text": "模型 / 风格",
+          "rect": {
+            "x": 34.79999923706055,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 146.26250076293945
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "提示词",
+          "rect": {
+            "x": 152.2624969482422,
+            "y": 254.40000915527344,
+            "width": 111.4749984741211,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 263.7374954223633
+          },
+          "inside": true,
+          "hit": true
+        },
+        {
+          "text": "尺寸 / Seed",
+          "rect": {
+            "x": 269.7375183105469,
+            "y": 254.40000915527344,
+            "width": 111.4625015258789,
+            "height": 27,
+            "bottom": 281.40000915527344,
+            "right": 381.2000198364258
+          },
+          "inside": true,
+          "hit": true
+        }
+      ],
+      "panel": {
+        "x": 18.80000114440918,
+        "y": 288.20001220703125,
+        "width": 378.3999938964844,
+        "height": 367.1000061035156,
+        "bottom": 655.3000183105469,
+        "right": 397.19999504089355
+      },
+      "scrollTop": 8,
+      "section": "model",
+      "expected": "model",
+      "focused": {
+        "tag": "BUTTON",
+        "rect": {
+          "x": 34.79999923706055,
+          "y": 345.20001220703125,
+          "width": 341.6000061035156,
+          "height": 34,
+          "bottom": 379.20001220703125,
+          "right": 376.4000053405762
+        },
+        "value": ""
+      },
+      "visibleHeight": 34,
+      "theme": "dark"
+    }
+  },
+  {
+    "at": "2026-10-20T10:50:48.976Z",
+    "action": "close",
+    "closed": true
+  }
+]

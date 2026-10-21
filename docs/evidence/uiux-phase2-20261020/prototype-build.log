@@ -1,0 +1,14 @@
+vite v8.0.16 building client environment for production...
+
+ WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false instead.
+
+[2K
+transforming...鉁?42 modules transformed.
+rendering chunks...
+computing gzip size...
+.tmp/uiux-prototype-build/index.html                   0.37 kB 鈹?gzip:  0.31 kB
+.tmp/uiux-prototype-build/assets/style-DdufpzaP.css  614.70 kB 鈹?gzip: 97.82 kB
+.tmp/uiux-prototype-build/assets/index-BWAKTu8_.js   260.97 kB 鈹?gzip: 82.39 kB
+
+鉁?built in 249ms
+{"target":"E:\\Codex鏃犻」鐩枃浠跺す\\2026-10-20\\task\\uiux-workspace\\docs\\prototypes\\uiux-20261020\\workbench.html","bytes":876128,"network":"CSP connect-src none; no business IPC","components":["Button","SelectMenu","CommittedNumberInput","EffortControl","ResolutionPicker"]}

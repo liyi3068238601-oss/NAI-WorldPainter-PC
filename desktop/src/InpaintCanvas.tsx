@@ -363,6 +363,8 @@ export function InpaintCanvas() {
       target instanceof HTMLElement &&
       Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
     const keyDown = (event: KeyboardEvent) => {
+      // Hidden legacy canvas must not consume mobile workspace shortcuts.
+      if (!canvasRef.current?.getClientRects().length) return;
       if (event.code === "Space" && !isEditable(event.target)) {
         event.preventDefault();
         spaceHeldRef.current = true;

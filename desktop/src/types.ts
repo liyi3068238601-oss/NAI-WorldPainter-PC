@@ -1047,6 +1047,23 @@ export interface SingleImageResult {
   item?: HistoryItem;
 }
 
+export interface MobileInpaintRequest {
+  /** Phone sampling snapshot, kept outside the older desktop workbench enum. */
+  sampling?: {sampler: string; noiseSchedule: string};
+  /** Runtime-only frozen account stamp; no credential material. A missing/stale stamp is rejected at IPC. */
+  expectedAccountId?: string;
+  expectedAccountRevision?: string;
+  params: GenerateParams;
+  model: NAIInpaintModel;
+  imageBase64: string;
+  maskBase64: string;
+  strength: number;
+  /** Kept in the draft for phone parity; the mobile official transport omits these three fields. */
+  noise: number;
+  ignoreSource: boolean;
+  colorCorrection: boolean;
+}
+
 export interface LoadImageResult {
   ok: boolean;
   image?: WorkingImage;
@@ -2061,6 +2078,10 @@ export interface NaiDesktopApi {
   /** ON-only desktop copy. Non-copied results require ordinary copy + notice. */
   copyImageWithMetadata?: (srcURL: string) => Promise<CopyImageMetadataResult>;
   savePastedImageFiles: (images: Array<{name:string;bytes:Uint8Array}>) => Promise<string[]>;
+  pickMobileInpaintSource: () => Promise<LoadImageResult>;
+  readMobileInpaintSource: (filePath: string) => Promise<LoadImageResult>;
+  mobileInpaint: (request: MobileInpaintRequest) => Promise<GenerateResult>;
+  saveMobileInpaint: (base64: string) => Promise<LoadImageResult>;
   loadImage: () => Promise<LoadImageResult>;
   loadImageFromPath: (filePath: string) => Promise<LoadImageResult>;
   saveMetadataSnapshot: (payload: MetadataSnapshotPayload) => Promise<MetadataSnapshotResult>;

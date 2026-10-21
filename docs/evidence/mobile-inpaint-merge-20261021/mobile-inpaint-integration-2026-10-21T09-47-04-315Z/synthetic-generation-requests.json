@@ -1,0 +1,28 @@
+[
+  {
+    "number": 1,
+    "width": 256,
+    "height": 256,
+    "nonemptyMaskPixels": 58048,
+    "maskAlignedTo8x8": true,
+    "maskRgbaHash": "fb63aec5",
+    "maskPngSha256": "59596d689e17494a4bcb2bb9b6ee0d2bff2842084414b97e26de0470c10f72f3",
+    "positive": "synthetic cold-start positive",
+    "negative": "synthetic cold-start negative",
+    "imageSha256": "dce2c2f388569e415ef36164316b27c5fdf3c8a932291b0aa056c074c83ee5ac",
+    "note": "explicit IPC mock; synthetic source only; no provider/API/token/network request"
+  },
+  {
+    "number": 2,
+    "width": 256,
+    "height": 256,
+    "nonemptyMaskPixels": 58048,
+    "maskAlignedTo8x8": true,
+    "maskRgbaHash": "fb63aec5",
+    "maskPngSha256": "59596d689e17494a4bcb2bb9b6ee0d2bff2842084414b97e26de0470c10f72f3",
+    "positive": "synthetic cold-start positive",
+    "negative": "synthetic cold-start negative",
+    "imageSha256": "dce2c2f388569e415ef36164316b27c5fdf3c8a932291b0aa056c074c83ee5ac",
+    "note": "explicit IPC mock; synthetic source only; no provider/API/token/network request"
+  }
+]

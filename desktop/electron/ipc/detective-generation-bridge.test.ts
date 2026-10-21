@@ -31,9 +31,9 @@ describe("iteration host transport: real local TCP, no paid endpoint", () => {
     const p = await new Promise<number>(r => s.listen(0, "127.0.0.1", () => r((s.address() as any).port)));
     await new Promise<void>(r => s.close(() => r())); return p;
   };
-  const start = async (endpoint: string, settings = { proxyMode: "direct" }, budget = 3) => {
+  const start = async (endpoint: string, settings = { proxyMode: "direct" }, budget = 3, allowCustomHttp = false) => {
     const b = await startDetectiveGenerationBridge({ imageBaseUrl: endpoint, token,
-      settings: settings as AppSettings, budget }); bridges.push(b); return b;
+      settings: settings as AppSettings, budget, allowCustomHttp }); bridges.push(b); return b;
   };
   const post = (b: (typeof bridges)[number], body: unknown = payload(), headers = {}) =>
     axios.post(b.connection.url, body, { proxy: false, validateStatus: () => true,
@@ -120,5 +120,12 @@ describe("iteration host transport: real local TCP, no paid endpoint", () => {
   it("closes its listener idempotently instead of leaking per-run ports", async () => {
     const b = await start(await serve((q, s) => { q.resume(); s.end(); }));
     await Promise.all([b.close(), b.close()]); await expect(post(b)).rejects.toThrow();
+  });
+  it("accepts remote HTTP only for an opted-in custom endpoint and keeps NovelAI hosts HTTPS-only", async () => {
+    const optedIn = await start("http://relay.example:8765/custom", { proxyMode: "direct" }, 3, true);
+    expect(optedIn.connection.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/generate$/);
+    await expect(start("http://relay.example:8765/custom")).rejects.toThrow("Invalid frozen iteration transport binding");
+    await expect(start("http://image.novelai.net", { proxyMode: "direct", allowCustomEndpoint: true }, 3, true))
+      .rejects.toThrow("Invalid frozen iteration transport binding");
   });
 });

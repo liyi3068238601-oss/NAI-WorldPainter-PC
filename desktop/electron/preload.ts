@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('worldpainter', {
     selectProfile: id => ipcRenderer.invoke('gatewayWorkbench:selectProfile',id),
     removeProfile: id => ipcRenderer.invoke('gatewayWorkbench:removeProfile',id),
     prepare: request => ipcRenderer.invoke('gatewayWorkbench:prepare',request),
+    prepareMobileInpaint: request => ipcRenderer.invoke('gatewayWorkbench:prepareMobileInpaint',request),
     generate: input => ipcRenderer.invoke('gatewayWorkbench:generate',input),
     cancel: id => ipcRenderer.invoke('gatewayWorkbench:cancel',id),
   },
@@ -402,6 +403,10 @@ contextBridge.exposeInMainWorld("naiDesktop", {
       noise,
       region,
     ),
+  pickMobileInpaintSource: () => ipcRenderer.invoke('mobile-inpaint:pick-source'),
+  readMobileInpaintSource: (filePath: string) => ipcRenderer.invoke('mobile-inpaint:read-source', filePath),
+  mobileInpaint: (request: import('../src/types').MobileInpaintRequest) => ipcRenderer.invoke('nai:mobileInpaint', request),
+  saveMobileInpaint: (base64: string) => ipcRenderer.invoke('mobile-inpaint:save', base64),
   upscaleImage: (scale: UpscaleScale, model: string) =>
     ipcRenderer.invoke("nai:upscale", scale, model),
   augmentImage: (tool: DirectorTool, options: AugmentOptions) =>

@@ -5,7 +5,7 @@ const input = { label:'fixture', method:'token' as const, token:'synthetic-fixtu
 function setup(available=true) {
  let disk:AccountVaultDocument={version:1,accounts:[]};
  const cipher={isEncryptionAvailable:()=>available,encryptString:(s:string)=>Buffer.from(s.split('').reverse().join('')),decryptString:(b:Buffer)=>b.toString().split('').reverse().join('')};
- return {vault:new NaiAccountsVault(disk,cipher,d=>{disk=d;}),disk:()=>disk};
+ return {vault:new NaiAccountsVault(disk,cipher,d=>{disk=d;}),disk:()=>disk,cipher};
 }
 // Fake cipher tests policy only, not OS DPAPI availability.
 describe('account vault policy',()=>{
@@ -16,6 +16,18 @@ describe('account vault policy',()=>{
  it('binds frozen endpoints and locks deletion until idempotent release',()=>{const s=setup();s.vault.add('a',input);const lease=s.vault.bind('a');expect(Object.isFrozen(lease.snapshot)).toBe(true);expect(()=>s.vault.remove('a')).toThrow();lease.release();lease.release();s.vault.remove('a');expect(s.vault.list()).toHaveLength(0);});
  it('rejects official tokens on other hosts and relay tokens on official hosts',()=>{expect(()=>validateAccountProfile({...input,apiBaseUrl:'https://example.org'})).toThrow();expect(()=>validateAccountProfile({...input,method:'relay'})).toThrow();});
  it('rejects dashboard URLs and credential-bearing URLs',()=>{expect(()=>validateAccountProfile({...input,method:'relay',apiBaseUrl:'https://relay.example/dashboard/overview',imageBaseUrl:'https://relay.example'})).toThrow();expect(()=>validateAccountProfile({...input,method:'relay',apiBaseUrl:'https://u:p@relay.example',imageBaseUrl:'https://relay.example'})).toThrow();});
- it('normalizes dashboard only by explicit relay helper',()=>{expect(relayDashboardOrigin('https://newapi.chinahk.qzz.io/dashboard/overview')).toBe('https://newapi.chinahk.qzz.io');});
+ it('accepts custom relay HTTP endpoints and survives vault reload while keeping official accounts HTTPS-only',()=>{
+  const s=setup();
+  const relay={...input,method:'relay' as const,apiBaseUrl:'http://gateway.example:8765/v1',imageBaseUrl:'http://192.168.1.25:9000/images'};
+  const saved=s.vault.add('remote-relay',relay);
+  const loaded=new NaiAccountsVault(structuredClone(s.disk()),s.cipher,()=>{});
+  const lease=loaded.bind('remote-relay');
+  expect(lease.snapshot).toMatchObject({apiBaseUrl:relay.apiBaseUrl,imageBaseUrl:relay.imageBaseUrl,method:'relay'});
+  expect(loaded.list()).toContainEqual(saved);
+  lease.release();
+  expect(()=>validateAccountProfile({...input,apiBaseUrl:'http://api.novelai.net',imageBaseUrl:'https://image.novelai.net'})).toThrow();
+  expect(()=>validateAccountProfile({...input,method:'relay',apiBaseUrl:'http://api.novelai.net',imageBaseUrl:'http://image.novelai.net'})).toThrow();
+ });
+ it('normalizes dashboard only by explicit relay helper',()=>{expect(relayDashboardOrigin('https://newapi.chinahk.qzz.io/dashboard/overview')).toBe('https://newapi.chinahk.qzz.io');expect(relayDashboardOrigin('http://relay.example:8765/dashboard')).toBe('http://relay.example:8765');});
  it('retains old document when persistence fails',()=>{const s=setup();const v=new NaiAccountsVault(s.disk(),{isEncryptionAvailable:()=>true,encryptString:()=>Buffer.from('cipher'),decryptString:()=>''},()=>{throw new Error('disk');});expect(()=>v.add('a',input)).toThrow('disk');expect(v.list()).toHaveLength(0);});
 });

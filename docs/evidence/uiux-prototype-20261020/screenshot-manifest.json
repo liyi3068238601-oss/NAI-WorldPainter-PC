@@ -1,0 +1,614 @@
+{
+  "screenshots": [
+    {
+      "file": "001-cold-start.png",
+      "bytes": 142666,
+      "sha256": "0982a8a304705a1ef36b0034ae40130d8ae90911e5983b3558b43933968be1cf",
+      "pixels": {
+        "width": 1583,
+        "height": 822
+      },
+      "viewport": null
+    },
+    {
+      "file": "002-prototype-b-1280.png",
+      "bytes": 80561,
+      "sha256": "cbf26552cbc79c1dde9944d249e4bdfe5ac48354303cfce5b8e49c0d38c96665",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "003-prototype-positive-focus.png",
+      "bytes": 81883,
+      "sha256": "559e609645f9ade4d8ed0ada208728a8376d72fc6653d8a6395a3382a321a4ae",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "004-prototype-positive-draft.png",
+      "bytes": 81280,
+      "sha256": "3c53dc6ef41a9ffd37c5d0370b703e10a2609fa5544dd3232302beeb33b8c2f4",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "005-prototype-a-compare.png",
+      "bytes": 93220,
+      "sha256": "dc43fd43b0232a04dffc1d2399e6d4ca9d920b7ad842f44b431124c371e2be5d",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "006-prototype-b-return.png",
+      "bytes": 82315,
+      "sha256": "9771ffe67e0c32c423d89bd1571b99557e9403e6dbbe76f992fb905cb34860ab",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "007-prototype-agent-page.png",
+      "bytes": 55997,
+      "sha256": "11fd4d81907453e6bec3940bb41785f33626586d6f5f5f97f9b401b6ac9f200a",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "008-prototype-agent-draft-focus.png",
+      "bytes": 54304,
+      "sha256": "ff7ed3e67e41643a30400483c3146b0adfde346386bcc60d37acdd51a4f96a63",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "009-prototype-agent-text.png",
+      "bytes": 53374,
+      "sha256": "8625e330974cb3460f81e7d50d59d4a7a6c0190dfc506d706362692e8faa99ce",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "010-prototype-back-to-generation.png",
+      "bytes": 81985,
+      "sha256": "2be4fcad29fd4bfd8df127cc885624d8bab8c2661afeaa6077b4b5b091b36e28",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "011-prototype-agent-return.png",
+      "bytes": 55070,
+      "sha256": "4580f597c1a824a57e8d8de191ed2c8efb0bdcd1ab6083941fcab9de86e87fbe",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "012-prototype-agent-confirm.png",
+      "bytes": 60563,
+      "sha256": "706e9e5801ad4b913f3333d240efa45e2a2d517f4280468ef2a92603efd8094e",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "013-prototype-light-agent.png",
+      "bytes": 54432,
+      "sha256": "6e80161b97555a06ae1b4c0a349f9bf908694e070a50eb63f6e13374bc5752ef",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "014-prototype-light-generation.png",
+      "bytes": 77215,
+      "sha256": "31d445b60c77d5c9b7a265a389189852ea4af1188a4a89e2967fa54894a9ec48",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "015-prototype-generation-confirm.png",
+      "bytes": 81511,
+      "sha256": "8bb9b1fd789b1de409c991a6e8631860cfae525a7eb1e4a4c30f03ae4d0585f7",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "016-prototype-cancel-retains-draft.png",
+      "bytes": 72182,
+      "sha256": "6eda041f15cf6bda1d761297c2382684dc57bd57558b4885a68f486472e46762",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "017-prototype-confirm-again.png",
+      "bytes": 81511,
+      "sha256": "8bb9b1fd789b1de409c991a6e8631860cfae525a7eb1e4a4c30f03ae4d0585f7",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "018-prototype-confirm-run.png",
+      "bytes": 74872,
+      "sha256": "559dabf48b0366bf8035a41a5de3dbb5efe215366da4bb373781bfad8c3f649a",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "019-prototype-synthetic-result.png",
+      "bytes": 74944,
+      "sha256": "bb5e000e3308bca812859db4c0f0f1bd29b58df2650e231fe362844ae2139f2a",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "020-prototype-history-metadata.png",
+      "bytes": 84411,
+      "sha256": "20f2b2341f3d5f89b9073f0db54146b33462d8f24752d2f54c2c96fd0db9595a",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "021-prototype-real-parameter-components.png",
+      "bytes": 85526,
+      "sha256": "d56820bc0027dd2a06498e33057514ceec061cbd2c5c4741e24d23e2a967c4bf",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "022-prototype-seed-focus.png",
+      "bytes": 86140,
+      "sha256": "429f9e29c8075583ac7b66b775959db996f3e50e17830389def28f80353f0eae",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "023-prototype-seed-select.png",
+      "bytes": 86185,
+      "sha256": "935a5dfd2bb5ddcfda69183bac13a8d588d68ab323a482a822230029189949ab",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "024-prototype-seed-zero.png",
+      "bytes": 85857,
+      "sha256": "1e15584290cf8477673d3e2c20c1fb3cf6c757399fdedd7d9907e83d8e053605",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "025-prototype-seed-commit.png",
+      "bytes": 85161,
+      "sha256": "6fc0c2ea3a392a58d1de76a2f4d218130d306b889fcde98ed912fb8de131dec7",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "026-prototype-dark-parameters.png",
+      "bytes": 93524,
+      "sha256": "4c2b8f5dfc125150e57cd6d87bc05a31e9203d92e3c69a152db8090f4a8db726",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "027-prototype-inpaint-page.png",
+      "bytes": 104399,
+      "sha256": "2207e528284e43c0e4716ff549132d1a5d8dbeedb515fe04467896b813367732",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "028-prototype-mask-simulation.png",
+      "bytes": 105238,
+      "sha256": "956c4a3c91132db3eb1eda3087f35c0e9f4bfd8d0cfb1ecce38f8c266f54201e",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "029-prototype-creative-page.png",
+      "bytes": 51060,
+      "sha256": "f933e077e671b29b351cd533d5b514430b2b21a3fae957dc160aa3b6a534cf6c",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "030-prototype-material-page.png",
+      "bytes": 52564,
+      "sha256": "491051319c26e00465ea465fc1b4da8167ebe17e5e3f6370d58d3c55b7b3de58",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "031-prototype-comic-page.png",
+      "bytes": 51557,
+      "sha256": "9aec27f0e82b6635e2b475fb29f2c8ea0fe7413dcda9e83da06293e9a98df4bc",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "032-prototype-settings-page.png",
+      "bytes": 56459,
+      "sha256": "03a52fd9e08a8a5a271f84b8d0ae903e7d77052eb16d6bda33a824c22af65ae0",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "033-prototype-generation-return-after-pages.png",
+      "bytes": 95750,
+      "sha256": "4e978c7c2777ede4a89fcd3667d39c9dfc981499a9d389b0420628a16dabbd05",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "034-prototype-seed-retained-after-pages.png",
+      "bytes": 95436,
+      "sha256": "79a2011fca45adcaa7244cbf905bfdc2ed01d12ae7aaebe0fead9e51cff03969",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "035-prototype-b-1440.png",
+      "bytes": 110722,
+      "sha256": "c76d32459d17c3065f57f77b8f631b1529cbc4725a099064e984788fd24ebce2",
+      "pixels": {
+        "width": 1800,
+        "height": 1125
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "036-cold-start.png",
+      "bytes": 142666,
+      "sha256": "0982a8a304705a1ef36b0034ae40130d8ae90911e5983b3558b43933968be1cf",
+      "pixels": {
+        "width": 1583,
+        "height": 822
+      },
+      "viewport": null
+    },
+    {
+      "file": "037-final-prototype-b-dark.png",
+      "bytes": 80561,
+      "sha256": "cbf26552cbc79c1dde9944d249e4bdfe5ac48354303cfce5b8e49c0d38c96665",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "038-final-prototype-a-selected.png",
+      "bytes": 94734,
+      "sha256": "7d7138d2dadfb12dd09dd2a44f6586747dc43c255999af79d29429b40f2bebbe",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "039-final-prototype-b-selected.png",
+      "bytes": 82953,
+      "sha256": "6f5d08aed8bf980e97a2de405d869bb949216f13a0c04b06e6e32cf68f512cb4",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "040-final-prototype-b-light.png",
+      "bytes": 76971,
+      "sha256": "25e7ff1f2a52457980523f9f1f41eab87ad94f69d5b322ad049bfa1bff03e351",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "041-final-prototype-agent.png",
+      "bytes": 52523,
+      "sha256": "410caa1c4bd798315f355e83fdb436ecd6457d55853caf3357982b65bc6fa535",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "042-final-prototype-agent-focus.png",
+      "bytes": 49711,
+      "sha256": "8616263557b29e48283022919df34f7283462e35f222abc70f73950e13f99e9c",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "043-final-prototype-agent-draft.png",
+      "bytes": 49494,
+      "sha256": "2e3ec91c4b3589bf270c339bdfee21a04dd7091716bf0c8b03abf2d015e5fc06",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    },
+    {
+      "file": "044-final-prototype-agent-confirm-text.png",
+      "bytes": 56458,
+      "sha256": "a5c81c2c7ec0e42e2f5815c7b99d3b9dafc1f2914155d53cc48a6707eed7ed48",
+      "pixels": {
+        "width": 1600,
+        "height": 900
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720,
+        "dpr": 1.25
+      }
+    }
+  ],
+  "unaltered": true,
+  "prototype": true
+}

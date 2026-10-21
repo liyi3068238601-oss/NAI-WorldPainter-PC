@@ -1,4 +1,5 @@
 import type { GenerateParams, HistoryItem, ModelMode } from './types';
+import type { MobileInpaintRequest } from './types';
 
 export type GatewayProtocol = 'gateway7877' | 'ikun';
 
@@ -33,11 +34,18 @@ export interface GatewayPlanRequest {
   features?: GatewayDraftFeatures;
 }
 
+export interface GatewayMobileInpaintPlanRequest {
+  profileId: string;
+  request: MobileInpaintRequest;
+}
+
 export interface GatewayPlanPreview {
   planId: string;
   expiresAt: string;
   profileId: string;
   profileName: string;
+  /** Opaque credential revision, never the credential; freezes a mobile batch binding. */
+  profileRevision?: string;
   protocol: GatewayProtocol;
   endpoint: string;
   model: string;
@@ -51,6 +59,8 @@ export interface GatewayPlanPreview {
   sampler: string;
   noiseSchedule: string;
   seed: number;
+  /** Distinguishes the isolated mobile inpaint plan from the existing text-to-image plan. */
+  operation?: 'textToImage' | 'mobileInpaint';
   requestPayload: Record<string, unknown>;
 }
 
@@ -67,6 +77,7 @@ export interface GatewayWorkbenchApi {
   selectProfile(profileId: string): Promise<GatewayProfile[]>;
   removeProfile(profileId: string): Promise<GatewayProfile[]>;
   prepare(request: GatewayPlanRequest): Promise<GatewayPlanPreview>;
+  prepareMobileInpaint(request: GatewayMobileInpaintPlanRequest): Promise<GatewayPlanPreview>;
   generate(input: { planId: string; confirmed: true }): Promise<GatewayJobResult>;
   cancel(planId: string): Promise<{ accepted: boolean; message: string }>;
 }

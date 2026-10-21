@@ -1,0 +1,55 @@
+{
+  "generatedAt": "2026-10-21T09:44:21.8269997Z",
+  "targetBranch": "feat/agent-r4-refactor",
+  "targetParent": "f85f73ce841ecf106d452cd3779b95033e5a4282",
+  "sourceCommit": "cae6fa4e35adfbe2965b92abc9b740b80b4f6c11",
+  "tests": {
+    "passed": 4480,
+    "skipped": 2,
+    "failed": 0,
+    "filesPassed": 499,
+    "filesSkipped": 1,
+    "retry": 0
+  },
+  "checks": [
+    {
+      "command": "npm test -- --reporter=dot --retry 0",
+      "exitCode": 0,
+      "localLog": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\mobile-inpaint-target-20261021\\tests.log",
+      "sha256": "0a6681929b8f4650666d0b9e1909b26eb16e2c281549c7c64b2a8644ae5baa34"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "localLog": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\mobile-inpaint-target-20261021\\typecheck.log",
+      "sha256": "aa748c37c92bdf9da8621dfea69da38d7f81922d61b9ae32820364760ea82067"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "localLog": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\mobile-inpaint-target-20261021\\build.log",
+      "sha256": "c395acc0bb4d126d18753e2db9b9104c9e1bd69722adc36c109459d161e4f6b2"
+    }
+  ],
+  "protectedFiles": {
+    "agentCore": 59,
+    "originalUntracked": 178,
+    "missing": 0,
+    "changed": 0
+  },
+  "realProviderRequests": 0,
+  "limits": [
+    "Provider generation and file-picker GUI IPC is mocked with synthetic images.",
+    "Real billing, provider image quality, physical touch, DPI switching, and long-duration stability are not accepted by these checks.",
+    "Historical dot audit logs retain their original whitespace and historical failures; current results are in this receipt."
+  ],
+  "gui": {
+    "report": "mobile-inpaint-integration-2026-10-21T09-47-04-315Z/gui-integration-report.json",
+    "passed": 11,
+    "failed": 0,
+    "sha256": "46e71780d679d15fe297ab2f1fe9a70f29a33b4642d5905f39f1515693dd22ef",
+    "mockIPC": true,
+    "realProviderRequests": 0
+  },
+  "protectedFilesReceipt": "protected-files-verification.json"
+}

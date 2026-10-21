@@ -1,6 +1,9 @@
+import {MobileInpaintWorkspace,InpaintModePanel} from './MobileInpaintWorkspace';
 import { anlasBillingDisplay, visibleAnlasQuote, type ScopedAnlasQuote } from "./anlas-billing";
 import { McpServerSettings } from "./components/McpServerSettings";
 import { AgentProviderSettings } from "./components/AgentProviderSettings";
+import { GenerationSectionShortcuts } from "./components/GenerationSectionShortcuts";
+import { useV5MigrationNotice } from "./use-v5-migration-notice";
 import { studioUxText } from './agent/ux';
 import WorldpainterMaterialImport from "./components/WorldpainterMaterialImport";
 import LocalSuperResolutionSettings from "./components/LocalSuperResolutionSettings";
@@ -2017,7 +2020,7 @@ export function PromptAndParams({
   return (
     <>
       {includeModel && (
-        <div className="field">
+        <div className="field" data-generation-section="model">
           <div className="compact-model-label"><span>{generateText.prompt.model}</span><FurryModeSwitch checked={modelMode === "furry"} label={generateText.prompt.furryMode} onChange={checked=>switchModelMode(checked?"furry":"anime").catch(error=>setToast(String(error)))}/></div>
           <SelectMenuCompat value={params.model} onChange={(e) => setParam("model", e.target.value as GenerateParams["model"])}>
             {NAI_MODELS.filter((m) => supportsNAIModelMode(m.value, modelMode)).map((m) => (
@@ -2202,7 +2205,7 @@ export function PromptAndParams({
               </div>
             )}
       </CapsuleEditor>}
-      <div className="prompt-tabs">
+      <div className="prompt-tabs" data-generation-section="prompt">
         <button className={clsx(promptTab === "positive" && "active")} onClick={() => setPromptTab("positive")}>
           {generateText.prompt.positivePrompt}
         </button>
@@ -3241,6 +3244,7 @@ function AccountAndRunButton({
 
 // ── Generate panel (T2I) ──────────────────────────────────────────────────────
 function GeneratePanel({openSettings}:{openSettings:()=>void}) {
+  const panelRef = useRef<HTMLDivElement>(null);
   const imageProvider = useAppStore(state=>state.settings?.imageProvider);
   const language = useAppStore((state) => state.settings?.language);
   const generate = useAppStore((state) => state.generate);
@@ -3263,7 +3267,8 @@ function GeneratePanel({openSettings}:{openSettings:()=>void}) {
 
   return (
     <>
-      <div className="panel-scroll">
+      <GenerationSectionShortcuts panelRef={panelRef} language={language} />
+      <div ref={panelRef} id="generate-parameter-fields" className="panel-scroll">
         <AutomaticComparisonControl surface="generate:t2i" />
         <PromptAndParams />
         <CommittedNumberInput label={t("generate.batchCount")} value={batchCount} min={1} max={999} normalize={(value) => Math.max(1, Math.min(999, Math.round(value)))} onCommit={setBatchCount} />
@@ -4269,7 +4274,7 @@ function LeftPanel({ openSettings }: { openSettings: () => void }) {
               : <EnhancePanel openSettings={openSettings} />}
         </>
       )}
-      {activeTab === "inpaint" && <InpaintPanel openSettings={openSettings} />}
+      {activeTab === "inpaint" && <InpaintModePanel legacy={<InpaintPanel openSettings={openSettings} />} openSettings={openSettings}/>}
       {activeTab === "postprocess" && <PostprocessPanel openSettings={openSettings} />}
       {activeTab === "inspect" && <ReversePanel />}
       {activeTab === "convert" && <PromptConverterPanel />}
@@ -6912,8 +6917,6 @@ function VersionedModeTemplateEditor({
   );
 }
 
-const V5_MIGRATION_NOTICE_KEY = "langbai.notice.v5-model-migration.seen";
-const V5_MIGRATION_NOTICE_LEGACY_KEY = "langbai.notice.v5-model-migration.v2";
 const V5_MIGRATION_NOTICE_TEXT = {
   "zh-CN": {
     eyebrow: "模型更新提醒",
@@ -6960,24 +6963,12 @@ const V5_MIGRATION_NOTICE_TEXT = {
 function V5MigrationNotice() {
   const paramsModel = useAppStore((state) => state.params.model);
   const settings = useAppStore((state) => state.settings);
+  const bootDone = useAppStore((state) => state.bootDone);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
   const captureMode = new URLSearchParams(window.location.search).has("uiCapture");
-  const [dismissed, setDismissed] = useState(() => captureMode
-    || localStorage.getItem(V5_MIGRATION_NOTICE_KEY) === "seen"
-    || localStorage.getItem(V5_MIGRATION_NOTICE_LEGACY_KEY) === "dismissed");
-  const shouldShow = Boolean(settings && !dismissed && !isNAIV5Model(paramsModel));
-  useEffect(() => {
-    if (!shouldShow) return;
-    // Mark as seen when the dialog is first presented, not only after a button
-    // click, so a force-close while it is open cannot make it recur forever.
-    localStorage.setItem(V5_MIGRATION_NOTICE_KEY, "seen");
-  }, [shouldShow]);
+  const { shouldShow, dismiss } = useV5MigrationNotice(Boolean(bootDone && settings), paramsModel, captureMode);
   if (!shouldShow || !settings) return null;
   const text = V5_MIGRATION_NOTICE_TEXT[settings.language ?? "zh-CN"] ?? V5_MIGRATION_NOTICE_TEXT["zh-CN"];
-  const dismiss = () => {
-    localStorage.setItem(V5_MIGRATION_NOTICE_KEY, "seen");
-    setDismissed(true);
-  };
   return (
     <AppPortal>
       <div className="modal-backdrop v5-migration-backdrop">
@@ -7251,7 +7242,7 @@ function MainPage() {
             </PersistentCanvasSurface>
             <PersistentCanvasSurface active={activeTab === "inpaint"}>
               <Suspense fallback={<div className="lazy-tool-loading">{t("tool.loadingInpaint")}</div>}>
-                <InpaintCanvas />
+                <MobileInpaintWorkspace><InpaintCanvas /></MobileInpaintWorkspace>
               </Suspense>
             </PersistentCanvasSurface>
           </div>

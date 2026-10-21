@@ -1,0 +1,57 @@
+{
+  "run": "E:\\Codex无项目文件夹\\2026-10-20\\task\\uiux-workspace\\desktop\\.tmp\\uiux-1792548500063",
+  "metadata": {
+    "electron": "42.11.0",
+    "chrome": "148.0.7778.280",
+    "node": "24.19.0",
+    "platform": "win32",
+    "arch": "x64",
+    "userData": "E:\\Codex无项目文件夹\\2026-10-20\\task\\uiux-workspace\\desktop\\.tmp\\uiux-1792548500063\\profile",
+    "display": {
+      "accelerometerSupport": "unknown",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 2048,
+        "height": 1152
+      },
+      "colorDepth": 32,
+      "colorSpace": "{primaries:BT709, transfer:SRGB, matrix:RGB, range:FULL}",
+      "depthPerComponent": 8,
+      "detected": true,
+      "displayFrequency": 240,
+      "id": 445807075,
+      "internal": false,
+      "label": "H24E7",
+      "maximumCursorSize": {
+        "width": 0,
+        "height": 0
+      },
+      "monochrome": false,
+      "nativeOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "rotation": 0,
+      "scaleFactor": 1.25,
+      "size": {
+        "width": 2048,
+        "height": 1152
+      },
+      "workArea": {
+        "x": 0,
+        "y": 0,
+        "width": 2048,
+        "height": 1104
+      },
+      "workAreaSize": {
+        "width": 2048,
+        "height": 1104
+      },
+      "touchSupport": "unknown"
+    }
+  },
+  "os": "10.0.26200",
+  "prototype": false,
+  "automation": "Playwright Electron; visible BrowserWindow; coordinate and accessibility controls; isolated network guard; no capture fixture query"
+}

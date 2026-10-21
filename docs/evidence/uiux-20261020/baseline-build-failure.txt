@@ -1,0 +1,22 @@
+Original tool output excerpt, before restoring bundled source resources (not a rerun):
+
+Command: npm.cmd run build
+Exit: 1
+vite v8.0.16 building client environment for production...
+Build failed with 3 errors:
+Could not resolve './data/prompt-edit-templates' in src/App.tsx:24
+Could not resolve './data/prompt-templates' in src/App.tsx:97
+Could not resolve './data/prompt-templates-v45' in src/App.tsx:98
+
+Command: git ls-files desktop/src/data
+Output: empty
+Command: git check-ignore -v desktop/src/data/prompt-templates.ts
+Output: .gitignore:29:data/ desktop/src/data/prompt-templates.ts
+
+After restoring the nine SHA256-matching src/data resources:
+electron/ipc/nai.ts(102,32): error TS2307: Cannot find module '../data/tag-dictionary'
+Additional implicit-any diagnostics were a consequence of that missing module.
+
+Restored 10 files from the original migrated source only after verifying exact
+SHA256 matches against upstream-source-manifest.json, source commit
+7bc76ded4f539949a52f29fba32e2d896d2f89b7. No runtime user data copied.

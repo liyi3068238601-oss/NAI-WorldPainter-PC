@@ -3,6 +3,8 @@ import { ipcMain } from 'electron';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import axios from 'axios';
+import { createServer, type Server } from 'node:http';
 import sharp from 'sharp';
 import { DEFAULT_PARAMS } from '../../src/types';
 
@@ -58,8 +60,54 @@ describe('gateway workbench vault and isolated text-to-image workflow', () => {
     expect(JSON.stringify(vault.list())).not.toMatch(/secret-/);
     expect(JSON.stringify(readPersisted())).not.toContain('secret-ikun');
     expect(vault.bind(first[0].id).token).toBe('secret-7877');
-    expect(() => normalizeGatewayBaseUrl('ikun', 'http://gateway.example')).toThrow(/回环 IP/);
+    expect(normalizeGatewayBaseUrl('ikun', 'http://gateway.example')).toEqual({ protocol: 'ikun', baseUrl: 'http://gateway.example' });
+    expect(normalizeGatewayBaseUrl('gateway7877', 'http://192.168.1.25:8765')).toEqual({ protocol: 'gateway7877', baseUrl: 'http://192.168.1.25:8765' });
     expect(() => normalizeGatewayBaseUrl('ikun', 'https://gateway.example/v1')).toThrow(/不含路径/);
+    for (const invalid of ['file:///tmp/gateway', 'ftp://gateway.example', 'javascript:alert(1)', 'http://user:pass@gateway.example', 'http://gateway.example?token=x', 'http://gateway.example#token', 'http://gateway.example/v1']) {
+      expect(() => normalizeGatewayBaseUrl('ikun', invalid)).toThrow();
+    }
+  });
+
+  it('round trips remote HTTP gateway profiles through the vault document', () => {
+    const { vault, readPersisted } = makeVault();
+    const profile = vault.add({ name: '自定义 HTTP 网关', protocol: 'gateway7877', baseUrl: 'http://gateway.example:8765', token: 'remote-http-fixture' })[0];
+    const loaded = new GatewayWorkbenchVault(structuredClone(readPersisted()), cipher, () => {});
+    expect(loaded.list()).toContainEqual(profile);
+    expect(loaded.bind(profile.id)).toMatchObject({ profile: { baseUrl: 'http://gateway.example:8765', protocol: 'gateway7877' }, token: 'remote-http-fixture' });
+  });
+
+  it('sends a confirmed plan through its selected HTTP origin using a loopback-only server', async () => {
+    let received: { url?: string; authorization?: string; body?: Record<string, any> } = {};
+    const server: Server = createServer((request, response) => {
+      const chunks: Buffer[] = [];
+      request.on('data', chunk => chunks.push(Buffer.from(chunk)));
+      request.on('end', () => {
+        received = { url: request.url, authorization: request.headers.authorization,
+          body: JSON.parse(Buffer.concat(chunks).toString('utf8')) };
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ data: [{ b64_json: png }] }));
+      });
+    });
+    const port = await new Promise<number>(resolve => server.listen(0, '127.0.0.1', () => resolve((server.address() as any).port)));
+    try {
+      const { vault, readPersisted } = makeVault();
+      const baseUrl = `http://127.0.0.1:${port}`;
+      const profile = vault.add({ name: 'loopback HTTP fixture', protocol: 'gateway7877', baseUrl, token: 'loopback-only-key' })[0];
+      const reloaded = new GatewayWorkbenchVault(structuredClone(readPersisted()), cipher, () => {});
+      const post = async (url: string, payload: Record<string, unknown>, options: any, onSubmitted: () => void) => {
+        onSubmitted();
+        const result = await axios.post(url, payload, { ...options, proxy: false, validateStatus: () => true });
+        return { status: result.status, data: result.data };
+      };
+      const service = new GatewayWorkbenchService({ vault: reloaded, post, outputDir: () => path.join(fixture.root, 'http-output'), appendHistory: () => {} });
+      const plan = service.prepare({ profileId: profile.id, operation: 'textToImage', draft: { ...DEFAULT_PARAMS, positivePrompt: 'HTTP local fixture', seedMode: 'fixed', seed: 11 } });
+      expect(plan.endpoint).toBe(`${baseUrl}/v1/images/generations`);
+      const result = await service.generate({ planId: plan.planId, confirmed: true });
+      expect(result.status, result.message).toBe('succeeded');
+      expect(received).toMatchObject({ url: '/v1/images/generations', authorization: 'Bearer loopback-only-key', body: { model: expect.any(String), params: expect.any(Object) } });
+    } finally {
+      await new Promise<void>(resolve => { server.closeAllConnections(); server.close(() => resolve()); });
+    }
   });
 
   it('rejects encrypted credential swaps between protocol/base profiles and migrates legacy ciphertext before use', () => {

@@ -1,0 +1,35 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><textarea id="outside" aria-label="Synthetic prompt"></textarea><div id="root"></div><script>
+const fs=require('node:fs'),path=require('node:path'),Module=require('node:module'),{pathToFileURL}=require('node:url');
+const source=process.env.POINTER_SOURCE,req=Module.createRequire(source+'/package.json'),ts=req('typescript'),React=req('react');
+const appMock={settings:{language:'en-US'},activeTab:'inpaint'};
+const appStore=Object.assign(selector=>selector(appMock),{getState:()=>appMock});
+const cache=new Map();
+function load(file){
+ file=path.resolve(file);if(cache.has(file))return cache.get(file).exports;
+ if(file.endsWith('.json'))return req(file);
+ const m=new Module(file);cache.set(file,m);m.filename=file;m.paths=Module._nodeModulePaths(path.dirname(file));
+ m.require=name=>{
+  if(name==='./store')return {useAppStore:appStore};
+  if(name.endsWith('.css'))return {};
+  if(name.startsWith('.')){const p=path.resolve(path.dirname(file),name);for(const ext of ['','.ts','.tsx','.json'])if(fs.existsSync(p+ext)&&fs.statSync(p+ext).isFile())return load(p+ext);}
+  return req(name);
+ };
+  const sourceText=fs.readFileSync(file,'utf8').replace(/\bimport\.meta\.url\b/g,JSON.stringify(pathToFileURL(file).href));
+  m._compile(ts.transpileModule(sourceText,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,file);return m.exports;
+}
+// This fixture loads unbundled TypeScript directly, so a Vite module worker URL
+// cannot run here. Keep previews on the production pure-function fallback;
+// this deliberately makes no claim about the packaged worker path.
+Object.defineProperty(window,'Worker',{value:undefined,configurable:true,writable:true});
+const style=document.createElement('style');style.textContent=fs.readFileSync(source+'/src/mobile-inpaint.css','utf8')+'\nbody{margin:0;font-family:sans-serif}#root{position:absolute;left:180px;top:15px;width:650px;height:650px}#outside{position:absolute;left:15px;top:25px;width:140px;height:70px}.mobile-inpaint-workspace{background:#eee;color:#111}';document.head.append(style);
+const store=load(source+'/src/mobile-inpaint-store.ts').useMobileInpaintStore;
+const {MobileInpaintCanvas}=load(source+'/src/MobileInpaintCanvas.tsx');
+req('react-dom/client').createRoot(document.getElementById('root')).render(React.createElement(MobileInpaintCanvas));
+window.lastPointerId=1;document.addEventListener('pointerdown',e=>window.lastPointerId=e.pointerId,true);
+window.pointerSnapshot=()=>{const s=store.getState(),stage=document.querySelector('.mobile-inpaint-stage');return{frame:s.frame,transform:s.transform,strokes:s.strokes.length,showMask:s.showMask,captured:stage.hasPointerCapture(window.lastPointerId)}};
+window.setPointerTool=tool=>store.getState().update({tool});
+window.prepareCandidateReview=()=>{const svg=color=>`data:image/svg+xml;base64,${Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="${color}"/></svg>`).toString('base64')}`;const beforeUrl=svg('#d22'),dataUrl=svg('#26c');store.getState().setCandidates([{id:'fixture-candidate',dataUrl,beforeUrl,generatedUrl:dataUrl,seed:1}]);};
+window.compareSnapshot=()=>{const after=document.querySelector('.mobile-inpaint-review-after'),range=document.querySelector('.mobile-inpaint-compare-control input'),labels=[...document.querySelectorAll('.mobile-inpaint-compare-control span')].map(item=>item.textContent.trim()),clip=getComputedStyle(after).clipPath,clipInsets=clip.match(/inset\(([^)]+)\)/)?.[1].split(/\s+/)??[];return{clip,clipInsets,value:Number(range.value),labels,rect:(()=>{const r=document.querySelector('.mobile-inpaint-review-image').getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()};};
+window.releaseByHover=()=>{const stage=document.querySelector('.mobile-inpaint-stage'),r=stage.getBoundingClientRect();stage.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerId:window.lastPointerId,pointerType:'mouse',buttons:0,clientX:r.left+350,clientY:r.top+200}));};
+setTimeout(()=>{const width=320,height=240,data=new Uint8ClampedArray(width*height*4).fill(255);store.setState({mode:'mobile',pixels:{width,height,data},source:{filePath:'synthetic.png',fileUrl:'data:image/png;base64,synthetic',width,height},frame:{x:60,y:60,width:120,height:120},transform:{scale:1,offsetX:30,offsetY:20},tool:'frame',expand:0,showMask:false});window.fixtureReady=true;},350);
+</script></body></html>
