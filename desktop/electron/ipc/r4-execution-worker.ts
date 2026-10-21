@@ -82,6 +82,17 @@ const copy = <T>(value: T): T => structuredClone(value);
 const ACTIVE_STATUSES = new Set<R4ExecutionStatus>(["dispatching", "running", "cancel_requested"]);
 const TERMINAL_STATUSES = new Set<R4ExecutionStatus>(["completed", "partial", "error", "cancelled", "blocked", "denied"]);
 
+function abortableDelay(milliseconds:number,signal:AbortSignal):Promise<void>{
+  if(milliseconds<=0)return Promise.resolve();
+  return new Promise((resolve,reject)=>{
+    if(signal.aborted){reject(signal.reason??new Error('Execution cancelled.'));return;}
+    const finish=()=>{signal.removeEventListener('abort',abort);resolve();};
+    const timer=setTimeout(finish,milliseconds);
+    const abort=()=>{clearTimeout(timer);signal.removeEventListener('abort',abort);reject(signal.reason??new Error('Execution cancelled.'));};
+    signal.addEventListener('abort',abort,{once:true});
+  });
+}
+
 function appendEvent(execution: R4Execution, kind: string, detail: Record<string, unknown> = {}, outputIndex?: number) {
   execution.events ??= [];
   execution.events.push({ id: randomUUID(), kind, at: now(), ...(outputIndex === undefined ? {} : { outputIndex }), detail });
@@ -934,7 +945,8 @@ export class R4ExecutionWorker {
       if (claimed.requestGranularity === "batch") {
         registrationDeferred = !(await this.invokeProvider(claimed, null, controller, beforeSubmit, afterReceipt, callBoundaryStart));
       } else {
-        for (const slot of claimed.outputs) {
+        const intervalSeconds=Number(claimed.approvedInput.publicParameters.batchIntervalSeconds??0);
+        for (const [slotIndex,slot] of claimed.outputs.entries()) {
           const current = this.store.readR4State().executions[claimed.id];
           if (!current || current.status === "unknown" || current.status === "blocked" || current.status === "error" || current.cancelRequestedAt) break;
           if (current.outputs.find((item) => item.outputIndex === slot.outputIndex)?.status !== "not_dispatched") continue;
@@ -946,6 +958,9 @@ export class R4ExecutionWorker {
           }
           const updated = this.store.readR4State().executions[claimed.id];
           if (!updated || updated.outputs.find((item) => item.outputIndex === slot.outputIndex)?.status !== "completed") break;
+          if(slotIndex<claimed.outputs.length-1&&Number.isFinite(intervalSeconds)&&intervalSeconds>0){
+            await abortableDelay(intervalSeconds*1000,controller.signal);
+          }
         }
       }
       if (!registrationDeferred) this.finishDispatch(claimed.id);

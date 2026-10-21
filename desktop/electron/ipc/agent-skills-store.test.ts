@@ -29,7 +29,7 @@ afterEach(()=>{
 describe('Agent skill persistence',()=>{
  it('seeds stable built-in image generation, editing and term lookup skills',()=>{
   const workspace=createEmptyAgentWorkspace();
-  expect(workspace.skills.map(skill=>skill.id)).toEqual(['builtin-image-generation','builtin-image-editing','builtin-prompt-term-lookup']);
+  expect(workspace.skills.map(skill=>skill.id)).toEqual(['builtin-image-generation','builtin-multi-character-composition','builtin-image-editing','builtin-prompt-term-lookup','builtin-creative-memory']);
   expect(workspace.skills.every(skill=>skill.enabled&&skill.builtIn&&skill.autoSelect)).toBe(true);
  });
 
@@ -81,12 +81,13 @@ describe('Agent skill persistence',()=>{
 
  it('preserves existing over-limit skills while limiting selection and new library writes',()=>{
   const workspace=createEmptyAgentWorkspace();
+  const firstCustomSkillIndex=workspace.skills.length;
   const crowded={...workspace,skills:[...workspace.skills,...Array.from({length:STUDIO_SKILL_LIMITS.maxSkills+5},(_,index)=>({
    id:`custom-${index}`,name:'N'.repeat(100),description:'D'.repeat(400),instructions:'I'.repeat(15_000),enabled:true,createdAt:'now',updatedAt:'now',
   }))]};
   const bounded=normalizeAgentWorkspace(crowded);
   expect(bounded.skills).toHaveLength(workspace.skills.length+STUDIO_SKILL_LIMITS.maxSkills+5);
-  expect(bounded.skills[3]).toMatchObject({
+  expect(bounded.skills[firstCustomSkillIndex]).toMatchObject({
    name:'N'.repeat(100),
    description:'D'.repeat(400),
    instructions:'I'.repeat(15_000),
@@ -94,7 +95,7 @@ describe('Agent skill persistence',()=>{
   expect(bounded.conversations[0].selectedSkillIds).toHaveLength(0);
   writeAgentWorkspace(bounded);
   expect(upsertAgentSkill({name:'overflow',instructions:'body'})).toMatchObject({ok:false});
-  const existing=bounded.skills[3];
+  const existing=bounded.skills[firstCustomSkillIndex];
   const toggled=upsertAgentSkill({...existing,enabled:false});
   expect(toggled.ok).toBe(true);
   expect(toggled.workspace.skills.find(skill=>skill.id===existing.id)).toMatchObject({enabled:false,instructions:existing.instructions});

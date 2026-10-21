@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const fixture = vi.hoisted(() => ({ root: "" }));
@@ -22,13 +23,16 @@ import {
   deleteAgentAttachment,
   deleteAgentConversation,
   getAgentSqlStore,
+  normalizeAgentWorkspace,
   readAgentR4State,
   readAgentWorkspace,
   resetAgentStoreCacheForTests,
+  setStudioConversationOptions,
   writeAgentWorkspace,
 } from "./agent-store";
 import { TAVERN_PRESET_LIBRARY_VERSION } from "../../src/tavern/builtins";
-import { STUDIO_BUILTIN_PRESETS } from "../../src/agent/workspace-controls";
+import { STUDIO_BUILTIN_PRESETS, STUDIO_DEFAULT_PRESET_ID, STUDIO_NOVELAI_ASSISTANT_PRESET_BODY } from "../../src/agent/workspace-controls";
+import legacyIg5Prompt from "../../shared/ig5-image-prompts.json";
 
 const tempRoot = path.resolve(process.cwd(), ".tmp");
 const EMPTY_STAMP = "2026-10-18T00:00:00.000Z";
@@ -171,13 +175,119 @@ describe("Agent workspace one-time SQLite migration", () => {
       sourceHash: legacyResource.sourceHash,
     });
     expect(state.assistantPresetDefaultBinding).toMatchObject({
-      presetId: expect.any(String),
+      presetId: STUDIO_DEFAULT_PRESET_ID,
       enabled: true,
     });
     expect(state.conversations[workspace.conversations[0].id]?.assistantPresetBinding).toMatchObject({
       presetId: expect.any(String),
       enabled: true,
     });
+  });
+
+  it("adds the new built-in default and migrates only a pristine enabled factory default", () => {
+    const store = getAgentSqlStore();
+    const state = readAgentR4State();
+    const previousDefaultId = "dsh-infinite-gen-5";
+    const previousBody = legacyIg5Prompt.prompts.studio;
+    const previousHash = "969c9d5893f696cd92a5cd9c18b89213d3fb169a27499310bba8d4c636deb9b6";
+    const newDefault = STUDIO_BUILTIN_PRESETS.find((preset) => preset.id === STUDIO_DEFAULT_PRESET_ID)!;
+    const newDefaultHash = createHash("sha256").update(newDefault.body).digest("hex");
+    expect(STUDIO_DEFAULT_PRESET_ID).not.toBe(previousDefaultId);
+    expect(createHash("sha256").update(previousBody).digest("hex")).toBe(previousHash);
+    expect(newDefault.body).toBe(STUDIO_NOVELAI_ASSISTANT_PRESET_BODY);
+    expect(newDefaultHash).toBe(createHash("sha256").update(STUDIO_NOVELAI_ASSISTANT_PRESET_BODY).digest("hex"));
+    const mainConversationId = Object.keys(state.conversations)[0]!;
+    const queueId = "legacy-queued-before-new-default";
+    const oldSnapshot = {
+      version: 1 as const, providerRef: { providerId: "fixture" }, modelId: "fixture-model", presetId: previousDefaultId, enabled: true,
+      body: previousBody, revision: 1, hash: previousHash, publicParameters: {}, capturedAt: EMPTY_STAMP, source: "message_send" as const,
+    };
+    store.transaction((tx) => {
+      const next = tx.getR4State();
+      delete next.assistantPresets[newDefault.id];
+      const previous = next.assistantPresets[previousDefaultId]!;
+      next.assistantPresets[previousDefaultId] = { ...previous, body: previousBody, hash: previousHash, revision: 1, source: "builtin" };
+      next.assistantPresetDefaultBinding = { presetId: previousDefaultId, enabled: true };
+      next.conversations[mainConversationId].assistantPresetBinding = { presetId: previousDefaultId, enabled: true };
+      next.conversations[mainConversationId].config = structuredClone(oldSnapshot);
+      next.messageQueue[queueId] = { id: queueId, conversationId: mainConversationId, conversationConfig: structuredClone(oldSnapshot) } as never;
+      delete next.compatibility.studioDefaultPresetMigrationVersion;
+      tx.setR4State(next);
+    });
+
+    resetAgentStoreCacheForTests();
+    const migrated = readAgentR4State();
+    expect(migrated.assistantPresets[newDefault.id]).toMatchObject({ id: newDefault.id, name: newDefault.name, body: newDefault.body, hash: newDefaultHash, revision: 1, source: "builtin" });
+    expect(migrated.assistantPresets[previousDefaultId]).toMatchObject({ body: previousBody, hash: previousHash, revision: 1, source: "builtin" });
+    expect(migrated.assistantPresetDefaultBinding).toEqual({ presetId: newDefault.id, enabled: true });
+    expect(migrated.conversations[mainConversationId].assistantPresetBinding).toEqual({ presetId: previousDefaultId, enabled: true });
+    expect(migrated.conversations[mainConversationId].config).toEqual(oldSnapshot);
+    expect(migrated.messageQueue[queueId].conversationConfig).toEqual(oldSnapshot);
+    expect(migrated.compatibility.presetRevisionHistory).toBeUndefined();
+    expect(migrated.compatibility.studioDefaultPresetMigrationVersion).toBe(1);
+
+    // Once the one-time choice is recorded, a deliberate selection of the old
+    // built-in default remains sticky across future store opens.
+    const updatedStore = getAgentSqlStore();
+    updatedStore.transaction((tx) => {
+      const reopened = tx.getR4State();
+      reopened.assistantPresetDefaultBinding = { presetId: previousDefaultId, enabled: true };
+      tx.setR4State(reopened);
+    });
+    resetAgentStoreCacheForTests();
+    expect(readAgentR4State().assistantPresetDefaultBinding).toEqual({ presetId: previousDefaultId, enabled: true });
+  });
+
+  it.each([
+    { label: "disabled factory default", binding: { presetId: "dsh-infinite-gen-5", enabled: false }, editBody: false },
+    { label: "custom built-in default", binding: { presetId: "studio-complete", enabled: true }, editBody: false },
+    { label: "user-created custom default", binding: { presetId: "user-preserved-default", enabled: true }, editBody: false,
+      customPreset: { id: "user-preserved-default", name: "Custom", body: "user-owned custom preset", revision: 4, hash: createHash("sha256").update("user-owned custom preset").digest("hex"), source: "user" as const } },
+    { label: "edited factory preset", binding: { presetId: "dsh-infinite-gen-5", enabled: true }, editBody: true },
+  ])("preserves the $label binding when adding the new default", ({ binding, editBody, customPreset }) => {
+    const store = getAgentSqlStore();
+    const newDefault = STUDIO_BUILTIN_PRESETS.find((preset) => preset.id === STUDIO_DEFAULT_PRESET_ID)!;
+    const previousDefaultId = "dsh-infinite-gen-5";
+    const previousBody = legacyIg5Prompt.prompts.studio;
+    const previousHash = createHash("sha256").update(previousBody).digest("hex");
+    const bindingBefore = structuredClone(binding);
+    store.transaction((tx) => {
+      const next = tx.getR4State();
+      delete next.assistantPresets[newDefault.id];
+      const previous = next.assistantPresets[previousDefaultId]!;
+      next.assistantPresets[previousDefaultId] = editBody
+        ? { ...previous, body: "user-edited old default", hash: createHash("sha256").update("user-edited old default").digest("hex"), revision: 2, source: "builtin" }
+        : { ...previous, body: previousBody, hash: previousHash, revision: 1, source: "builtin" };
+      if (customPreset) next.assistantPresets[customPreset.id] = structuredClone(customPreset);
+      next.assistantPresetDefaultBinding = bindingBefore;
+      delete next.compatibility.studioDefaultPresetMigrationVersion;
+      tx.setR4State(next);
+    });
+
+    resetAgentStoreCacheForTests();
+    const reopened = readAgentR4State();
+    expect(reopened.assistantPresets[newDefault.id]).toMatchObject({ id: newDefault.id, body: newDefault.body, source: "builtin" });
+    expect(reopened.assistantPresets[previousDefaultId].body).toBe(editBody ? "user-edited old default" : previousBody);
+    if (customPreset) expect(reopened.assistantPresets[customPreset.id]).toEqual(customPreset);
+    expect(reopened.assistantPresetDefaultBinding).toEqual(bindingBefore);
+    expect(reopened.compatibility.studioDefaultPresetMigrationVersion).toBe(1);
+  });
+
+  it("preserves a user-edited current built-in when reopening the catalog", () => {
+    const store = getAgentSqlStore();
+    const editedBody = "user-edited body that is not the old seed";
+    const editedHash = createHash("sha256").update(editedBody).digest("hex");
+    const preset = readAgentR4State().assistantPresets[STUDIO_DEFAULT_PRESET_ID]!;
+    store.transaction((tx) => {
+      const state = tx.getR4State();
+      state.assistantPresets[preset.id] = { ...preset, body: editedBody, hash: editedHash, revision: 3 };
+      tx.setR4State(state);
+    });
+
+    resetAgentStoreCacheForTests();
+    const reopened = readAgentR4State();
+    expect(reopened.assistantPresets[preset.id]).toMatchObject({ body: editedBody, hash: editedHash, revision: 3 });
+    expect(reopened.compatibility.presetRevisionHistory).toBeUndefined();
   });
 
   it("snapshots the current assistant preset default when each conversation is created", () => {
@@ -202,6 +312,30 @@ describe("Agent workspace one-time SQLite migration", () => {
     expect(finalState.conversations[firstId]?.assistantPresetBinding).toEqual(originalDefault);
     expect(finalState.conversations[secondId]?.assistantPresetBinding).toEqual({ presetId: nextDefault.id, enabled: false });
     expect(finalState.assistantPresetDefaultBinding).toEqual({ presetId: nextDefault.id, enabled: false });
+  });
+
+  it("allows an explicitly role-free R4 chat without rewriting historical role defaults", () => {
+    const workspace = readAgentWorkspace();
+    const conversation = workspace.conversations[0]!;
+    const originalDefaultCharacters = workspace.studioDefaults?.characterIds;
+    const result = setStudioConversationOptions(conversation.id, { characterIds: [] });
+    expect(result.ok).toBe(true);
+    const saved = result.workspace.conversations.find((item) => item.id === conversation.id)!;
+    expect(saved.characterIds).toEqual([]);
+    expect(saved.activeCharacterId).toBeUndefined();
+    expect(result.workspace.studioDefaults?.characterIds).toEqual(originalDefaultCharacters);
+    expect(readAgentWorkspace().conversations.find((item) => item.id === conversation.id)?.characterIds).toEqual([]);
+
+    const legacyWithoutSelection = normalizeAgentWorkspace({
+      ...workspace,
+      conversations: workspace.conversations.map((item) => {
+        const legacy = { ...item };
+        delete legacy.characterIds;
+        delete legacy.activeCharacterId;
+        return legacy;
+      }),
+    });
+    expect(legacyWithoutSelection.conversations[0]?.characterIds).toEqual([workspace.selectedCharacterId]);
   });
 
   it("versions deliberate legacy resource-preset edits without replacing R4-only edits on unrelated writes", () => {

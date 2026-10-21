@@ -1,14 +1,17 @@
 import {randomUUID} from 'node:crypto';
+import fs from 'node:fs';
+import {createHash} from 'node:crypto';
 import {ipcMain,type BrowserWindow,type IpcMainInvokeEvent,type WebContents} from 'electron';
 import {validateR4Result} from '../../src/agent/r4-contracts';
-import type {R4ApplyPromptResult,R4WorkbenchPromptApplyRequest,R4WorkbenchPromptDiff,R4WorkbenchPromptFields,R4WorkbenchPromptPreview,R4WorkbenchPromptPreviewRequest,R4WorkbenchSnapshot} from '../../src/agent/r4-workbench-contract';
+import type {R4ApplyPromptResult,R4WorkbenchPromptApplyRequest,R4WorkbenchPromptDiff,R4WorkbenchPromptFields,R4WorkbenchPromptPreview,R4WorkbenchPromptPreviewRequest,R4WorkbenchPromptWriteResult,R4WorkbenchSnapshot,R4WorkbenchRendererAction} from '../../src/agent/r4-workbench-contract';
 import type {StudioAgentReply} from '../../src/studio-agent-contract';
+import type {R4AgentState} from '../../src/agent/r4-types';
 import type {R4CreativeHost,R4HostScope} from './r4-creative-host';
 
 const PREVIEW_TTL_MS=120_000;
 const PROMPT_KEYS=['positivePrompt','negativePrompt','stylePrompt'] as const;
 type WindowGetter=()=>BrowserWindow|null;
-type RendererAction='r4-workbench-read'|'r4-workbench-apply';
+type RendererAction=R4WorkbenchRendererAction;
 
 interface RendererPending {
   sender:WebContents;
@@ -29,6 +32,8 @@ interface PromptPreviewRecord {
 export interface R4WorkbenchService {
   ready():boolean;
   readR4WorkbenchSnapshot():Promise<R4WorkbenchSnapshot>;
+  writeR4WorkbenchPrompts(args:Record<string,unknown>,scope:R4HostScope):Promise<Record<string,unknown>>;
+  publishCompletedResults(conversationId:string):Promise<void>;
   previewR4PromptApply(args:Record<string,unknown>,scope:R4HostScope):Promise<R4WorkbenchPromptPreview|Record<string,unknown>>;
   applyR4PromptCAS(previewId:string,draftId:string,draftRevision:number,scope:R4HostScope):Promise<Record<string,unknown>>;
   createR4ApplyPrompt(input:{scope:R4HostScope;authorize:(name:string,args:Record<string,unknown>,signal:AbortSignal)=>Promise<boolean>}):
@@ -39,9 +44,21 @@ export interface R4WorkbenchService {
 }
 
 export function createR4WorkbenchService(options:{window:WindowGetter;host:()=>R4CreativeHost;rendererRequest?:(action:RendererAction,args:Record<string,unknown>)=>Promise<StudioAgentReply>;timeoutMs?:number;uuid?:()=>string;now?:()=>number}):R4WorkbenchService {
-  const pending=new Map<string,RendererPending>(),previews=new Map<string,PromptPreviewRecord>();
+  const pending=new Map<string,RendererPending>(),previews=new Map<string,PromptPreviewRecord>(),publishedResults=new Set<string>();
+  const baselineResults=new Set<string>(),publishingByConversation=new Map<string,Promise<void>>(),publishQueued=new Set<string>();
   const timeoutMs=options.timeoutMs??15_000,uuid=options.uuid??randomUUID,now=options.now??Date.now;
   const owner=()=>options.window();
+  // Results already terminal when the service starts belong to history, not to
+  // the newly mounted Generate canvas. In-flight work is deliberately omitted
+  // so recovery can still publish its eventual confirmed outputs.
+  try{
+    const initial=options.host().store.readR4State();
+    // A confirmed per-output result may outlive a dispatching/unknown aggregate
+    // execution. Treat every already-completed slot as historical at startup.
+    for(const execution of Object.values(initial.executions))for(const output of execution.outputs)if(output.status==='completed'){
+      baselineResults.add(JSON.stringify([execution.id,`${execution.id}:${output.outputIndex}`]));
+    }
+  }catch{/* Some isolated contract tests use a host stub without a durable store. */}
 
   function requestRenderer(action:RendererAction,args:Record<string,unknown>):Promise<StudioAgentReply> {
     if(options.rendererRequest)return options.rendererRequest(action,args);
@@ -103,6 +120,98 @@ export function createR4WorkbenchService(options:{window:WindowGetter;host:()=>R
     const checked=validateR4Result('apply_prompt',result);
     if(!checked.valid)throw new Error(`apply_prompt result shape invalid: ${checked.errors.map(item=>item.message).join('; ')}`);
     return result;
+  }
+
+  function promptWriteResult(scope:R4HostScope,data:R4WorkbenchPromptWriteResult['data']):Record<string,unknown> {
+    const result={resultKind:'business',status:'completed',conversationId:scope.conversationId,creationId:scope.creationId,data};
+    const checked=validateR4Result('write_workbench_prompts',result);
+    if(!checked.valid)throw new Error(`工作台提示词写入回执合同无效：${checked.errors.map(item=>item.message).join('; ')}`);
+    return result;
+  }
+
+  async function writeR4WorkbenchPrompts(args:Record<string,unknown>,scope:R4HostScope):Promise<Record<string,unknown>> {
+    const patch:Partial<R4WorkbenchPromptFields>={};let provided=0;
+    for(const key of PROMPT_KEYS)if(args[key]!==undefined){
+      const value=args[key];if(typeof value!=='string'||value.length>100_000)throw new Error(`工作台字段 ${key} 无效或超过100000字符。`);
+      patch[key]=value;provided++;
+    }
+    let characterPrompts:Record<string,unknown>[]|undefined;
+    if(args.characterPrompts!==undefined){
+      if(!Array.isArray(args.characterPrompts)||args.characterPrompts.length>32)throw new Error('characterPrompts 必须是最多32个角色项的完整数组。');
+      characterPrompts=args.characterPrompts.map((value,index)=>{
+        if(!value||typeof value!=='object'||Array.isArray(value))throw new Error(`characterPrompts[${index}] 格式无效。`);
+        const item=value as Record<string,unknown>;
+        if(typeof item.prompt!=='string'||!item.prompt.trim()||item.prompt.length>20_000)throw new Error(`characterPrompts[${index}].prompt 不能为空且最多20000字符。`);
+        if(item.negativePrompt!==undefined&&(typeof item.negativePrompt!=='string'||item.negativePrompt.length>20_000))throw new Error(`characterPrompts[${index}].negativePrompt 格式无效。`);
+        if(item.name!==undefined&&(typeof item.name!=='string'||item.name.length>64))throw new Error(`characterPrompts[${index}].name 格式无效。`);
+        if(item.enabled!==undefined&&typeof item.enabled!=='boolean')throw new Error(`characterPrompts[${index}].enabled 格式无效。`);
+        if(typeof item.useCoords!=='boolean'||typeof item.x!=='number'||!Number.isFinite(item.x)||item.x<0||item.x>1
+          ||typeof item.y!=='number'||!Number.isFinite(item.y)||item.y<0||item.y>1)throw new Error(`characterPrompts[${index}] 必须包含有效的 useCoords/x/y 坐标。`);
+        return { ...(typeof item.name==='string'?{name:item.name}:{}),prompt:item.prompt,
+          ...(typeof item.negativePrompt==='string'?{negativePrompt:item.negativePrompt}:{}),enabled:item.enabled!==false,
+          useCoords:item.useCoords,x:item.x,y:item.y };
+      });
+      provided++;
+    }
+    if(!provided)throw new Error('至少指定一个提示词字段或 characterPrompts。');
+    if(!Number.isSafeInteger(args.expectedDraftRevision)||Number(args.expectedDraftRevision)<0)throw new Error('expectedDraftRevision 必须是从 read_generation_state 读取的非负整数。');
+    const snapshot=await readR4WorkbenchSnapshot(),before=promptPatch(snapshot.params);
+    const currentCharacters=Array.isArray(snapshot.workbench?.charCaptions)?snapshot.workbench!.charCaptions!.map(value=>{
+      if(!value||typeof value!=='object'||Array.isArray(value))return {};
+      const item=value as Record<string,unknown>;
+      return { ...(typeof item.name==='string'?{name:item.name}:{}),prompt:typeof item.prompt==='string'?item.prompt:'',
+        ...(typeof item.negativePrompt==='string'?{negativePrompt:item.negativePrompt}:{}),enabled:item.enabled!==false,
+        useCoords:item.useCoords===true,x:Number(item.x??0.5),y:Number(item.y??0.5) };
+    }):[];
+    const changedFields={...diff(before,{...before,...patch}),...(characterPrompts?{characterPromptsChanged:JSON.stringify(currentCharacters)!==JSON.stringify(characterPrompts)}:{})};
+    if(args.expectedDraftRevision!==undefined&&args.expectedDraftRevision!==snapshot.draftRevision){
+      return promptWriteResult(scope,{writeStatus:'conflict',draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,changedFields});
+    }
+    if(!Object.values(changedFields).some(Boolean))return promptWriteResult(scope,{writeStatus:'unchanged',draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,changedFields});
+    const merged={...before,...patch};
+    const reply=await requestRenderer('r4-workbench-apply',{draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,patch:merged,...(characterPrompts?{characterPrompts}:{} )});
+    if(!reply?.ok||!reply.data||typeof reply.data!=='object'||Array.isArray(reply.data))throw new Error(reply?.error||'工作台提示词写入结果待核实；请重新读取，未自动重试。');
+    const outcome=reply.data as {applyStatus?:unknown;draftId?:unknown;draftRevision?:unknown};
+    if(!['applied','conflict'].includes(String(outcome.applyStatus))||typeof outcome.draftId!=='string'||!Number.isSafeInteger(outcome.draftRevision))throw new Error('工作台 CAS 返回无效结果；请回读确认，不要自动重试。');
+    return promptWriteResult(scope,{writeStatus:outcome.applyStatus==='conflict'?'conflict':Object.values(changedFields).some(Boolean)?'written':'unchanged',
+      draftId:outcome.draftId,draftRevision:Number(outcome.draftRevision),changedFields});
+  }
+
+  async function publishCompletedResultsOnce(conversationId:string):Promise<void> {
+    const state:R4AgentState=options.host().store.readR4State();
+    for(const execution of Object.values(state.executions)){
+      if(execution.conversationId!==conversationId)continue;
+      for(const output of execution.outputs){
+        const artwork=output.artwork;
+        if(output.status!=='completed'||output.providerReceipt?.status!=='confirmed'||!artwork||artwork.sourceKind==='workbench'||artwork.executionId!==execution.id)continue;
+        const outputId=`${execution.id}:${output.outputIndex}`,key=JSON.stringify([execution.id,outputId]);
+        if(baselineResults.has(key)||publishedResults.has(key))continue;
+        if(!artwork.hash||!artwork.readableHandle||!artwork.width||!artwork.height||!fs.existsSync(artwork.readableHandle))continue;
+        const bytes=fs.readFileSync(artwork.readableHandle);
+        if(createHash('sha256').update(bytes).digest('hex')!==artwork.hash)continue;
+        // Presentation is idempotent and outside paid execution. A renderer failure never replays or retries the provider request.
+        const reply=await requestRenderer('r4-workbench-result',{executionId:execution.id,outputId,image:{id:artwork.attachmentId,filePath:artwork.readableHandle,
+          fileUrl:artwork.url,width:artwork.width,height:artwork.height,createdAt:artwork.createdAt,metadata:{hash:artwork.hash,outputIndex:output.outputIndex}}});
+        if(!reply?.ok)throw new Error(reply?.error||'生成图片已保存，但画布展示失败；请从图库打开图片。收费任务不会自动重试。');
+        publishedResults.add(key);
+      }
+    }
+  }
+
+  async function publishCompletedResults(conversationId:string):Promise<void> {
+    // State-change notifications can arrive for every R4 operation while a
+    // renderer reply is pending. Serialize per conversation and coalesce them
+    // into a final rescan so each confirmed output is presented at most once.
+    publishQueued.add(conversationId);
+    const current=publishingByConversation.get(conversationId);
+    if(current)return current;
+    const running=(async()=>{
+      while(publishQueued.delete(conversationId))await publishCompletedResultsOnce(conversationId);
+    })();
+    publishingByConversation.set(conversationId,running);
+    try{await running;}finally{
+      if(publishingByConversation.get(conversationId)===running)publishingByConversation.delete(conversationId);
+    }
   }
 
   async function readProposal(proposalId:string,proposalRevision:number,scope:R4HostScope):Promise<R4WorkbenchPromptFields|undefined> {
@@ -210,7 +319,7 @@ export function createR4WorkbenchService(options:{window:WindowGetter;host:()=>R
     else item.resolve(reply);
   }
 
-  return {ready:()=>{const win=owner();return Boolean(win&&!win.isDestroyed()&&!win.webContents.isDestroyed());},readR4WorkbenchSnapshot,previewR4PromptApply,applyR4PromptCAS,createR4ApplyPrompt,previewFromUI,applyFromUI,replyFromRenderer};
+  return {ready:()=>{const win=owner();return Boolean(win&&!win.isDestroyed()&&!win.webContents.isDestroyed());},readR4WorkbenchSnapshot,writeR4WorkbenchPrompts,publishCompletedResults,previewR4PromptApply,applyR4PromptCAS,createR4ApplyPrompt,previewFromUI,applyFromUI,replyFromRenderer};
 }
 
 let installed=false;

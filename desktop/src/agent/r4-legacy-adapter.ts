@@ -51,6 +51,7 @@ export interface R4LegacyWorkbenchSnapshot {
   draftSource?: 'workbench' | 'default';
   /** Captured from the same live renderer revision; overrides persisted legacy params. */
   params?: Record<string, unknown>;
+  workbench?: Record<string, unknown>;
 }
 
 export interface R4LegacyAdapterDependencies {
@@ -116,6 +117,11 @@ function array(value: unknown, label: string): unknown[] {
 function nonEmptyString(value: unknown, label: string): string {
   if (typeof value !== 'string' || !value.trim()) throw new Error(`R4 legacy adapter: ${label} is missing.`);
   return value;
+}
+
+function number(value:unknown,fallback:number,min:number,max:number){
+  const parsed=typeof value==='number'?value:Number(value);
+  return Number.isFinite(parsed)?Math.min(max,Math.max(min,parsed)):fallback;
 }
 
 function optionalString(value: unknown): string | undefined {
@@ -367,6 +373,25 @@ export async function adaptR4LegacyResult(
         params: copyFields(rawParams, allowedParams),
       };
       if (workbench.draftSource) mapped.draftSource = workbench.draftSource;
+      if(workbench.workbench){
+        const live=workbench.workbench,source=isRow(live.source)?live.source:undefined;
+        const dims=source&&Number.isSafeInteger(source.width)&&Number.isSafeInteger(source.height)?{width:Number(source.width),height:Number(source.height)}:null;
+        const captions=Array.isArray(live.charCaptions)?live.charCaptions.filter(isRow).slice(0,32).flatMap(item=>typeof item.prompt==='string'?[{
+          ...(typeof item.name==='string'?{name:item.name.slice(0,64)}:{}),prompt:item.prompt.slice(0,20_000),negativePrompt:typeof item.negativePrompt==='string'?item.negativePrompt.slice(0,20_000):'',enabled:item.enabled!==false,
+          useCoords:item.useCoords===true,x:number(item.x,0.5,0,1),y:number(item.y,0.5,0,1),
+        }]:[]):[];
+        const vibes=Array.isArray(live.vibeImages)?live.vibeImages.filter(isRow).slice(0,16).map(item=>({...(typeof item.name==='string'?{name:item.name.slice(0,200)}:{}),
+          strength:number(item.strength,0,0,1),infoExtracted:number(item.infoExtracted,1,0,1)})):[];
+        const precise=Array.isArray(live.preciseReferences)?live.preciseReferences.filter(isRow).slice(0,16).map(item=>({
+          type:item.type==='style'||item.type==='character&style'?item.type:'character',strength:number(item.strength,1,0,1),fidelity:number(item.fidelity,1,0,1)})):[];
+        const busy=isRow(live.busy)?live.busy:{};
+        mapped.workbench={mode:typeof live.mode==='string'?live.mode:'generate:t2i',historyGroupId:typeof live.historyGroupId==='string'?live.historyGroupId:undefined,
+          modelMode:live.modelMode==='furry'?'furry':'anime',batchCount:number(live.batchCount,1,1,999),
+          sourceMode:typeof live.sourceMode==='string'?live.sourceMode:'latest',sourceAvailable:Boolean(source?.filePath),sourceDimensions:dims,
+          maskAvailable:typeof live.mask==='string'&&live.mask.length>0,maskRevision:number(live.maskRevision,0,0,Number.MAX_SAFE_INTEGER),
+          characterPrompts:captions,vibeReferences:vibes,preciseReferences:precise,
+          busy:{isGenerating:busy.isGenerating===true,isGenerateQueueRunning:busy.isGenerateQueueRunning===true,batchRunning:busy.batchRunning===true}};
+      }
       const imageProvider = data.imageProvider;
       const providerName = typeof imageProvider === 'string' ? imageProvider : isRow(imageProvider) ? imageProvider.provider : undefined;
       if (providerName === 'novelai' || providerName === 'openai-images') mapped.imageProvider = providerName;

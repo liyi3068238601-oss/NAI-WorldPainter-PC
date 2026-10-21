@@ -3365,8 +3365,8 @@ function I2IPanel({ openSettings }: { openSettings: () => void }) {
         <div className="field">
           <span>{t("inpaint.nextSource")}</span>
           <div className="mode-buttons i2i-source-policy" role="group" aria-label={t("inpaint.nextSourceLabel")}>
-            <Button variant={i2iSourceMode === "original" ? "primary" : "secondary"} onClick={() => setI2ISourceMode("original")}>{t("inpaint.sourceOriginal")}</Button>
-            <Button variant={i2iSourceMode === "latest" ? "primary" : "secondary"} onClick={() => setI2ISourceMode("latest")}>{t("inpaint.sourceLatest")}</Button>
+            <Button variant={i2iSourceMode === "original" ? "primary" : "secondary"} aria-pressed={i2iSourceMode === "original"} onClick={() => setI2ISourceMode("original")}>{t("inpaint.sourceOriginal")}</Button>
+            <Button variant={i2iSourceMode === "latest" ? "primary" : "secondary"} aria-pressed={i2iSourceMode === "latest"} onClick={() => setI2ISourceMode("latest")}>{t("inpaint.sourceLatest")}</Button>
           </div>
           
         </div>
@@ -3437,8 +3437,8 @@ export function InpaintPanel({ openSettings }: { openSettings: () => void }) {
         <div className="field">
           <span>{t("inpaint.nextSource")}</span>
           <div className="mode-buttons i2i-source-policy" role="group" aria-label={t("inpaint.nextSourceLabel")}>
-            <Button variant={inpaintSourceMode === "original" ? "primary" : "secondary"} onClick={() => void setInpaintSourceMode("original")}>{t("inpaint.sourceOriginal")}</Button>
-            <Button variant={inpaintSourceMode === "latest" ? "primary" : "secondary"} onClick={() => void setInpaintSourceMode("latest")}>{t("inpaint.sourceLatest")}</Button>
+            <Button variant={inpaintSourceMode === "original" ? "primary" : "secondary"} aria-pressed={inpaintSourceMode === "original"} onClick={() => void setInpaintSourceMode("original")}>{t("inpaint.sourceOriginal")}</Button>
+            <Button variant={inpaintSourceMode === "latest" ? "primary" : "secondary"} aria-pressed={inpaintSourceMode === "latest"} onClick={() => void setInpaintSourceMode("latest")}>{t("inpaint.sourceLatest")}</Button>
           </div>
           
         </div>
@@ -3557,9 +3557,9 @@ function UpscalePanel({ openSettings }: { openSettings: () => void }) {
         <WorkbenchImageUpload />
         <small className="field-hint">{t("upscale.explain")}</small>
         <div className="scale-buttons">
-          <Button variant={scale === 2 ? "primary" : "secondary"} onClick={() => setScale(2)}>2×</Button>
-          <Button variant={scale === 4 ? "primary" : "secondary"} onClick={() => setScale(4)}>4×</Button>
-          <Button variant={scale === "max" ? "primary" : "secondary"} onClick={() => setScale("max")}>MAX</Button>
+          <Button variant={scale === 2 ? "primary" : "secondary"} aria-pressed={scale === 2} onClick={() => setScale(2)}>2×</Button>
+          <Button variant={scale === 4 ? "primary" : "secondary"} aria-pressed={scale === 4} onClick={() => setScale(4)}>4×</Button>
+          <Button variant={scale === "max" ? "primary" : "secondary"} aria-pressed={scale === "max"} onClick={() => setScale("max")}>MAX</Button>
         </div>
         {workbenchImage && (
           <div className={clsx("info-card", (preparedSize?.resized || outputTooLarge) && "limit-card")}>
@@ -3663,9 +3663,9 @@ function EnhancePanel({ openSettings }: { openSettings: () => void }) {
         <div className="field">
           <span>{t("enhance.scale")}</span>
           <div className="scale-buttons">
-            <Button variant={enhanceScale === 1 ? "primary" : "secondary"} onClick={() => setEnhanceScale(1)}>{t("enhance.keepResolution")}</Button>
-            <Button variant={enhanceScale === 2 ? "primary" : "secondary"} onClick={() => setEnhanceScale(2)}>{t("enhance.doubleResolution")}</Button>
-            <Button variant={isMax ? "primary" : "secondary"} onClick={() => setEnhanceScale("max")}>MAX</Button>
+            <Button variant={enhanceScale === 1 ? "primary" : "secondary"} aria-pressed={enhanceScale === 1} onClick={() => setEnhanceScale(1)}>{t("enhance.keepResolution")}</Button>
+            <Button variant={enhanceScale === 2 ? "primary" : "secondary"} aria-pressed={enhanceScale === 2} onClick={() => setEnhanceScale(2)}>{t("enhance.doubleResolution")}</Button>
+            <Button variant={isMax ? "primary" : "secondary"} aria-pressed={isMax} onClick={() => setEnhanceScale("max")}>MAX</Button>
           </div>
         </div>
         {workbenchImage && target ? <div className={clsx("info-card", outputTooLarge && "limit-card")}><strong>{t("enhance.outputSize")}</strong><span>{workbenchImage.width}×{workbenchImage.height} → {target.width}×{target.height}</span><small>{outputTooLarge ? outputLimitReason : t("enhance.outputHint")}</small></div> : null}
@@ -4211,11 +4211,19 @@ function ReversePanel() {
 
 // ── Left panel ────────────────────────────────────────────────────────────────
 function LeftPanel({ openSettings }: { openSettings: () => void }) {
-  const activeTab = useAppStore((state) => state.activeTab);
+  const activeTab = useAppStore((state) => state.activeTab === "agent" ? "generate" : state.activeTab);
   const language = useAppStore((state) => state.settings?.language);
   const t = useCallback((key: string) => desktopUiText(language, key), [language]);
   const [generateMode, setGenerateMode] = useState<"t2i" | "i2i" | "enhance">("t2i");
   const setActiveCanvasSurface = useAppStore((state) => state.setActiveCanvasSurface);
+  const selectedSurface = useAppStore(state=>state.activeCanvasSurface);
+  useEffect(()=>{
+    if(activeTab!=="generate")return;
+    if(selectedSurface==='generate:t2i')setGenerateMode('t2i');
+    else if(selectedSurface==='generate:i2i')setGenerateMode('i2i');
+    else if(selectedSurface==='generate:enhance')setGenerateMode('enhance');
+  },[activeTab,selectedSurface]);
+
   const currentImage = useAppStore((state) => state.currentImage);
   const workbenchImage = useAppStore((state) => state.workbenchImage);
   const loadWorkbenchFromPath = useAppStore((state) => state.loadWorkbenchFromPath);
@@ -4978,7 +4986,7 @@ export function ImageCanvas() {
   const isGenerating = useAppStore((state) => state.isGenerating);
   const generationPreview = useAppStore((state) => state.generationPreview);
   const generationPhase = useAppStore((state) => state.generationPhase);
-  const activeTab = useAppStore((state) => state.activeTab);
+  const activeTab = useAppStore((state) => state.activeTab === "agent" ? "generate" : state.activeTab);
   const generate = useAppStore((state) => state.generate);
   const settings = useAppStore((state) => state.settings);
   const language = settings?.language;
@@ -5614,7 +5622,7 @@ const MemoizedHistoryPanel = memo(HistoryPanel);
 // ── Settings modal ────────────────────────────────────────────────────────────
 export function SettingsModal({ onClose }: { onClose: () => void }) {
   const gatewayDraft = useAppStore(state=>state.params);
-  const gatewayTab = useAppStore(state=>state.activeTab);
+  const gatewayTab = useAppStore(state=>state.activeTab === "agent" ? "generate" : state.activeTab);
   const gatewaySurface = useAppStore(state=>state.activeCanvasSurface);
   const gatewayOperation = gatewayTab === "inpaint" ? "inpaint" : gatewayTab === "generate" && gatewaySurface === "generate:t2i" ? "textToImage" : gatewayTab === "generate" && gatewaySurface === "generate:i2i" ? "imageToImage" : null;
   const gatewayCharacters = useAppStore(state=>state.charCaptions.length);
@@ -7151,7 +7159,7 @@ function MainPage() {
     () => toast ? compactRemoteErrorText(localizeStoreMessage(language,toast), { serviceLabel: "NovelAI API", maxLength: 360 }) : "",
     [toast,language],
   );
-  const workbenchActive = activeTab === "generate"
+  const workbenchActive = activeTab === "agent" || activeTab === "generate"
     || activeTab === "inpaint"
     || activeTab === "postprocess"
     || activeTab === "inspect"
@@ -7224,6 +7232,7 @@ function MainPage() {
       <AppTabBar />
       <div
         className="workspace"
+        data-assistant-open={activeTab === "agent" ? "true" : undefined}
         data-history-collapsed={wsHistoryCollapsed}
         data-history-resizing={wsHistoryDragWidth !== null}
         style={{ "--ws-left": `${wsLeftWidth}px`, "--ws-right": `${displayedHistoryWidth}px` } as CSSProperties}
@@ -7246,8 +7255,13 @@ function MainPage() {
               </Suspense>
             </PersistentCanvasSurface>
           </div>
-          <HistoryRailControls />
-          <HistoryRailPane><MemoizedHistoryPanel /></HistoryRailPane>
+          <div className="assistant-history-slot" hidden={activeTab === "agent"}><HistoryRailControls /></div>
+          <div className="assistant-history-slot" hidden={activeTab === "agent"}><HistoryRailPane><MemoizedHistoryPanel /></HistoryRailPane></div>
+          <div className="workbench-assistant" hidden={activeTab !== "agent"}>
+            <Suspense fallback={<div className="lazy-tool-loading">{t("tool.loadingTools")}</div>}>
+              <AgentPage active={activeTab === "agent"} docked />
+            </Suspense>
+          </div>
         </PersistentTabView>
         <PersistentTabView active={activeTab === "styles"} scope="tab:styles"><StyleLibrary/></PersistentTabView>
         <PersistentTabView active={activeTab === "records"} scope="tab:records">
@@ -7268,11 +7282,6 @@ function MainPage() {
         <PersistentTabView active={activeTab === "onlineGallery"} scope="tab:onlineGallery">
           <Suspense fallback={<div className="lazy-tool-loading">{t("tool.loadingTools")}</div>}>
             <OnlineGalleryPage />
-          </Suspense>
-        </PersistentTabView>
-        <PersistentTabView active={activeTab === "agent"} scope="tab:agent">
-          <Suspense fallback={<div className="lazy-tool-loading">{t("tool.loadingTools")}</div>}>
-            <AgentPage active={activeTab === "agent"} />
           </Suspense>
         </PersistentTabView>
         <PersistentTabView active={activeTab === "referencePresets"} scope="tab:referencePresets">

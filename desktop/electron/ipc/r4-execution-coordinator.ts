@@ -120,7 +120,7 @@ export class R4ExecutionCoordinator {
       if(!['ready','approved'].includes(preparation.status)||creation.inputRevision!==preparation.inputRevision
         ||preparation.expiresAt&&Date.parse(preparation.expiresAt)<=Date.now())return stale();
       if(!approvedByUi&&preparation.status!=='approved')throw Error('这份生成预览尚未批准。');
-      for(const binding of [preparation.inputSnapshot.editSource,preparation.inputSnapshot.mask,...preparation.inputSnapshot.references]){
+      for(const binding of [preparation.inputSnapshot.editSource,preparation.inputSnapshot.mask,...preparation.inputSnapshot.references,...(preparation.inputSnapshot.workbenchAssets??[])]){
         if(!binding)continue;
         const current=this.host.dependencies.resolveAttachment(workspace,state,scope.conversationId,scope.creationId,binding.attachmentId);
         if(current.hash!==binding.hash||current.revision!==binding.revision)return stale();

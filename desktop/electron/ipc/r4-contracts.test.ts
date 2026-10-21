@@ -23,12 +23,12 @@ type Fixture = {
 const fixtures = (fixtureDocument as { fixtures: Fixture[] }).fixtures;
 
 describe('R4 registry contracts', () => {
-  it('keeps the byte-identical Final registry and all canonical tools', () => {
+  it('keeps the current registry hash and canonical tools consistent', () => {
     const path = fileURLToPath(new URL('../../src/agent/r4-registry.json', import.meta.url));
     const hash = createHash('sha256').update(readFileSync(path)).digest('hex');
     expect(hash).toBe(R4_REGISTRY_SHA256);
-    expect(registry.tools).toHaveLength(36);
-    expect(new Set(registry.tools.map(tool => tool.canonical)).size).toBe(36);
+    expect(registry.tools).toHaveLength(37);
+    expect(new Set(registry.tools.map(tool => tool.canonical)).size).toBe(37);
     expect(registry.tools.map(tool => tool.canonical)).toEqual([...R4_TOOL_NAMES]);
     expect(r4Tool('read_creation')?.effect).toBe('read');
     expect(r4Tool('patch_creation_inputs')?.effect).toBe('creation_input_write');
@@ -119,16 +119,18 @@ describe('R4 registry contracts', () => {
     });
   });
 
-  it('keeps the frozen executable prompt candidate intact and appends the confirmed implementation amendment', () => {
-    const path = fileURLToPath(new URL('../../../docs/agent-refactor-v3.2-r4-final/SYSTEM_PROMPT.md', import.meta.url));
-    const source = readFileSync(path, 'utf8');
-    const candidate = source.match(/## 基础提示词候选\s+```text\r?\n([\s\S]*?)\r?\n```/);
-    expect(candidate?.[1]).toBeDefined();
-    expect(R4_SYSTEM_PROMPT).toBe(candidate![1] + R4_USER_DECISION_AMENDMENT);
-    expect(R4_USER_DECISION_AMENDMENT).toContain('助手每次生图的正向词、负向词和风格词');
-    expect(R4_USER_DECISION_AMENDMENT).toContain('read_generation_state 只读工作台');
-    expect(R4_USER_DECISION_AMENDMENT).toContain('apply_prompt 只在用户明确要求应用时使用');
-    expect(R4_SYSTEM_PROMPT).not.toContain('尚未替换产品提示词');
+  it('keeps the active system prompt aligned with direct workbench writing and guarded generation', () => {
+    expect(R4_SYSTEM_PROMPT).toContain('write_workbench_prompts');
+    expect(R4_SYSTEM_PROMPT).toContain('expectedDraftRevision');
+    expect(R4_SYSTEM_PROMPT).toContain('revision 冲突、blocked 或状态不可用表示未应用，停止且不自动重读或重试');
+    expect(R4_SYSTEM_PROMPT).toContain('收到 write_workbench_prompts 成功回执后，fresh-read 工作台');
+    expect(R4_SYSTEM_PROMPT).toContain('prepare_generation({})，不另带提示词或模型参数');
+    expect(R4_SYSTEM_PROMPT).toContain('生成使用工作台当前实际提示词、模型、尺寸、采样器、步数、种子策略、强度、批量和输入图片');
+    expect(R4_SYSTEM_PROMPT).toContain('只把用户明确授权参与生成的确切图片作为参考');
+    expect(R4_SYSTEM_PROMPT).toContain('read_skill');
+    expect(R4_SYSTEM_PROMPT).toContain('任何收费操作失败或结果未知后');
+    expect(R4_USER_DECISION_AMENDMENT).not.toContain('read_generation_state 只读工作台');
+    expect(R4_SYSTEM_PROMPT).not.toContain('助手每次生图的正向词、负向词和风格词');
   });
 
   it('rejects all three R3 terminal aggregates that conceal pending work', () => {

@@ -8,8 +8,9 @@ import {collectPortableWorkspaceData,mergePortableWorkspaceData} from './feature
 import {flushArtistFavoritePersistence,hydrateArtistFavoriteLibrary} from './artist-favorite-library';
 import {validateTaskRequest} from './agent/task-contract';
 import {useAppStore} from './store';
+import {useMobileInpaintStore} from './mobile-inpaint-store';
 import {createRendererCollections} from './agent/renderer-collections';
-import {normalizeGenerateParams, type AppSettings, type LastGenerationState, type SettingKey, type StylePromptPreset} from './types';
+import {maxNAICharacterPrompts, normalizeGenerateParams, type CharCaptionItem, type AppSettings, type LastGenerationState, type SettingKey, type StylePromptPreset} from './types';
 import {projectStudioData,STUDIO_WRITABLE,validateStudioPatch,validateStyleInput,type StudioAgentRequest,type StudioAgentReply} from './studio-agent-contract';
 
 type State=ReturnType<typeof useAppStore.getState>;
@@ -22,6 +23,21 @@ type PromptField=typeof PROMPT_FIELDS[number];
 function promptFields(params:Record<string,unknown>) {
   return Object.fromEntries(PROMPT_FIELDS.map(key=>[key,typeof params[key]==='string'?params[key]:''])) as Record<PromptField,string>;
 }
+function characterFields(raw:unknown,model:string):CharCaptionItem[] {
+  if(!Array.isArray(raw)||raw.length>maxNAICharacterPrompts(model))throw Error('多角色提示词数量超过当前模型上限。');
+  return raw.map(item=>{
+    if(!item||typeof item!=='object'||Array.isArray(item))throw Error('多角色提示词格式无效。');
+    const row=item as Record<string,unknown>;
+    if(Object.keys(row).some(key=>!['prompt','negativePrompt','name','enabled','useCoords','x','y'].includes(key))
+      ||typeof row.prompt!=='string'||row.prompt.length>20_000
+      ||['negativePrompt','name'].some(key=>row[key]!==undefined&&(typeof row[key]!=='string'||String(row[key]).length>(key==='name'?64:20_000)))
+      ||['enabled','useCoords'].some(key=>row[key]!==undefined&&typeof row[key]!=='boolean')
+      ||['x','y'].some(key=>row[key]!==undefined&&(typeof row[key]!=='number'||!Number.isFinite(row[key])||Number(row[key])<0||Number(row[key])>1)))throw Error('多角色提示词或坐标无效。');
+    return {prompt:row.prompt,negativePrompt:typeof row.negativePrompt==='string'?row.negativePrompt:'',
+      ...(typeof row.name==='string'&&row.name.trim()?{name:row.name.trim()}:{}),enabled:row.enabled!==false,
+      useCoords:row.useCoords===true,x:typeof row.x==='number'?row.x:.5,y:typeof row.y==='number'?row.y:.5};
+  });
+}
 export interface StudioAgentDependencies {
   getState:()=>State;
   setState:(patch:Partial<State>)=>void;
@@ -30,26 +46,38 @@ export interface StudioAgentDependencies {
   notifyReferenceChange?:()=>void;
 }
 export function createStudioAgentService(deps:StudioAgentDependencies) {
+  const presentedR4Outputs = new Set<string>();
   let rendererCollections:ReturnType<typeof createRendererCollections>|undefined;
   const collections=()=>rendererCollections??=createRendererCollections({storage:localStorage,getTab:()=>deps.getState().activeTab,setTab:activeTab=>deps.setState({activeTab}),changed:group=>window.dispatchEvent(new CustomEvent('studio:collections-changed',{detail:group}))});
   let fingerprint='',sequence=0,taskFingerprint='',taskSequence=0;
   const workbenchId=deps.uuid();let workbenchFingerprint:string|undefined,workbenchRevision=0;
-  function liveWorkbench(state=deps.getState()) {
+  function liveWorkbench(state=deps.getState(), includeInputs=false) {
     if(!state.bootDone||!state.settings)throw new Error('软件尚未初始化完成，请稍后重试。');
     const current=generation(state);
+    const mobile=state.activeCanvasSurface==='inpaint'&&useMobileInpaintStore.getState().mode==='mobile';
+    const params=state.activeCanvasSurface==='inpaint'?{...current.params,positivePrompt:mobile?useMobileInpaintStore.getState().prompt:state.inpaintPositivePrompt}:current.params;
     // Include reference/source identity and mask revision in the live CAS token,
     // but never serialize image bodies into an Agent-facing snapshot.
     const imageIdentity=(image:{id?:unknown;filePath?:unknown;width?:unknown;height?:unknown}|null|undefined)=>image?{
       id:image.id??null,filePath:image.filePath??null,width:image.width??null,height:image.height??null,
     }:null;
-    const identity={generation:current,sourceMode:state.i2iSourceMode,source:imageIdentity(state.i2iOriginalImage),
-      workbenchImage:imageIdentity(state.workbenchImage),maskRevision:state.maskRevision,hasMask:Boolean(state.inpaintMask),
-      vibeImages:state.vibeImages.map(({id,name,strength,infoExtracted})=>({id,name,strength,infoExtracted})),
-      preciseReferences:state.preciseReferences.map(({id,type,strength,fidelity})=>({id,type,strength,fidelity}))};
+    const identity={generation:current,modelMode:state.settings?.modelMode,historyGroupId:state.generationGroupId,mobileInpaint:mobile,mode:state.activeCanvasSurface,sourceMode:state.i2iSourceMode,inpaintSourceMode:state.inpaintSourceMode,inpaintSizeMode:state.inpaintSizeMode,inpaintCustomSize:state.inpaintCustomSize,i2iSizeMode:state.i2iSizeMode,source:imageIdentity(state.i2iOriginalImage),
+      workbenchImage:imageIdentity(state.workbenchImage),maskRevision:state.maskRevision,hasMask:Boolean(state.inpaintMask),mask:state.inpaintMask,region:state.inpaintRegion,
+      vibeImages:state.vibeImages.map(({id,name,strength,infoExtracted,base64,encodings})=>({id,name,strength,infoExtracted,base64,encodings})),
+      preciseReferences:state.preciseReferences.map(({id,type,strength,fidelity,informationExtracted,base64})=>({id,type,strength,fidelity,informationExtracted,base64}))};
     const next=JSON.stringify(identity);
     if(next!==workbenchFingerprint){workbenchFingerprint=next;workbenchRevision++;}
     return {draftId:workbenchId,draftRevision:workbenchRevision,inputRevision:workbenchRevision,draftSource:'workbench' as const,
-      params:projectStudioData(current.params) as Record<string,unknown>};
+      params:projectStudioData(params) as Record<string,unknown>,
+      ...(includeInputs?{workbench:structuredClone({busy:{isGenerating:state.isGenerating,isGenerateQueueRunning:state.isGenerateQueueRunning,batchRunning:state.batchRunning},mode:mobile?'inpaint:mobile':state.activeCanvasSurface??'generate:t2i',batchCount:state.batchCount,
+        batchIntervalSeconds:state.batchIntervalSeconds,historyGroupId:state.generationGroupId,modelMode:state.settings?.modelMode??'anime',charCaptions:state.charCaptions,i2iParams:state.i2iParams,
+        i2iSizeMode:state.i2iSizeMode,sourceMode:state.activeCanvasSurface==='inpaint'?state.inpaintSourceMode:state.i2iSourceMode,
+        source:(state.activeCanvasSurface==='inpaint'?state.inpaintSourceMode:state.i2iSourceMode)==='original'?state.i2iOriginalImage??state.workbenchImage:state.workbenchImage,
+        inpaintPositivePrompt:state.inpaintPositivePrompt,inpaintModel:state.inpaintModel,
+        inpaintStrength:state.inpaintStrength,inpaintNoise:state.inpaintNoise,inpaintSizeMode:state.inpaintSizeMode,
+        inpaintCustomSize:state.inpaintCustomSize,inpaintSourceMode:state.inpaintSourceMode,
+        maskRevision:state.maskRevision,mask:state.inpaintMask,region:state.inpaintRegion,
+        vibeImages:state.vibeImages,preciseReferences:state.preciseReferences})}: {})};
   }
   function tasks(){const s=deps.getState();const fp=JSON.stringify([s.isGenerating,s.isGenerateQueueRunning,s.queuePaused,s.generationQueue?.map(x=>x.id)]);if(fp!==taskFingerprint){taskFingerprint=fp;taskSequence++;}return {revision:`${instance}:tasks:${taskSequence}`,running:s.isGenerating,queueRunning:s.isGenerateQueueRunning,paused:s.queuePaused,progress:s.queueProgress,items:projectStudioData(s.generationQueue??[]),status:s.statusText,error:s.lastError,scope:'软件生成队列；暂停在当前图片结束后生效，取消不能撤销已完成的收费调用。'};}
   const instance=deps.uuid();
@@ -97,22 +125,44 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
   async function handle(request:StudioAgentRequest):Promise<StudioAgentReply> {
     try {
       const args=request.args;
-      if(request.action==='r4-workbench-read')return {ok:true,data:liveWorkbench()};
+      if(request.action==='r4-workbench-read')return {ok:true,data:liveWorkbench(deps.getState(),true)};
+      if(request.action==='r4-workbench-result') {
+        const executionId=args.executionId, outputId=args.outputId, image=args.image as Record<string,unknown>|undefined;
+        if(typeof executionId!=='string'||!executionId||typeof outputId!=='string'||!outputId||!image||typeof image.filePath!=='string')throw Error('工作台结果回执无效。');
+        const key=JSON.stringify([executionId,outputId]);
+        if(presentedR4Outputs.has(key))return {ok:true,data:{presented:true,duplicate:true}};
+        // Resolve against the saved history record; never accept a model-supplied image URL.
+        const history=await deps.api.getHistory();
+        const result=history.find(item=>item.filePath===image.filePath);
+        if(!result)throw Error('生成图片尚未保存到图库，未更新画布。');
+        if(presentedR4Outputs.has(key))return {ok:true,data:{presented:true,duplicate:true}};
+        presentedR4Outputs.add(key);
+        const state=deps.getState();
+        deps.setState({history,currentImage:result,inputPreviewAnchor:null,comparisonBeforeImage:null,comparisonAutoOpenRequest:null,
+          statusText:state.settings?.language==='en-US'? 'Assistant image saved': '助手生成图片已保存'});
+        return {ok:true,data:{presented:true,imageId:result.id}};
+      }
       if(request.action==='r4-workbench-apply') {
         const draftId=args.draftId,draftRevision=args.draftRevision,patch=args.patch;
         if(typeof draftId!=='string'||!draftId||!Number.isSafeInteger(draftRevision)||Number(draftRevision)<0
           ||!patch||typeof patch!=='object'||Array.isArray(patch))throw new Error('工作台 CAS 参数无效。');
         const values=patch as Record<string,unknown>;
         if(Object.keys(values).length!==PROMPT_FIELDS.length||PROMPT_FIELDS.some(key=>typeof values[key]!=='string'||String(values[key]).length>100_000))throw new Error('工作台只能应用完整、有效的提示词字段。');
-        const state=deps.getState(),current=liveWorkbench(state),before=promptFields(current.params),after=promptFields(values);
+        const state=deps.getState();
+        if(state.activeCanvasSurface==='inpaint'&&useMobileInpaintStore.getState().mode==='mobile')throw Error('新版重绘正在使用独立画布，请回到生成页后使用助手写词。');
+        const current=liveWorkbench(state),before=promptFields(current.params),after=promptFields(values);
+        const captions=args.characterPrompts===undefined?undefined:characterFields(args.characterPrompts,state.activeCanvasSurface==='inpaint'?state.inpaintModel:state.params.model);
         const diff={positivePromptChanged:before.positivePrompt!==after.positivePrompt,
-          negativePromptChanged:before.negativePrompt!==after.negativePrompt,stylePromptChanged:before.stylePrompt!==after.stylePrompt};
+          negativePromptChanged:before.negativePrompt!==after.negativePrompt,stylePromptChanged:before.stylePrompt!==after.stylePrompt,
+          ...(captions!==undefined?{characterPromptsChanged:JSON.stringify(state.charCaptions.map(item=>({prompt:item.prompt,negativePrompt:item.negativePrompt??'',...(item.name?.trim()?{name:item.name.trim()}:{}),enabled:item.enabled!==false,useCoords:item.useCoords===true,x:item.x,y:item.y})))!==JSON.stringify(captions)}:{})};
         if(current.draftId!==draftId||current.draftRevision!==draftRevision)return {ok:true,data:{applyStatus:'conflict',draftId:current.draftId,draftRevision:current.draftRevision,diff}};
         if(Object.values(diff).some(Boolean)) {
-          // applyParams updates just `params` from the then-current Zustand state
-          // and persists that complete live snapshot; it does not touch source,
-          // reference, character-card or selection state.
-          state.applyParams(after);
+          // Commit every prompt box atomically after checking the same live CAS token.
+          const {positivePrompt,...other}=after;
+          state.applyParams(state.activeCanvasSurface==='inpaint'?other:after,{
+            ...(captions!==undefined?{charCaptions:captions}:{}),
+            ...(state.activeCanvasSurface==='inpaint'?{inpaintPositivePrompt:positivePrompt}:{}),
+          });
         }
         const applied=liveWorkbench(deps.getState());
         return {ok:true,data:{applyStatus:'applied',draftId:applied.draftId,draftRevision:applied.draftRevision,diff}};

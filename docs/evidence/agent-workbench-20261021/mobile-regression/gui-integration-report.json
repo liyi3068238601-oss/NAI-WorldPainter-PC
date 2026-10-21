@@ -1,0 +1,487 @@
+{
+  "generatedAt": "2026-10-21T11:39:24.204Z",
+  "desktop": "E:\\NAI-WorldPainter\\PC端\\desktop",
+  "run": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\mobile-inpaint-integration-2026-10-21T11-39-09-373Z",
+  "evidence": "E:\\NAI-WorldPainter\\PC端\\docs\\evidence\\agent-workbench-20261021\\mobile-regression",
+  "syntheticEvidence": true,
+  "noRealAPIOrPayment": true,
+  "runtime": {
+    "electron": "42.11.0",
+    "chrome": "148.0.7778.280",
+    "node": "24.19.0",
+    "platform": "win32",
+    "arch": "x64",
+    "userData": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\mobile-inpaint-integration-2026-10-21T11-39-09-373Z\\profile",
+    "display": {
+      "accelerometerSupport": "unknown",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 2048,
+        "height": 1152
+      },
+      "colorDepth": 32,
+      "colorSpace": "{primaries:BT709, transfer:SRGB, matrix:RGB, range:FULL}",
+      "depthPerComponent": 8,
+      "detected": true,
+      "displayFrequency": 240,
+      "id": 445807075,
+      "internal": false,
+      "label": "H24E7",
+      "maximumCursorSize": {
+        "width": 0,
+        "height": 0
+      },
+      "monochrome": false,
+      "nativeOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "rotation": 0,
+      "scaleFactor": 1.25,
+      "size": {
+        "width": 2048,
+        "height": 1152
+      },
+      "workArea": {
+        "x": 0,
+        "y": 0,
+        "width": 2048,
+        "height": 1104
+      },
+      "workAreaSize": {
+        "width": 2048,
+        "height": 1104
+      },
+      "touchSupport": "unknown"
+    }
+  },
+  "checks": [
+    {
+      "name": "真实打包界面启动、合成源图导入",
+      "ok": true,
+      "rendererUrl": "file:///E:/NAI-WorldPainter/PC%E7%AB%AF/desktop/dist/index.html",
+      "syntheticSource": "128x128 RGBA PNG",
+      "actualModuleWorkerBundle": [
+        "mobile-inpaint-worker-DdF2Wl2G.js"
+      ]
+    },
+    {
+      "name": "非法尺寸反馈、合法自定义尺寸保持",
+      "ok": true,
+      "rejected": "1000",
+      "accepted": "256x256"
+    },
+    {
+      "name": "文件选择器错误可见且可恢复",
+      "ok": true,
+      "pickerMock": true
+    },
+    {
+      "name": "真实 Vite module Worker 完成 8×8 对齐最终蒙版预览",
+      "ok": true,
+      "workerCreated": 3,
+      "workerPosts": 3,
+      "workerReplies": 3,
+      "lastPreview": {
+        "kind": "mask-preview",
+        "width": 256,
+        "height": 256,
+        "rgbaHash": "fb63aec5"
+      }
+    },
+    {
+      "name": "旧/新模式往返保留当前画布笔迹",
+      "ok": true,
+      "activeSurfaceAfterStroke": "inpaint",
+      "navigationTraceBeforeModeSwitch": [
+        {
+          "type": "pointerdown-tab",
+          "target": "inpaint",
+          "active": "generate",
+          "x": 148.88999938964844,
+          "y": 108.0899887084961
+        },
+        {
+          "type": "click-tab",
+          "target": "inpaint",
+          "active": "generate",
+          "x": 148,
+          "y": 108
+        },
+        {
+          "type": "key",
+          "key": "Tab",
+          "active": "inpaint",
+          "focus": "<input aria-label=\"新版处理宽度\" min=\"64\" max=\"1920\" step=\"64\" type=\"number\" value=\"832\">"
+        },
+        {
+          "type": "key",
+          "key": "Tab",
+          "active": "inpaint",
+          "focus": "<input aria-label=\"新版处理宽度\" min=\"64\" max=\"1920\" step=\"64\" type=\"number\" value=\"832\">"
+        },
+        {
+          "type": "key",
+          "key": "Tab",
+          "active": "inpaint",
+          "focus": "<input aria-label=\"新版处理高度\" min=\"64\" max=\"1920\" step=\"64\" type=\"number\" value=\"1216\">"
+        }
+      ]
+    },
+    {
+      "name": "独立正负提示词和自定义尺寸冷启动持久化",
+      "ok": true
+    },
+    {
+      "name": "串行 mock 双候选与最终请求蒙版一致",
+      "ok": true,
+      "requests": [
+        {
+          "number": 1,
+          "width": 256,
+          "height": 256,
+          "nonemptyMaskPixels": 58048,
+          "maskAlignedTo8x8": true,
+          "maskRgbaHash": "fb63aec5"
+        },
+        {
+          "number": 2,
+          "width": 256,
+          "height": 256,
+          "nonemptyMaskPixels": 58048,
+          "maskAlignedTo8x8": true,
+          "maskRgbaHash": "fb63aec5"
+        }
+      ],
+      "previewRgbaHash": "fb63aec5"
+    },
+    {
+      "name": "前后对比拖界、应用候选后切画笔恢复蒙版",
+      "ok": true
+    },
+    {
+      "name": "网关整批确认后取消：generate 请求数为 0",
+      "ok": true,
+      "official": 2,
+      "quote": 6,
+      "picker": 4,
+      "prepare": 1,
+      "gatewayGenerate": 0,
+      "cancel": 1,
+      "active": 0,
+      "maxActive": 1,
+      "pickerFailure": false
+    },
+    {
+      "name": "1280 深色 / 1440 浅色布局截图",
+      "ok": true,
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "theme": "light",
+        "themeClass": ""
+      }
+    }
+  ],
+  "errors": [],
+  "browserConsoleErrors": [],
+  "screenshots": [
+    {
+      "file": "01-imported-new-workspace.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "02-brush-preview.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "03-two-candidates-compare.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "04-gateway-batch-cancelled.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "05-1280-dark.png",
+      "size": {
+        "width": 1600,
+        "height": 1125
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1281,
+        "height": 901
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "06-1440-light.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "light",
+        "themeClass": ""
+      }
+    }
+  ],
+  "failureScreenshot": null,
+  "generationDiagnostics": [
+    {
+      "stage": "official-batch-after-click",
+      "at": "2026-10-21T11:39:19.879Z",
+      "activeTab": "inpaint",
+      "generateButton": null,
+      "notices": [
+        {
+          "role": "status",
+          "className": "",
+          "text": "正在处理"
+        },
+        {
+          "role": null,
+          "className": "status-bar",
+          "text": "正在准备新版重绘…"
+        }
+      ],
+      "worker": {
+        "created": 2,
+        "posts": 2,
+        "preparePosts": 1,
+        "prepareReplies": 0
+      },
+      "mockCounts": {
+        "official": 0,
+        "quote": 4,
+        "picker": 4,
+        "prepare": 0,
+        "gatewayGenerate": 0,
+        "cancel": 0,
+        "active": 0,
+        "maxActive": 0,
+        "pickerFailure": false
+      }
+    },
+    {
+      "stage": "gateway-batch-after-click",
+      "at": "2026-10-21T11:39:21.076Z",
+      "activeTab": "inpaint",
+      "generateButton": null,
+      "notices": [
+        {
+          "role": "status",
+          "className": "",
+          "text": "正在处理"
+        },
+        {
+          "role": null,
+          "className": "status-bar",
+          "text": "正在准备网关重绘…"
+        }
+      ],
+      "worker": {
+        "created": 5,
+        "posts": 5,
+        "preparePosts": 2,
+        "prepareReplies": 1
+      },
+      "mockCounts": {
+        "official": 2,
+        "quote": 6,
+        "picker": 4,
+        "prepare": 0,
+        "gatewayGenerate": 0,
+        "cancel": 0,
+        "active": 0,
+        "maxActive": 1,
+        "pickerFailure": false
+      }
+    }
+  ],
+  "worker": {
+    "created": 8,
+    "posts": 8,
+    "preparePosts": 2,
+    "postKinds": [
+      "mask-preview",
+      "prepare",
+      "layer",
+      "layer",
+      "prepare",
+      "mask-preview",
+      "mask-preview",
+      "mask-preview"
+    ],
+    "replies": [
+      {
+        "kind": "mask-preview",
+        "width": 256,
+        "height": 256,
+        "rgbaHash": "fb63aec5"
+      },
+      {
+        "kind": "prepare",
+        "width": 256,
+        "height": 256,
+        "rgbaHash": "fb63aec5"
+      },
+      {
+        "kind": "layer",
+        "completed": true,
+        "width": 256,
+        "height": 256,
+        "comparisonWidth": 256,
+        "comparisonHeight": 256
+      },
+      {
+        "kind": "layer",
+        "completed": true,
+        "width": 256,
+        "height": 256,
+        "comparisonWidth": 256,
+        "comparisonHeight": 256
+      },
+      {
+        "kind": "prepare",
+        "width": 256,
+        "height": 256,
+        "rgbaHash": "fb63aec5"
+      },
+      {
+        "kind": "mask-preview",
+        "width": 256,
+        "height": 256,
+        "rgbaHash": "fb63aec5"
+      },
+      {
+        "kind": "mask-preview",
+        "width": 256,
+        "height": 256,
+        "rgbaHash": "fb63aec5"
+      },
+      {
+        "kind": "mask-preview",
+        "width": 256,
+        "height": 256,
+        "rgbaHash": "fb63aec5"
+      }
+    ]
+  },
+  "navigationTrace": [
+    {
+      "type": "pointerdown-tab",
+      "target": "inpaint",
+      "active": "generate",
+      "x": 148.88999938964844,
+      "y": 108.0899887084961
+    },
+    {
+      "type": "click-tab",
+      "target": "inpaint",
+      "active": "generate",
+      "x": 148,
+      "y": 108
+    }
+  ],
+  "mockCounts": {
+    "official": 2,
+    "quote": 6,
+    "picker": 4,
+    "prepare": 1,
+    "gatewayGenerate": 0,
+    "cancel": 1,
+    "active": 0,
+    "maxActive": 1,
+    "pickerFailure": false
+  },
+  "blockedNetwork": [],
+  "limits": [
+    "All provider account, quote, generation, picker, and gateway IPC was explicitly mocked.",
+    "The renderer was the existing packaged Vite dist; this was not a real NovelAI or gateway backend acceptance test.",
+    "Source image and candidate pixels were synthetic; no user files or secrets were read.",
+    "Physical touch, long-running performance, and release-installed packaging were not tested."
+  ]
+}

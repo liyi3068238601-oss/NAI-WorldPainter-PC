@@ -47,17 +47,24 @@ describe('fresh Studio defaults without private profiles',()=>{
   expect(studioSessionOptions(cold.conversations.find(c=>c.id===id))).toMatchObject({approvalMode:'confirm',webSearchEnabled:false});
   expect(studioSessionOptions(cold.conversations.find(c=>c.id===current.id))).toMatchObject({approvalMode:'auto',webSearchEnabled:true});
  });
- it('使用预设 gates selected creative instruction input, not sampler settings or tool permission',()=>{
-  const workspace=createEmptyAgentWorkspace();const chat=workspace.conversations[0];
+ it('keeps the selected preset identity but never injects legacy role-card context into the active assistant',()=>{
+  const workspace=createEmptyAgentWorkspace();
+  const roleCard={id:'legacy-role',name:'Legacy role',nickname:'PRIVATE_ROLE_CARD_SENTINEL',description:'PRIVATE_ROLE_DESCRIPTION',personality:'PRIVATE_PERSONALITY',scenario:'PRIVATE_SCENARIO',systemPrompt:'PRIVATE_CHARACTER_INSTRUCTIONS',postHistoryInstructions:'PRIVATE_POSTSCRIPT'} as any;
+  workspace.characters.push(roleCard);
+  const chat={...workspace.conversations[0],characterIds:[roleCard.id],activeCharacterId:roleCard.id};
   expect(studioSessionOptions(chat).presetId).toBe(STUDIO_DEFAULT_PRESET_ID);
   const enabled=JSON.parse(studioCreativeReferenceData(workspace,chat,[]));
   expect(enabled.preset?.id).toBe(STUDIO_DEFAULT_PRESET_ID);
   expect(enabled.preset?.body).toBeUndefined();
   expect(studioSelectedSystemPrompt(workspace,chat)).toContain('image');
-  expect(enabled.preset?.name).toBe('presetInfiniteFive');
+  expect(enabled.preset?.name).toBe('presetNovelAiAssistant');
+  expect(enabled).not.toHaveProperty('characters');
+  expect(JSON.stringify(enabled)).not.toContain('PRIVATE_');
+  expect(workspace.characters.find(character=>character.id===roleCard.id)).toEqual(roleCard);
   const disabled=JSON.parse(studioCreativeReferenceData(workspace,{...chat,studioTemplateEnabled:false},[]));
   expect(disabled.preset).toBeNull();
-  expect(disabled.characters).toEqual(enabled.characters);
+  expect(disabled).not.toHaveProperty('characters');
+  expect(JSON.stringify(disabled)).not.toContain('PRIVATE_');
  });
  it('uses the supplied frozen preset snapshot for R4 while preserving legacy Studio metadata when omitted',()=>{
   const workspace=createEmptyAgentWorkspace(),chat=workspace.conversations[0];

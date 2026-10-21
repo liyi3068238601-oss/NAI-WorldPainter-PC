@@ -1728,6 +1728,20 @@
     "IG5の一般ルールを画像タスク向けに改写。実際のシステム層に適用しますが、ツール・ネットワーク・支払い権限は付与しません。",
     "IG5 일반 작업 규칙의 이미지 작업용 적용입니다. 실제 시스템 계층에 적용되지만 도구·네트워크·결제 권한을 부여하지 않습니다."
   ],
+  "presetNovelAiAssistant": [
+    "NovelAI 提示词助手 · 工作台默认",
+    "NovelAI 提示詞助手 · 工作台預設",
+    "NovelAI Prompt Assistant · Workbench Default",
+    "NovelAIプロンプト助手 · 作業台の既定",
+    "NovelAI 프롬프트 도우미 · 작업대 기본값"
+  ],
+  "presetNovelAiAssistantBody": [
+    "按实际工作台流程编排英文 tag、正负向词和多角色提示词；明确填词时写入 Generate，生图沿用工作台模型参数与来源。Skill 只提供工作流，不增加工具或付费权限。",
+    "依實際工作台流程編排英文 tag、正負向詞與多角色提示詞；明確填詞時寫入 Generate，生圖沿用工作台模型參數與來源。Skill 僅提供工作流程，不增加工具或付費權限。",
+    "Composes English tags, positive/negative prompts and character prompts through the real workbench. Explicit fill requests write to Generate; generation uses its current model, settings and sources. Skills add no tool or payment permissions.",
+    "実際の作業台に合わせて英語タグ、正負プロンプト、キャラクタープロンプトを作成します。明示的な入力依頼ではGenerateへ書き込み、生成では現在のモデル・設定・ソースを使います。Skillは権限を追加しません。",
+    "실제 작업대 흐름에 따라 영어 태그, 긍정/부정 프롬프트와 캐릭터 프롬프트를 작성합니다. 명시적 입력 요청은 Generate에 반영하고, 생성은 현재 모델·설정·소스를 사용합니다. Skill은 권한을 추가하지 않습니다."
+  ],
   "agentModelsTitle": [
     "智能体模型",
     "智慧體模型",

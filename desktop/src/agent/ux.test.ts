@@ -54,11 +54,15 @@ it('covers actionable context and template controls in every supported locale', 
   }
 });
 
-it('replaces the Pi worldbook resource with persisted skills while retaining preset controls', () => {
+it('keeps Pi resources focused on presets, skills, and memories with in-app preset editing', () => {
   const resourcePanel = readFileSync(new URL('../components/AgentResourcePanel.tsx', import.meta.url), 'utf8');
-  expect(resourcePanel).toContain("['presets','skills','characters','memories']");
+  expect(resourcePanel).toContain("['presets','skills','memories']");
   expect(resourcePanel).toContain('<AgentSkillsPanel');
-  expect(resourcePanel).toContain('<AgentR4AssistantPresetControl language={language} {...presetControl}/>');
+  expect(resourcePanel).toContain('<AgentR4AssistantPresetControl language={language} {...presetControl} onCreatePreset={onCreatePreset} onEditPreset={onEditPreset}/>');
+  expect(resourcePanel).toContain('onCreatePreset:');
+  expect(resourcePanel).toContain('onEditPreset:');
+  expect(resourcePanel).not.toContain('onImport');
+  expect(resourcePanel).not.toContain('workspace?.characters');
   expect(resourcePanel).not.toContain('onChange({studioPresetId:');
   expect(resourcePanel).not.toContain("tab==='worldbooks'");
   expect(resourcePanel).not.toContain('lorebookIds');

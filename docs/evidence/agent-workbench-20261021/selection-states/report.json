@@ -1,0 +1,230 @@
+{
+  "isolatedProfile": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\selection-state-2026-10-21T11-39-09-733Z\\profile",
+  "networkBlocked": true,
+  "paidRequests": 0,
+  "groups": [
+    {
+      "label": "inpaint-source-initial",
+      "theme": "theme-dark",
+      "buttons": [
+        {
+          "text": "始终使用原图",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(245, 213, 122)",
+          "color": "rgb(23, 17, 34)",
+          "border": "rgb(245, 213, 122)"
+        },
+        {
+          "text": "使用最新结果",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgb(28, 28, 33)",
+          "color": "rgb(241, 239, 232)",
+          "border": "rgba(196, 181, 253, 0.16)"
+        }
+      ]
+    },
+    {
+      "label": "inpaint-engine-initial",
+      "theme": "theme-dark",
+      "buttons": [
+        {
+          "text": "NovelAI",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(245, 213, 122)",
+          "color": "rgb(23, 17, 34)",
+          "border": "rgb(245, 213, 122)"
+        },
+        {
+          "text": "OpenAI 图像编辑",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgb(28, 28, 33)",
+          "color": "rgb(241, 239, 232)",
+          "border": "rgba(196, 181, 253, 0.16)"
+        }
+      ]
+    },
+    {
+      "label": "inpaint-source-after-latest",
+      "theme": "theme-dark",
+      "buttons": [
+        {
+          "text": "始终使用原图",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgb(28, 28, 33)",
+          "color": "rgb(241, 239, 232)",
+          "border": "rgba(196, 181, 253, 0.16)"
+        },
+        {
+          "text": "使用最新结果",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(245, 213, 122)",
+          "color": "rgb(23, 17, 34)",
+          "border": "rgb(245, 213, 122)"
+        }
+      ]
+    },
+    {
+      "label": "inpaint-engine-after-openai",
+      "theme": "theme-dark",
+      "buttons": [
+        {
+          "text": "NovelAI",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgb(28, 28, 33)",
+          "color": "rgb(241, 239, 232)",
+          "border": "rgba(196, 181, 253, 0.16)"
+        },
+        {
+          "text": "OpenAI 图像编辑",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(245, 213, 122)",
+          "color": "rgb(23, 17, 34)",
+          "border": "rgb(245, 213, 122)"
+        }
+      ]
+    },
+    {
+      "label": "inpaint-source-light",
+      "theme": "",
+      "buttons": [
+        {
+          "text": "始终使用原图",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgba(255, 255, 255, 0.66)",
+          "color": "rgb(32, 41, 54)",
+          "border": "rgba(124, 58, 237, 0.16)"
+        },
+        {
+          "text": "使用最新结果",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(53, 104, 184)",
+          "color": "rgb(255, 255, 255)",
+          "border": "rgb(53, 104, 184)"
+        }
+      ]
+    },
+    {
+      "label": "inpaint-engine-light",
+      "theme": "",
+      "buttons": [
+        {
+          "text": "NovelAI",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgba(255, 255, 255, 0.66)",
+          "color": "rgb(32, 41, 54)",
+          "border": "rgba(124, 58, 237, 0.16)"
+        },
+        {
+          "text": "OpenAI 图像编辑",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(53, 104, 184)",
+          "color": "rgb(255, 255, 255)",
+          "border": "rgb(53, 104, 184)"
+        }
+      ]
+    },
+    {
+      "label": "postprocess-scale-initial",
+      "theme": "theme-dark",
+      "buttons": [
+        {
+          "text": "2×",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgb(28, 28, 33)",
+          "color": "rgb(241, 239, 232)",
+          "border": "rgba(196, 181, 253, 0.16)"
+        },
+        {
+          "text": "4×",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(245, 213, 122)",
+          "color": "rgb(23, 17, 34)",
+          "border": "rgb(245, 213, 122)"
+        },
+        {
+          "text": "MAX",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgb(28, 28, 33)",
+          "color": "rgb(241, 239, 232)",
+          "border": "rgba(196, 181, 253, 0.16)"
+        }
+      ]
+    },
+    {
+      "label": "postprocess-scale-after-4x",
+      "theme": "theme-dark",
+      "buttons": [
+        {
+          "text": "2×",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgb(28, 28, 33)",
+          "color": "rgb(241, 239, 232)",
+          "border": "rgba(196, 181, 253, 0.16)"
+        },
+        {
+          "text": "4×",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(245, 213, 122)",
+          "color": "rgb(23, 17, 34)",
+          "border": "rgb(245, 213, 122)"
+        },
+        {
+          "text": "MAX",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgb(28, 28, 33)",
+          "color": "rgb(241, 239, 232)",
+          "border": "rgba(196, 181, 253, 0.16)"
+        }
+      ]
+    },
+    {
+      "label": "postprocess-scale-light",
+      "theme": "",
+      "buttons": [
+        {
+          "text": "2×",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgba(255, 255, 255, 0.66)",
+          "color": "rgb(32, 41, 54)",
+          "border": "rgba(124, 58, 237, 0.16)"
+        },
+        {
+          "text": "4×",
+          "className": "btn btn-primary",
+          "pressed": "true",
+          "background": "rgb(53, 104, 184)",
+          "color": "rgb(255, 255, 255)",
+          "border": "rgb(53, 104, 184)"
+        },
+        {
+          "text": "MAX",
+          "className": "btn btn-secondary",
+          "pressed": "false",
+          "background": "rgba(255, 255, 255, 0.66)",
+          "color": "rgb(32, 41, 54)",
+          "border": "rgba(124, 58, 237, 0.16)"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

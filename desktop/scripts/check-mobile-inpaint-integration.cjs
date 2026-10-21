@@ -9,6 +9,10 @@ const crypto = require('node:crypto');
 const desktopArg = process.argv.slice(2).find(argument => !argument.startsWith('--'));
 const desktop = path.resolve(desktopArg || process.env.INPAINT_APP_DESKTOP || path.resolve(__dirname, '..'));
 const repo = path.dirname(desktop);
+const { STUDIO_BUILTIN_PRESETS, STUDIO_DEFAULT_PRESET_ID } = require(path.join(desktop, 'dist-electron', 'src', 'agent', 'workspace-controls.js'));
+const expectedNewDefaultPreset = STUDIO_BUILTIN_PRESETS.find(preset => preset.id === STUDIO_DEFAULT_PRESET_ID);
+if (!expectedNewDefaultPreset) throw new Error('Compiled workspace-controls is missing the configured default assistant preset.');
+const expectedNewDefaultHash = crypto.createHash('sha256').update(expectedNewDefaultPreset.body).digest('hex');
 const runId = `mobile-inpaint-integration-${new Date().toISOString().replace(/[:.]/g, '-')}`;
 const run = path.join(desktop, '.tmp', runId);
 const evidence = path.resolve(process.env.INPAINT_EVIDENCE_DIR || path.join(repo, 'docs', 'evidence', 'mobile-inpaint-merge-20261021', runId));
@@ -151,39 +155,254 @@ async function installMocks() {
 async function mockState() { return app.evaluate(() => ({ ...globalThis.integrationCounts, pickerFailure: globalThis.integrationPickerFailure })); }
 async function exerciseR4Entries() {
   await page.locator('.tab-bar [data-tab="agent"]').click();
-  const agentRoot = page.locator('.pi-agent:visible').last();
+  const agentRoot = page.locator('.workbench-assistant > .pi-agent.is-docked');
   await agentRoot.waitFor({ state: 'visible', timeout: 15000 });
+  check(await agentRoot.count()===1,'Docked workbench assistant root is not unique');
   const r4Topbar = agentRoot.locator('.r4-topbar');
   await r4Topbar.waitFor({ state: 'visible', timeout: 15000 });
-  const creationSelect = r4Topbar.locator('select[aria-label="当前创作"], select[aria-label="Current creation"]');
-  await creationSelect.waitFor({ state: 'visible', timeout: 10000 });
-  check(await creationSelect.count() === 1, 'R4 current-creation selector is not unique');
-  const resourcesPane = agentRoot.locator('#pi-creative-resources-pane');
-  await resourcesPane.waitFor({ state: 'attached', timeout: 10000 });
-  let rightPaneExpanded = await resourcesPane.isVisible();
-  if (!rightPaneExpanded) {
-    const rightToggle = r4Topbar.locator('.r4-topbar-right .r4-topbar-drawer:visible').last();
-    await rightToggle.waitFor({ state: 'visible', timeout: 10000 });
-    await rightToggle.click();
+  check(await page.locator('.left-panel:visible .generate-mode-switcher').count() === 1, 'Assistant does not share the actual Generate controls');
+  check(await page.locator('.persistent-canvas-host:visible').count() === 1, 'Assistant does not share the actual Generate canvas');
+  check(await agentRoot.locator('.r4-creative-panel').count() === 0, 'Old creation panel is still mounted');
+  await capture('r4-workbench-assistant');
+
+  const workbenchBridge=await app.evaluate(async({app},input)=>{
+    const path=process.getBuiltinModule('node:path');
+    const req=process.getBuiltinModule('node:module').createRequire(input.desktop+'/package.json');
+    const {getR4WorkbenchService}=req(path.join(input.desktop,'dist-electron','electron','ipc','r4-workbench.js'));
+    const {getR4CreativeHost}=req(path.join(input.desktop,'dist-electron','electron','ipc','r4-agent-service.js'));
+    const host=getR4CreativeHost(),workspace=host.store.readWorkspace();
+    const conversationId=workspace.selectedConversationId??workspace.conversations[0]?.id;
+    if(!conversationId)throw new Error('Synthetic R4 bridge test has no current workspace conversation.');
+    const creative=host.read(conversationId),creationId=creative.currentCreationId;
+    if(!creationId)throw new Error('Synthetic R4 bridge test could not resolve the current creation.');
+    const scope={conversationId,creationId,userIntentRef:'native-synthetic-workbench-bridge',operationKey:'native-synthetic-workbench-write'};
+    const service=getR4WorkbenchService();
+    const project=snapshot=>({draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,inputRevision:snapshot.inputRevision,draftSource:snapshot.draftSource,
+      params:{positivePrompt:snapshot.params.positivePrompt,negativePrompt:snapshot.params.negativePrompt,stylePrompt:snapshot.params.stylePrompt},
+      charCaptions:(snapshot.workbench?.charCaptions??[]).map(item=>({name:item.name??'',prompt:item.prompt??'',negativePrompt:item.negativePrompt??'',enabled:item.enabled!==false,useCoords:item.useCoords===true,x:item.x,y:item.y}))});
+    const before=await service.readR4WorkbenchSnapshot();
+    const values={positivePrompt:'R4 native bridge positive',negativePrompt:'R4 native bridge negative',stylePrompt:'R4 native bridge style',expectedDraftRevision:before.draftRevision,
+      characterPrompts:[
+        {name:'R4 bridge character 1',prompt:'synthetic character prompt one',negativePrompt:'synthetic character negative one',enabled:true,useCoords:false,x:0.5,y:0.5},
+        {name:'R4 bridge character 2',prompt:'synthetic character prompt two',negativePrompt:'synthetic character negative two',enabled:true,useCoords:true,x:0.25,y:0.75},
+      ]};
+    const written=await service.writeR4WorkbenchPrompts(values,scope),after=await service.readR4WorkbenchSnapshot();
+    return {scope,values,initialRevision:before.draftRevision,written,after:project(after)};
+  },{desktop});
+  check(workbenchBridge.written?.data?.writeStatus==='written',`Real Electron-to-renderer workbench write failed: ${JSON.stringify(workbenchBridge.written)}`);
+  check(workbenchBridge.after.draftSource==='workbench'&&workbenchBridge.after.draftRevision>workbenchBridge.initialRevision,'Live workbench revision did not advance through the renderer bridge');
+  check(workbenchBridge.after.params.positivePrompt===workbenchBridge.values.positivePrompt&&workbenchBridge.after.params.negativePrompt===workbenchBridge.values.negativePrompt&&workbenchBridge.after.params.stylePrompt===workbenchBridge.values.stylePrompt,'readSnapshot did not return the prompt values written through the Electron bridge');
+  check(JSON.stringify(workbenchBridge.after.charCaptions)===JSON.stringify(workbenchBridge.values.characterPrompts),'readSnapshot did not return the complete characterPrompts written through the Electron bridge');
+  const promptEditor=page.locator('.left-panel .prompt-editor textarea.prompt-box');
+  check(await promptEditor.inputValue()===workbenchBridge.values.positivePrompt,`Generate positive textarea did not receive the Electron bridge write: ${await promptEditor.inputValue()}`);
+  const styleFieldCount=await page.locator('.left-panel input').evaluateAll((nodes,expected)=>nodes.filter(node=>node.value===expected).length,workbenchBridge.values.stylePrompt);
+  check(styleFieldCount===1,'Generate style prompt input did not receive the Electron bridge write');
+  const negativeTab=page.locator('.left-panel .prompt-tabs button').nth(1);
+  await negativeTab.click();
+  check(await promptEditor.inputValue()===workbenchBridge.values.negativePrompt,'Generate negative textarea did not receive the Electron bridge write');
+  await page.locator('.left-panel .prompt-tabs button').first().click();
+  await page.locator('.left-panel .quick-actions button').first().click();
+  const characterModal=page.locator('.char-modal');
+  await characterModal.waitFor({state:'visible',timeout:10000});
+  const visibleCharacterRows=characterModal.locator('[data-character-list] .char-row');
+  check(await visibleCharacterRows.count()===2,'Generate character prompt modal did not render both bridge-written rows');
+  for(let index=0;index<2;index++){
+    const row=visibleCharacterRows.nth(index);
+    check((await row.locator('.char-row-title').textContent()||'').includes(workbenchBridge.values.characterPrompts[index].name),`Character ${index+1} name did not reach the Generate UI`);
+    check(await row.locator('textarea.char-prompt').first().inputValue()===workbenchBridge.values.characterPrompts[index].prompt,`Character ${index+1} prompt did not reach the Generate UI`);
   }
-  await resourcesPane.waitFor({ state: 'visible', timeout: 10000 });
-  rightPaneExpanded = await resourcesPane.isVisible();
-  const resourcesTab = resourcesPane.getByRole('tab', { name: '资源', exact: true });
-  await resourcesTab.click();
-  const presetPanel = resourcesPane.locator('.pi-assistant-presets');
-  await presetPanel.waitFor({ state: 'visible', timeout: 10000 });
-  const defaultButton = presetPanel.locator('.r4-preset-control > button');
-  await defaultButton.waitFor({ state: 'visible', timeout: 10000 });
-  check(await defaultButton.count() === 1, 'R4 new-chat default button is not unique');
-  check(await resourcesTab.getAttribute('aria-selected') === 'true', 'R4 Resources tab did not become active');
+  await capture('r4-workbench-bridge-live-prompts');
+  await characterModal.locator('header button').click();
+  const manualPositive='!';
+  await promptEditor.fill(manualPositive);
+  check(await promptEditor.inputValue()===manualPositive,'Synthetic manual positive edit did not reach the live Generate textarea');
+  const staleWrite=await app.evaluate(async(_electron,input)=>{
+    const path=process.getBuiltinModule('node:path');
+    const req=process.getBuiltinModule('node:module').createRequire(input.desktop+'/package.json');
+    const {getR4WorkbenchService}=req(path.join(input.desktop,'dist-electron','electron','ipc','r4-workbench.js'));
+    const service=getR4WorkbenchService();
+    const result=await service.writeR4WorkbenchPrompts({positivePrompt:'STALE WRITE MUST NOT WIN',expectedDraftRevision:input.expectedRevision},input.scope);
+    const current=await service.readR4WorkbenchSnapshot();
+    return {result,draftRevision:current.draftRevision,positivePrompt:current.params.positivePrompt};
+  },{desktop,scope:workbenchBridge.scope,expectedRevision:workbenchBridge.after.draftRevision});
+  check(staleWrite.result?.data?.writeStatus==='conflict',`Stale Electron bridge write was not rejected: ${JSON.stringify(staleWrite.result)}`);
+  check(staleWrite.positivePrompt===manualPositive&&await promptEditor.inputValue()===manualPositive,'Stale CAS changed the manually edited positive prompt');
+  pass('R4 Electron IPC 经真实 React 工作台读写提示词与双角色，并拒绝旧版本覆盖',{initialRevision:workbenchBridge.initialRevision,writtenRevision:workbenchBridge.after.draftRevision,staleRevision:workbenchBridge.after.draftRevision,manualValuePreserved:manualPositive,paidApiCalls:false});
+
+  const resourcesPane = agentRoot.locator('#pi-creative-resources-pane');
+  const resourceScrim = agentRoot.locator('.pi-resource-scrim');
+  await r4Topbar.getByRole('button', {name:'资源',exact:true}).click();
+  await resourcesPane.waitFor({state:'visible',timeout:10000});
+  await resourceScrim.waitFor({state:'visible',timeout:10000});
+  const presetPanel=resourcesPane.locator('.pi-assistant-presets');
+  await presetPanel.waitFor({state:'visible',timeout:10000});
+  check(await resourcesPane.getByRole('tab',{name:'角色卡',exact:true}).count() === 0, 'Role card tab is still exposed');
+  check(await resourcesPane.getByRole('button',{name:/导入/}).count() === 0, 'Preset import UX is still exposed');
+  check(await presetPanel.getByRole('button',{name:/新增|新建/}).count() > 0, 'Preset creation is not reachable');
+  check(await resourcesPane.getByRole('button',{name:/^(关闭|Close)$/i}).count()===1, 'Resource pane close button is missing or ambiguous');
   await capture('r4-resource-presets');
-  pass('R4 Agent 创作顶栏与资源预设面板可达', {
-    currentCreation: { visible: await creationSelect.isVisible(), value: await creationSelect.inputValue(), disabled: await creationSelect.isDisabled() },
-    resourcesPaneExpanded: rightPaneExpanded,
-    resourcesTabSelected: true,
-    presetPanelVisible: await presetPanel.isVisible(),
-    defaultButton: { visible: await defaultButton.isVisible(), disabled: await defaultButton.isDisabled(), text: (await defaultButton.innerText()).trim() },
-    screenshot: screenshots.at(-1)?.file,
+  pass('R4 工作台助手共用生成区、移除创作与角色卡、可管理预设', {screenshot:screenshots.at(-1)?.file});
+
+  await resourcesPane.getByRole('button',{name:/^(关闭|Close)$/i}).click();
+  await resourcesPane.waitFor({state:'hidden',timeout:10000});
+  await resourceScrim.waitFor({state:'hidden',timeout:10000});
+  pass('资源抽屉内部关闭按钮可关闭抽屉并移除 scrim');
+  await r4Topbar.getByRole('button', {name:'资源',exact:true}).click();
+  await resourcesPane.waitFor({state:'visible',timeout:10000});
+  await resourceScrim.waitFor({state:'visible',timeout:10000});
+  const scrimTarget=await resourceScrim.evaluate(element=>{
+    const rect=element.getBoundingClientRect();
+    const pane=document.querySelector('#pi-creative-resources-pane');
+    const paneRect=pane?.getBoundingClientRect();
+    const x=Math.min(rect.right-1,rect.left+8);
+    const y=rect.top+Math.min(Math.max(8,rect.height/2),Math.max(8,rect.height-1));
+    const hit=document.elementFromPoint(x,y);
+    return {visible:rect.width>0&&rect.height>0,isTarget:hit===element||Boolean(hit&&element.contains(hit)),x,y,paneLeft:paneRect?.left??null,hitTag:hit?.tagName??null,hitClass:typeof hit?.className==='string'?hit.className:''};
+  });
+  check(scrimTarget.visible&&scrimTarget.isTarget,`Visible resource scrim is not the pointer target outside the drawer: ${JSON.stringify(scrimTarget)}`);
+  await page.mouse.click(scrimTarget.x,scrimTarget.y);
+  await resourcesPane.waitFor({state:'hidden',timeout:10000});
+  await resourceScrim.waitFor({state:'hidden',timeout:10000});
+  pass('资源 scrim 可见且点击后关闭抽屉',{scrimTarget});
+
+  const composer=agentRoot.locator('.pi-composer textarea');
+  const composerHit=await composer.evaluate(element=>{
+    const rect=element.getBoundingClientRect();
+    const hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
+    return {visible:rect.width>0&&rect.height>0,isTarget:hit===element||Boolean(hit&&element.contains(hit)),hitTag:hit?.tagName??null,hitClass:typeof hit?.className==='string'?hit.className:''};
+  });
+  check(composerHit.visible&&composerHit.isTarget,`Closed resource pane blocks the composer center: ${JSON.stringify(composerHit)}`);
+  pass('关闭资源抽屉后输入框可见且中心可命中',{composerHit});
+  await r4Topbar.getByRole('button', {name:'资源',exact:true}).click();
+  await resourcesPane.waitFor({state:'visible',timeout:10000});
+  await resourceScrim.waitFor({state:'visible',timeout:10000});
+
+  const readSqliteState=async()=>await app.evaluate(({app})=>{
+    const path=process.getBuiltinModule('node:path');
+    const {DatabaseSync}=process.getBuiltinModule('node:sqlite');
+    const file=path.join(app.getPath('userData'),'WorldPainterWorkspace','agent-state.sqlite');
+    const db=new DatabaseSync(file,{readOnly:true});
+    try{
+      const row=db.prepare('SELECT r4_json FROM agent_state WHERE id = 1').get();
+      const state=JSON.parse(row.r4_json);
+      return {assistantPresets:state.assistantPresets,assistantPresetDefaultBinding:state.assistantPresetDefaultBinding};
+    }finally{db.close();}
+  });
+  const readSqlitePreset=async presetId=>(await readSqliteState()).assistantPresets?.[presetId]??null;
+  const newDefaultId=STUDIO_DEFAULT_PRESET_ID;
+  const initialSqlite=await readSqliteState();
+  check(initialSqlite.assistantPresetDefaultBinding?.presetId===newDefaultId&&initialSqlite.assistantPresetDefaultBinding.enabled===true,`New R4 workspace did not use the new default preset: ${JSON.stringify(initialSqlite.assistantPresetDefaultBinding)}`);
+  for(const id of [newDefaultId,'dsh-infinite-gen-5','dsh-infinite-gen-4','studio-complete']){
+    check(await resourcesPane.locator(`.pi-resource-item:has(.pi-resource-select[title*="${id}"])`).count()===1,`Built-in assistant preset ${id} is missing`);
+  }
+  const initialDefault=initialSqlite.assistantPresets?.[newDefaultId];
+  check(initialDefault?.source==='builtin'&&initialDefault.revision===1&&initialDefault.body===expectedNewDefaultPreset.body&&initialDefault.hash===expectedNewDefaultHash,`New default preset body is missing or stale in SQLite: ${JSON.stringify(initialDefault&&{id:initialDefault.id,source:initialDefault.source,revision:initialDefault.revision,hash:initialDefault.hash})}`);
+  const untouchedGen5=initialSqlite.assistantPresets?.['dsh-infinite-gen-5'];
+  check(untouchedGen5?.hash==='969c9d5893f696cd92a5cd9c18b89213d3fb169a27499310bba8d4c636deb9b6'&&untouchedGen5.revision===1,`Previous built-in preset was unexpectedly rewritten: ${JSON.stringify(untouchedGen5)}`);
+  await presetPanel.getByRole('button',{name:/新增|新建/}).click();
+  let editor=page.getByRole('dialog',{name:'新增助手预设',exact:true});
+  await editor.waitFor({state:'visible',timeout:10000});
+  const editorFocusBeforeEscape=await editor.evaluate(dialog=>{
+    const active=document.activeElement;
+    return {insideDialog:Boolean(active&&dialog.contains(active)),tag:active?.tagName??null,id:active instanceof HTMLElement?active.id:'',className:active instanceof HTMLElement&&typeof active.className==='string'?active.className:'',ariaLabel:active instanceof HTMLElement?active.getAttribute('aria-label'):null};
+  });
+  await page.keyboard.press('Escape');
+  await editor.waitFor({state:'detached',timeout:10000});
+  const drawerAfterEscape=await resourcesPane.evaluate(element=>{
+    const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
+    return {connected:element.isConnected,visible:style.display!=='none'&&style.visibility!=='hidden'&&rect.width>0&&rect.height>0,display:style.display,visibility:style.visibility,disclosureOpen:element.getAttribute('data-disclosure-open'),ariaHidden:element.getAttribute('aria-hidden'),width:rect.width,height:rect.height};
+  });
+  check(await resourcesPane.isVisible(),`Escape in the preset editor closed the real resource drawer: ${JSON.stringify(drawerAfterEscape)}`);
+  pass('预设编辑器 Escape 关闭编辑器但保留资源抽屉',{editorFocusBeforeEscape,drawerAfterEscape});
+
+  const firstName='SYNTHETIC preset cold-start';
+  const firstBody='Synthetic assistant preset body v1; no external request.';
+  await presetPanel.getByRole('button',{name:/新增|新建/}).click();
+  editor=page.getByRole('dialog',{name:'新增助手预设',exact:true});
+  await editor.waitFor({state:'visible',timeout:10000});
+  await editor.getByLabel('名称').fill(firstName);
+  await editor.getByLabel('提示词正文').fill(firstBody);
+  await editor.getByRole('button',{name:'保存',exact:true}).click();
+  await editor.waitFor({state:'detached',timeout:10000});
+  const userRow=resourcesPane.locator('.pi-resource-item').filter({hasText:firstName});
+  await userRow.waitFor({state:'visible',timeout:10000});
+  check(await userRow.count()===1,'New assistant preset was not listed exactly once after save');
+  await userRow.locator('.pi-resource-details-toggle').click();
+  check(await userRow.locator('pre').textContent()===firstBody,'New assistant preset body changed after save');
+  const createdUserId=(await userRow.locator('.pi-resource-select').getAttribute('title')||'').split('\nID: ')[1]||'';
+  check(Boolean(createdUserId),'New user preset row did not expose its persistent ID');
+  const sqliteCreatedUser=await readSqlitePreset(createdUserId);
+  check(sqliteCreatedUser?.name===firstName&&sqliteCreatedUser.body===firstBody&&sqliteCreatedUser.source==='user'&&sqliteCreatedUser.revision===1&&sqliteCreatedUser.hash===crypto.createHash('sha256').update(firstBody).digest('hex'),`New user preset is not present in SQLite: ${JSON.stringify(sqliteCreatedUser)}`);
+
+  const editedName='SYNTHETIC preset edited';
+  const editedBody='Synthetic assistant preset body v2; persisted locally only.';
+  await userRow.getByRole('button',{name:/编辑|Edit/}).click();
+  editor=page.getByRole('dialog',{name:'编辑助手预设',exact:true});
+  await editor.waitFor({state:'visible',timeout:10000});
+  await editor.getByLabel('名称').fill(editedName);
+  await editor.getByLabel('提示词正文').fill(editedBody);
+  await editor.getByRole('button',{name:'保存',exact:true}).click();
+  await editor.waitFor({state:'detached',timeout:10000});
+  const editedUserRow=resourcesPane.locator('.pi-resource-item').filter({hasText:editedName});
+  await editedUserRow.waitFor({state:'visible',timeout:10000});
+  await editedUserRow.locator('.pi-resource-details-toggle').click();
+  check(await editedUserRow.locator('pre').textContent()===editedBody,'Edited assistant preset body did not update in the list');
+
+  const builtinRow=()=>resourcesPane.locator(`.pi-resource-item:has(.pi-resource-select[title*="${newDefaultId}"])`);
+  check(await builtinRow().count()===1,'The new default assistant preset is missing');
+  const sqliteBuiltinBefore=await readSqlitePreset(newDefaultId);
+  check(sqliteBuiltinBefore?.source==='builtin','The new default preset is not present in SQLite before editing');
+  await builtinRow().locator('.pi-resource-details-toggle').click();
+  await builtinRow().getByRole('button',{name:/编辑|Edit/}).click();
+  editor=page.getByRole('dialog',{name:'编辑助手预设',exact:true});
+  await editor.waitFor({state:'visible',timeout:10000});
+  const editedBuiltinName='SYNTHETIC built-in preset edited';
+  const editedBuiltinBody='Synthetic edited built-in assistant preset; isolated integration profile.';
+  await editor.getByLabel('名称').fill(editedBuiltinName);
+  await editor.getByLabel('提示词正文').fill(editedBuiltinBody);
+  await editor.getByRole('button',{name:'保存',exact:true}).click();
+  await editor.waitFor({state:'detached',timeout:10000});
+  const editedBuiltinRow=resourcesPane.locator('.pi-resource-item').filter({hasText:editedBuiltinName});
+  await editedBuiltinRow.waitFor({state:'visible',timeout:10000});
+  await editedBuiltinRow.locator('.pi-resource-details-toggle').click();
+  check(await editedBuiltinRow.locator('pre').textContent()===editedBuiltinBody,'Built-in preset body did not update after editing');
+
+  const sqliteUserId=(await editedUserRow.locator('.pi-resource-select').getAttribute('title')||'').split('\nID: ')[1]||'';
+  check(Boolean(sqliteUserId),'Edited user preset row did not expose its persistent ID');
+  const sqliteUser=await readSqlitePreset(sqliteUserId);
+  const sqliteBuiltin=await readSqlitePreset(newDefaultId);
+  check(sqliteUser?.name===editedName&&sqliteUser.body===editedBody&&sqliteUser.source==='user'&&sqliteUser.revision===sqliteCreatedUser.revision+1&&sqliteUser.hash===crypto.createHash('sha256').update(editedBody).digest('hex'),`Edited user preset is not present in SQLite: ${JSON.stringify(sqliteUser)}`);
+  check(sqliteBuiltin?.name===editedBuiltinName&&sqliteBuiltin.body===editedBuiltinBody&&sqliteBuiltin.source==='builtin'&&sqliteBuiltin.revision===sqliteBuiltinBefore.revision+1&&sqliteBuiltin.hash===crypto.createHash('sha256').update(editedBuiltinBody).digest('hex'),`Edited built-in preset is not present in SQLite: ${JSON.stringify(sqliteBuiltin)}`);
+  check((await readSqliteState()).assistantPresetDefaultBinding?.presetId===newDefaultId,'Editing the new default changed the new-chat default binding');
+  await capture('r4-presets-before-cold-start');
+
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForTimeout(1200);
+  await dismissNotices();
+  await page.locator('.tab-bar [data-tab="agent"]').click();
+  await agentRoot.waitFor({state:'visible',timeout:15000});
+  await r4Topbar.waitFor({state:'visible',timeout:15000});
+  if (!(await resourcesPane.isVisible())) await r4Topbar.getByRole('button',{name:'资源',exact:true}).click();
+  await resourcesPane.waitFor({state:'visible',timeout:10000});
+  const restoredSqliteUser=await readSqlitePreset(sqliteUser.id);
+  const restoredSqliteBuiltin=await readSqlitePreset(newDefaultId);
+  check((await readSqliteState()).assistantPresetDefaultBinding?.presetId===newDefaultId,'The new-chat default binding changed across renderer reload');
+  check(restoredSqliteUser?.name===editedName&&restoredSqliteUser.body===editedBody&&restoredSqliteUser.hash===sqliteUser.hash&&restoredSqliteUser.revision===sqliteUser.revision,`User preset changed across renderer reload in SQLite: ${JSON.stringify(restoredSqliteUser)}`);
+  check(restoredSqliteBuiltin?.name===editedBuiltinName&&restoredSqliteBuiltin.body===editedBuiltinBody&&restoredSqliteBuiltin.hash===sqliteBuiltin.hash&&restoredSqliteBuiltin.revision===sqliteBuiltin.revision,`Built-in preset changed across renderer reload in SQLite: ${JSON.stringify(restoredSqliteBuiltin)}`);
+  const restoredUserRow=resourcesPane.locator('.pi-resource-item').filter({hasText:editedName});
+  await restoredUserRow.waitFor({state:'visible',timeout:10000});
+  await restoredUserRow.locator('.pi-resource-details-toggle').click();
+  check(await restoredUserRow.locator('pre').textContent()===editedBody,'User preset edit did not survive renderer cold start');
+  const restoredBuiltinRow=resourcesPane.locator('.pi-resource-item').filter({hasText:editedBuiltinName});
+  await restoredBuiltinRow.waitFor({state:'visible',timeout:10000});
+  await restoredBuiltinRow.locator('.pi-resource-details-toggle').click();
+  check(await restoredBuiltinRow.locator('pre').textContent()===editedBuiltinBody,'Built-in preset edit did not survive renderer cold start');
+  await capture('r4-presets-cold-start-restored');
+  pass('R4 自定义与内置助手预设新增、编辑并在冷启动后保留',{
+    userPreset:{name:editedName,bodyHash:crypto.createHash('sha256').update(editedBody).digest('hex')},
+    builtinPreset:{id:newDefaultId,name:editedBuiltinName,bodyHash:crypto.createHash('sha256').update(editedBuiltinBody).digest('hex')},
+    sqliteDatabase: 'agent-state.sqlite', sqliteRowsVerified: [sqliteUser.id, newDefaultId],
+    noRealApiOrPayment:true,screenshots:screenshots.slice(-2).map(item=>item.file),
   });
 }
 

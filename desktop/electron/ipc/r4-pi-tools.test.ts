@@ -223,7 +223,7 @@ describe('R4 Pi tool session', () => {
     const state = (setup.host.store as unknown as { readR4State: () => { preparations: Record<string, unknown> } }).readR4State();
     state.preparations['prep-1'] = {
       id: 'prep-1', fingerprint: 'fingerprint-1', conversationId: scope.conversationId, creationId: scope.creationId,
-      userIntentRef: scope.userIntentRef,
+      userIntentRef: scope.userIntentRef,inputSnapshot:{inputRevision:0,publicParameters:{}},
     };
     const session = createR4PiToolSession(setup);
     const result = await getTool(session, 'generate_image').execute({ preparationId: 'prep-1' }, new AbortController().signal);
@@ -243,7 +243,7 @@ describe('R4 Pi tool session', () => {
     const state = (setup.host.store as unknown as { readR4State: () => { preparations: Record<string, unknown> } }).readR4State();
     state.preparations['prep-1'] = {
       id: 'prep-1', fingerprint: 'fingerprint-1', conversationId: scope.conversationId, creationId: scope.creationId,
-      ...(userIntentRef === undefined ? {} : { userIntentRef }),
+      ...(userIntentRef === undefined ? {} : { userIntentRef }),inputSnapshot:{inputRevision:0,publicParameters:{}},
     };
 
     const result = await getTool(createR4PiToolSession(setup), 'generate_image')
@@ -261,7 +261,7 @@ describe('R4 Pi tool session', () => {
     const state = (setup.host.store as unknown as { readR4State: () => { preparations: Record<string, unknown> } }).readR4State();
     state.preparations['prep-1'] = {
       id: 'prep-1', fingerprint: 'fingerprint-1', conversationId: scope.conversationId, creationId: scope.creationId,
-      userIntentRef: scope.userIntentRef,
+      userIntentRef: scope.userIntentRef,inputSnapshot:{inputRevision:0,publicParameters:{}},
     };
     const result = await getTool(createR4PiToolSession(setup), 'generate_image')
       .execute({ preparationId: 'prep-1' }, new AbortController().signal);
@@ -290,7 +290,7 @@ describe('R4 Pi tool session', () => {
     const state = (setup.host.store as unknown as { readR4State: () => { preparations: Record<string, unknown> } }).readR4State();
     state.preparations['edit-prep'] = {
       id: 'edit-prep', fingerprint: 'edit-fp', conversationId: scope.conversationId, creationId: scope.creationId,
-      userIntentRef: scope.userIntentRef,
+      userIntentRef: scope.userIntentRef,inputSnapshot:{inputRevision:0,publicParameters:{}},
     };
     setup.prepareImageOperation = vi.fn(async () => { order.push('prepare'); return { preparationId: 'edit-prep', fingerprint: 'edit-fp' }; });
     const session = createR4PiToolSession(setup);

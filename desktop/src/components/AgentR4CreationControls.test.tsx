@@ -11,10 +11,11 @@ const presets:Record<string,R4AssistantPreset>={
   concise:{id:'concise',name:'Concise',body:'Be concise.',revision:3,hash:'abc123',source:'builtin'},
   detailed:{id:'detailed',name:'Detailed',body:'Explain steps.',revision:1,hash:'def456',source:'user'},
 };
+const presetActions={onCreatePreset:vi.fn(async()=>({ok:true})),onEditPreset:vi.fn(async()=>({ok:true}))};
 
 describe('Agent R4 assistant preset control',()=>{
   it('uses the seeded new-chat binding when the conversation has no override and offers no clear option',()=>{
-    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} defaults={{presetId:'concise',enabled:false}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
+    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} defaults={{presetId:'concise',enabled:false}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()} {...presetActions}/>);
 
     expect(selectedPresetIds(html)).toEqual(['concise']);
     expect(html).toContain('>Concise</span>');
@@ -24,7 +25,7 @@ describe('Agent R4 assistant preset control',()=>{
   });
 
   it('keeps a conversation selection instead of silently replacing it with the default',()=>{
-    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} binding={{presetId:'detailed',enabled:true}} defaults={{presetId:'concise',enabled:false}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
+    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} binding={{presetId:'detailed',enabled:true}} defaults={{presetId:'concise',enabled:false}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()} {...presetActions}/>);
 
     expect(selectedPresetIds(html)).toEqual(['detailed']);
     expect(html).toContain('checked=""');
@@ -32,7 +33,7 @@ describe('Agent R4 assistant preset control',()=>{
 
   it('shows the restored turn preset snapshot while leaving the ordinary controls available without another confirmation step',()=>{
     const restored: R4ConversationConfigSnapshot={version:1,providerRef:{providerId:'provider-original'},modelId:'model-original',presetId:'detailed',enabled:false,publicParameters:{},capturedAt:'2026-10-18T00:00:00.000Z',source:'message_send'};
-    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} binding={{presetId:'concise',enabled:true}} defaults={{presetId:'concise',enabled:false}} restoredConfig={restored} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
+    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="en-US" presets={presets} binding={{presetId:'concise',enabled:true}} defaults={{presetId:'concise',enabled:false}} restoredConfig={restored} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()} {...presetActions}/>);
 
     expect(selectedPresetIds(html)).toEqual(['detailed']);
     expect(html).not.toContain('checked=""');
@@ -42,7 +43,7 @@ describe('Agent R4 assistant preset control',()=>{
 
   it.each(['zh-CN','zh-TW','en-US','ja-JP','ko-KR'])('uses localized role wording and friendly built-in names in %s while preserving preset identity',language=>{
     const builtin:R4AssistantPreset={id:'dsh-infinite-gen-5',name:'presetInfiniteFive',body:'Built-in body.',revision:1,hash:'builtin-hash',source:'builtin'};
-    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language={language} presets={{[builtin.id]:builtin}} binding={{presetId:builtin.id,enabled:true}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
+    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language={language} presets={{[builtin.id]:builtin}} binding={{presetId:builtin.id,enabled:true}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()} {...presetActions}/>);
 
     expect(html).toContain(studioUxText(language,'assistantRolePreset'));
     expect(html).toContain(studioUxText(language,'presetInfiniteFive'));
@@ -53,7 +54,7 @@ describe('Agent R4 assistant preset control',()=>{
 
   it('does not translate a user preset whose saved name matches an internal locale key',()=>{
     const custom:R4AssistantPreset={id:'user-preset',name:'presetInfiniteFive',body:'User body.',revision:1,hash:'user-hash',source:'user'};
-    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="zh-CN" presets={{[custom.id]:custom}} binding={{presetId:custom.id,enabled:true}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()}/>);
+    const html=renderToStaticMarkup(<AgentR4AssistantPresetControl language="zh-CN" presets={{[custom.id]:custom}} binding={{presetId:custom.id,enabled:true}} disabled={false} onChange={vi.fn()} onSetDefault={vi.fn()} {...presetActions}/>);
 
     expect(html).toContain('>presetInfiniteFive</span>');
     expect(html).not.toContain('>无限五代 · 生图适配</span>');

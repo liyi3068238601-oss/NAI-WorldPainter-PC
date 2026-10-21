@@ -38,8 +38,8 @@ export function InpaintEngineSwitch() {
     <div className="field">
       <span>{ft("重绘引擎")}</span>
       <div className="mode-buttons" role="group" aria-label={ft("重绘引擎")}>
-        <Button variant={engine === "novelai" ? "primary" : "secondary"} disabled={busy} onClick={() => void saveSetting("inpaintEngine", "novelai")}>NovelAI</Button>
-        <Button variant={engine === "openai" ? "primary" : "secondary"} disabled={busy} onClick={() => void saveSetting("inpaintEngine", "openai")}>{ft("OpenAI 图像编辑")}</Button>
+        <Button variant={engine === "novelai" ? "primary" : "secondary"} aria-pressed={engine === "novelai"} disabled={busy} onClick={() => void saveSetting("inpaintEngine", "novelai")}>NovelAI</Button>
+        <Button variant={engine === "openai" ? "primary" : "secondary"} aria-pressed={engine === "openai"} disabled={busy} onClick={() => void saveSetting("inpaintEngine", "openai")}>{ft("OpenAI 图像编辑")}</Button>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   type R4ConversationCreativeState,
 } from '../../src/agent/r4-types';
 import { validateR4Input, validateR4Result, type R4ToolName } from '../../src/agent/r4-contracts';
+import type {R4WorkbenchSnapshot} from '../../src/agent/r4-workbench-contract';
 import type { AgentSqlStore, AgentSqlTransaction } from './r4-store';
 
 export function r4Hash(value: unknown): string {
@@ -42,7 +43,7 @@ export interface R4HostScope {
 export interface R4CreativeHostDependencies {
   captureConfig: (workspace:AgentWorkspaceData,state:R4AgentState,conversationId:string,source:'message_send'|'preview') => R4ConversationConfigSnapshot;
   resolveAttachment: (workspace:AgentWorkspaceData,state:R4AgentState,conversationId:string,creationId:string,id:string) => R4AttachmentBinding;
-  prepare?: (creation:R4Creation,args:Record<string,unknown>,config:R4ConversationConfigSnapshot,scope:R4HostScope) => Promise<{
+  prepare?: (creation:R4Creation,args:Record<string,unknown>,config:R4ConversationConfigSnapshot,scope:R4HostScope,workbenchSnapshot?:R4WorkbenchSnapshot) => Promise<{
     input:R4CreationInputSnapshot;preview:Record<string,unknown>;providerRef:Record<string,unknown>;
   }>;
   onChanged?: (conversationId:string) => void;
@@ -259,7 +260,7 @@ export class R4CreativeHost {
     return result;
   }
 
-  async prepare(args:Record<string,unknown>,scope:R4HostScope,internalOperation=false) {
+  async prepare(args:Record<string,unknown>,scope:R4HostScope,internalOperation=false,workbenchSnapshot?:R4WorkbenchSnapshot) {
     if(args.targetConversationId!==undefined&&args.targetConversationId!==scope.conversationId||args.targetCreationId!==undefined&&args.targetCreationId!==scope.creationId)throw Error('预览目标与本轮授权范围不一致，未执行。');
     if(!this.dependencies.prepare)throw Error('生成准备服务尚未连接。');
     const initial=this.read(scope.conversationId);
@@ -276,7 +277,7 @@ export class R4CreativeHost {
       inputArgs={...inputArgs,positivePrompt:proposal.positivePrompt,negativePrompt:proposal.negativePrompt,stylePrompt:proposal.stylePrompt};
       delete inputArgs.proposalId;delete inputArgs.revision;
     }
-    const prepared=await this.dependencies.prepare(copy(creation),inputArgs,config,scope);
+    const prepared=await this.dependencies.prepare(copy(creation),inputArgs,config,scope,workbenchSnapshot);
     const result=this.store.transaction(tx=>{
       const state=tx.getR4State(),current=this.scopeCreation(state,scope);
       if(current.inputRevision!==creation.inputRevision)throw Error('输入在准备期间发生变化，请重新预览。');

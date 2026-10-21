@@ -9,11 +9,13 @@ import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
 import {DEFAULT_PARAMS,type AppSettings, type HistoryItem} from '../../src/types';
 import type {AgentWorkspaceData} from '../../src/agent/types';
 import type {R4Execution} from '../../src/agent/r4-types';
+import {validateR4Result} from '../../src/agent/r4-contracts';
 import {AgentSqlStore} from './r4-store';
 
 const fixture=vi.hoisted(()=>({
   dir:'',store:null as AgentSqlStore|null,settings:null as AppSettings|null,
-  history:[] as HistoryItem[],httpMode:'success' as 'success'|'hold'|'http_502',
+  workbench:null as any,
+  history:[] as HistoryItem[],historyGroups:[] as Array<{id:string;name:string}>,httpMode:'success' as 'success'|'hold'|'http_502',
   posts:[] as Array<{url:string;body:Buffer}>,holdStarted:null as (()=>void)|null,
   releaseHold:null as (()=>void)|null,
 }));
@@ -23,15 +25,23 @@ vi.mock('./local-media-protocol',()=>({toLocalMediaUrl:(file:string,id?:string)=
 vi.mock('./store',()=>({
   getSettings:()=>fixture.settings,getToken:()=> 'local-only-fixture-token',
   getAccountSummary:()=>({hasToken:true,tierLevel:0,hasActiveSubscription:false}),
-  setAccountSummary:()=>{},getHistory:()=>fixture.history,getHistoryGroups:()=>[],
+  setAccountSummary:()=>{},getHistory:()=>fixture.history,getHistoryGroups:()=>fixture.historyGroups,
+  ensureHistoryGroup:(name:string,id?:string)=>{
+    const current=fixture.historyGroups.find(item=>item.id===id||item.name===name);
+    if(current)return current;
+    const group={id:id??'fixture-group',name};fixture.historyGroups.push(group);return group;
+  },
   addHistory:(items:HistoryItem[])=>{fixture.history.push(...items);},
   updateHistoryItem:(id:string,patch:Partial<HistoryItem>)=>{const index=fixture.history.findIndex(item=>item.id===id);if(index<0)return undefined;fixture.history[index]={...fixture.history[index],...patch};return fixture.history[index];},
   ensureHistoryGroup:(name:string,id?:string)=>({id:id??'fixture-group',name}),
 }));
 vi.mock('./agent-store',()=>({
-  getAgentSqlStore:()=>fixture.store!,readAgentWorkspace:()=>fixture.store!.readWorkspace(),
+  getAgentSqlStore:()=>fixture.store!,agentAttachmentsDirectory:()=>path.join(fixture.dir,'attachments'),readAgentWorkspace:()=>fixture.store!.readWorkspace(),
   updateAgentConversation:(id:string,update:(chat:any)=>void)=>fixture.store!.transaction(tx=>{const workspace=tx.getWorkspace(),chat=workspace.conversations.find(row=>row.id===id);if(chat){update(chat);tx.setWorkspace(workspace);}}),
 }));
+vi.mock('./r4-workbench',()=>({getR4WorkbenchService:()=>({
+  readR4WorkbenchSnapshot:async()=>structuredClone(fixture.workbench),publishCompletedResults:async()=>{},
+})}));
 vi.mock('./nai-accounts-runtime',()=>({currentNaiAccount:()=>undefined,withNaiAccountOperation:<T>(run:()=>Promise<T>)=>run(),getNaiAccountSummary:()=>({hasToken:true})}));
 vi.mock('./proxy',()=>({proxyConfig:()=>({}),proxyConfigForUrl:async()=>({})}));
 vi.mock('./logger',()=>({logError:()=>{},logInfo:()=>{},appendLog:()=>{}}));
@@ -51,6 +61,7 @@ vi.mock('electron',async()=>{
 });
 
 import {getR4CreativeHost,getR4ExecutionCoordinator,prepareR4ImageOperation} from './r4-agent-service';
+import {buildR4ImageProviderExtras} from './r4-image-provider';
 import {STUDIO_BUILTIN_PRESETS} from '../../src/agent/workspace-controls';
 
 const root=path.resolve('.tmp/r4-five-entry-faults');
@@ -126,7 +137,9 @@ function scopeFor(creationId:string,operation:string,suffix=randomUUID()){
 async function prepare(operation:string,args:Record<string,unknown>,scope:ReturnType<typeof scopeFor>){
   const host=getR4CreativeHost();
   if(operation==='generate_image'){
-    const result=await host.prepare({positivePrompt:String(args.positivePrompt??'synthetic generation'),negativePrompt:'',stylePrompt:'',count:1,width:64,height:64},scope);
+    fixture.workbench={...fixture.workbench,draftRevision:fixture.workbench.draftRevision+1,inputRevision:fixture.workbench.inputRevision+1,
+      params:{...fixture.workbench.params,positivePrompt:String(args.positivePrompt??'synthetic generation')}};
+    const result=await host.prepare({},scope);
     return {preparationId:String(result.data?.preparationId),fingerprint:String(result.data?.inputFingerprint)};
   }
   return prepareR4ImageOperation(operation as 'redraw_image'|'inpaint_image'|'upscale_image'|'process_image',{...args,attachmentId:'source'},scope,new AbortController().signal);
@@ -147,7 +160,11 @@ beforeEach(async()=>{
     outputDir:path.join(fixture.dir,'output'),imageBaseUrl:endpoint,apiBaseUrl:endpoint,allowCustomEndpoint:false,generationGroupId:'',imageNameTemplate:'{date}_{seq}_{model}',keepImageMetadata:false,
     lastGenerationState:{params:{...DEFAULT_PARAMS,model:'nai-diffusion-4-5-curated',width:64,height:64,positivePrompt:'fixture',negativePrompt:'',stylePrompt:'',seedMode:'random',seed:0}},
     stylePromptPresets:[],positivePromptPresets:[],promptChunks:[]} as unknown as AppSettings;
-  fixture.history=[];fixture.store=createStore();resetHttp();
+  fixture.workbench={draftId:'fault-matrix-workbench',draftRevision:0,inputRevision:0,draftSource:'workbench',
+    params:{...DEFAULT_PARAMS,model:'nai-diffusion-4-5-curated',width:64,height:64,positivePrompt:'fixture',negativePrompt:'',stylePrompt:''},
+    workbench:{mode:'generate:t2i',modelMode:'anime',historyGroupId:'fixture-group',batchCount:1,batchIntervalSeconds:0,charCaptions:[],vibeImages:[],preciseReferences:[],
+      busy:{isGenerating:false,isGenerateQueueRunning:false,batchRunning:false}}};
+  fixture.history=[];fixture.historyGroups=[];fixture.store=createStore();resetHttp();
   fixture.store.transaction(tx=>{const state=tx.getR4State(),preset=STUDIO_BUILTIN_PRESETS[0];
     if(preset)state.assistantPresetDefaultBinding={presetId:preset.id,enabled:false};tx.setR4State(state);});
   const host=getR4CreativeHost(),state=host.read('chat');
@@ -163,6 +180,120 @@ afterEach(async()=>{
 });
 
 describe('R4 Final five image-entry durable fault matrix with actual local native HTTP provider',()=>{
+  it('freezes a model-matched encoding-only Vibe as a managed asset without paid encode budget',async()=>{
+    const creationId=getR4CreativeHost().read('chat').currentCreationId!,model='nai-diffusion-4-5-curated';
+    fixture.workbench={...fixture.workbench,
+      params:{...fixture.workbench.params,positivePrompt:'encoding-only vibe fixture'},
+      workbench:{...fixture.workbench.workbench,vibeImages:[{name:'encoding-only.vibe',base64:'',infoExtracted:.6,strength:.31,
+        encodings:[{model,infoExtracted:.6,encoding:'AQIDBA=='}]}]}};
+    const scope=scopeFor(creationId,'generate_image','vibe-encoding-only');
+    const result=await getR4CreativeHost().prepare({},scope),checked=validateR4Result('prepare_generation',result);
+    expect(checked.valid).toBe(true);
+    const data=result.data as {preparationId:string;preview:Record<string,unknown>};
+    const preparation=fixture.store!.readR4State().preparations[data.preparationId];
+    const references=preparation.inputSnapshot.publicParameters.vibeReferences as Array<Record<string,unknown>>;
+    expect(preparation.inputSnapshot.publicParameters.requestBudget).toEqual({image:1,vibe_encode:0,upscale:0});
+    expect(preparation.inputSnapshot.workbenchAssets).toEqual([expect.objectContaining({role:'vibe',hash:expect.stringMatching(/^[a-f0-9]{64}$/),mime:'application/vnd.novelai.vibe-transfer-encoding'})]);
+    expect(references).toEqual([expect.objectContaining({encodingModel:model,encodingInfoExtracted:.6,infoExtracted:.6,strength:.31})]);
+    expect(data.preview.sourceAttachments).toEqual([expect.objectContaining({role:'vibe',includeInGeneration:true,outputIndex:null,hash:expect.stringMatching(/^[a-f0-9]{64}$/)})]);
+    const extras=buildR4ImageProviderExtras({conversationId:'chat',creationId,approvedInput:preparation.inputSnapshot} as R4Execution);
+    expect(extras.vibeImages).toEqual([{base64:'',encodings:[{model,infoExtracted:.6,encoding:'AQIDBA=='}],infoExtracted:.6,strength:.31}]);
+    expect(fixture.posts).toHaveLength(0);
+  });
+
+  it('prepares current inpaint source, mask, Vibe and precise workbench references as strict verified bindings',async()=>{
+    const creationId=getR4CreativeHost().read('chat').currentCreationId!;
+    const sourcePath=path.join(fixture.dir,'workbench-source.png');fs.writeFileSync(sourcePath,sourceBytes);
+    const encoded=sourceBytes.toString('base64');
+    fixture.workbench={...fixture.workbench,draftRevision:fixture.workbench.draftRevision+1,inputRevision:fixture.workbench.inputRevision+1,
+      params:{...fixture.workbench.params,positivePrompt:'inpaint workbench fixture'},
+      workbench:{...fixture.workbench.workbench,mode:'inpaint',modelMode:'anime',sourceMode:'latest',
+        source:{filePath:sourcePath,width:64,height:64},mask:maskBytes.toString('base64'),maskRevision:7,region:null,
+        inpaintPositivePrompt:'inpaint workbench fixture',inpaintModel:'nai-diffusion-5-full-inpainting',inpaintStrength:.72,inpaintNoise:0,
+        inpaintSizeMode:'original',inpaintCustomSize:{width:64,height:64},
+        vibeImages:[{name:'fixture-vibe.png',base64:encoded,infoExtracted:.6,strength:.8}],
+        preciseReferences:[{name:'fixture-precise.png',base64:encoded,type:'character',strength:.7,fidelity:.9}]}};
+    const scope=scopeFor(creationId,'generate_image','workbench-inputs');
+    const prepared=await getR4CreativeHost().prepare({},scope);
+    expect(validateR4Result('prepare_generation',prepared).valid).toBe(true);
+    const data=prepared.data as {preparationId:string;preview:Record<string,unknown>};
+    const attachments=data.preview.sourceAttachments as Array<Record<string,unknown>>;
+    expect(attachments).toHaveLength(4);
+    expect(attachments.map(item=>item.role)).toEqual(['edit_source','mask','vibe','precise']);
+    for(const item of attachments){
+      expect(item).toMatchObject({artifactId:expect.any(String),attachmentId:expect.any(String),attachmentRevision:'1',hash:expect.stringMatching(/^[a-f0-9]{64}$/),
+        outputIndex:null,conversationId:'chat',creationId,parentAttachmentId:null});
+    }
+    expect(attachments.slice(2)).toEqual(expect.arrayContaining([expect.objectContaining({role:'vibe',includeInGeneration:true}),expect.objectContaining({role:'precise',includeInGeneration:true})]));
+    const preparation=fixture.store!.readR4State().preparations[data.preparationId];
+    expect(preparation.inputSnapshot.editSource?.hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(preparation.inputSnapshot.mask?.hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(preparation.inputSnapshot.workbenchAssets).toHaveLength(2);
+    expect(preparation.inputSnapshot.publicParameters).toMatchObject({workbenchMode:'inpaint',maskRevision:7,modelMode:'anime',historyGroupId:'fixture-group'});
+    expect(preparation.inputSnapshot.publicParameters.requestBudget).toEqual({image:1,vibe_encode:1,upscale:0});
+    expect(fixture.posts).toHaveLength(0);
+  });
+
+  it('saves a Generate-workbench redraw into its snapshotted history group',async()=>{
+    const creationId=getR4CreativeHost().read('chat').currentCreationId!,selectedGroup={id:'selected-workbench-group',name:'Selected Generate group'};
+    fixture.historyGroups.push(selectedGroup);
+    const source=fixture.store!.readWorkspace().conversations[0].draftAttachments.find(item=>item.id==='source')!;
+    fixture.workbench={...fixture.workbench,draftRevision:fixture.workbench.draftRevision+1,inputRevision:fixture.workbench.inputRevision+1,
+      params:{...fixture.workbench.params,positivePrompt:'redraw current workbench source'},
+      workbench:{...fixture.workbench.workbench,mode:'generate:i2i',historyGroupId:selectedGroup.id,source:{filePath:source.filePath,width:64,height:64},
+        i2iSizeMode:'original',i2iParams:{strength:.7,noise:0,extraNoiseSeed:17}}};
+    const scope=scopeFor(creationId,'generate_image','redraw-live-group');
+    const prepared=await getR4CreativeHost().prepare({},scope);
+    const receipt=submit(getR4ExecutionCoordinator(),{preparationId:String(prepared.data?.preparationId),fingerprint:String(prepared.data?.inputFingerprint)},scope);
+    const executionId=String(receipt.data.executionId);await getR4ExecutionCoordinator().worker.kick();
+    expect(fixture.posts.map(item=>item.url)).toEqual(['/ai/generate-image']);
+    expect(currentExecution(executionId).status).toBe('completed');
+    expect(fixture.history).toHaveLength(1);
+    expect(fixture.history[0].groupId).toBe(selectedGroup.id);
+    expect(fixture.historyGroups.map(item=>item.name)).not.toContain('Agent 创作');
+  });
+
+  it('keeps an explicitly ungrouped Generate redraw out of the current active history group',async()=>{
+    const creationId=getR4CreativeHost().read('chat').currentCreationId!,activeGroup={id:'active-generation-group',name:'Current active group'};
+    fixture.historyGroups.push(activeGroup);fixture.settings!.generationGroupId=activeGroup.id;
+    const source=fixture.store!.readWorkspace().conversations[0].draftAttachments.find(item=>item.id==='source')!;
+    fixture.workbench={...fixture.workbench,draftRevision:fixture.workbench.draftRevision+1,inputRevision:fixture.workbench.inputRevision+1,
+      params:{...fixture.workbench.params,positivePrompt:'explicitly ungrouped redraw'},
+      workbench:{...fixture.workbench.workbench,mode:'generate:i2i',historyGroupId:'__ungrouped',source:{filePath:source.filePath,width:64,height:64},
+        i2iSizeMode:'original',i2iParams:{strength:.7,noise:0,extraNoiseSeed:17}}};
+    const scope=scopeFor(creationId,'generate_image','redraw-explicit-ungrouped');
+    const prepared=await getR4CreativeHost().prepare({},scope);
+    const receipt=submit(getR4ExecutionCoordinator(),{preparationId:String(prepared.data?.preparationId),fingerprint:String(prepared.data?.inputFingerprint)},scope);
+    const executionId=String(receipt.data.executionId);await getR4ExecutionCoordinator().worker.kick();
+    expect(currentExecution(executionId).status).toBe('completed');
+    expect(fixture.history).toHaveLength(1);
+    expect(fixture.history[0].groupId).toBeUndefined();
+    expect(fixture.historyGroups).toEqual([activeGroup]);
+  });
+
+  it('keeps inpaint in the prepared Generate history group after selection changes during the request',async()=>{
+    const creationId=getR4CreativeHost().read('chat').currentCreationId!,preparedGroup={id:'prepared-inpaint-group',name:'Prepared inpaint'},laterGroup={id:'later-selection-group',name:'Selected after queue'};
+    fixture.historyGroups.push(preparedGroup,laterGroup);fixture.httpMode='hold';
+    const source=fixture.store!.readWorkspace().conversations[0].draftAttachments.find(item=>item.id==='source')!;
+    fixture.workbench={...fixture.workbench,draftRevision:fixture.workbench.draftRevision+1,inputRevision:fixture.workbench.inputRevision+1,
+      params:{...fixture.workbench.params,positivePrompt:'inpaint group snapshot'},
+      workbench:{...fixture.workbench.workbench,mode:'inpaint',historyGroupId:preparedGroup.id,source:{filePath:source.filePath,width:64,height:64},
+        mask:maskBytes.toString('base64'),maskRevision:8,region:null,inpaintPositivePrompt:'inpaint group snapshot',inpaintModel:'nai-diffusion-5-full-inpainting',
+        inpaintStrength:.72,inpaintNoise:0,inpaintSizeMode:'original',inpaintCustomSize:{width:64,height:64}}};
+    const scope=scopeFor(creationId,'generate_image','inpaint-group-snapshot');
+    const prepared=await getR4CreativeHost().prepare({},scope);
+    const receipt=submit(getR4ExecutionCoordinator(),{preparationId:String(prepared.data?.preparationId),fingerprint:String(prepared.data?.inputFingerprint)},scope);
+    const executionId=String(receipt.data.executionId),running=getR4ExecutionCoordinator().worker.kick();
+    await waitFor(()=>fixture.releaseHold!==null,'local inpaint POST');
+    fixture.settings!.generationGroupId=laterGroup.id;
+    fixture.workbench={...fixture.workbench,draftRevision:fixture.workbench.draftRevision+1,inputRevision:fixture.workbench.inputRevision+1,
+      workbench:{...fixture.workbench.workbench,historyGroupId:laterGroup.id}};
+    fixture.releaseHold!();await running;
+    expect(currentExecution(executionId).status).toBe('completed');
+    expect(fixture.history).toHaveLength(1);
+    expect(fixture.history[0].groupId).toBe(preparedGroup.id);
+  });
+
   it.each(operations)('%s: exact replay, changed-payload rejection, unknown no-resend, and late success after unsupported cancel',async(operation,args)=>{
     const creationId=getR4CreativeHost().read('chat').currentCreationId!;
 

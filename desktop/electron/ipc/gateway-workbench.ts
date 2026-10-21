@@ -11,6 +11,7 @@ import { buildMobileInpaintGatewayRequest } from './mobile-inpaint-gateway-codec
 import { getSettings, addHistory } from './store';
 import { toLocalMediaUrl } from './local-media-protocol';
 import { proxyConfigForUrl } from './proxy';
+import { beginJob } from './job-registry';
 import { validateImage, MAX_IMAGE_BYTES } from './image-codec';
 import { writeUniqueImageFile } from './image-output';
 import { buildGatewayGenerationRequest } from './gateway-generation-codec';
@@ -579,13 +580,17 @@ function getService() {
   service = new GatewayWorkbenchService({
     vault,
     post: async (url, payload, options, onSubmitted) => {
-      const settings = getSettings();
-      const proxy = await proxyConfigForUrl('nai', url, settings);
-      if (options.signal.aborted) throw Object.assign(new Error('cancelled before submit'), { code: 'ERR_CANCELED' });
-      onSubmitted();
-      const response = await axios.post(url, payload, { ...proxy, headers: options.headers,
-        timeout: options.timeout, signal: options.signal, maxRedirects: options.maxRedirects });
-      return { status: response.status, data: response.data };
+      const job = beginJob();
+      const signal = AbortSignal.any([options.signal, job.controller.signal]);
+      try {
+        const settings = getSettings();
+        const proxy = await proxyConfigForUrl('nai', url, settings);
+        if (signal.aborted) throw Object.assign(new Error('cancelled before submit'), { code: 'ERR_CANCELED' });
+        onSubmitted();
+        const response = await axios.post(url, payload, { ...proxy, headers: options.headers,
+          timeout: options.timeout, signal, maxRedirects: options.maxRedirects });
+        return { status: response.status, data: response.data };
+      } finally { job.end(); }
     },
     outputDir: () => getSettings().outputDir,
     appendHistory: item => addHistory([item]),

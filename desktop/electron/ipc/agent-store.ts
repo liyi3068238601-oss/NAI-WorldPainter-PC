@@ -368,7 +368,10 @@ export function normalizeAgentWorkspace(raw: unknown, preserveRuntimeStatus = fa
       const latestUsage = [...contextMessages].reverse().find((message) => message.role === "assistant" && message.usage)?.usage;
       const characterIds = (Array.isArray(conversation.characterIds) ? conversation.characterIds : [])
         .filter((id): id is string => typeof id === "string" && characters.some((item) => item.id === id));
-      if (!characterIds.length && defaultCharacterId) characterIds.push(defaultCharacterId);
+      // Preserve an explicit empty selection for R4 chats. Older rows without
+      // this field keep their historic default-character recovery behavior.
+      if ((!Array.isArray(conversation.characterIds) || conversation.characterIds.length > 0)
+          && !characterIds.length && defaultCharacterId) characterIds.push(defaultCharacterId);
       const activeCharacterId = typeof conversation.activeCharacterId === "string" && characterIds.includes(conversation.activeCharacterId)
         ? conversation.activeCharacterId
         : characterIds[0];
@@ -635,6 +638,52 @@ function seedR4FromLegacyWorkspace(raw: Record<string, unknown>, sourceFile: str
   return state;
 }
 
+// The preset bodies are immutable defaults. Upgrades add new entries, never
+// rewrite built-ins already stored in a user's catalog.
+const LEGACY_STUDIO_DEFAULT_PRESET_ID = "dsh-infinite-gen-5";
+const LEGACY_STUDIO_DEFAULT_PRESET_HASH = "969c9d5893f696cd92a5cd9c18b89213d3fb169a27499310bba8d4c636deb9b6";
+const STUDIO_DEFAULT_PRESET_MIGRATION_VERSION = 1;
+function migrateStudioDefaultPreset(state: R4AgentState) {
+  let changed = false;
+  for (const preset of STUDIO_BUILTIN_PRESETS) {
+    if (state.assistantPresets[preset.id]) continue;
+    state.assistantPresets[preset.id] = {
+      id: preset.id,
+      name: preset.name,
+      body: preset.body,
+      revision: 1,
+      hash: sha256(preset.body),
+      source: "builtin",
+    };
+    changed = true;
+  }
+
+  if (state.compatibility.studioDefaultPresetMigrationVersion !== STUDIO_DEFAULT_PRESET_MIGRATION_VERSION) {
+    const binding = state.assistantPresetDefaultBinding;
+    const previousDefault = state.assistantPresets[LEGACY_STUDIO_DEFAULT_PRESET_ID];
+    const nextDefaultId: string = STUDIO_DEFAULT_PRESET_ID;
+    const isPristineFactoryDefault = previousDefault?.source === "builtin"
+      && previousDefault.revision === 1
+      && previousDefault.hash === LEGACY_STUDIO_DEFAULT_PRESET_HASH
+      && sha256(previousDefault.body) === LEGACY_STUDIO_DEFAULT_PRESET_HASH;
+    const nextDefault = state.assistantPresets[nextDefaultId];
+    if (nextDefaultId !== LEGACY_STUDIO_DEFAULT_PRESET_ID
+        && binding?.presetId === LEGACY_STUDIO_DEFAULT_PRESET_ID
+        && binding.enabled === true
+        && isPristineFactoryDefault
+        && nextDefault?.source === "builtin") {
+      state.assistantPresetDefaultBinding = { presetId: nextDefaultId, enabled: true };
+      changed = true;
+    }
+    // Persist the one-time decision even when a disabled, custom, or edited
+    // default was retained; a later user choice of the old preset must stick.
+    state.compatibility.studioDefaultPresetMigrationVersion = STUDIO_DEFAULT_PRESET_MIGRATION_VERSION;
+    changed = true;
+  }
+  if (changed) state.updatedAt = now();
+  return changed;
+}
+
 /** Mirror deliberate legacy resource-preset edits into versioned R4 history. */
 function syncLegacyAssistantPresets(state: R4AgentState, workspace: AgentWorkspaceData) {
   let changed = false;
@@ -729,6 +778,10 @@ export function getAgentSqlStore() {
       legacyFiles: [agentWorkspacePath(), `${agentWorkspacePath()}.bak`, `${agentWorkspacePath()}.bak2`],
       loadInitialState: loadInitialSqlState,
       normalizeWorkspace: workspaceForSql,
+    });
+    sqlStore.transaction((tx) => {
+      const state = tx.getR4State();
+      if (migrateStudioDefaultPreset(state)) tx.setR4State(state);
     });
   }
   return sqlStore;
@@ -912,10 +965,11 @@ export function createAgentConversation(title?: string): AgentWorkspaceMutationR
     };
     const defaults = normalizeStudioDefaults(workspace.studioDefaults);
     const defaultCharacters = defaults.characterIds?.filter(id => workspace.characters.some(c => c.id === id));
-    if (defaultCharacters?.length) {
+    if (defaultCharacters !== undefined) {
       conversation.characterIds = defaultCharacters;
-      conversation.activeCharacterId = defaultCharacters.includes(defaults.activeCharacterId ?? '')
+      if (defaultCharacters.length) conversation.activeCharacterId = defaultCharacters.includes(defaults.activeCharacterId ?? '')
         ? defaults.activeCharacterId : defaultCharacters[0];
+      else delete conversation.activeCharacterId;
     }
     if (defaults.lorebookIds) conversation.lorebookIds = defaults.lorebookIds.filter(id => workspace.lorebooks.some(b => b.id === id));
     if (defaults.studioApprovalMode) conversation.studioApprovalMode = defaults.studioApprovalMode;
@@ -1081,9 +1135,19 @@ export function setStudioConversationOptions(conversationId:string,patch:Partial
  if(patch.studioTemplateEnabled!==undefined&&typeof patch.studioTemplateEnabled==='boolean')chat.studioTemplateEnabled=patch.studioTemplateEnabled;
  if(patch.studioPresetId!==undefined){const id=patch.studioPresetId;if(typeof id!=='string'||!studioBuiltinPreset(id)&&!workspace.samplerPresets.some(p=>'tavern:'+p.id===id))return {ok:false,message:'预设不存在。',workspace};chat.studioPresetId=id;}
   if(patch.selectedSkillIds!==undefined){if(!Array.isArray(patch.selectedSkillIds))return {ok:false,message:'无效的技能选择。',workspace};const selectedSkillIds=[...new Set(patch.selectedSkillIds.filter(id=>typeof id==='string'&&workspace.skills.some(skill=>skill.id===id)))];if(selectedSkillIds.length>STUDIO_SKILL_LIMITS.maxSelected)return {ok:false,message:`每个会话最多选择${STUDIO_SKILL_LIMITS.maxSelected}个技能。`,workspace};chat.selectedSkillIds=selectedSkillIds;}
- if(patch.characterIds!==undefined){if(!Array.isArray(patch.characterIds))return {ok:false,message:'无效的角色选择。',workspace};const ids=[...new Set(patch.characterIds.filter(id=>workspace.characters.some(c=>c.id===id)))];if(!ids.length)return {ok:false,message:'请选择一个角色卡。',workspace};chat.characterIds=ids;chat.activeCharacterId=ids.includes(patch.activeCharacterId??'')?patch.activeCharacterId:ids[0];}
+ if(patch.characterIds!==undefined){if(!Array.isArray(patch.characterIds))return {ok:false,message:'无效的角色选择。',workspace};const ids=[...new Set(patch.characterIds.filter(id=>typeof id==='string'&&workspace.characters.some(c=>c.id===id)))];chat.characterIds=ids;if(ids.length)chat.activeCharacterId=ids.includes(patch.activeCharacterId??'')?patch.activeCharacterId:ids[0];else delete chat.activeCharacterId;}
  if(patch.lorebookIds!==undefined){if(!Array.isArray(patch.lorebookIds))return {ok:false,message:'无效的世界书选择。',workspace};chat.lorebookIds=[...new Set(patch.lorebookIds.filter(id=>workspace.lorebooks.some(b=>b.id===id)))];}
- workspace.studioDefaults=normalizeStudioDefaults({studioApprovalMode:chat.studioApprovalMode,studioWebSearchEnabled:chat.studioWebSearchEnabled,studioTemplateEnabled:chat.studioTemplateEnabled,studioPresetId:chat.studioPresetId,characterIds:chat.characterIds,activeCharacterId:chat.activeCharacterId,lorebookIds:chat.lorebookIds,selectedSkillIds:chat.selectedSkillIds});
+ const defaults=normalizeStudioDefaults(workspace.studioDefaults);
+ workspace.studioDefaults=normalizeStudioDefaults({
+  ...defaults,
+  studioApprovalMode:chat.studioApprovalMode,
+  studioWebSearchEnabled:chat.studioWebSearchEnabled,
+  studioTemplateEnabled:chat.studioTemplateEnabled,
+  studioPresetId:chat.studioPresetId,
+  ...(patch.characterIds!==undefined&&chat.characterIds.length?{characterIds:chat.characterIds,activeCharacterId:chat.activeCharacterId}:{}),
+  lorebookIds:chat.lorebookIds,
+  selectedSkillIds:chat.selectedSkillIds,
+ });
  return mutation(workspace);
 }
 

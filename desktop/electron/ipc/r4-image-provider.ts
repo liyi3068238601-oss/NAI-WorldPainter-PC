@@ -13,8 +13,10 @@ import {generateConfiguredImages} from './compatible-generation';
 import {withNaiAccountOperation} from './nai-accounts-runtime';
 import {toLocalMediaUrl} from './local-media-protocol';
 import {withR4NativeExecution} from './r4-native-context';
+import {withR4ExclusiveGeneration} from './job-registry';
 import {r4ImageProviderRef} from './r4-agent-service';
 import {r4Hash} from './r4-creative-host';
+import {readR4WorkbenchVibeEncoding} from './r4-workbench-assets';
 import type {R4ExecutionProvider,R4ProviderSubmitResult,R4ProviderOutputResult} from './r4-execution-worker';
 
 function fileFor(execution:Readonly<R4Execution>,attachmentId:string) {
@@ -23,21 +25,37 @@ function fileFor(execution:Readonly<R4Execution>,attachmentId:string) {
   const attachments:AgentAttachment[]=[...(chat?.draftAttachments??[]),...(chat?.messages.flatMap(message=>[...message.attachments,...message.tools.flatMap(tool=>tool.generatedImages??[])])??[])];
   const artwork=Object.values(state.artworks).find(item=>item.attachmentId===attachmentId&&item.conversationId===execution.conversationId&&item.creationId===execution.creationId);
   const file=attachments.find(item=>item.id===attachmentId&&!item.unavailable)?.filePath??artwork?.readableHandle;
-  const binding=[execution.approvedInput.editSource,execution.approvedInput.mask,...execution.approvedInput.references].find(item=>item?.attachmentId===attachmentId);
-  if(!binding?.hash||!file||!path.isAbsolute(file))throw Error('批准快照中的图片附件不可读。');
+  const binding=[execution.approvedInput.editSource,execution.approvedInput.mask,...execution.approvedInput.references,...(execution.approvedInput.workbenchAssets??[])].find(item=>item?.attachmentId===attachmentId);
+  if(!binding?.hash||!file||!path.isAbsolute(file))throw Error('批准快照中的图片或参考附件不可读。');
   const bytes=fs.readFileSync(file);
-  if(bytes.length>48*1024*1024||createHash('sha256').update(bytes).digest('hex')!==binding.hash)throw Error('批准图片的内容已变化，未提交请求。');
+  if(bytes.length>48*1024*1024||createHash('sha256').update(bytes).digest('hex')!==binding.hash)throw Error('批准快照中的图片或参考内容已变化，未提交请求。');
   return {file,bytes};
 }
 
-function extrasFor(execution:Readonly<R4Execution>):GenerateExtras {
+export function buildR4ImageProviderExtras(execution:Readonly<R4Execution>):GenerateExtras {
   const p=execution.approvedInput.publicParameters;
   const list=(key:string)=>Array.isArray(p[key])?p[key] as Array<Record<string,unknown>>:[];
-  return {vibeImages:list('vibeReferences').map(reference=>({base64:fileFor(execution,String(reference.attachmentId)).bytes.toString('base64'),
-      infoExtracted:typeof reference.infoExtracted==='number'?reference.infoExtracted:1,strength:typeof reference.strength==='number'?reference.strength:1})),
+  const params=p.params as GenerateParams|undefined;
+  return {vibeImages:list('vibeReferences').map(reference=>{
+      const infoExtracted=typeof reference.infoExtracted==='number'?reference.infoExtracted:1;
+      const strength=typeof reference.strength==='number'?reference.strength:1;
+      if(typeof reference.encodingModel==='string'){
+        const model=reference.encodingModel,encodingInfoExtracted=reference.encodingInfoExtracted;
+        const binding=(execution.approvedInput.workbenchAssets??[]).find(item=>item?.attachmentId===reference.attachmentId);
+        if(!binding)throw new Error('批准快照中的 Vibe 编码绑定不存在。');
+        const encoding=readR4WorkbenchVibeEncoding(binding,{conversationId:execution.conversationId,creationId:execution.creationId});
+        if(!params||model!==params.model||typeof encodingInfoExtracted!=='number'||encodingInfoExtracted!==infoExtracted
+          ||!Number.isFinite(infoExtracted)||infoExtracted<0||infoExtracted>1||encoding.length===0||encoding.length%4!==0||!/^[A-Za-z0-9+/]+={0,2}$/.test(encoding))
+          throw new Error('批准快照中的 Vibe 编码与实际模型或提取值不匹配。');
+        return {base64:'',encodings:[{model,infoExtracted,encoding}],infoExtracted,strength};
+      }
+      const asset=fileFor(execution,String(reference.attachmentId));
+      if(!asset.bytes.length)throw new Error('批准快照中的 Vibe 原图为空。');
+      return {base64:asset.bytes.toString('base64'),infoExtracted,strength};
+    }),
     preciseReferences:list('preciseReferences').map(reference=>({base64:fileFor(execution,String(reference.attachmentId)).bytes.toString('base64'),
       type:(reference.type??'style') as 'style'|'character'|'character&style',strength:typeof reference.strength==='number'?reference.strength:1,fidelity:typeof reference.fidelity==='number'?reference.fidelity:1})),
-    charCaptions:list('characterPrompts').map(character=>({prompt:String(character.prompt??''),negativePrompt:String(character.negativePrompt??''),
+    charCaptions:list('characterPrompts').filter(character=>character.enabled!==false).map(character=>({enabled:true,prompt:String(character.prompt??''),negativePrompt:String(character.negativePrompt??''),
       useCoords:character.useCoords===true,x:Number(character.x??0.5),y:Number(character.y??0.5)})),
     historyGroupId:typeof p.historyGroupId==='string'?p.historyGroupId:undefined,
     modelMode:p.modelMode as GenerateExtras['modelMode']};
@@ -69,31 +87,34 @@ export class R4ImageProvider implements R4ExecutionProvider {
       assertProvider();
       if(execution.providerRef.providerId==='openai-images'){
         if(outputIndex!==null)throw Error('兼容服务的批次粒度与批准快照不符。');
-        result=await generateConfiguredImages({prompt:execution.approvedInput.positivePrompt,n:execution.expectedOutputCount},
+        result=await withR4ExclusiveGeneration(()=>generateConfiguredImages({prompt:execution.approvedInput.positivePrompt,n:execution.expectedOutputCount,
+          ...(typeof p.historyGroupId==='string'?{historyGroupId:p.historyGroupId}:{})},
           {signal:context.signal,configSnapshot:p.compatibleConfig as CompatibleImageSettings,beforeSubmit:()=>gate('image'),afterReceipt:async receipt=>{
             if(receipt.status==='unknown')unknown=true;else confirmed=true;
             await context.afterReceipt('image',receipt);
-          }});
+          }}));
       }else{
         if(outputIndex===null)throw Error('原生图片服务逐张提交，不能伪装远端批次。');
         const params=p.params as GenerateParams;
         if(!params||!params.model)throw Error('任务缺少已冻结的有效图片参数。');
         const source=execution.approvedInput.editSource?fileFor(execution,execution.approvedInput.editSource.attachmentId):undefined;
-        result=await withNaiAccountOperation(()=>withR4NativeExecution({sourcePath:source?.file,signal:context.signal,beforeSubmit:gate,
+        result=await withR4ExclusiveGeneration(()=>withNaiAccountOperation(()=>withR4NativeExecution({sourcePath:source?.file,signal:context.signal,beforeSubmit:gate,
           afterReceipt:async(kind,receipt)=>{
             const failed=receipt.rawStatus?.startsWith('http_')&&Number(receipt.rawStatus.slice(5))>=400&&Number(receipt.rawStatus.slice(5))<500;
             if(receipt.status==='unknown')unknown=true;else confirmed=true;
             await context.afterReceipt(kind,{...receipt,status:receipt.status==='confirmed'?(failed?'failed':'confirmed'):'unknown'});
           }},async()=>{
           switch(String(p.operation??'generate_image')){
-            case 'generate_image': return generateImage(params,extrasFor(execution),{signal:context.signal});
+            case 'generate_image': return generateImage(params,buildR4ImageProviderExtras(execution),{signal:context.signal});
             case 'redraw_image':
               if(!source)throw Error('改图源不可读。');
-              return redrawImage({imageBase64:source.bytes.toString('base64'),params,strength:Number(p.strength??0.7),noise:Number(p.noise??0),extras:extrasFor(execution),
+              return redrawImage({imageBase64:source.bytes.toString('base64'),params,strength:Number(p.strength??0.7),noise:Number(p.noise??0),extras:buildR4ImageProviderExtras(execution),
+                extraNoiseSeed:Number(p.extraNoiseSeed??0),
                 groupName:String(p.historyGroupName??'Agent 创作'),fileNamePrefix:params.fileNamePrefix||'agent-redraw'});
             case 'inpaint_image':
               if(!source||!execution.approvedInput.mask)throw Error('局部重绘缺少明确源图或蒙版。');
-              return inpaintImage(params,String(p.inpaintModel) as NAIInpaintModel,fileFor(execution,execution.approvedInput.mask.attachmentId).bytes.toString('base64'),Number(p.strength??0.7),Number(p.noise??0));
+              return inpaintImage(params,String(p.inpaintModel) as NAIInpaintModel,fileFor(execution,execution.approvedInput.mask.attachmentId).bytes.toString('base64'),Number(p.strength??0.7),Number(p.noise??0),
+                p.inpaintRegion&&typeof p.inpaintRegion==='object'?p.inpaintRegion as import('../../src/focused-inpaint').InpaintRegion:undefined,buildR4ImageProviderExtras(execution));
             case 'upscale_image': {
               const scaled=await upscaleImg(Number(p.scale)===2?2:4,params.model);
               return {ok:scaled.ok,message:scaled.message,items:scaled.item?[scaled.item]:[]};
@@ -101,7 +122,7 @@ export class R4ImageProvider implements R4ExecutionProvider {
             case 'process_image': return augmentImg(String(p.processOperation) as DirectorTool,{...DEFAULT_AUGMENT_OPTIONS,...p.processOptions as Partial<AugmentOptions>});
             default:throw Error('任务操作类型不受支持。');
           }
-        }));
+        })));
       }
     }catch(error){
       if(!crossed)throw error;

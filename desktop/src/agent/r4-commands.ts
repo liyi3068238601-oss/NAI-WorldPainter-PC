@@ -20,6 +20,7 @@ export interface R4CreativeCommandArguments {
   set_preset_binding: {presetId:string;enabled:boolean};
   set_model_binding: {providerId:string;modelId:string};
   set_new_chat_defaults: {presetId:string;enabled:boolean};
+  create_preset: {presetId:string;name:string;body:string};
   update_preset: {presetId:string;expectedRevision:number;body:string;name?:string};
   save_draft: {text:string;expectedDraftRevision:number;attachmentIds?:string[]};
   cancel_message: {messageId:string;draftRevision?:number};

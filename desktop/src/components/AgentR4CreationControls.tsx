@@ -17,6 +17,7 @@ function creationTitle(language: unknown, creation: R4Creation): string {
 
 export function AgentR4CreationControls(props: {
   language: unknown;
+  compact?: boolean;
   conversationTitle: string;
   creations: R4Creation[];
   currentCreationId?: string;
@@ -39,7 +40,7 @@ export function AgentR4CreationControls(props: {
       <button className="r4-topbar-drawer" type="button" aria-label={r4Text(language, '聊天', 'Chats')} title={r4Text(language, '聊天', 'Chats')} onClick={props.onToggleChats}><LuPanelLeftOpen/><span>{r4Text(language, '聊天', 'Chats')}</span></button>
       <div className="r4-chat-title"><LuMessageSquare aria-hidden/><span title={conversationTitle}>{conversationTitle || r4Text(language, '新对话', 'New chat')}</span></div>
     </div>
-    <div className="r4-topbar-center">
+    <details className="r4-topbar-tasks"><summary>{r4Text(language,'任务范围','Task scope')}</summary><div className="r4-topbar-center">
       <label className="r4-creation-select"><span title={studioUxText(language, 'creationScopeHint')}><LuLayers aria-hidden/>{r4Text(language, '当前创作', 'Current creation')}</span>
         <select aria-label={r4Text(language, '当前创作', 'Current creation')} title={current ? creationTitle(language, current) : studioUxText(language, 'creationScopeHint')} disabled={disabled} value={currentCreationId ?? ''} onChange={event => {if(event.target.value)props.onSelectCreation(event.target.value);}}>
           {!current&&<option value="">{creations.length ? r4Text(language, '选择创作', 'Choose a creation') : r4Text(language, '暂无创作', 'No creations')}</option>}
@@ -52,9 +53,10 @@ export function AgentR4CreationControls(props: {
         <button type="button" aria-pressed={scope==='creation'} disabled={!currentCreationId} onClick={()=>props.onScope('creation')}>{r4Text(language, '当前创作', 'This creation')}</button>
       </div>
     </div>
+    </details>
     <div className="r4-topbar-right">
       <button className={`r4-queue-toggle${props.queueOpen?' is-active':''}`} type="button" aria-expanded={props.queueOpen} onClick={props.onToggleQueue}><LuListChecks/><span>{r4Text(language, '队列', 'Queue')}</span>{queueCount>0&&<b>{queueCount}</b>}</button>
-      <button className="r4-topbar-drawer" type="button" aria-label={r4Text(language, '当前创作', 'Current creation')} title={r4Text(language, '当前创作', 'Current creation')} aria-expanded={props.resourcesOpen} onClick={props.onToggleResources}><LuPanelRightOpen/><span>{r4Text(language, '当前创作', 'Current creation')}</span></button>
+      <button className="r4-topbar-drawer" type="button" aria-label={r4Text(language, '资源', 'Resources')} title={r4Text(language, '资源', 'Resources')} aria-expanded={props.resourcesOpen} onClick={props.onToggleResources}><LuPanelRightOpen/><span>{r4Text(language, '资源', 'Resources')}</span></button>
     </div>
   </header>;
 }

@@ -586,7 +586,7 @@
     {
       "canonical": "read_generation_state",
       "schemaVersion": "2.0.0",
-      "description": "读取当前生图参数与工作台 draftId/draftRevision；CAS 冲突后先刷新权威版本，不猜 revision。",
+      "description": "读取当前实际 Generate 工作台的提示词、参数与安全来源/模式摘要，并返回 draftId/draftRevision；写入冲突后刷新此权威版本。 安全摘要包含角色坐标和启用状态，不包含图片本地路径或base64。",
       "modelFields": [],
       "hostInjectedFields": [
         "conversationId",
@@ -789,6 +789,207 @@
                   "attachmentIdsRequiredForAgentReferences"
                 ],
                 "additionalProperties": false
+              },
+              "workbench": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "historyGroupId": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "batchCount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 999
+                  },
+                  "sourceMode": {
+                    "type": "string",
+                    "maxLength": 32
+                  },
+                  "sourceAvailable": {
+                    "type": "boolean"
+                  },
+                  "sourceDimensions": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "width": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 20000
+                      },
+                      "height": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 20000
+                      }
+                    },
+                    "required": [
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "maskAvailable": {
+                    "type": "boolean"
+                  },
+                  "maskRevision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "characterPrompts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "prompt": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "negativePrompt": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "useCoords": {
+                          "type": "boolean"
+                        },
+                        "x": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "y": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "required": [
+                        "prompt",
+                        "negativePrompt",
+                        "enabled",
+                        "useCoords",
+                        "x",
+                        "y"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 32
+                  },
+                  "vibeReferences": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "strength": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "infoExtracted": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "required": [
+                        "strength",
+                        "infoExtracted"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 16
+                  },
+                  "preciseReferences": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "enum": [
+                            "character",
+                            "style",
+                            "character&style"
+                          ]
+                        },
+                        "strength": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "fidelity": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "strength",
+                        "fidelity"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 16
+                  },
+                  "busy": {
+                    "type": "object",
+                    "properties": {
+                      "isGenerating": {
+                        "type": "boolean"
+                      },
+                      "isGenerateQueueRunning": {
+                        "type": "boolean"
+                      },
+                      "batchRunning": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "isGenerating",
+                      "isGenerateQueueRunning",
+                      "batchRunning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "modelMode": {
+                    "enum": [
+                      "anime",
+                      "furry"
+                    ]
+                  }
+                },
+                "required": [
+                  "mode",
+                  "batchCount",
+                  "sourceMode",
+                  "sourceAvailable",
+                  "sourceDimensions",
+                  "maskAvailable",
+                  "maskRevision",
+                  "characterPrompts",
+                  "vibeReferences",
+                  "preciseReferences",
+                  "busy"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -920,26 +1121,6 @@
           {
             "if": {
               "properties": {
-                "status": {
-                  "enum": [
-                    "error",
-                    "blocked"
-                  ]
-                }
-              },
-              "required": [
-                "status"
-              ]
-            },
-            "then": {
-              "required": [
-                "error"
-              ]
-            }
-          },
-          {
-            "if": {
-              "properties": {
                 "resultKind": {
                   "const": "business"
                 }
@@ -1036,7 +1217,9 @@
           "旧 handler 只返回设置；draftId/draftRevision/inputRevision 由 host 工作台快照提供。"
         ]
       },
-      "catalogConstraints": [],
+      "catalogConstraints": [
+        "workbench is a safe summary only; it never includes local paths, mask bodies, or image base64."
+      ],
       "errors": [
         {
           "code": "context_mismatch",
@@ -6497,7 +6680,7 @@
               "minLength": 1,
               "maxLength": 200
             },
-            "maxItems": 16
+            "maxItems": 34
           },
           "changeSummary": {
             "type": "string",
@@ -6670,7 +6853,7 @@
                   "minLength": 1,
                   "maxLength": 200
                 },
-                "maxItems": 16
+                "maxItems": 34
               },
               "changeSummary": {
                 "anyOf": [
@@ -6739,9 +6922,16 @@
                       "maxLength": 64
                     },
                     "outputIndex": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 100000
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "conversationId": {
                       "type": "string",
@@ -6772,7 +6962,9 @@
                         "source",
                         "mask",
                         "output",
-                        "edit_source"
+                        "edit_source",
+                        "vibe",
+                        "precise"
                       ]
                     },
                     "includeInGeneration": {
@@ -6864,10 +7056,59 @@
                           ]
                         }
                       }
+                    },
+                    {
+                      "if": {
+                        "properties": {
+                          "role": {
+                            "const": "output"
+                          }
+                        },
+                        "required": [
+                          "role"
+                        ]
+                      },
+                      "then": {
+                        "properties": {
+                          "outputIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100000
+                          }
+                        },
+                        "required": [
+                          "outputIndex"
+                        ]
+                      }
+                    },
+                    {
+                      "if": {
+                        "properties": {
+                          "role": {
+                            "enum": [
+                              "vibe",
+                              "precise"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "role"
+                        ]
+                      },
+                      "then": {
+                        "properties": {
+                          "includeInGeneration": {
+                            "const": true
+                          }
+                        },
+                        "required": [
+                          "includeInGeneration"
+                        ]
+                      }
                     }
                   ]
                 },
-                "maxItems": 16
+                "maxItems": 34
               }
             },
             "required": [
@@ -7945,7 +8186,7 @@
                   "minLength": 1,
                   "maxLength": 200
                 },
-                "maxItems": 16
+                "maxItems": 34
               },
               "changeSummary": {
                 "type": "string",
@@ -8009,9 +8250,16 @@
                       "maxLength": 64
                     },
                     "outputIndex": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 100000
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100000
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "conversationId": {
                       "type": "string",
@@ -8042,7 +8290,9 @@
                         "source",
                         "mask",
                         "output",
-                        "edit_source"
+                        "edit_source",
+                        "vibe",
+                        "precise"
                       ]
                     },
                     "includeInGeneration": {
@@ -8134,10 +8384,59 @@
                           ]
                         }
                       }
+                    },
+                    {
+                      "if": {
+                        "properties": {
+                          "role": {
+                            "const": "output"
+                          }
+                        },
+                        "required": [
+                          "role"
+                        ]
+                      },
+                      "then": {
+                        "properties": {
+                          "outputIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100000
+                          }
+                        },
+                        "required": [
+                          "outputIndex"
+                        ]
+                      }
+                    },
+                    {
+                      "if": {
+                        "properties": {
+                          "role": {
+                            "enum": [
+                              "vibe",
+                              "precise"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "role"
+                        ]
+                      },
+                      "then": {
+                        "properties": {
+                          "includeInGeneration": {
+                            "const": true
+                          }
+                        },
+                        "required": [
+                          "includeInGeneration"
+                        ]
+                      }
                     }
                   ]
                 },
-                "maxItems": 16
+                "maxItems": 34
               }
             },
             "required": [
@@ -9361,6 +9660,396 @@
       ],
       "evidence": [
         "desktop/electron/ipc/agent-tools.ts:661-686"
+      ]
+    },
+    {
+      "canonical": "write_workbench_prompts",
+      "schemaVersion": "1.0.0",
+      "description": "将明确指定的提示词字段和/或完整 characterPrompts 数组直接写入当前 Generate 工作台；省略字段不变，空字符串清空提示词，characterPrompts=[]清空角色框。必须使用从 read_generation_state 读取的 expectedDraftRevision；CAS 冲突不写且不自动重试。写入不授权生图。",
+      "modelFields": [
+        "positivePrompt",
+        "negativePrompt",
+        "stylePrompt",
+        "characterPrompts",
+        "expectedDraftRevision"
+      ],
+      "hostInjectedFields": [
+        "conversationId",
+        "creationId",
+        "operationKey",
+        "currentWorkbenchSnapshot",
+        "resolvedTargetScope",
+        "userIntentRef"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "positivePrompt": {
+            "type": "string",
+            "maxLength": 100000
+          },
+          "negativePrompt": {
+            "type": "string",
+            "maxLength": 100000
+          },
+          "stylePrompt": {
+            "type": "string",
+            "maxLength": 100000
+          },
+          "expectedDraftRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "characterPrompts": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                "prompt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20000
+                },
+                "negativePrompt": {
+                  "type": "string",
+                  "maxLength": 20000
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "useCoords": {
+                  "type": "boolean"
+                },
+                "x": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "prompt",
+                "useCoords",
+                "x",
+                "y"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "positivePrompt"
+            ]
+          },
+          {
+            "required": [
+              "negativePrompt"
+            ]
+          },
+          {
+            "required": [
+              "stylePrompt"
+            ]
+          },
+          {
+            "required": [
+              "characterPrompts"
+            ]
+          }
+        ],
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "required": [
+          "expectedDraftRevision"
+        ]
+      },
+      "resultSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "accepted",
+              "completed",
+              "denied",
+              "cancelled",
+              "blocked",
+              "error"
+            ]
+          },
+          "conversationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "creationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "writeStatus": {
+                "enum": [
+                  "written",
+                  "unchanged",
+                  "conflict"
+                ]
+              },
+              "draftId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "draftRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "changedFields": {
+                "type": "object",
+                "properties": {
+                  "positivePromptChanged": {
+                    "type": "boolean"
+                  },
+                  "negativePromptChanged": {
+                    "type": "boolean"
+                  },
+                  "stylePromptChanged": {
+                    "type": "boolean"
+                  },
+                  "characterPromptsChanged": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "positivePromptChanged",
+                  "negativePromptChanged",
+                  "stylePromptChanged"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "writeStatus",
+              "draftId",
+              "draftRevision",
+              "changedFields"
+            ],
+            "additionalProperties": false
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "enum": [
+                  "invalid_arguments",
+                  "context_mismatch",
+                  "stale_revision",
+                  "user_denied"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "allowedActions": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "correct_arguments",
+                    "select_supported_capability",
+                    "continue_without_tool",
+                    "read_generation_state",
+                    "request_user_decision",
+                    "reselect_target_creation"
+                  ]
+                },
+                "maxItems": 10,
+                "minItems": 1
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "allowedActions"
+            ],
+            "additionalProperties": false
+          },
+          "resultKind": {
+            "enum": [
+              "business",
+              "preflight_failure"
+            ]
+          }
+        },
+        "required": [
+          "resultKind"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "error",
+                    "blocked"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "error"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "resultKind": {
+                  "const": "business"
+                }
+              },
+              "required": [
+                "resultKind"
+              ]
+            },
+            "then": {
+              "required": [
+                "status",
+                "conversationId",
+                "creationId",
+                "data"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "accepted",
+                    "completed",
+                    "denied",
+                    "cancelled",
+                    "blocked",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "resultKind": {
+                  "const": "preflight_failure"
+                }
+              },
+              "required": [
+                "resultKind"
+              ]
+            },
+            "then": {
+              "required": [
+                "status",
+                "error"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "denied",
+                    "cancelled",
+                    "blocked",
+                    "error"
+                  ]
+                }
+              },
+              "not": {
+                "required": [
+                  "data"
+                ]
+              }
+            }
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      },
+      "availability": {
+        "exposure": "conditional",
+        "group": "workbench",
+        "requires": [],
+        "when": "工作台可读时依意图按需挂载"
+      },
+      "effect": "workbench_write",
+      "approval": "none",
+      "cost": {
+        "paid": false,
+        "mayCharge": false,
+        "chargeKinds": [],
+        "estimate": "none"
+      },
+      "classification": {
+        "readonly": false,
+        "paid": false,
+        "image": false
+      },
+      "legacyHandler": null,
+      "fieldMappings": {
+        "modelToLegacy": {},
+        "hostInjected": {
+          "currentWorkbenchSnapshot": "fresh renderer-owned draftId/revision; never model-supplied",
+          "characterPrompts": "full current Generate role list; [] clears; same draftRevision CAS"
+        },
+        "notes": [
+          "只修改当前工作台实际正向、负向、风格词字段；不变更模型、来源、参考、蒙版或授权。",
+          "CAS mismatch returns writeStatus=conflict and performs no write. Writing prompts is not permission to generate.",
+          "角色列表是整体替换；调用前读取当前角色以保留其他角色和坐标。"
+        ]
+      },
+      "catalogConstraints": [
+        "At least one prompt field is required. Supplied fields replace the whole field; omitted fields remain unchanged. expectedDraftRevision, when supplied, must match the immediately preceding workbench revision.",
+        "characterPrompts is a full-list replacement, may be supplied alone, and [] clears all role boxes."
+      ],
+      "errors": [
+        {
+          "code": "invalid_arguments",
+          "allowedActions": [
+            "correct_arguments"
+          ]
+        },
+        {
+          "code": "context_mismatch",
+          "allowedActions": [
+            "read_creation",
+            "reselect_target_creation"
+          ]
+        },
+        {
+          "code": "stale_revision",
+          "allowedActions": [
+            "request_user_decision",
+            "continue_without_action"
+          ]
+        }
+      ],
+      "evidence": [
+        "desktop/src/studio-agent.ts:r4-workbench-apply",
+        "desktop/electron/ipc/r4-workbench.ts"
       ]
     },
     {
@@ -11992,7 +12681,7 @@
     {
       "canonical": "prepare_generation",
       "schemaVersion": "2.0.0",
-      "description": "免费冻结一次文生图输入并生成预览/一次性令牌；必须二选一：proposalId+revision 或直接 positivePrompt，不提交生图；有效参考绑定需带 referencePurpose，host 仍单独核验服务能力。",
+      "description": "空对象表示直接冻结当前实际 Generate 工作台的提示词、模型参数、数量、模式、来源、蒙版与已选参考并生成预览；不得以参数覆盖工作台。旧版显式参数仅为兼容，主路径必须使用工作台。此工具不提交生图。 可选 expectedDraftRevision 用于阻止使用过期工作台快照。",
       "modelFields": [
         "positivePrompt",
         "negativePrompt",
@@ -12022,7 +12711,8 @@
         "proposalId",
         "revision",
         "targetConversationId",
-        "targetCreationId"
+        "targetCreationId",
+        "expectedDraftRevision"
       ],
       "hostInjectedFields": [
         "allowedTargetScopes",
@@ -12314,6 +13004,11 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 200
+          },
+          "expectedDraftRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
           }
         },
         "additionalProperties": false,
@@ -12357,6 +13052,147 @@
                 {
                   "required": [
                     "revision"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "proposalId"
+                  ]
+                },
+                {
+                  "required": [
+                    "revision"
+                  ]
+                },
+                {
+                  "required": [
+                    "positivePrompt"
+                  ]
+                },
+                {
+                  "required": [
+                    "negativePrompt"
+                  ]
+                },
+                {
+                  "required": [
+                    "stylePrompt"
+                  ]
+                },
+                {
+                  "required": [
+                    "count"
+                  ]
+                },
+                {
+                  "required": [
+                    "model"
+                  ]
+                },
+                {
+                  "required": [
+                    "width"
+                  ]
+                },
+                {
+                  "required": [
+                    "height"
+                  ]
+                },
+                {
+                  "required": [
+                    "steps"
+                  ]
+                },
+                {
+                  "required": [
+                    "cfgScale"
+                  ]
+                },
+                {
+                  "required": [
+                    "cfgRescale"
+                  ]
+                },
+                {
+                  "required": [
+                    "requestedSeedPolicy"
+                  ]
+                },
+                {
+                  "required": [
+                    "requestedSeed"
+                  ]
+                },
+                {
+                  "required": [
+                    "sampler"
+                  ]
+                },
+                {
+                  "required": [
+                    "noiseSchedule"
+                  ]
+                },
+                {
+                  "required": [
+                    "smea"
+                  ]
+                },
+                {
+                  "required": [
+                    "smeaDyn"
+                  ]
+                },
+                {
+                  "required": [
+                    "variety"
+                  ]
+                },
+                {
+                  "required": [
+                    "effort"
+                  ]
+                },
+                {
+                  "required": [
+                    "qualityPreset"
+                  ]
+                },
+                {
+                  "required": [
+                    "ucPreset"
+                  ]
+                },
+                {
+                  "required": [
+                    "transparentBackground"
+                  ]
+                },
+                {
+                  "required": [
+                    "fileNamePrefix"
+                  ]
+                },
+                {
+                  "required": [
+                    "vibeReferences"
+                  ]
+                },
+                {
+                  "required": [
+                    "preciseReferences"
+                  ]
+                },
+                {
+                  "required": [
+                    "characterPrompts"
                   ]
                 }
               ]
@@ -12582,6 +13418,63 @@
                         "minimum": 1,
                         "maximum": 8
                       },
+                      "mode": {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      "sourceMode": {
+                        "type": "string",
+                        "maxLength": 32
+                      },
+                      "batchIntervalSeconds": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 3600
+                      },
+                      "maskRevision": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "inpaintOutputSize": {
+                        "type": "object",
+                        "properties": {
+                          "width": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4096
+                          },
+                          "height": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4096
+                          }
+                        },
+                        "required": [
+                          "width",
+                          "height"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "inpaintRequestSize": {
+                        "type": "object",
+                        "properties": {
+                          "width": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4096
+                          },
+                          "height": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4096
+                          }
+                        },
+                        "required": [
+                          "width",
+                          "height"
+                        ],
+                        "additionalProperties": false
+                      },
                       "imageProvider": {
                         "enum": [
                           "novelai",
@@ -12641,7 +13534,7 @@
                           "minLength": 1,
                           "maxLength": 200
                         },
-                        "maxItems": 16
+                        "maxItems": 34
                       },
                       "sourceAttachments": {
                         "type": "array",
@@ -12669,9 +13562,16 @@
                               "maxLength": 64
                             },
                             "outputIndex": {
-                              "type": "integer",
-                              "minimum": 0,
-                              "maximum": 100000
+                              "anyOf": [
+                                {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             },
                             "conversationId": {
                               "type": "string",
@@ -12702,7 +13602,9 @@
                                 "source",
                                 "mask",
                                 "output",
-                                "edit_source"
+                                "edit_source",
+                                "vibe",
+                                "precise"
                               ]
                             },
                             "includeInGeneration": {
@@ -12794,10 +13696,59 @@
                                   ]
                                 }
                               }
+                            },
+                            {
+                              "if": {
+                                "properties": {
+                                  "role": {
+                                    "const": "output"
+                                  }
+                                },
+                                "required": [
+                                  "role"
+                                ]
+                              },
+                              "then": {
+                                "properties": {
+                                  "outputIndex": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 100000
+                                  }
+                                },
+                                "required": [
+                                  "outputIndex"
+                                ]
+                              }
+                            },
+                            {
+                              "if": {
+                                "properties": {
+                                  "role": {
+                                    "enum": [
+                                      "vibe",
+                                      "precise"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "role"
+                                ]
+                              },
+                              "then": {
+                                "properties": {
+                                  "includeInGeneration": {
+                                    "const": true
+                                  }
+                                },
+                                "required": [
+                                  "includeInGeneration"
+                                ]
+                              }
                             }
                           ]
                         },
-                        "maxItems": 16
+                        "maxItems": 34
                       }
                     },
                     "required": [
@@ -12938,6 +13889,63 @@
                           "minimum": 1,
                           "maximum": 8
                         },
+                        "mode": {
+                          "type": "string",
+                          "maxLength": 64
+                        },
+                        "sourceMode": {
+                          "type": "string",
+                          "maxLength": 32
+                        },
+                        "batchIntervalSeconds": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 3600
+                        },
+                        "maskRevision": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "inpaintOutputSize": {
+                          "type": "object",
+                          "properties": {
+                            "width": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 4096
+                            },
+                            "height": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 4096
+                            }
+                          },
+                          "required": [
+                            "width",
+                            "height"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "inpaintRequestSize": {
+                          "type": "object",
+                          "properties": {
+                            "width": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 4096
+                            },
+                            "height": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 4096
+                            }
+                          },
+                          "required": [
+                            "width",
+                            "height"
+                          ],
+                          "additionalProperties": false
+                        },
                         "imageProvider": {
                           "enum": [
                             "novelai",
@@ -12997,7 +14005,7 @@
                             "minLength": 1,
                             "maxLength": 200
                           },
-                          "maxItems": 16
+                          "maxItems": 34
                         },
                         "sourceAttachments": {
                           "type": "array",
@@ -13025,9 +14033,16 @@
                                 "maxLength": 64
                               },
                               "outputIndex": {
-                                "type": "integer",
-                                "minimum": 0,
-                                "maximum": 100000
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 100000
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
                               },
                               "conversationId": {
                                 "type": "string",
@@ -13058,7 +14073,9 @@
                                   "source",
                                   "mask",
                                   "output",
-                                  "edit_source"
+                                  "edit_source",
+                                  "vibe",
+                                  "precise"
                                 ]
                               },
                               "includeInGeneration": {
@@ -13150,10 +14167,59 @@
                                     ]
                                   }
                                 }
+                              },
+                              {
+                                "if": {
+                                  "properties": {
+                                    "role": {
+                                      "const": "output"
+                                    }
+                                  },
+                                  "required": [
+                                    "role"
+                                  ]
+                                },
+                                "then": {
+                                  "properties": {
+                                    "outputIndex": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100000
+                                    }
+                                  },
+                                  "required": [
+                                    "outputIndex"
+                                  ]
+                                }
+                              },
+                              {
+                                "if": {
+                                  "properties": {
+                                    "role": {
+                                      "enum": [
+                                        "vibe",
+                                        "precise"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "role"
+                                  ]
+                                },
+                                "then": {
+                                  "properties": {
+                                    "includeInGeneration": {
+                                      "const": true
+                                    }
+                                  },
+                                  "required": [
+                                    "includeInGeneration"
+                                  ]
+                                }
                               }
                             ]
                           },
-                          "maxItems": 16
+                          "maxItems": 34
                         }
                       },
                       "required": [
@@ -19536,7 +20602,7 @@
       "hostContextRef": "#/$defs/TurnEffectiveInputSnapshot"
     }
   ],
-  "toolCount": 36,
+  "toolCount": 37,
   "toolNames": [
     "get_capabilities",
     "read_generation_state",
@@ -19558,6 +20624,7 @@
     "read_proposal",
     "set_current_proposal",
     "apply_prompt",
+    "write_workbench_prompts",
     "save_prompt_preset",
     "read_prompt_template",
     "manage_prompt_templates",
@@ -19736,7 +20803,8 @@
     {
       "groupId": "workbench",
       "canonicalTools": [
-        "apply_prompt"
+        "apply_prompt",
+        "write_workbench_prompts"
       ],
       "alwaysOn": false
     },

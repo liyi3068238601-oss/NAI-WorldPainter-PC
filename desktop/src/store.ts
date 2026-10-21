@@ -297,7 +297,7 @@ interface AppState {
   saveWsWidths: () => void;
   resetWsWidths: () => void;
   setParam: <K extends keyof GenerateParams>(key: K, value: GenerateParams[K]) => void;
-  applyParams: (patch: Partial<GenerateParams>) => void;
+  applyParams: (patch: Partial<GenerateParams>, promptDraft?: {charCaptions?: CharCaptionItem[]; inpaintPositivePrompt?: string}) => void;
   restoreImportedMetadata: (
     patch: ImportedParams,
     captions: CharCaptionItem[],
@@ -1208,8 +1208,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ activeCanvasSurface: surface });
   },
 
-  applyParams(patch) {
-    set((state) => ({ params: normalizeGenerateParams({ ...state.params, ...patch }) }));
+  applyParams(patch, promptDraft) {
+    // One commit keeps prompt text and the multi-character boxes on the same
+    // workbench revision, and persists their complete snapshot once.
+    set((state) => ({ params: normalizeGenerateParams({ ...state.params, ...patch }),
+      ...(promptDraft?.charCaptions !== undefined ? {charCaptions:normalizeCharacterCaptions(promptDraft.charCaptions)} : {}),
+      ...(promptDraft?.inpaintPositivePrompt !== undefined ? {inpaintPositivePrompt:promptDraft.inpaintPositivePrompt} : {}),
+    }));
     persistGenerationState(get);
   },
 

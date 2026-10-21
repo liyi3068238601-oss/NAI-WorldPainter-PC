@@ -10,7 +10,7 @@ import {registry} from '../../src/agent/r4-contracts';
 import {effectiveContextMessages,createContextSnapshot,shouldAutoCompact,planContextCompaction,estimateTextTokens} from '../../src/agent/context';
 import {getSettings} from './store';
 import {readAgentWorkspace,updateAgentConversation,getAgentSqlStore} from './agent-store';
-import {captureR4ConversationConfig,getR4CreativeHost,getR4ExecutionCoordinator,prepareR4ImageOperation,setR4AdditionalCommand,settingsForR4Config,onR4CreativeChanged} from './r4-agent-service';
+import {assertR4WorkbenchPreparationCurrent,captureR4ConversationConfig,getR4CreativeHost,getR4ExecutionCoordinator,prepareR4ImageOperation,setR4AdditionalCommand,settingsForR4Config,onR4CreativeChanged} from './r4-agent-service';
 import {R4CritiqueConsumer} from './r4-critique';
 import {R4ConversationQueue} from './r4-conversation-queue';
 import {r4CausalHistory} from './r4-history';
@@ -164,7 +164,7 @@ export class R4AgentRuntime{
     if(studioSessionOptions(chat).approvalMode==='auto')return true;
     const image=['generate_image','redraw_image','inpaint_image','upscale_image','process_image'].includes(name);
     const metadata=preparation?{...preparation.preview,preparationId:preparation.id,inputFingerprint:preparation.fingerprint,providerRef:preparation.providerRef,
-      sourceAttachments:[preparation.inputSnapshot.editSource,preparation.inputSnapshot.mask,...preparation.inputSnapshot.references].filter(Boolean)}:args;
+      sourceAttachments:[preparation.inputSnapshot.editSource,preparation.inputSnapshot.mask,...preparation.inputSnapshot.references,...(preparation.inputSnapshot.workbenchAssets??[])].filter(Boolean)}:args;
     if(JSON.stringify(metadata).length>50_000)throw Error('预览内容过长，未执行操作。');
     updateAgentConversation(turn.scope.conversationId,chat=>{chat.status='waiting-permission';});this.changed(turn.scope.conversationId);
     try{return await this.dependencies.approvals.request({id:randomUUID(),conversationId:turn.scope.conversationId,runtimeSessionId:turn.scope.conversationId,
@@ -244,6 +244,15 @@ export class R4AgentRuntime{
           capabilitySnapshot:()=>r4RuntimeCapabilities({approvalMode:sessionOptions.approvalMode,webSearchEnabled:sessionOptions.webSearchEnabled,hasSkills:skillDirectory.length>0,promptingReferenceEnabled:knowledge.version==='v5',workbenchReady:workbench?.ready()===true}),
           adapterDependencies:async(scope,name,args)=>({...r4LegacyDependencies(scope,name,args),...(name==='read_generation_state'&&workbench?{workbenchSnapshot:await workbench.readR4WorkbenchSnapshot()}:{})}),
           ...(workbench?{applyPrompt:workbench.createR4ApplyPrompt({scope,authorize:(name,args,signal)=>this.authorize(active,name,args,signal)})}:{}),
+          ...(workbench?{writeWorkbenchPrompts:(args,callScope)=>workbench.writeR4WorkbenchPrompts(args,callScope)}:{}),
+          ...(workbench?{assertWorkbenchPreparationCurrent:(preparationId,callScope)=>assertR4WorkbenchPreparationCurrent(preparationId,callScope.conversationId,callScope.creationId)}:{}),
+          ...(workbench?{prepareGeneration:async(args,callScope,signal)=>{
+            signal.throwIfAborted();const snapshot=await workbench.readR4WorkbenchSnapshot();
+            const busy=snapshot.workbench?.busy;
+            if(busy?.isGenerating||busy?.isGenerateQueueRunning||busy?.batchRunning)throw new Error('生成工作台正在运行；请等待完成后重新准备，未入队。');
+            const prepared=await getR4CreativeHost().prepare(args,callScope,false,snapshot);
+            signal.throwIfAborted();return prepared;
+          }}:{ }),
           prepareImageOperation:prepareR4ImageOperation,
           legacySessionId:item.conversationId,promptingReferenceEnabled:knowledge.version==='v5'},
       });

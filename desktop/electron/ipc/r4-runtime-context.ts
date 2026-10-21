@@ -68,7 +68,7 @@ export function r4RuntimeCapabilities(options:{approvalMode:'confirm'|'auto';web
     if(tool.canonical==='search_web')available=options.webSearchEnabled;
     if(tool.canonical==='read_skill')available=options.hasSkills;
     if(tool.canonical==='read_prompting_reference')available=options.promptingReferenceEnabled;
-    if(['apply_prompt','read_generation_state'].includes(tool.canonical)){available=options.workbenchReady;reason='not_configured';}
+    if(['apply_prompt','read_generation_state','write_workbench_prompts'].includes(tool.canonical)){available=options.workbenchReady;reason='not_configured';}
     if(tool.availability.group==='image_edit'){available=nativeReady;reason='not_configured';}
     if(['prepare_generation','generate_image'].includes(tool.canonical)){available=nativeReady||compatibleReady;reason='not_configured';}
     if(['convert_prompt','edit_prompt','reverse_prompt'].includes(tool.canonical)){available=paidServiceConfigured(settings,tool.canonical);reason='not_configured';}

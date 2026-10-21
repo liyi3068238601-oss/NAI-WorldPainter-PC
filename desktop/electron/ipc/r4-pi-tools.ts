@@ -68,6 +68,10 @@ export interface R4PiToolSessionOptions {
   }>;
   promptingReferenceEnabled?: boolean;
   applyPrompt?: (args: Record<string, unknown>, scope: R4HostScope, signal: AbortSignal) => Promise<Record<string, unknown>>;
+  writeWorkbenchPrompts?: (args: Record<string, unknown>, scope: R4HostScope) => Promise<Record<string, unknown>>;
+  /** Rechecks a workbench-backed preview after explicit approval, before durable enqueue. */
+  assertWorkbenchPreparationCurrent?: (preparationId:string,scope:R4HostScope)=>Promise<void>;
+  prepareGeneration?: (args: Record<string, unknown>, scope: R4HostScope, signal: AbortSignal) => Promise<Record<string, unknown>>;
   /** Direct image edits need a durable preparation; the tool is not mounted without it. */
   prepareImageOperation?: (
     name: 'redraw_image' | 'inpaint_image' | 'upscale_image' | 'process_image',
@@ -155,6 +159,7 @@ function preflightFailure(
 function isReady(name: R4ToolName, options: R4PiToolSessionOptions): boolean {
   if (name === 'get_capabilities') return true;
   if (name === 'apply_prompt') return Boolean(options.applyPrompt);
+  if(name==='write_workbench_prompts')return Boolean(options.writeWorkbenchPrompts);
   if (['redraw_image', 'inpaint_image', 'upscale_image', 'process_image'].includes(name)) {
     return Boolean(options.prepareImageOperation);
   }
@@ -445,6 +450,12 @@ export function createR4PiToolSession(options: R4PiToolSessionOptions): R4PiTool
       return preflightFailure(name, scope,
         '准备记录已过期，或属于另一条消息；请基于本轮输入重新预览。', 'preparation_stale');
     }
+    if(durable.inputSnapshot.publicParameters.workbenchDraftRevision!==undefined){
+      try{
+        if(!options.assertWorkbenchPreparationCurrent)throw new Error('工作台预览缺少提交前版本校验；未入队。');
+        await options.assertWorkbenchPreparationCurrent(preparation.preparationId,scope);
+      }catch(error){return preflightFailure(name,scope,error instanceof Error?error.message:'Generate 工作台已变化，旧预览未入队。','preparation_stale');}
+    }
     const response = await options.coordinator.submit(preparation.preparationId, preparation.fingerprint, scope, true);
     const result = asRecord(response, 'execution coordinator');
     const validation = validateR4Result('generate_image', result);
@@ -513,6 +524,10 @@ export function createR4PiToolSession(options: R4PiToolSessionOptions): R4PiTool
     }
     if (name === 'apply_prompt') {
       return { result: await options.applyPrompt!(args, scope, signal) };
+    }
+    if(name==='write_workbench_prompts')return {result:await options.writeWorkbenchPrompts!(args,scope)};
+    if(name==='prepare_generation'&&options.prepareGeneration){
+      return {result:await options.prepareGeneration(args,scope,signal)};
     }
     if (name === 'generate_image') {
       const preparation = options.host.store.readR4State().preparations[String(args.preparationId)];

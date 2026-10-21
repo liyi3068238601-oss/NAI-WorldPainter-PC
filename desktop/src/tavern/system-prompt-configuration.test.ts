@@ -1,7 +1,7 @@
 import {expect,it} from 'vitest';
 import ig5 from '../../shared/ig5-image-prompts.json';
 import {createDefaultImageTaskPromptPreset,createLegacyImageTaskPromptPreset,normalizeImageTaskPromptPresets,imageTaskPresetIds,selectedImageTaskPromptPreset} from './image-task-preset';
-import {STUDIO_DEFAULT_PRESET_ID,STUDIO_LEGACY_PRESET_ID,studioPresetId,studioSelectedSystemPrompt,studioCreativeReferenceData} from '../agent/workspace-controls';
+import {STUDIO_DEFAULT_PRESET_ID,STUDIO_LEGACY_PRESET_ID,STUDIO_NOVELAI_ASSISTANT_PRESET_BODY,studioPresetId,studioSelectedSystemPrompt,studioCreativeReferenceData} from '../agent/workspace-controls';
 import {studioUxText} from '../agent/ux';
 
 it('ships three distinct task adaptations with fixed rules provenance, not an original upstream image prompt',()=>{
@@ -9,8 +9,8 @@ it('ships three distinct task adaptations with fixed rules provenance, not an or
  expect(createDefaultImageTaskPromptPreset('reverse').systemPrompt).toBe(ig5.prompts.reverse);
  expect(new Set(Object.values(ig5.prompts)).size).toBe(3);
  expect(ig5.commit).toBe('eeff0bbeb905bdc57952dc7497d5fdfc33653c0f');
- expect(STUDIO_DEFAULT_PRESET_ID).toBe('dsh-infinite-gen-5');
- expect(studioSelectedSystemPrompt({samplerPresets:[]} as any,{} as any)).toBe(ig5.prompts.studio);
+ expect(STUDIO_DEFAULT_PRESET_ID).toBe('studio-novelai-assistant');
+ expect(studioSelectedSystemPrompt({samplerPresets:[]} as any,{} as any)).toBe(STUDIO_NOVELAI_ASSISTANT_PRESET_BODY);
 });
 it('migrates an unspecified choice to per-task defaults without changing a saved custom library body',()=>{
  const custom={...createLegacyImageTaskPromptPreset(),id:'custom',name:'my saved name',systemPrompt:'my unchanged system\n中文',jailbreakPrompt:'unchanged postscript',source:'langbai' as const};
@@ -34,6 +34,11 @@ it('selects Studio imported body and postscript without mutating stored data, an
 });
 it.each(['zh-CN','zh-TW','en-US','ja-JP','ko-KR'])('has concrete IG5 name and scope labels in %s',language=>{
  expect(studioUxText(language,'presetInfiniteFive')).not.toBe('presetInfiniteFive');expect(studioUxText(language,'presetInfiniteFiveBody')).not.toBe('presetInfiniteFiveBody');
+});
+
+it.each(['zh-CN','zh-TW','en-US','ja-JP','ko-KR'])('has a localized NovelAI assistant default preset in %s',language=>{
+ expect(studioUxText(language,'presetNovelAiAssistant')).not.toBe('presetNovelAiAssistant');
+ expect(studioUxText(language,'presetNovelAiAssistantBody')).not.toBe('presetNovelAiAssistantBody');
 });
 
 it('Studio reference context carries identifiers only; the selected system body is not duplicated',()=>{

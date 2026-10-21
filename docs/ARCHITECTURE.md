@@ -4,7 +4,8 @@
 
 - Electron 主进程管理文件、凭据、模型调用与原生对话框；React 展示工作台。使用 contextIsolation 与受限 preload；源项目 preload 目前仍需 sandbox=false，不能宣称已完全沙箱化。
 - 默认开发数据 `data/electron`，打包数据 `%APPDATA%/NAI-WorldPainter-PC`；新存储 `worldpainter-desktop.json`。不自动迁移参考项目账号；原 Flutter SQLite 由用户选择、预览后追加，未映射字段归档。
-- 实际 Agent 链是 `PiAgentPage → agent-runtime → pi-agent-turn → pi-studio-tools → agent-tools`。记忆按类别和审核状态检索；知识文件校验后原子切换。旧 Tavern/Harness 模块保留兼容，不能误作当前 Agent 主链。
+- 当前默认 R4 Agent 链是 `PiAgentPage → agent-runtime → r4-agent-runtime → pi-agent-turn → r4-pi-tools → R4 Host/Coordinator/Worker`；`pi-studio-tools → agent-tools` 保留旧兼容通路。记忆按类别和审核状态检索；知识文件校验后原子切换。旧 Tavern/Harness 模块保留兼容，不能误作当前 Agent 主链。
+- 2026-10-21：Agent 页与生成页共享同一份保留挂载的参数区与画布；角色卡从当前助手界面和上下文移除，历史数据保留。预设可在应用内新增、编辑并保留修订历史，已排队消息继续使用发送时快照。
 - 当前 Pi 助手以 Skill 目录/按需 `read_skill` 替换世界书注入，保留预设。历史工具记录重建为原生调用/结果消息；当前会话附件提供有界 ID 清单；工具确认、参数指纹、失败停发与调用次数限制由运行层控制，详见 [Agent 执行改进](AGENT_EXECUTION_V1.md)。
 - Agent 模型配置以 `agentProviders` 注册表保存独立供应商、模型参数与加密凭据；单次 IPC 保存/切换并投影到当前运行层字段。总设置和 Agent 原入口复用编辑器，模型切换采用原位展开菜单，详见 [多供应商与启动屏修正](AGENT_PROVIDERS_V1.md)。
 - 本地超分与官方付费超分分开。7877/ikun 由独立 vault/计划/网络适配处理，不借用官方 token；第一版只开放已适配的纯文生图。

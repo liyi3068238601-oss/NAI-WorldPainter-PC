@@ -11,7 +11,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
-import { LuArrowDown, LuArrowUp, LuCheck, LuChevronDown, LuCopy, LuImage, LuLoaderCircle, LuMessageSquare, LuPencil, LuPlus, LuSearch, LuSettings, LuSparkles, LuSquare, LuArchive, LuArchiveRestore, LuTrash2, LuEllipsis, LuX, LuUserRound, LuWrench, LuGauge, LuFileText, LuShieldCheck, LuZap, LuPanelLeftOpen, LuPanelLeftClose, LuPanelRightOpen, LuPanelRightClose } from 'react-icons/lu';
+import { LuArrowDown, LuArrowUp, LuCheck, LuChevronDown, LuCopy, LuImage, LuLoaderCircle, LuMessageSquare, LuPencil, LuPlus, LuSearch, LuSettings, LuSparkles, LuSquare, LuArchive, LuArchiveRestore, LuTrash2, LuEllipsis, LuX, LuUserRound, LuWrench, LuGauge, LuShieldCheck, LuZap, LuPanelLeftOpen, LuPanelLeftClose, LuPanelRightOpen, LuPanelRightClose } from 'react-icons/lu';
 import type { AgentComposerAction, AgentConversation, AgentAttachment, AgentEvent, AgentMessage, AgentPermissionRequest, AgentWorkspaceData } from './agent/types';
 import { agentProviderRequiresApiKey } from './agent/provider-catalog';
 import { studioSourceUrl, studioWebSources, studioContextMeter, preparedStudioPreview, studioToolStatus, studioToolTitle, studioUxText } from './agent/ux';
@@ -65,7 +65,7 @@ export function AgentWebSources({preview, language, onOpen}: {preview: ReturnTyp
 }
 
 /** Studio's own tools and durable conversations; no new general Agent powers. */
-export default function PiAgentPage({ active }: { active: boolean }) {
+export default function PiAgentPage({ active, docked = false }: { active: boolean; docked?: boolean }) {
   const settings = useAppStore((state) => state.settings);
   const refreshSettings = useAppStore((state) => state.refreshSettings);
   const imageParams = useAppStore(state => state.params);
@@ -80,7 +80,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
   const latestCreativeStates=useRef<Record<string,R4ConversationCreativeState>>({});
   latestCreativeStates.current=creativeStates;
   const [scopeByConversation,setScopeByConversation]=useState<Record<string,'all'|'creation'>>({});
-  const [queueOpen,setQueueOpen]=useState(false),[rightPanelTab,setRightPanelTab]=useState<'creative'|'resources'>('creative');
+  const [queueOpen,setQueueOpen]=useState(false);
   const [viewerArtworkId,setViewerArtworkId]=useState<string>(),[viewerConversationId,setViewerConversationId]=useState<string>();
   const draftSaveChains=useRef<Record<string,Promise<unknown>>>({});
   const draftRevisionRef=useRef<Record<string,number>>({});
@@ -106,22 +106,22 @@ export default function PiAgentPage({ active }: { active: boolean }) {
   const closeContext=useCallback(()=>setContextOpen(false),[]);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(()=>settings?.agentUiPreferences?.sidebarOpen??window.innerWidth>1100);
-  const [resourcesOpen,setResourcesOpen]=useState(settings?.agentUiPreferences?.resourcesOpen??window.innerWidth>1100);
-  const [narrowLayout,setNarrowLayout]=useState(()=>window.innerWidth<=1100);
+  const [sidebarOpen, setSidebarOpen] = useState(()=>!docked&&(settings?.agentUiPreferences?.sidebarOpen??window.innerWidth>1100));
+  const [resourcesOpen,setResourcesOpen]=useState(false);
+  const [narrowLayout,setNarrowLayout]=useState(()=>docked||window.innerWidth<=1100);
   const [resourceTab,setResourceTab]=useState<NonNullable<AgentUiPreferences['resourceTab']>>(normalizeAgentUiPreferences(settings?.agentUiPreferences).resourceTab??'presets');
   const sidebarPresent=useDisclosurePresence(sidebarOpen),resourcesPresent=useDisclosurePresence(resourcesOpen);
   const leftToggle=useRef<HTMLButtonElement>(null),rightToggle=useRef<HTMLButtonElement>(null);
   const pageRoot=useRef<HTMLDivElement>(null),leftPane=useRef<HTMLDivElement>(null),rightPane=useRef<HTMLDivElement>(null);
   const drawerFocusReturn=useRef<HTMLElement|null>(null);
-  useEffect(()=>{const resize=()=>setNarrowLayout(window.innerWidth<=1100);window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[]);
+  useEffect(()=>{const resize=()=>setNarrowLayout(docked||window.innerWidth<=1100);window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);},[docked]);
   useEffect(()=>{if(narrowLayout&&sidebarOpen&&resourcesOpen)setSidebarOpen(false);},[narrowLayout,sidebarOpen,resourcesOpen]);
   const [optionsBusy,setOptionsBusy]=useState(false);
   const [composerHeight,setComposerHeight]=useState(()=>{if(settings?.agentUiPreferences?.composerHeight)return settings.agentUiPreferences.composerHeight;try{return Math.max(108,Math.min(420,Number(localStorage.getItem('studio-agent-composer-height'))||154));}catch{return 154;}});
   const preferencesReady=useRef(!!settings),preferenceWrite=useRef(Promise.resolve());
   const flushPreferences=useRef<(()=>void)|undefined>(undefined);
   useEffect(()=>()=>{flushPreferences.current?.();},[]);
-  useEffect(()=>{if(settings&&!preferencesReady.current){const value=normalizeAgentUiPreferences(settings.agentUiPreferences);setSidebarOpen(value.sidebarOpen??window.innerWidth>1100);setResourcesOpen(value.resourcesOpen??window.innerWidth>1100);setArchivedView(value.archivedView??false);setResourceTab(value.resourceTab??'presets');if(value.composerHeight)setComposerHeight(value.composerHeight);preferencesReady.current=true;}},[settings]);
+  useEffect(()=>{if(settings&&!preferencesReady.current){const value=normalizeAgentUiPreferences(settings.agentUiPreferences);setSidebarOpen(!docked&&(value.sidebarOpen??window.innerWidth>1100));setResourcesOpen(false);setArchivedView(value.archivedView??false);setResourceTab(value.resourceTab??'presets');if(value.composerHeight)setComposerHeight(value.composerHeight);preferencesReady.current=true;}},[settings]);
   useEffect(()=>{
     if(!preferencesReady.current)return;
     const value=normalizeAgentUiPreferences({sidebarOpen,resourcesOpen,archivedView,resourceTab,composerHeight});
@@ -266,7 +266,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
   const pending = permissions.find((item) => item.conversationId === chat?.id);
   const running = busy || compacting || !!pending || !!pendingQuestion || chat?.status === 'running' || chat?.status === 'waiting-permission';
   // Local preference persistence blocks conflicting edits, but is not a model run.
-  const controlsBusy = running || optionsBusy;
+  const controlsBusy = running || optionsBusy || workbenchApplyBusy;
   const sessionOptions=studioSessionOptions(chat);
   const text = chat ? drafts[chat.id] ?? '' : '';
   const selectedActions = chat ? draftActions[chat.id] ?? [] : [];
@@ -351,10 +351,17 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     try { const result = await action; if (result.ok) { updateWorkspace(result.workspace); if(window.innerWidth<=760)setSidebarOpen(false); } else setError(result.message ?? t('statusError')); }
     catch (reason) { setError(String(reason)); }
   };
-  const importResources=async(kind:'presets'|'characters')=>{
-    if(controlsBusy)return;setOptionsBusy(true);setError('');
-    try{const result=await window.naiDesktop.importStudioResources(kind);if(result.ok){updateWorkspace(result.workspace);if(kind==='presets'&&!result.cancelled&&result.workspace.selectedConversationId)updateCreativeState(await window.naiDesktop.getAgentCreativeState(result.workspace.selectedConversationId));if(!result.cancelled&&result.message)useAppStore.getState().setToast(result.message);}else setError(result.message??t('statusError'));}catch(reason){setError(String(reason));}finally{setOptionsBusy(false);}
+
+  const createAssistantConversation=async()=>{
+    setArchivedView(false);
+    await mutateChat((async()=>{
+      const created=await window.naiDesktop.createAgentConversation(t('newChat'));
+      const id=created.workspace.selectedConversationId;
+      if(!created.ok||!id)return created;
+      return window.naiDesktop.setStudioConversationOptions(id,{characterIds:[]});
+    })());
   };
+
   const run = async (delivery:'queue'|'steer'='queue') => {
     if (archived || !chat || optionsBusy || busy || uploadLock.current || !configured || (!text.trim() && !selectedActions.length && !chat.draftAttachments.length)) return;
     const input=text.trim(),id=chat.id,actions=selectedActions,attachmentIds=chat.draftAttachments.map(item=>item.id),before=chat.messages.filter(item=>item.role==='user').length;
@@ -438,11 +445,25 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     if(!target){setError(r4Text(settings?.language,'找不到此方案所属的创作。','The creation that owns this proposal is unavailable.'));return;}
     void runR4CommandFor(chat.id,'set_current_proposal',{proposalId:proposal.id,revision:proposal.revision,expectedSelectionRevision:target.selectionRevision},target.id);
   };
-  const prepareProposal=(proposal?:R4Proposal)=>{
-    if(!chat||archived||controlsBusy)return;
+  const prepareProposal=async(proposal?:R4Proposal)=>{
+    if(!chat||archived||controlsBusy||workbenchApplyBusy)return;
     const target=latestCreativeStates.current[chat.id]?.creations[proposal?.creationId??currentCreation?.id??''];
     if(!target){setError(r4Text(settings?.language,'找不到目标创作。','Target creation is unavailable.'));return;}
-    void runR4CommandFor(chat.id,'prepare_generation',proposal?{proposalId:proposal.id,revision:proposal.revision}:{positivePrompt:target.positivePrompt,negativePrompt:target.negativePrompt,stylePrompt:target.stylePrompt},target.id);
+    setWorkbenchApplyBusy(true);setError('');
+    try{
+      if(proposal){
+        // Clicking Generate this version explicitly chooses its prompts. The
+        // existing preview/CAS bridge protects a concurrent manual edit.
+        const preview=await window.naiDesktop.previewR4PromptApply({conversationId:chat.id,creationId:target.id,proposalId:proposal.id,proposalRevision:proposal.revision});
+        if(!preview.ok)throw Error(preview.message);
+        const value=preview.data;
+        const applied=await window.naiDesktop.applyR4PromptCAS({previewId:value.previewId,conversationId:chat.id,creationId:target.id,proposalId:proposal.id,proposalRevision:proposal.revision,draftId:value.draftId,draftRevision:value.draftRevision});
+        if(!applied.ok)throw Error(applied.message);
+        if(applied.data.data.applyStatus!=='applied')throw Error(r4Text(settings?.language,'工作台已变化，未采用此方案；请检查后重新操作。','The workbench changed; review it before trying this proposal again.'));
+      }
+      await runR4CommandFor(chat.id,'prepare_generation',proposal?{proposalId:proposal.id,revision:proposal.revision}:{},target.id);
+    }catch(reason){setError(String(reason));}
+    finally{setWorkbenchApplyBusy(false);}
   };
   const previewProposalWorkbenchApply=async(proposal:R4Proposal)=>{
     if(!chat||archived||workbenchApplyBusy||proposal.conversationId!==chat.id){setError(r4Text(settings?.language,'无法预览：方案不属于当前对话。','Cannot preview: this proposal does not belong to the current conversation.'));return;}
@@ -483,13 +504,30 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     }
     const target=targetState?.creations[targetCreationId];
     if(!target){setError(r4Text(settings?.language,'找不到源图所属创作。','Could not find the artwork’s creation.'));return false;}
+    const artwork=Object.values(targetState?.artworks??{}).find(item=>item.attachmentId===binding.attachmentId);
+    const attachment=[...chat.messages.flatMap(message=>message.attachments),...chat.draftAttachments].find(item=>item.id===binding.attachmentId);
+    const sourcePath=artwork?.readableHandle??attachment?.filePath;
+    if(!sourcePath){setError(r4Text(settings?.language,'源图本地文件不可用。','The local source image is unavailable.'));return false;}
+    const workbench=useAppStore.getState();
+    if(workbench.isGenerating){setError(r4Text(settings?.language,'请等待当前生成结束，再切换源图。','Wait for the current generation before changing its source.'));return false;}
+    await workbench.loadWorkbenchFromPath(sourcePath,{restoreMetadata:false});
+    if(useAppStore.getState().workbenchImage?.filePath!==sourcePath){setError(r4Text(settings?.language,'源图未载入工作台，未开始修改。','The source was not loaded into the workbench.'));return false;}
+    useAppStore.getState().setActiveCanvasSurface('generate:i2i');
     const result=await runR4CommandFor(chat.id,'set_edit_source',{attachmentId:binding.attachmentId,...(Number.isSafeInteger(binding.revision)?{attachmentRevision:String(binding.revision)}:{}),expectedInputRevision:target.inputRevision},targetCreationId);
     if(result.ok)setViewerArtworkId(undefined);
     return result.ok;
   };
-  const clearEditSource=()=>{
+  const clearEditSource=async()=>{
     if(!chat||!currentCreation||archived||controlsBusy)return;
-    void runR4CommandFor(chat.id,'patch_inputs',{expectedInputRevision:currentCreation.inputRevision,action:'clear_edit_source'},currentCreation.id);
+    const binding=currentCreation.editSource;
+    const artwork=Object.values(creativeState?.artworks??{}).find(item=>item.attachmentId===binding?.attachmentId);
+    const attachment=[...chat.messages.flatMap(message=>message.attachments),...chat.draftAttachments].find(item=>item.id===binding?.attachmentId);
+    const sourcePath=artwork?.readableHandle??attachment?.filePath;
+    const result=await runR4CommandFor(chat.id,'patch_inputs',{expectedInputRevision:currentCreation.inputRevision,action:'clear_edit_source'},currentCreation.id);
+    if(result.ok&&sourcePath&&useAppStore.getState().workbenchImage?.filePath===sourcePath){
+      await useAppStore.getState().clearWorkbenchImage();
+      useAppStore.getState().setActiveCanvasSurface('generate:t2i');
+    }
   };
   const addReference=async(asset:AgentAttachment|R4Artwork,role:'reference'|'discussion',purpose?:R4ReferencePurpose,creationId=currentCreation?.id)=>{
     if(!chat||!creationId||archived)return;
@@ -650,7 +688,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
       return <div key={item.id} className="pi-image-wrap">{imageUrl && !item.unavailable ? <button className="pi-image-button" aria-label={t('preview')} onClick={()=>artwork?void openArtwork(artwork):setImage(item)}><img className="pi-result-image" src={imageUrl} alt={item.name}/></button> : <div className="pi-notice"><p>{t('missingImage')}</p><button disabled={controlsBusy} onClick={()=>void importAttachments()}>{t('reattach')}</button></div>}{message.role==='assistant'&&!artwork&&<button disabled={archived||controlsBusy||!!item.unavailable||!currentCreation} onClick={()=>void continueEditingLegacyAttachment(item)}><LuPencil/>{r4Text(settings?.language,'绑定为当前创作改图源并继续','Bind as current creation edit source')}</button>}{artwork&&<button disabled={archived||controlsBusy} onClick={()=>void continueEditingArtwork(artwork)}><LuPencil/>{r4Text(settings?.language,'继续修改此创作','Continue editing this creation')}</button>}</div>;
     })}
     {!!message.actions?.length && <div className="pi-selected-actions pi-message-selections">{message.actions.map((action,index)=><span key={index}><LuWrench aria-hidden/>{studioComposerActionLabel(action,settings?.language,settings?.promptTemplates)}</span>)}</div>}
-    {!!sourceProposals.length&&<section className="r4-message-proposals" aria-label={r4Text(settings?.language,'此消息生成的方案','Proposals from this message')}><h4>{r4Text(settings?.language,'方案','Proposals')}</h4>{sourceProposals.map(proposal=><AgentR4ProposalCard key={`${proposal.id}@${proposal.revision}`} language={settings?.language} proposal={proposal} current={ownerCreation?.currentProposalRef===`${proposal.id}@${proposal.revision}`} compact disabled={archived||controlsBusy} onPrepare={()=>void prepareProposal(proposal)} onSelect={()=>selectProposal(proposal)} onApplyToWorkbench={()=>void previewProposalWorkbenchApply(proposal)}/>)}</section>}
+    {!!sourceProposals.length&&<section className="r4-message-proposals" aria-label={r4Text(settings?.language,'此消息生成的方案','Proposals from this message')}><h4>{r4Text(settings?.language,'方案','Proposals')}</h4>{sourceProposals.map(proposal=><AgentR4ProposalCard key={`${proposal.id}@${proposal.revision}`} language={settings?.language} proposal={proposal} current={ownerCreation?.currentProposalRef===`${proposal.id}@${proposal.revision}`} compact disabled={archived||controlsBusy||workbenchApplyBusy} onPrepare={()=>void prepareProposal(proposal)} onSelect={()=>selectProposal(proposal)} onApplyToWorkbench={()=>void previewProposalWorkbenchApply(proposal)}/>)}</section>}
     {message.content && <footer className="pi-message-actions"><button title={t('copy')} onClick={()=>void copy(message.content,message.id)}><LuCopy/>{t(copied===message.id?'copied':'copy')}</button>{message.role==='user' && <button onClick={()=>{prefill(message.content);setChatActions(message.actions??[])}}><LuPencil/>{t('editRequest')}</button>}</footer>}
   </article>;
   };
@@ -699,12 +737,12 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     };
   },[narrowLayout,sidebarOpen,resourcesOpen]);
 
-  return <div ref={pageRoot} className={`pi-agent${sidebarOpen?' has-left-pane':''}${resourcesOpen?' has-right-pane':''}`}>
-    <AgentR4CreationControls language={settings?.language} conversationTitle={chat?.title??''} creations={creations} currentCreationId={creativeState?.currentCreationId} scope={currentScope} queueCount={globalQueueCount} queueOpen={queueOpen} resourcesOpen={resourcesOpen} disabled={archived||optionsBusy||!chat} onScope={scope=>{if(chat)setScopeByConversation(current=>({...current,[chat.id]:scope}));}} onSelectCreation={selectCreation} onCreateCreation={createCreation} onToggleChats={()=>{setQueueOpen(false);if(window.innerWidth<=1100)setResourcesOpen(false);setSidebarOpen(value=>!value);}} onToggleQueue={()=>setQueueOpen(value=>!value)} onToggleResources={()=>{setQueueOpen(false);if(window.innerWidth<=1100)setSidebarOpen(false);setResourcesOpen(value=>!value);}}/>
+  return <div ref={pageRoot} className={`pi-agent${docked?' is-docked':''}${sidebarOpen?' has-left-pane':''}${resourcesOpen?' has-right-pane':''}`}>
+    <AgentR4CreationControls compact={docked} language={settings?.language} conversationTitle={chat?.title??''} creations={creations} currentCreationId={creativeState?.currentCreationId} scope={currentScope} queueCount={globalQueueCount} queueOpen={queueOpen} resourcesOpen={resourcesOpen} disabled={archived||optionsBusy||!chat} onScope={scope=>{if(chat)setScopeByConversation(current=>({...current,[chat.id]:scope}));}} onSelectCreation={selectCreation} onCreateCreation={createCreation} onToggleChats={()=>{setQueueOpen(false);if(docked||window.innerWidth<=1100)setResourcesOpen(false);setSidebarOpen(value=>!value);}} onToggleQueue={()=>setQueueOpen(value=>!value)} onToggleResources={()=>{setQueueOpen(false);if(docked||window.innerWidth<=1100)setSidebarOpen(false);setResourcesOpen(value=>!value);}}/>
     <AgentR4QueuePanel language={settings?.language} states={allCreativeStates} conversationTitles={conversationTitles} creationTitles={creationTitles} currentConversationId={chat?.id} currentCreationId={currentCreation?.id} canSteerCurrentReply={chat?.status==='running'} visible={queueOpen} onClose={()=>setQueueOpen(false)} onResumeQueue={sendResumeQueue} onResumeMessages={resumeMessages} onCancelMessage={cancelQueuedMessage} onRestoreMessage={restoreQueuedMessage} onSteerMessage={steerQueuedMessage} onCancelExecution={cancelExecution} onVerifyExecution={verifyExecution}/>
     <div ref={leftPane} id="pi-conversations-pane" className="pi-pane-slot pi-pane-left" role={narrowLayout&&sidebarOpen?'dialog':undefined} aria-modal={narrowLayout&&sidebarOpen?true:undefined} aria-label={narrowLayout&&sidebarOpen?t('chats'):undefined} {...disclosureAttributes(sidebarOpen)} onKeyDown={event=>handleDrawerKeyDown(event,'chats')}>
     {sidebarPresent&&<aside id="pi-conversations" className="pi-sidebar is-open" aria-label={t('chats')}>
-      <button disabled={controlsBusy} title={controlsBusy?t('busySwitch'):undefined} onClick={()=>{setArchivedView(false);void mutateChat(window.naiDesktop.createAgentConversation(t('newChat')))}}><LuPlus/>{t('newChat')}</button>
+      <button disabled={controlsBusy} title={controlsBusy?t('busySwitch'):undefined} onClick={()=>void createAssistantConversation()}><LuPlus/>{t('newChat')}</button>
       <label className="pi-search"><LuSearch aria-hidden/><input aria-label={t('searchChats')} placeholder={t('searchChats')} value={search} onChange={(event)=>setSearch(event.target.value)}/></label>
       <div className="pi-chat-scope" aria-label={t('chats')}><button aria-pressed={!archivedView} onClick={()=>setArchivedView(false)}><LuMessageSquare/>{t('activeChats')}</button><button aria-pressed={archivedView} onClick={()=>setArchivedView(true)}><LuArchive/>{t('archivedChats')}</button></div>
       <nav ref={chatListMotion}>{chats.map(item=><div className={`pi-chat-row${item.id===chat?.id?' is-active':''}`} key={item.id}><button className="pi-chat-select" aria-current={item.id===chat?.id?'page':undefined} disabled={controlsBusy} title={controlsBusy?t('busySwitch'):item.title} onClick={()=>void mutateChat(window.naiDesktop.selectAgentConversation(item.id))}>{item.archivedAt?<LuArchive/>:<LuMessageSquare/>}<span>{item.title}</span></button><SelectMenu value="" minMenuWidth={148} ariaLabel={`${t('chatActions')}: ${item.title}`} label={<LuEllipsis/>} className="pi-chat-more" popoverClassName="pi-chat-menu" disabled={controlsBusy} options={[{value:'rename',label:t('rename'),icon:<LuPencil/>},item.archivedAt?{value:'restore',label:t('restoreChat'),icon:<LuArchiveRestore/>}:{value:'archive',label:t('archiveChat'),icon:<LuArchive/>},{value:'delete',label:t('deleteChat'),icon:<LuTrash2/>,disabled:['running','waiting-permission'].includes(item.status)}]} onChange={action=>rowAction(item,action)}/></div>)}{!chats.length&&<p>{t(archivedView?'noArchivedChats':'noChats')}</p>}</nav>
@@ -712,7 +750,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
     </aside>}
     </div>
     {sidebarOpen && <button className="pi-sidebar-scrim" aria-label={t('close')} onClick={()=>setSidebarOpen(false)}/>}
-    <button ref={leftToggle} className="pi-side-toggle pi-left-toggle" aria-label={t(sidebarOpen?'collapseChats':'expandChats')} title={t(sidebarOpen?'collapseChats':'expandChats')} aria-expanded={sidebarOpen} aria-controls="pi-conversations-pane" onClick={()=>{if(window.innerWidth<=1100)setResourcesOpen(false);setSidebarOpen(!sidebarOpen)}}>{sidebarOpen?<LuPanelLeftClose/>:<LuPanelLeftOpen/>}</button>
+    <button ref={leftToggle} className="pi-side-toggle pi-left-toggle" aria-label={t(sidebarOpen?'collapseChats':'expandChats')} title={t(sidebarOpen?'collapseChats':'expandChats')} aria-expanded={sidebarOpen} aria-controls="pi-conversations-pane" onClick={()=>{if(docked||window.innerWidth<=1100)setResourcesOpen(false);setSidebarOpen(!sidebarOpen)}}>{sidebarOpen?<LuPanelLeftClose/>:<LuPanelLeftOpen/>}</button>
     <section className="pi-main">
       {!configured && !loading && !archived && <div className="pi-setup"><div><strong>{t('missingModel')}</strong><p>{t('setupBody')}</p></div><button className="pi-primary" onClick={openSettings}>{t('setup')}</button></div>}
       {archived&&<div className="pi-archive-banner"><LuArchive/><span>{t('archivedReadOnly')}</span><button disabled={controlsBusy} onClick={()=>chat&&void changeArchived(chat.id,false)}><LuArchiveRestore/>{t('restoreChat')}</button></div>}
@@ -720,6 +758,7 @@ export default function PiAgentPage({ active }: { active: boolean }) {
         <div className="pi-transcript-content">{loading ? <p role="status">{t('statusRunning')}</p> : !chat?.messages.length && <div className="pi-empty"><LuSparkles className="pi-empty-icon"/><h3>{t('heroTitle')}</h3><p>{t('heroBody')}</p><div className="pi-starters"><button onClick={()=>prefill(t('quickSettingsDraft'))}><LuSettings/>{t('quickSettings')}</button><button onClick={()=>prefill(t('quickPromptDraft'))}><LuPencil/>{t('quickPrompt')}</button><button onClick={()=>{prefill(t('quickReferenceDraft'));void importAttachments()}}><LuImage/>{t('quickReference')}</button></div></div>}
         {currentScope==='creation'&&unboundMessageCount>0&&<p className="r4-filter-note" role="status">{r4Text(settings?.language,`当前仅显示明确归属此创作的消息；${unboundMessageCount} 条历史或归属冲突消息仍保留在“全部对话”中。`,`Only explicitly owned messages are shown. ${unboundMessageCount} unversioned or conflicting messages remain in All messages.`)}</p>}
         {visibleMessages.filter(item=>item.role!=='system').map(renderMessage)}
+        {((currentCreation?.references?.length??0)>0||currentCreation?.editSource||currentAttachments.some(item=>item.kind==='image')||preparation||executions.length>0||currentReceipts.length>0)&&<AgentR4CreativePanel workbench language={settings?.language} state={creativeState} creation={currentCreation} currentProposal={currentProposal} proposals={proposals} artworks={artworks} selectedArtwork={selectedArtwork?{...selectedArtwork,url:selectedArtwork.url??attachmentUrl(selectedArtwork)}:undefined} preparation={preparation} executions={executions} receipts={currentReceipts} attachments={currentAttachments} disabled={archived||controlsBusy||!chat} generationDisabled={!configured||workbenchApplyBusy} onSelectProposal={selectProposal} onPrepare={prepareProposal} onPreviewWorkbenchApply={previewProposalWorkbenchApply} onSelectArtwork={selectArtwork} onOpenArtwork={item=>void openArtwork(item)} onSetEditSource={binding=>void continueEditingFromPanel(binding)} onRemoveEditSource={()=>void clearEditSource()} onAddReference={(asset,purpose)=>void addReference(asset,purpose)} onChangeReference={changeReference} onRemoveReference={removeReference} onSaveInputs={saveCreationInputs} onApprovePreparation={approvePreparation} onDenyPreparation={denyPreparation} onUndo={undoReceipt} attachmentUrl={attachmentUrl}/>}
 
         {pendingQuestion&&<AgentQuestionCards key={pendingQuestion.id} request={pendingQuestion} language={settings?.language} onRespond={async response=>{
           const result=await window.naiDesktop.respondAgentQuestion?.(response)??{ok:false};
@@ -757,15 +796,15 @@ export default function PiAgentPage({ active }: { active: boolean }) {
         </div>
       </div>
     </section>
-    <button ref={rightToggle} className="pi-side-toggle pi-right-toggle" aria-label={t(resourcesOpen?'collapseResources':'expandResources')} title={t(resourcesOpen?'collapseResources':'expandResources')} aria-expanded={resourcesOpen} aria-controls="pi-creative-resources-pane" onClick={()=>{if(window.innerWidth<=1100)setSidebarOpen(false);setResourcesOpen(!resourcesOpen)}}>{resourcesOpen?<LuPanelRightClose/>:<LuPanelRightOpen/>}</button>
+    <button ref={rightToggle} className="pi-side-toggle pi-right-toggle" aria-label={t(resourcesOpen?'collapseResources':'expandResources')} title={t(resourcesOpen?'collapseResources':'expandResources')} aria-expanded={resourcesOpen} aria-controls="pi-creative-resources-pane" onClick={()=>{if(docked||window.innerWidth<=1100)setSidebarOpen(false);setResourcesOpen(!resourcesOpen)}}>{resourcesOpen?<LuPanelRightClose/>:<LuPanelRightOpen/>}</button>
     {resourcesOpen&&<button className="pi-resource-scrim" aria-label={t('close')} onClick={()=>setResourcesOpen(false)}/>}
-    <div ref={rightPane} id="pi-creative-resources-pane" className="pi-pane-slot pi-pane-right" role={narrowLayout&&resourcesOpen?'dialog':undefined} aria-modal={narrowLayout&&resourcesOpen?true:undefined} aria-label={narrowLayout&&resourcesOpen?r4Text(settings?.language,'当前创作面板','Current creation panel'):undefined} {...disclosureAttributes(resourcesOpen)} onKeyDown={event=>handleDrawerKeyDown(event,'creation')}>
-    {resourcesPresent&&<div className="r4-right-panel"><div className="r4-right-panel-tabs" role="tablist" aria-label={r4Text(settings?.language,'创作和资源面板','Creation and resources')}><button type="button" role="tab" aria-selected={rightPanelTab==='creative'} onClick={()=>setRightPanelTab('creative')}><LuSparkles/>{r4Text(settings?.language,'创作','Creation')}</button><button type="button" role="tab" aria-selected={rightPanelTab==='resources'} onClick={()=>setRightPanelTab('resources')}><LuFileText/>{r4Text(settings?.language,'资源','Resources')}</button></div>{rightPanelTab==='creative'?<AgentR4CreativePanel language={settings?.language} state={creativeState} creation={currentCreation} currentProposal={currentProposal} proposals={proposals} artworks={artworks} selectedArtwork={selectedArtwork?{...selectedArtwork,url:selectedArtwork.url??attachmentUrl(selectedArtwork)}:undefined} preparation={preparation} executions={executions} receipts={currentReceipts} attachments={currentAttachments} disabled={archived||controlsBusy||!chat} generationDisabled={!configured} onSelectProposal={selectProposal} onPrepare={prepareProposal} onPreviewWorkbenchApply={previewProposalWorkbenchApply} onSelectArtwork={selectArtwork} onOpenArtwork={item=>void openArtwork(item)} onSetEditSource={binding=>void continueEditingFromPanel(binding)} onRemoveEditSource={clearEditSource} onAddReference={(asset,purpose)=>void addReference(asset,purpose)} onChangeReference={changeReference} onRemoveReference={removeReference} onSaveInputs={saveCreationInputs} onApprovePreparation={approvePreparation} onDenyPreparation={denyPreparation} onUndo={undoReceipt} attachmentUrl={attachmentUrl}/>:<AgentResourcePanel tab={resourceTab} onTab={setResourceTab} workspace={workspace} chat={chat} language={settings?.language} disabled={archived||controlsBusy||!chat} presetControl={{presets:creativeState?.assistantPresets??{},binding:creativeState?.assistantPresetBinding,defaults:creativeState?.assistantPresetDefaultBinding,restoredConfig:restoredDraftConfig,disabled:archived||optionsBusy||!chat,onChange:setPresetBinding,onSetDefault:setNewChatDefault}} onChange={patch=>void saveOptions(patch)} onImport={kind=>void importResources(kind)} onWorkspaceChange={updateWorkspace}/>}</div>}
+    <div ref={rightPane} id="pi-creative-resources-pane" className="pi-pane-slot pi-pane-right" role={narrowLayout&&resourcesOpen?'dialog':undefined} aria-modal={narrowLayout&&resourcesOpen?true:undefined} aria-label={narrowLayout&&resourcesOpen?r4Text(settings?.language,'助手资源','Assistant resources'):undefined} {...disclosureAttributes(resourcesOpen)} onKeyDown={event=>handleDrawerKeyDown(event,'creation')}>
+    {resourcesPresent&&<AgentResourcePanel onClose={()=>setResourcesOpen(false)} tab={resourceTab} onTab={setResourceTab} workspace={workspace} chat={chat} language={settings?.language} disabled={archived||controlsBusy||!chat} presetControl={{presets:creativeState?.assistantPresets??{},binding:creativeState?.assistantPresetBinding,defaults:creativeState?.assistantPresetDefaultBinding,restoredConfig:restoredDraftConfig,disabled:archived||optionsBusy||!chat,onChange:setPresetBinding,onSetDefault:setNewChatDefault}} onChange={patch=>void saveOptions(patch)} onCreatePreset={async(presetId,name,body)=>{if(!chat)throw new Error(t('statusError'));return runR4CommandFor(chat.id,'create_preset',{presetId,name,body},currentCreation?.id);}} onEditPreset={async(presetId,expectedRevision,name,body)=>{if(!chat)throw new Error(t('statusError'));return runR4CommandFor(chat.id,'update_preset',{presetId,expectedRevision,name,body},currentCreation?.id);}} onWorkspaceChange={updateWorkspace}/>}
     </div>
     {settingsOpen&&settings&&<AgentDialog title={t('agentModelsTitle')} close={()=>{if(!saving)setSettingsOpen(false)}}><AgentProviderSettings settings={settings} disabled={controlsBusy} onSaved={()=>setSettingsOpen(false)} onCancel={()=>setSettingsOpen(false)}/></AgentDialog>}
     {workbenchPromptPreview&&<AgentDialog title={r4Text(settings?.language,'将方案应用到图像工作台','Apply proposal to image workbench')} close={()=>{if(!workbenchApplyBusy)setWorkbenchPromptPreview(undefined)}}><AgentR4WorkbenchApplyPreview language={settings?.language} preview={workbenchPromptPreview} busy={workbenchApplyBusy} onClose={()=>setWorkbenchPromptPreview(undefined)} onApply={()=>void applyWorkbenchPromptPreview()}/></AgentDialog>}
     {chatAction&&<AgentDialog title={t('rename')} close={()=>setChatAction(undefined)}><label>{t('chatName')}<input autoFocus value={chatName} maxLength={100} onChange={e=>setChatName(e.target.value)}/></label><footer><button onClick={()=>setChatAction(undefined)}>{t('cancel')}</button><button className="pi-primary" disabled={!chatName.trim()||controlsBusy} onClick={()=>{void mutateChat(window.naiDesktop.renameAgentConversation(chatAction.id,chatName.trim()));setChatAction(undefined)}}>{t('save')}</button></footer></AgentDialog>}
     {image?.fileUrl&&<AppPortal><div className="tavern-image-lightbox" role="dialog" aria-modal="true" aria-label={t('preview')}><button className="tavern-image-lightbox-close" aria-label={t('close')} onClick={()=>setImage(undefined)}><LuX/></button><PreviewImageViewer images={[{src:image.fileUrl,alt:image.name}]} index={0} onIndex={()=>{}} showNavigation={false} onBackgroundClick={()=>setImage(undefined)}/></div></AppPortal>}
-      {viewerArtworkId&&viewerConversationId&&creativeStates[viewerConversationId]&&<AgentR4ArtworkViewer language={settings?.language} artworks={Object.values(creativeStates[viewerConversationId].artworks).map(item=>({...item,url:item.url??attachmentUrl(item)}))} initialArtworkId={viewerArtworkId} onClose={()=>{setViewerArtworkId(undefined);setViewerConversationId(undefined);}} onDownload={item=>void runR4CommandFor(item.conversationId,'download_artwork',{artworkId:item.id},item.creationId)} onContinueEditing={item=>void continueEditingArtwork(item)} onSelectArtwork={selectArtwork} onAddReference={(item,role,purpose,include)=>void addReferenceFromViewer(item,role,purpose,include)}/>}
+      {viewerArtworkId&&viewerConversationId&&creativeStates[viewerConversationId]&&<AgentR4ArtworkViewer language={settings?.language} artworks={Object.values(creativeStates[viewerConversationId].artworks).filter(item=>item.sourceKind!=='workbench').map(item=>({...item,url:item.url??attachmentUrl(item)}))} initialArtworkId={viewerArtworkId} onClose={()=>{setViewerArtworkId(undefined);setViewerConversationId(undefined);}} onDownload={item=>void runR4CommandFor(item.conversationId,'download_artwork',{artworkId:item.id},item.creationId)} onContinueEditing={item=>void continueEditingArtwork(item)} onSelectArtwork={selectArtwork} onAddReference={(item,role,purpose,include)=>void addReferenceFromViewer(item,role,purpose,include)}/>}
   </div>;
 }

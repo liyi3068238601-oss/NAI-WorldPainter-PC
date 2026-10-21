@@ -17,8 +17,11 @@ const mocks = vi.hoisted(() => ({ executeAgentTool: vi.fn() }));
 vi.mock('./agent-tools', () => ({ executeAgentTool: mocks.executeAgentTool }));
 
 type Fixture = { id: string; tool: string; target: 'input' | 'result'; valid: boolean; instance: unknown };
-const inputFixtures = (fixtureDocument as { fixtures: Fixture[] }).fixtures
-  .filter(item => item.target === 'input' && item.valid);
+const inputFixtures = [
+  ...(fixtureDocument as { fixtures: Fixture[] }).fixtures.filter(item => item.target === 'input' && item.valid),
+  { id: 'synthetic-write-workbench-prompts-valid', tool: 'write_workbench_prompts', target: 'input', valid: true,
+    instance: { positivePrompt: 'synthetic writer fixture', expectedDraftRevision: 0 } } as Fixture,
+];
 const root = path.resolve(process.cwd(), '.tmp', 'r4-product-boundary-tests');
 const cleanup: Array<() => void> = [];
 
@@ -213,11 +216,15 @@ function capabilitySnapshot() {
 }
 
 function hostFixture(store: AgentSqlStore) {
-  const prepare = vi.fn(async (creation: any, args: Record<string, unknown>, conversationConfig: R4ConversationConfigSnapshot) => ({
-    input: { inputRevision: creation.inputRevision, positivePrompt: String(args.positivePrompt ?? ''), negativePrompt: '', stylePrompt: '', publicParameters: {}, references: [], conversationConfig },
-    preview: { positivePrompt: String(args.positivePrompt ?? ''), negativePrompt: '', stylePrompt: '', count: 1 },
+  const prepare = vi.fn(async (creation: any, args: Record<string, unknown>, conversationConfig: R4ConversationConfigSnapshot) => {
+    const positivePrompt=String(args.positivePrompt??'live workbench prompt');
+    const preview={positivePrompt,negativePrompt:'',stylePrompt:'',count:1,imageProvider:'novelai',estimateSource:'provider-unknown',warning:'Synthetic host preview.',
+      requestedSeedPolicy:'random',requestedSeed:null,resolvedSeed:null,resolvedSeedSource:null,sourceAttachmentIds:[],sourceAttachments:[]};
+    return {
+    input: { inputRevision: creation.inputRevision, positivePrompt, negativePrompt: '', stylePrompt: '', publicParameters: {}, references: [], conversationConfig },
+    preview,
     providerRef: { providerId: 'fixture-image-provider' },
-  }));
+  };});
   const host = new R4CreativeHost(store, {
     captureConfig: () => structuredClone(config),
     resolveAttachment: (_workspace, _state, _conversationId, _creationId, attachmentId) => ({ attachmentId, revision: 1, hash: 'a'.repeat(64) }),
@@ -236,6 +243,8 @@ function piSessionOptions(host: R4CreativeHost, store: AgentSqlStore, creationId
   const prepareImageOperation = vi.fn(async () => ({ preparationId: 'never-used', fingerprint: 'never-used' }));
   const runPaidLegacy = vi.fn(async (_name: R4ToolName, _args: Record<string, unknown>, _scope: R4HostScope, run: () => Promise<any>) => run());
   const applyPrompt = vi.fn(async () => ({}));
+  const writeWorkbenchPrompts = vi.fn(async (_args:Record<string,unknown>,scope:R4HostScope) => ({resultKind:'business',status:'completed',conversationId:scope.conversationId,
+    creationId:scope.creationId,data:{writeStatus:'unchanged',draftId:'fixture-draft',draftRevision:0,changedFields:{positivePromptChanged:false,negativePromptChanged:false,stylePromptChanged:false}}}));
   const askQuestion = vi.fn(async () => ({ cancelled: true, answers: [] }) as any);
   const readSkill = vi.fn(() => ({ id: 'skill-fixture', content: 'fixture' }));
   const readPromptingReference = vi.fn(async () => ({ content: 'fixture', source: 'fixture', version: 'fixture' }));
@@ -247,16 +256,16 @@ function piSessionOptions(host: R4CreativeHost, store: AgentSqlStore, creationId
     askQuestion,
     skillDirectory: [{ id: 'skill-fixture', name: 'Fixture', description: 'Synthetic test capability.' }],
     readSkill, readPromptingReference,
-    promptingReferenceEnabled: true, applyPrompt, prepareImageOperation,
+    promptingReferenceEnabled: true, applyPrompt, writeWorkbenchPrompts, prepareImageOperation,
   };
   return { options, scope, hostInvoke, authorize, assertNoDispatchGate, adapterDependencies, prepareImageOperation, runPaidLegacy, coordinator,
-    applyPrompt, askQuestion, readSkill, readPromptingReference };
+    applyPrompt, writeWorkbenchPrompts, askQuestion, readSkill, readPromptingReference };
 }
 
 describe('R4 real product boundary regression', () => {
   afterEach(() => { for (const close of cleanup.splice(0).reverse()) close(); });
 
-  it('routes generated malformed variants for all 36 tools through Pi preflight with zero side effects', async () => {
+  it('routes generated malformed variants for all 37 tools through Pi preflight with zero side effects', async () => {
     const { store } = sqlFixture();
     const { host, creationId } = hostFixture(store);
     const setup = piSessionOptions(host, store, creationId);
@@ -298,7 +307,7 @@ describe('R4 real product boundary regression', () => {
       }
       testCases.push(...variants.map(candidate => ({ tool: name, fixture, candidate })));
     }
-    expect(testCases.length).toBeGreaterThan(36 * 2);
+    expect(testCases.length).toBeGreaterThan(37 * 2);
 
     for (const { tool: name, candidate } of testCases) {
       const mounted = session.getTools().find(item => item.name === name);
@@ -316,6 +325,7 @@ describe('R4 real product boundary regression', () => {
       expect(setup.coordinator.submit, `${name}/${candidate.kind} queue`).not.toHaveBeenCalled();
       expect(setup.runPaidLegacy, `${name}/${candidate.kind} paid`).not.toHaveBeenCalled();
       expect(setup.applyPrompt, `${name}/${candidate.kind} workbench apply`).not.toHaveBeenCalled();
+      expect(setup.writeWorkbenchPrompts, `${name}/${candidate.kind} direct workbench write`).not.toHaveBeenCalled();
       expect(setup.askQuestion, `${name}/${candidate.kind} question`).not.toHaveBeenCalled();
       expect(setup.readSkill, `${name}/${candidate.kind} skill read`).not.toHaveBeenCalled();
       expect(setup.readPromptingReference, `${name}/${candidate.kind} reference read`).not.toHaveBeenCalled();
@@ -323,34 +333,26 @@ describe('R4 real product boundary regression', () => {
     }
     expect(store.readR4State()).toEqual(beforeState);
     expect(store.readWorkspace()).toEqual(beforeWorkspace);
-    expect(Object.fromEntries(counts)).toMatchObject({ unknown_field: 36, wrong_type: 36 });
+    expect(Object.fromEntries(counts)).toMatchObject({ unknown_field: 37, wrong_type: 37 });
     // These are the tools whose frozen schemas actually declare required fields.
     expect(counts.get('missing_required')).toBeGreaterThan(0);
     expect(counts.get('enum')).toBeGreaterThan(0);
     expect(counts.get('range')).toBeGreaterThan(0);
   });
 
-  it.each([
-    ['proposal and direct prompt together', 'both'] as const,
-    ['neither proposal nor direct prompt', 'neither'] as const,
-  ])('rejects prepare_generation with %s before preparation is written', async (_label, mode) => {
+  it('rejects prepare_generation with a proposal and direct prompt together before preparation is written', async () => {
     const { store } = sqlFixture();
     const { host, prepare, creationId } = hostFixture(store);
-    let proposalId: string | undefined;
-    if (mode === 'both') {
-      const proposal = await host.invoke('propose_prompt', { positivePrompt: 'synthetic proposal' }, {
-        conversationId: 'chat', creationId, userIntentRef: 'intent-proposal', operationKey: 'proposal-op',
-      });
-      proposalId = String((proposal.data as Record<string, unknown>).proposalId);
-    }
+    const proposal = await host.invoke('propose_prompt', { positivePrompt: 'synthetic proposal' }, {
+      conversationId: 'chat', creationId, userIntentRef: 'intent-proposal', operationKey: 'proposal-op',
+    });
+    const proposalId = String((proposal.data as Record<string, unknown>).proposalId);
     const before = store.readR4State();
     const beforeWorkspace = store.readWorkspace();
-    const args = mode === 'both'
-      ? { proposalId, revision: 1, positivePrompt: 'synthetic direct prompt' }
-      : {};
+    const args = { proposalId, revision: 1, positivePrompt: 'synthetic direct prompt' };
     expect(validateR4Input('prepare_generation', args).valid).toBe(false);
     const result = await host.invoke('prepare_generation', args, {
-      conversationId: 'chat', creationId, userIntentRef: 'intent-prepare', operationKey: `prepare-${mode}`,
+      conversationId: 'chat', creationId, userIntentRef: 'intent-prepare', operationKey: 'prepare-both',
     });
     expect(validateR4Result('prepare_generation', result).valid).toBe(true);
     expect(result).toMatchObject({ resultKind: 'preflight_failure', status: 'error' });
@@ -358,6 +360,19 @@ describe('R4 real product boundary regression', () => {
     expect(Object.keys(store.readR4State().preparations)).toEqual(Object.keys(before.preparations));
     expect(store.readR4State()).toEqual(before);
     expect(store.readWorkspace()).toEqual(beforeWorkspace);
+  });
+
+  it('accepts prepare_generation with empty args so the host can use its fresh live-workbench snapshot', async () => {
+    const { store } = sqlFixture();
+    const { host, prepare, creationId } = hostFixture(store);
+    expect(validateR4Input('prepare_generation', {}).valid).toBe(true);
+    const result = await host.invoke('prepare_generation', {}, {
+      conversationId: 'chat', creationId, userIntentRef: 'intent-prepare-empty', operationKey: 'prepare-empty',
+    });
+    expect(validateR4Result('prepare_generation', result).valid).toBe(true);
+    expect(result).toMatchObject({ resultKind: 'business', status: 'completed', data: { preparationStatus: 'prepared' } });
+    expect(prepare).toHaveBeenCalledOnce();
+    expect(prepare.mock.calls[0][1]).toEqual({});
   });
 
   it.each(['completed', 'error', 'blocked', 'denied'] as const)(

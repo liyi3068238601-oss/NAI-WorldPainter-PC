@@ -139,7 +139,9 @@ describe('completeStudioPiTurn protocol split', () => {
     expect(call.tools.every((tool: { flatArguments?: boolean; handlesAuthorization?: boolean }) => tool.flatArguments && tool.handlesAuthorization)).toBe(true);
     expect(call.getTools).toBeTypeOf('function');
     expect(call.beforeModelCall).toBeTypeOf('function');
-    expect(call.systemPrompt).toContain('通过持续对话帮助用户');
+    expect(call.systemPrompt).toContain('你是绘世图像工作台助手');
+    expect(call.systemPrompt).toContain('write_workbench_prompts');
+    expect(call.systemPrompt).toContain('使用已挂载的 ask_user');
     expect(call.systemPrompt).not.toContain('langbai_software_capabilities');
     expect(call.onReady).toBe(turn.onReady);
     expect(call.onSteeringConsumed).toBe(turn.onSteeringConsumed);

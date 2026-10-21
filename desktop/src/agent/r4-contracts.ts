@@ -1,7 +1,7 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import rawRegistry from './r4-registry.json';
 
-export const R4_REGISTRY_SHA256 = '91d25a6f3a4e62fc4e7e8f912e654f15d602a4bbd799ffd335afec9ea3c057d4';
+export const R4_REGISTRY_SHA256 = '284d8bc63a59b4205c493f9e22bd5b3c4ffc50d91cf9db2c624d3133de5a1a3c';
 
 export const R4_TOOL_NAMES = [
   'get_capabilities', 'read_generation_state', 'list_history', 'search_tags',
@@ -9,6 +9,7 @@ export const R4_TOOL_NAMES = [
   'search_reference_presets', 'read_image_metadata', 'search_memories', 'read_skill',
   'read_prompting_reference', 'ask_user', 'get_execution', 'propose_prompt',
   'read_creation', 'read_proposal', 'set_current_proposal', 'apply_prompt',
+  'write_workbench_prompts',
   'save_prompt_preset', 'read_prompt_template', 'manage_prompt_templates',
   'convert_prompt', 'edit_prompt', 'reverse_prompt', 'prepare_generation',
   'generate_image', 'redraw_image', 'inpaint_image', 'upscale_image', 'process_image',

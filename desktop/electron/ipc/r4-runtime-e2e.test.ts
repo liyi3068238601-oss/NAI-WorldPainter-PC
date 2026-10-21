@@ -8,13 +8,33 @@ import type {R4Execution} from '../../src/agent/r4-types';
 import {DEFAULT_PARAMS,type AppSettings} from '../../src/types';
 import {AgentSqlStore} from './r4-store';
 
-const fixture=vi.hoisted(()=>({dir:'',store:null as AgentSqlStore|null,settings:null as AppSettings|null,requests:[] as R4Execution[],modelCalls:[] as any[],step:0}));
+const fixture=vi.hoisted(()=>({dir:'',store:null as AgentSqlStore|null,settings:null as AppSettings|null,workbench:null as any,requests:[] as R4Execution[],modelCalls:[] as any[],step:0}));
 vi.mock('./agent-workspace-location',()=>({agentWorkspaceDirectory:()=>fixture.dir}));
 vi.mock('./local-media-protocol',()=>({toLocalMediaUrl:(file:string)=>`local-media://fixture/${path.basename(file)}`}));
 vi.mock('./store',()=>({getSettings:()=>fixture.settings,getToken:()=> 'public-test-token',getHistory:()=>[],getAccountSummary:()=>({hasToken:true,tierLevel:0,hasActiveSubscription:false})}));
 vi.mock('./agent-store',()=>({getAgentSqlStore:()=>fixture.store,readAgentWorkspace:()=>fixture.store!.readWorkspace(),
   updateAgentConversation:(id:string,update:(chat:any)=>void)=>fixture.store!.transaction(tx=>{const workspace=tx.getWorkspace(),chat=workspace.conversations.find(row=>row.id===id);if(chat){update(chat);tx.setWorkspace(workspace);}})}));
-vi.mock('./agent-tools',()=>({AGENT_READ_TOOLS:[],AGENT_MUTATING_TOOLS:[],executeAgentTool:vi.fn(async()=>{throw Error('No legacy tool belongs in this workflow');})}));
+vi.mock('./agent-tools',()=>({AGENT_READ_TOOLS:[],AGENT_MUTATING_TOOLS:[],executeAgentTool:vi.fn(async({tool}:any)=>{
+  if(tool==='langbai_get_generation_state')return {ok:true,title:'Live Generate workbench',output:'fixture snapshot',data:{imageProvider:'novelai',modelMode:'anime',referenceCapabilities:{maxCharacterPrompts:3,vibeTransfer:true,preciseReference:true,attachmentIdsRequiredForAgentReferences:true}}};
+  throw Error(`Unexpected legacy tool ${String(tool)}`);
+})}));
+vi.mock('./r4-workbench',()=>({getR4WorkbenchService:()=>({
+  ready:()=>true,
+  readR4WorkbenchSnapshot:async()=>structuredClone(fixture.workbench),
+  createR4ApplyPrompt:()=>async()=>({resultKind:'business',status:'completed',conversationId:'chat',creationId:'fixture-creation',data:{applyStatus:'unchanged',draftId:'runtime-workbench',draftRevision:fixture.workbench?.draftRevision??1,diff:{positivePromptChanged:false,negativePromptChanged:false,stylePromptChanged:false}}}),
+  writeR4WorkbenchPrompts:async(args:any,scope:any)=>{
+    const current=fixture.workbench;
+    const changedFields={positivePromptChanged:args.positivePrompt!==undefined&&args.positivePrompt!==current.params.positivePrompt,
+      negativePromptChanged:args.negativePrompt!==undefined&&args.negativePrompt!==current.params.negativePrompt,
+      stylePromptChanged:args.stylePrompt!==undefined&&args.stylePrompt!==current.params.stylePrompt};
+    if(args.expectedDraftRevision!==current.draftRevision)return {resultKind:'business',status:'completed',conversationId:scope.conversationId,creationId:scope.creationId,
+      data:{writeStatus:'conflict',draftId:current.draftId,draftRevision:current.draftRevision,changedFields}};
+    fixture.workbench={...current,draftRevision:current.draftRevision+1,inputRevision:current.inputRevision+1,
+      params:{...current.params,...Object.fromEntries(['positivePrompt','negativePrompt','stylePrompt'].filter(key=>args[key]!==undefined).map(key=>[key,args[key]]))}};
+    return {resultKind:'business',status:'completed',conversationId:scope.conversationId,creationId:scope.creationId,
+      data:{writeStatus:'written',draftId:fixture.workbench.draftId,draftRevision:fixture.workbench.draftRevision,changedFields}};
+  },publishCompletedResults:async()=>{},
+})}));
 vi.mock('./worldpainter-knowledge',()=>({worldpainterKnowledgeContext:async()=>({version:'v45',prompt:'fixture creative guidance'}),readWorldpainterPromptingReference:vi.fn()}));
 vi.mock('./r4-image-provider',()=>({R4ImageProvider:class{
   async submit(execution:R4Execution,index:number,context:any){
@@ -36,13 +56,17 @@ vi.mock('./pi-agent-provider',()=>({studioPiModel:()=>model,studioPiStream:()=>(
   fixture.modelCalls.push(JSON.parse(JSON.stringify(context)));
   const step=fixture.step++,stream=createAssistantMessageEventStream();
   const tool=(name:string,args:Record<string,unknown>)=>[{type:'toolCall' as const,id:`call-${step}`,name,arguments:args}];
-  const preparation=context.messages.filter((row:any)=>row.role==='toolResult').flatMap((row:any)=>row.content.filter((part:any)=>part.type==='text').flatMap((part:any)=>{try{const value=JSON.parse(part.text);return value.data?.preparationId?[value.data]:[];}catch{return[];}})).at(-1);
-  const content=step===0?tool('get_capabilities',{requestedGroups:['prompt','generation','creation_context']})
-    :step===1?tool('propose_prompt',{positivePrompt:'a quiet rainy bookshop',negativePrompt:'blur',stylePrompt:'watercolor',changeSummary:'保留书店，增加雨夜氛围'})
-    :step===2?tool('prepare_generation',{positivePrompt:'a quiet rainy bookshop',count:2})
-    :step===3||step===4?tool('generate_image',{preparationId:preparation.preparationId})
-    :[{type:'text' as const,text:'该方案已入队，请查看作品回执。'}];
-  const message:AssistantMessage={role:'assistant',content,api:model.api,provider:model.provider,model:model.id,timestamp:Date.now(),stopReason:step<5?'toolUse':'stop',
+  const toolResults=context.messages.filter((row:any)=>row.role==='toolResult').flatMap((row:any)=>row.content.filter((part:any)=>part.type==='text').flatMap((part:any)=>{try{return [JSON.parse(part.text)];}catch{return[];}}));
+  const preparation=toolResults.map((value:any)=>value.data).reverse().find((data:any)=>data?.preparationId);
+  const readState=toolResults.map((value:any)=>value.data).reverse().find((data:any)=>data?.readStatus==='ok');
+  const content=step===0?tool('get_capabilities',{requestedGroups:['prompt','generation','creation_context','workbench']})
+    :step===1?tool('read_generation_state',{})
+    :step===2?tool('write_workbench_prompts',{positivePrompt:'a quiet rainy bookshop',negativePrompt:'blur',stylePrompt:'watercolor',expectedDraftRevision:readState?.draftRevision})
+    :step===3?tool('read_generation_state',{})
+    :step===4?tool('prepare_generation',{})
+    :step===5||step===6?tool('generate_image',{preparationId:preparation?.preparationId})
+    :[{type:'text' as const,text:'工作台提示词已更新，图片已入队并收到作品回执。'}];
+  const message:AssistantMessage={role:'assistant',content,api:model.api,provider:model.provider,model:model.id,timestamp:Date.now(),stopReason:step<7?'toolUse':'stop',
     usage:{input:1,output:1,cacheRead:0,cacheWrite:0,totalTokens:2,cost:{input:0,output:0,cacheRead:0,cacheWrite:0,total:0}}};
   queueMicrotask(()=>{stream.push({type:'start',partial:message});stream.push({type:'done',reason:step<5?'toolUse':'stop',message});});return stream;
 })}));
@@ -57,6 +81,9 @@ beforeEach(()=>{
   fixture.settings={agentApiProtocol:'openai-compatible',agentApiBaseUrl:'https://fixture.invalid/v1',agentApiKey:'public-test-model-key',agentApiModel:'local-model',agentVisionEnabled:false,
     agentContextWindow:128000,agentMaxOutputTokens:4096,agentAutoCompact:false,agentAutoCompactThreshold:.8,imageProvider:'novelai',proxyMode:'direct',proxyUrl:'',modelMode:'anime',
     outputDir:fixture.dir,lastGenerationState:{params:{...DEFAULT_PARAMS,negativePrompt:'',stylePrompt:''}},savedAgentModels:[],stylePromptPresets:[],positivePromptPresets:[],promptChunks:[]} as unknown as AppSettings;
+  fixture.workbench={draftId:'runtime-workbench',draftRevision:1,inputRevision:1,draftSource:'workbench',params:{...DEFAULT_PARAMS,positivePrompt:'',negativePrompt:'',stylePrompt:''},
+    workbench:{mode:'generate:t2i',historyGroupId:'runtime-generation-group',modelMode:'anime',batchCount:2,batchIntervalSeconds:0,charCaptions:[],vibeImages:[],preciseReferences:[],
+      busy:{isGenerating:false,isGenerateQueueRunning:false,batchRunning:false}}};
   const workspace={version:4,conversations:[{id:'chat',title:'fixture',messages:[],draftAttachments:[],status:'idle',characterIds:[],lorebookIds:[],selectedSkillIds:[],studioApprovalMode:'auto',compactCount:0}],
     characters:[],personas:[],lorebooks:[],skills:[],memories:[],samplerPresets:[],defaultGenerationMode:'confirm',updatedAt:new Date().toISOString()} as unknown as AgentWorkspaceData;
   fixture.store=new AgentSqlStore({filename:path.join(fixture.dir,'agent.sqlite'),legacyFiles:[],loadInitialState:()=>({workspace}),normalizeWorkspace:value=>structuredClone(value) as AgentWorkspaceData});
@@ -143,23 +170,26 @@ describe('actual R4 Pi / SQL / host / worker integration with local fake provide
     expect(fixture.store!.readR4State().messageQueue[admitted.queueId!].status).toBe('paused');
     const continued=await host.command({conversationId:'chat',type:'resume_messages',args:{messageIds:[admitted.messageId],acknowledgedGateIds:['paid-service:A']}});expect(continued.ok).toBe(true);
     await runtime.queue().kick('chat');await new Promise<void>(resolve=>setImmediate(resolve));await getR4ExecutionCoordinator().worker.kick();
-    expect(fixture.modelCalls).toHaveLength(6);expect(fixture.requests).toHaveLength(2);
+    expect(fixture.modelCalls).toHaveLength(8);expect(fixture.requests).toHaveLength(2);
     const state=fixture.store!.readR4State();expect(state.gates['paid-service:A'].active).toBe(true);expect(state.operations['paid-service:A']).toEqual(original);
     expect(Object.values(state.executions)).toMatchObject([{status:'completed',releasedGateIds:['paid-service:A']}]);
     expect(state.messageQueue[admitted.queueId!].status).toBe('completed');
   });
-  it('discovers flat tools, creates proposal, durably enqueues exactly once and registers each actual output',async()=>{
+  it('writes the live workbench, durably enqueues exactly once and registers each actual output',async()=>{
     const state=getR4CreativeHost().read('chat');
     const admitted=runtime.send({conversationId:'chat',creationId:state.currentCreationId,text:'为雨夜书店拟词，生成两张'});
     expect(admitted.ok).toBe(true);
     await runtime.queue().kick('chat');await new Promise<void>(resolve=>setImmediate(resolve));await getR4ExecutionCoordinator().worker.kick();
     const current=fixture.store!.readR4State(),chat=fixture.store!.readWorkspace().conversations[0];
     expect(Object.values(current.messageQueue).map(row=>({status:row.status,reason:row.pauseReason}))).toEqual([{status:'completed',reason:undefined}]);
-    expect(fixture.modelCalls).toHaveLength(6);
+    expect(fixture.modelCalls).toHaveLength(8);
     expect(fixture.modelCalls[0].tools.map((row:any)=>row.name)).toEqual(['get_capabilities']);
-    expect(fixture.modelCalls[1].tools.map((row:any)=>row.name)).toContain('propose_prompt');
-    expect(fixture.modelCalls[1].tools.find((row:any)=>row.name==='propose_prompt').parameters.properties).not.toHaveProperty('args');
-    expect(Object.keys(current.proposals)).toHaveLength(1);expect(current.creations[state.currentCreationId!].currentProposalRef).toBeUndefined();
+    expect(fixture.modelCalls[1].tools.map((row:any)=>row.name)).toContain('read_generation_state');
+    expect(fixture.modelCalls[2].tools.map((row:any)=>row.name)).toContain('write_workbench_prompts');
+    expect(fixture.modelCalls[2].tools.find((row:any)=>row.name==='write_workbench_prompts').parameters.properties).not.toHaveProperty('args');
+    expect(Object.keys(current.proposals)).toHaveLength(0);expect(current.creations[state.currentCreationId!].currentProposalRef).toBeUndefined();
+    expect(fixture.workbench.params).toMatchObject({positivePrompt:'a quiet rainy bookshop',negativePrompt:'blur',stylePrompt:'watercolor'});
+    expect(fixture.workbench.draftRevision).toBe(2);
     expect(Object.keys(current.executions)).toHaveLength(1);expect(fixture.requests).toHaveLength(2);
     const execution=Object.values(current.executions)[0];expect(execution.status).toBe('completed');
     expect(chat.messages.find(row=>row.id===`execution:${execution.id}`)?.attachments).toEqual(expect.arrayContaining([expect.objectContaining({revision:1,creationId:execution.creationId,role:'artwork',sha256:expect.stringMatching(/^[a-f0-9]{64}$/)})]));

@@ -359,6 +359,8 @@ export interface BatchRedrawRequest {
   params: GenerateParams; // model/size/sampler/steps/seed/cfg + merged positive/negative prompt
   strength: number; // img2img change strength (0–1, default 0.4)
   noise?: number;
+  /** Optional stable extra-noise seed; omitted preserves random behavior. */
+  extraNoiseSeed?: number;
   extras?: GenerateExtras; // precise references etc.
   groupName: string; // target history group (created if missing); images saved into it
   fileNamePrefix?: string;

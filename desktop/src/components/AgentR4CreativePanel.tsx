@@ -13,6 +13,8 @@ const purposes: Array<{value:R4ReferencePurpose;zh:string;en:string}> = [
 
 export function AgentR4CreativePanel(props: {
   language: unknown;
+  /** Conversation inline references and confirmation; the Generate page owns prompts/results. */
+  workbench?: boolean;
   state?: R4ConversationCreativeState;
   creation?: R4Creation;
   currentProposal?: R4Proposal;
@@ -57,6 +59,7 @@ export function AgentR4CreativePanel(props: {
     setRequirements(creation?.requirements??'');setPositive(creation?.positivePrompt??'');setNegative(creation?.negativePrompt??'');setStyle(creation?.stylePrompt??'');setEditing(false);
   },[creation?.id,creation?.inputRevision]);
 
+  if(!creation&&props.workbench)return null;
   if(!creation)return <aside className="r4-creative-panel" aria-label={t('创作面板','Creative panel')}><div className="r4-panel-empty"><LuSparkles/><h3>{t('还没有创作','No creation yet')}</h3><p>{t('创建创作后，方案、作品和生成要求会保存在当前对话中。','Create a workspace to keep proposals, artwork, and requirements with this conversation.')}</p></div></aside>;
 
   const findAsset=(binding:R4AttachmentBinding)=>{
@@ -71,8 +74,8 @@ export function AgentR4CreativePanel(props: {
   const latestExecution=props.executions[0];
   const preparation=props.preparation;
 
-  return <aside className="r4-creative-panel" aria-label={t('创作面板','Creative panel')}>
-    <header className="r4-panel-header"><div><small>{t('当前创作','Current creation')}</small><strong title={creation.title}>{creation.title}</strong></div><span className="r4-revision">r{creation.inputRevision}</span></header>
+  return <aside className={props.workbench?"r4-workbench-context":"r4-creative-panel"} aria-label={props.workbench?t('参考与生成确认','References and generation confirmation'):t('创作面板','Creative panel')}>
+    {!props.workbench&&<><header className="r4-panel-header"><div><small>{t('当前创作','Current creation')}</small><strong title={creation.title}>{creation.title}</strong></div><span className="r4-revision">r{creation.inputRevision}</span></header>
 
     <section className="r4-panel-section r4-proposal-section" aria-labelledby="r4-current-proposal-title">
       <div className="r4-section-heading"><h3 id="r4-current-proposal-title"><LuSparkles/>{t('当前方案','Current proposal')}</h3><span>{current?`v${current.revision}`:t('未设置','Not set')}</span></div>
@@ -90,8 +93,9 @@ export function AgentR4CreativePanel(props: {
       {props.artworks.length>0&&(!selected||props.artworks.length>1)&&<div className="r4-artwork-strip" aria-label={t('当前创作作品','Artwork in this creation')}>{props.artworks.map(artwork=>{const url=artwork.url??props.attachmentUrl(artwork);return <button type="button" key={artwork.id} aria-current={artwork.id===selected?.id?'true':undefined} aria-label={artwork.name} title={artwork.name} onClick={()=>props.onSelectArtwork(artwork)}>{url?<img src={url} alt=""/>:<span><LuImage/></span>}</button>})}</div>}
     </section>
 
+    </>}
     <section className="r4-panel-section r4-input-section" aria-labelledby="r4-creation-inputs-title">
-      <div className="r4-section-heading"><h3 id="r4-creation-inputs-title"><LuFileText/>{t('创作要求','Creation requirements')}</h3><button type="button" disabled={disabled} aria-expanded={editing} onClick={()=>setEditing(value=>!value)}>{editing?t('收起编辑','Done'):t('编辑','Edit')}</button></div>
+      <div className="r4-section-heading"><h3 id="r4-creation-inputs-title"><LuFileText/>{props.workbench?t('参考图','References'):t('创作要求','Creation requirements')}</h3>{!props.workbench&&<button type="button" disabled={disabled} aria-expanded={editing} onClick={()=>setEditing(value=>!value)}>{editing?t('收起编辑','Done'):t('编辑','Edit')}</button>}</div>
       {editSource&&<div className="r4-binding-row r4-source-binding"><div className="r4-binding-thumb">{sourceAsset?.url?<img src={sourceAsset.url} alt=""/>:<LuImage/>}</div><div className="r4-binding-copy"><strong>{t('改图源','Edit source')}</strong><span>{editSource.name||sourceAsset?.attachment?.name||editSource.attachmentId}</span><small>{t('修订','Revision')} {editSource.revision}</small></div><button className="r4-binding-remove" type="button" disabled={disabled} aria-label={t('移除改图源','Remove edit source')} title={t('移除改图源','Remove edit source')} onClick={props.onRemoveEditSource}><LuX/></button></div>}
       {references.map(binding=>{
         const asset=findAsset(binding);const purpose=purposes.find(item=>item.value===binding.purpose);const authorized=binding.authorizationStatus==='authorized'&&binding.includeInGeneration;
@@ -108,13 +112,13 @@ export function AgentR4CreativePanel(props: {
       })}
       {available.length>0&&<details className="r4-add-reference"><summary><LuPlus/>{t('添加参考','Add reference')}</summary><div>{available.map(attachment=><div key={attachment.id} className="r4-available-reference"><span>{attachment.fileUrl?<img src={attachment.fileUrl} alt=""/>:<LuImage/>}<span>{attachment.name}</span></span><ReferencePurposeMenu language={language} disabled={disabled} onChoose={(role,purpose)=>props.onAddReference(attachment,role,purpose)}/></div>)}</div></details>}
       {references.length===0&&!available.length&&<p className="r4-empty-inline">{t('暂无参考图。当前对话中没有可安全绑定的图片。','No references. This conversation has no image with a safe revision to bind.')}</p>}
-      {editing?<div className="r4-input-editor">
+      {!props.workbench&&(editing?<div className="r4-input-editor">
         <label>{t('创作要求','Requirements')}<textarea value={requirements} onChange={event=>setRequirements(event.target.value)} rows={3}/></label>
         <label>{t('正向提示词','Positive prompt')}<textarea value={positive} onChange={event=>setPositive(event.target.value)} rows={4}/></label>
         <label>{t('负向提示词','Negative prompt')}<textarea value={negative} onChange={event=>setNegative(event.target.value)} rows={3}/></label>
         <label>{t('风格提示词','Style prompt')}<textarea value={style} onChange={event=>setStyle(event.target.value)} rows={3}/></label>
         <div><button type="button" disabled={disabled} onClick={()=>{props.onSaveInputs({requirements,positivePrompt:positive,negativePrompt:negative,stylePrompt:style});setEditing(false);}}><LuCheck/>{t('保存修改','Save changes')}</button></div>
-      </div>:<div className="r4-input-summary"><p>{creation.requirements||t('还没有补充创作要求。','No additional requirements yet.')}</p><details><summary>{t('提示词详情','Prompt details')}</summary><dl><dt>{t('正向','Positive')}</dt><dd>{creation.positivePrompt||'—'}</dd><dt>{t('负向','Negative')}</dt><dd>{creation.negativePrompt||'—'}</dd><dt>{t('风格','Style')}</dt><dd>{creation.stylePrompt||'—'}</dd></dl></details></div>}
+      </div>:<div className="r4-input-summary"><p>{creation.requirements||t('还没有补充创作要求。','No additional requirements yet.')}</p><details><summary>{t('提示词详情','Prompt details')}</summary><dl><dt>{t('正向','Positive')}</dt><dd>{creation.positivePrompt||'—'}</dd><dt>{t('负向','Negative')}</dt><dd>{creation.negativePrompt||'—'}</dd><dt>{t('风格','Style')}</dt><dd>{creation.stylePrompt||'—'}</dd></dl></details></div>)}
     </section>
 
     {preparation&&<section className={`r4-preparation-card r4-preparation-${preparation.status}`} aria-label={t('生成预览','Generation preview')}>

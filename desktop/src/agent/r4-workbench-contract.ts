@@ -9,6 +9,7 @@ export interface R4WorkbenchPromptDiff {
   positivePromptChanged: boolean;
   negativePromptChanged: boolean;
   stylePromptChanged: boolean;
+  characterPromptsChanged?: boolean;
 }
 
 export interface R4WorkbenchSnapshot {
@@ -20,6 +21,47 @@ export interface R4WorkbenchSnapshot {
   inputRevision: number;
   draftSource: 'workbench';
   params: Record<string, unknown>;
+  /** Host-only renderer snapshot. Contains local paths and image payloads; never project directly to a model. */
+  workbench?: {
+    mode?: string;
+    /** Renderer-owned generation history group, used when outputs return to the active workbench. */
+    historyGroupId?: string;
+    /** Current renderer model mode, frozen with the rest of the Generate draft. */
+    modelMode?: 'anime' | 'furry';
+    batchCount?: number;
+    batchIntervalSeconds?: number;
+    charCaptions?: unknown[];
+    i2iParams?: Record<string, unknown>;
+    i2iSizeMode?: string;
+    sourceMode?: string;
+    source?: { filePath?: string; fileUrl?: string; width?: number; height?: number } | null;
+    inpaintPositivePrompt?: string;
+    inpaintModel?: string;
+    inpaintStrength?: number;
+    inpaintNoise?: number;
+    inpaintSizeMode?: string;
+    inpaintCustomSize?: { width: number; height: number };
+    inpaintSourceMode?: string;
+    maskRevision?: number;
+    mask?: string | null;
+    region?: Record<string, unknown> | null;
+    vibeImages?: unknown[];
+    preciseReferences?: unknown[];
+    busy?: { isGenerating?: boolean; isGenerateQueueRunning?: boolean; batchRunning?: boolean };
+  };
+}
+
+export interface R4WorkbenchPromptWriteResult {
+  resultKind: 'business';
+  status: 'completed';
+  conversationId: string;
+  creationId: string;
+  data: {
+    writeStatus: 'written' | 'unchanged' | 'conflict';
+    draftId: string;
+    draftRevision: number;
+    changedFields: R4WorkbenchPromptDiff;
+  };
 }
 
 export interface R4WorkbenchPromptPreview {
@@ -64,7 +106,7 @@ export interface R4ApplyPromptResult {
 
 export type R4WorkbenchIpcReply<T> = { ok: true; data: T } | { ok: false; message: string };
 
-export type R4WorkbenchRendererAction = 'r4-workbench-read' | 'r4-workbench-apply';
+export type R4WorkbenchRendererAction = 'r4-workbench-read' | 'r4-workbench-apply' | 'r4-workbench-result';
 
 export interface R4WorkbenchRendererRequest {
   id: string;

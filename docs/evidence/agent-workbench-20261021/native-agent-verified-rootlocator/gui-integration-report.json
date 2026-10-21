@@ -1,0 +1,293 @@
+{
+  "generatedAt": "2026-10-21T11:45:27.060Z",
+  "desktop": "E:\\NAI-WorldPainter\\PC端\\desktop",
+  "run": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\mobile-inpaint-integration-2026-10-21T11-45-17-939Z",
+  "evidence": "E:\\NAI-WorldPainter\\PC端\\docs\\evidence\\agent-workbench-20261021\\native-agent-verified-rootlocator",
+  "syntheticEvidence": true,
+  "noRealAPIOrPayment": true,
+  "runtime": {
+    "electron": "42.11.0",
+    "chrome": "148.0.7778.280",
+    "node": "24.19.0",
+    "platform": "win32",
+    "arch": "x64",
+    "userData": "E:\\NAI-WorldPainter\\PC端\\desktop\\.tmp\\mobile-inpaint-integration-2026-10-21T11-45-17-939Z\\profile",
+    "display": {
+      "accelerometerSupport": "unknown",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 2048,
+        "height": 1152
+      },
+      "colorDepth": 32,
+      "colorSpace": "{primaries:BT709, transfer:SRGB, matrix:RGB, range:FULL}",
+      "depthPerComponent": 8,
+      "detected": true,
+      "displayFrequency": 240,
+      "id": 445807075,
+      "internal": false,
+      "label": "H24E7",
+      "maximumCursorSize": {
+        "width": 0,
+        "height": 0
+      },
+      "monochrome": false,
+      "nativeOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "rotation": 0,
+      "scaleFactor": 1.25,
+      "size": {
+        "width": 2048,
+        "height": 1152
+      },
+      "workArea": {
+        "x": 0,
+        "y": 0,
+        "width": 2048,
+        "height": 1104
+      },
+      "workAreaSize": {
+        "width": 2048,
+        "height": 1104
+      },
+      "touchSupport": "unknown"
+    }
+  },
+  "checks": [
+    {
+      "name": "R4 Electron IPC 经真实 React 工作台读写提示词与双角色，并拒绝旧版本覆盖",
+      "ok": true,
+      "initialRevision": 1,
+      "writtenRevision": 2,
+      "staleRevision": 2,
+      "manualValuePreserved": "!",
+      "paidApiCalls": false
+    },
+    {
+      "name": "R4 工作台助手共用生成区、移除创作与角色卡、可管理预设",
+      "ok": true,
+      "screenshot": "03-r4-resource-presets.png"
+    },
+    {
+      "name": "资源抽屉内部关闭按钮可关闭抽屉并移除 scrim",
+      "ok": true
+    },
+    {
+      "name": "资源 scrim 可见且点击后关闭抽屉",
+      "ok": true,
+      "scrimTarget": {
+        "visible": true,
+        "isTarget": true,
+        "x": 941.2000122070312,
+        "y": 547.9000244140625,
+        "paneLeft": 1086,
+        "hitTag": "BUTTON",
+        "hitClass": "pi-resource-scrim"
+      }
+    },
+    {
+      "name": "关闭资源抽屉后输入框可见且中心可命中",
+      "ok": true,
+      "composerHit": {
+        "visible": true,
+        "isTarget": true,
+        "hitTag": "TEXTAREA",
+        "hitClass": ""
+      }
+    },
+    {
+      "name": "预设编辑器 Escape 关闭编辑器但保留资源抽屉",
+      "ok": true,
+      "editorFocusBeforeEscape": {
+        "insideDialog": true,
+        "tag": "INPUT",
+        "id": "",
+        "className": "",
+        "ariaLabel": null
+      },
+      "drawerAfterEscape": {
+        "connected": true,
+        "visible": true,
+        "display": "block",
+        "visibility": "visible",
+        "disclosureOpen": "true",
+        "ariaHidden": "false",
+        "width": 336,
+        "height": 722.6000366210938
+      }
+    },
+    {
+      "name": "R4 自定义与内置助手预设新增、编辑并在冷启动后保留",
+      "ok": true,
+      "userPreset": {
+        "name": "SYNTHETIC preset edited",
+        "bodyHash": "70ddbf746fe3ba6c1c32c800584ca90e5118749cb809221cd8237c920aaa87fc"
+      },
+      "builtinPreset": {
+        "id": "studio-novelai-assistant",
+        "name": "SYNTHETIC built-in preset edited",
+        "bodyHash": "44a59ab5a755fd0b199387c1a8a8bb4c9505d9218a50175c17ce851321403fe6"
+      },
+      "sqliteDatabase": "agent-state.sqlite",
+      "sqliteRowsVerified": [
+        "1f978a13-42a8-4b2f-9152-ffd2742fb15a",
+        "studio-novelai-assistant"
+      ],
+      "noRealApiOrPayment": true,
+      "screenshots": [
+        "04-r4-presets-before-cold-start.png",
+        "05-r4-presets-cold-start-restored.png"
+      ]
+    }
+  ],
+  "errors": [],
+  "browserConsoleErrors": [],
+  "screenshots": [
+    {
+      "file": "01-r4-workbench-assistant.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "02-r4-workbench-bridge-live-prompts.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "03-r4-resource-presets.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "04-r4-presets-before-cold-start.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    },
+    {
+      "file": "05-r4-presets-cold-start-restored.png",
+      "size": {
+        "width": 1800,
+        "height": 1189
+      },
+      "bounds": {
+        "x": 331,
+        "y": 101,
+        "width": 1441,
+        "height": 952
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 951,
+        "dpr": 1.25,
+        "theme": "dark",
+        "themeClass": "theme-dark"
+      }
+    }
+  ],
+  "failureScreenshot": null,
+  "generationDiagnostics": [],
+  "worker": {
+    "created": 0,
+    "posts": 0,
+    "preparePosts": 0,
+    "postKinds": [],
+    "replies": []
+  },
+  "navigationTrace": [
+    {
+      "type": "pointerdown-tab",
+      "target": "agent",
+      "active": "generate",
+      "x": 954.9099731445312,
+      "y": 108.0899887084961
+    },
+    {
+      "type": "click-tab",
+      "target": "agent",
+      "active": "generate",
+      "x": 954,
+      "y": 108
+    }
+  ],
+  "mockCounts": {
+    "official": 0,
+    "quote": 2,
+    "picker": 0,
+    "prepare": 0,
+    "gatewayGenerate": 0,
+    "cancel": 0,
+    "active": 0,
+    "maxActive": 0,
+    "pickerFailure": false
+  },
+  "blockedNetwork": [],
+  "limits": [
+    "All provider account, quote, generation, picker, and gateway IPC was explicitly mocked.",
+    "The renderer was the existing packaged Vite dist; this was not a real NovelAI or gateway backend acceptance test.",
+    "Source image and candidate pixels were synthetic; no user files or secrets were read.",
+    "Physical touch, long-running performance, and release-installed packaging were not tested."
+  ]
+}

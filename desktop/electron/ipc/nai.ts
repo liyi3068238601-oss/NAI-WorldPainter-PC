@@ -4747,18 +4747,31 @@ async function redrawImageRequest(
       beforeSubmit,
     );
     const strength = clamp01(request.strength, 0.4);
-    const group = ensureHistoryGroup(request.groupName);
-    const groupOverride = {
-      groupId: group.id,
-      folderName: sanitizeGroupFolderName(group.name),
-    };
+    const hasHistoryGroupSnapshot = Boolean(request.extras && Object.hasOwn(request.extras,'historyGroupId'));
+    const workbenchGroupOverride = hasHistoryGroupSnapshot&&typeof request.extras?.historyGroupId === 'string'
+      ? resolveGenerationSaveGroup(request.extras.historyGroupId)
+      : undefined;
+    const workbenchGroup = workbenchGroupOverride
+      ? getHistoryGroups().find((item) => item.id === workbenchGroupOverride.groupId)
+      : undefined;
+    // R4 redraw uses the Generate workbench's snapshotted save destination.
+    // Standalone batch redraw retains its named-group behavior.
+    const group = workbenchGroup ?? (hasHistoryGroupSnapshot?undefined:ensureHistoryGroup(request.groupName));
+    const groupOverride = workbenchGroupOverride && workbenchGroup
+      ? workbenchGroupOverride
+      : group?{ groupId: group.id, folderName: sanitizeGroupFolderName(group.name) }:undefined;
+    const saveOptions=hasHistoryGroupSnapshot
+      ?{ignoreActiveGroup:!groupOverride,...(groupOverride?{groupOverride}:{})}
+      :{groupOverride:groupOverride!};
 
     const applyI2I = (payload: ReturnType<typeof buildPayload>) => {
       payload.action = "img2img";
       payload.parameters.image = base64Image;
       payload.parameters.strength = strength;
       payload.parameters.noise = 0;
-      payload.parameters.extra_noise_seed = crypto.randomInt(1, 2_147_483_647);
+      const requestedExtraNoiseSeed=Number(request.extraNoiseSeed);
+      payload.parameters.extra_noise_seed=Number.isSafeInteger(requestedExtraNoiseSeed)&&requestedExtraNoiseSeed>0&&requestedExtraNoiseSeed<=2_147_483_647
+        ?requestedExtraNoiseSeed:crypto.randomInt(1,2_147_483_647);
       return payload;
     };
 
@@ -4786,15 +4799,15 @@ async function redrawImageRequest(
       actualSeed,
       "redraw",
       undefined,
-      { groupOverride },
+      saveOptions,
     );
     void refreshStoredAccount();
     logInfo(
-      `batch-redraw: model=${params.model} ${params.width}x${params.height} strength=${strength} group=${request.groupName}`,
+      `batch-redraw: model=${params.model} ${params.width}x${params.height} strength=${strength} group=${group?.name??'ungrouped'}`,
     );
     return {
       ok: true,
-      message: `重绘完成，已保存到分组「${group.name}」。`,
+      message: group?`重绘完成，已保存到分组「${group.name}」。`:'重绘完成，已保存到未分组位置。',
       items,
       actualSeed,
     };
@@ -4813,6 +4826,7 @@ export async function inpaintImage(
   strength = 1,
   noise = 0,
   region?: import("../../src/focused-inpaint").InpaintRegion,
+  extras?: GenerateExtras,
 ): Promise<GenerateResult> {
   params = normalizeGenerateParams(params);
   const token = getToken();
@@ -4824,6 +4838,17 @@ export async function inpaintImage(
   if (!maskBase64)
     return { ok: false, message: "请先绘制需要重绘的蒙版区域。", items: [] };
 
+  // R4 extras always carry an own historyGroupId property, including an
+  // explicit undefined for the ungrouped workbench state. Resolve it before
+  // any asynchronous request so a later UI selection change cannot redirect
+  // the saved result. Legacy callers without this field retain old behavior.
+  const hasHistoryGroupSnapshot=Boolean(extras&&Object.hasOwn(extras,'historyGroupId'));
+  const inpaintGroupOverride=hasHistoryGroupSnapshot&&typeof extras?.historyGroupId==='string'
+    ?resolveGenerationSaveGroup(extras.historyGroupId):undefined;
+  const inpaintSaveOptions=hasHistoryGroupSnapshot
+    ?{ignoreActiveGroup:!inpaintGroupOverride,...(inpaintGroupOverride?{groupOverride:inpaintGroupOverride}:{})}
+    :undefined;
+
   const job = beginJob();
 
   try {
@@ -4832,6 +4857,7 @@ export async function inpaintImage(
     const preparedAssets = focused
       ? prepareInpaintAssets(focused.crop,focused.cropMask.toString('base64'),focused.size)
       : prepareInpaintAssets(buffer, maskBase64, params);
+    const preparedExtras=await prepareExtras(params,extras,job.controller.signal);
     const actualSeed =
       params.seedMode !== "random" && params.seed >= 0
         ? params.seed
@@ -4856,7 +4882,7 @@ export async function inpaintImage(
         width: preparedAssets.width,
         height: preparedAssets.height,
       };
-      const payload = buildPayload(inpaintParams, actualSeed);
+      const payload = buildPayload(inpaintParams, actualSeed,preparedExtras);
       payload.action = "infill";
       applyOfficialInpaintParameters(
         payload.parameters,
@@ -4904,6 +4930,7 @@ export async function inpaintImage(
       actualSeed,
       "inpaint",
       chosen.model,
+      inpaintSaveOptions,
     );
     void refreshStoredAccount();
     const resizedNote = !focused && preparedAssets.resized

@@ -1,4 +1,8 @@
 import {describe,it,expect,vi} from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import {createHash} from 'node:crypto';
 import {DEFAULT_PARAMS,DEFAULT_AUGMENT_OPTIONS} from '../../src/types';
 import {validateR4Result} from '../../src/agent/r4-contracts';
 import {createStudioAgentService} from '../../src/studio-agent';
@@ -11,6 +15,7 @@ const scope:R4HostScope={conversationId:'chat-a',creationId:'creation-a',userInt
 
 function fixture() {
   let writes=0;
+  let durableState:any={executions:{}};
   let state:any={bootDone:true,settings:{modelMode:'anime'},params:{...DEFAULT_PARAMS,positivePrompt:'before positive',negativePrompt:'before negative',stylePrompt:'before style',steps:31},
     charCaptions:[{id:'caption-1',prompt:'keep character'}],batchCount:4,i2iParams:{strength:.5,noise:0,extraNoiseSeed:0},inpaintModel:'inpaint',inpaintStrength:.7,inpaintNoise:0,
     inpaintPositivePrompt:'keep inpaint',brushSize:32,brushOpacity:.8,brushColor:'#fff',brushShape:'round',upscaleScale:2,directorTool:'colorize',augmentOptions:{...DEFAULT_AUGMENT_OPTIONS},
@@ -19,7 +24,7 @@ function fixture() {
     applyParams(patch:Record<string,unknown>){state={...state,params:{...state.params,...patch}};writes++;}};
   const renderer=createStudioAgentService({getState:()=>state,setState:patch=>{state={...state,...patch};},api:{} as never,uuid:()=>`renderer-workbench`});
   const rendererRequest=async(action:'r4-workbench-read'|'r4-workbench-apply',args:Record<string,unknown>)=>renderer.handle({id:'synthetic',action,args});
-  const host={invoke:vi.fn(async(name:string,args:Record<string,unknown>,target:R4HostScope)=>{
+  const host={store:{readR4State:()=>structuredClone(durableState)},invoke:vi.fn(async(name:string,args:Record<string,unknown>,target:R4HostScope)=>{
     if(name!=='read_proposal'||target.conversationId!=='chat-a'||target.creationId!=='creation-a'||args.proposalId!=='proposal-a'||args.revision!==7){
       return {resultKind:'business',status:'completed',conversationId:target.conversationId,creationId:target.creationId,
         data:{proposalReadStatus:'not_found',proposalId:String(args.proposalId),revision:Number(args.revision)}};
@@ -28,7 +33,7 @@ function fixture() {
       data:{proposalReadStatus:'ok',proposalId:'proposal-a',revision:7,positivePrompt:'after positive',negativePrompt:'after negative',stylePrompt:'after style',changeSummary:'fixture prompt proposal',currentProposalRef:null,selectionRevision:0}};
   })};
   const workbench=createR4WorkbenchService({window:()=>null,host:()=>host as never,rendererRequest,uuid:(()=>{let n=0;return()=>`preview-${++n}`})()});
-  return {workbench,host,get state(){return state;},get writes(){return writes;},setState:(patch:Record<string,unknown>)=>{state={...state,...patch};}};
+  return {workbench,host,rendererRequest,get state(){return state;},get writes(){return writes;},setState:(patch:Record<string,unknown>)=>{state={...state,...patch};},setExecutions:(executions:Record<string,unknown>)=>{durableState={executions};}};
 }
 
 async function read(f:ReturnType<typeof fixture>) {return f.workbench.readR4WorkbenchSnapshot();}
@@ -85,5 +90,45 @@ describe('R4 live workbench prompt CAS',()=>{
     expect(result).toMatchObject({resultKind:'preflight_failure',status:'denied'});
     expect(authorize).toHaveBeenCalledOnce();
     expect(f.writes).toBe(0);
+  });
+
+  it('does not backfill old terminal outputs and serializes only new verified output presentation',async()=>{
+    const f=fixture(),directory=fs.mkdtempSync(path.join(os.tmpdir(),'r4-workbench-publish-'));
+    try{
+      const bytes=Buffer.from('synthetic-image-bytes'),filePath=path.join(directory,'output.png');fs.writeFileSync(filePath,bytes);
+      const hash=createHash('sha256').update(bytes).digest('hex');
+      const output=(executionId:string,contentHash:string)=>({id:`art-${executionId}`,attachmentId:`attachment-${executionId}`,revision:1,conversationId:'chat-a',creationId:'creation-a',
+        executionId,name:'synthetic.png',mime:'image/png',readableHandle:filePath,url:'local:synthetic',hash:contentHash,width:512,height:512,createdAt:'2026-10-21T00:00:00.000Z'});
+      const execution=(id:string,contentHash:string)=>({id,conversationId:'chat-a',status:'completed',providerReceiptStatus:'confirmed',outputs:[{outputIndex:0,status:'completed',providerReceipt:{status:'confirmed'},artwork:output(id,contentHash)}]});
+      f.setExecutions({old:{...execution('old',hash),status:'unknown',providerReceiptStatus:'unknown'}});
+      const requests:Record<string,unknown>[]=[];let release!:()=>void;
+      const held=new Promise<void>(resolve=>{release=resolve;});
+      const service=createR4WorkbenchService({window:()=>null,host:()=>f.host as never,rendererRequest:async(action,args)=>{
+        if(action==='r4-workbench-result'){requests.push(args);await held;return {ok:true,data:{presented:true}};}
+        return f.rendererRequest(action,args);
+      }});
+
+      const snapshot=await service.readR4WorkbenchSnapshot();
+      const written=await service.writeR4WorkbenchPrompts({positivePrompt:'synthetic edit',expectedDraftRevision:snapshot.draftRevision},scope);
+      expect(written).toMatchObject({data:{writeStatus:'written'}});
+      await service.publishCompletedResults('chat-a');
+      expect(requests).toHaveLength(0); // the old completed result was present when the bridge started
+
+      const partial={...execution('fresh',hash),status:'dispatching',providerReceiptStatus:'unknown',outputs:[
+        {outputIndex:0,status:'completed',providerReceipt:{status:'confirmed'},artwork:output('fresh',hash)},
+        {outputIndex:1,status:'unknown',providerReceipt:{status:'unknown'},errorCode:'provider_unknown'},
+      ]};
+      f.setExecutions({old:{...execution('old',hash),status:'unknown',providerReceiptStatus:'unknown'},fresh:partial});
+      const first=service.publishCompletedResults('chat-a');
+      await vi.waitFor(()=>expect(requests).toHaveLength(1));
+      const concurrent=service.publishCompletedResults('chat-a');
+      release();await Promise.all([first,concurrent]);
+      expect(requests).toHaveLength(1);
+      expect(requests[0]).toMatchObject({executionId:'fresh',outputId:'fresh:0',image:{filePath,metadata:{hash}}});
+
+      f.setExecutions({old:{...execution('old',hash),status:'unknown',providerReceiptStatus:'unknown'},fresh:partial,invalid:execution('invalid','bad-hash')});
+      await service.publishCompletedResults('chat-a');
+      expect(requests).toHaveLength(1); // invalid bytes never reach the renderer
+    }finally{fs.rmSync(directory,{recursive:true,force:true});}
   });
 });

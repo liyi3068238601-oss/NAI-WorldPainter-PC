@@ -7,6 +7,7 @@ import type { R4ToolName } from './r4-contracts';
  */
 export const r4SdkInputFallbacks: Record<R4ToolName, Record<string, unknown>> = {
   apply_prompt: { proposalId: 'x', proposalRevision: 1, targetDraftId: 'x', expectedDraftRevision: 0 },
+  write_workbench_prompts: { positivePrompt: 'x', expectedDraftRevision: 0 },
   ask_user: { questions: [{ prompt: 'x', options: [{ label: 'x' }, { label: 'x' }] }] },
   cancel_execution: { executionId: 'x' },
   convert_prompt: { text: 'x' },

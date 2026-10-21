@@ -85,6 +85,8 @@ export interface R4CreationInputSnapshot {
   editSource?: R4AttachmentBinding | null;
   mask?: R4AttachmentBinding | null;
   references: R4ReferenceBinding[];
+  /** Frozen renderer-selected inputs not represented by R4 proposal attachments. */
+  workbenchAssets?: R4WorkbenchAssetBinding[];
   proposalRef?: string | null;
   conversationConfig?: R4ConversationConfigSnapshot;
   fingerprint?: string;
@@ -158,6 +160,12 @@ export interface R4Artwork {
   resolvedSeedSource?: "provider_receipt" | "verified_embedded_metadata" | null;
   createdAt: string;
   legacyStatus?: R4LegacyStatus;
+  /** Workbench inputs are managed source assets, not generated gallery outputs. */
+  sourceKind?: 'workbench';
+}
+
+export interface R4WorkbenchAssetBinding extends R4AttachmentBinding {
+  role: 'vibe' | 'precise';
 }
 
 export type R4PreparationStatus = "ready" | "blocked" | "approved" | "consumed" | "expired" | "invalidated";
