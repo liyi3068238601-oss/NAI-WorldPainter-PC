@@ -250,6 +250,7 @@ export class R4AgentRuntime{
           adapterDependencies:async(scope,name,args)=>({...r4LegacyDependencies(scope,name,args),...(name==='read_generation_state'&&workbench?{workbenchSnapshot:await workbench.readR4WorkbenchSnapshot()}:{})}),
           ...(workbench?{applyPrompt:workbench.createR4ApplyPrompt({scope,authorize:(name,args,signal)=>this.authorize(active,name,args,signal)})}:{}),
           ...(workbench?{writeWorkbenchPrompts:(args,callScope)=>workbench.writeR4WorkbenchPrompts(args,callScope)}:{}),
+          ...(workbench?{writeWorkbenchParameters:(args,callScope)=>workbench.writeR4WorkbenchParameters(args,callScope)}:{}),
           ...(workbench?{assertWorkbenchPreparationCurrent:(preparationId,callScope)=>assertR4WorkbenchPreparationCurrent(preparationId,callScope.conversationId,callScope.creationId)}:{}),
           ...(workbench?{prepareGeneration:async(args,callScope,signal)=>{
             signal.throwIfAborted();const snapshot=await workbench.readR4WorkbenchSnapshot();

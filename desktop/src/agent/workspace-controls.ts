@@ -19,7 +19,7 @@ export const STUDIO_SKILL_LIMITS={
  maxNameLength:80,
  maxDescriptionLength:300,
  maxInstructionsLength:12_000,
- maxTriggerKeywords:32,
+ maxTriggerKeywords:64,
  maxTriggerKeywordLength:80,
 } as const;
 const oldPresetIds=new Set(['studio-director','studio-prompts','studio-reference','tavern:'+STUDIO_LYRA_PRESET_ID]);

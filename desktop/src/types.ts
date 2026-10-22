@@ -319,6 +319,7 @@ export interface LastGenerationState {
   batchCount: number;
   batchIntervalSeconds?: number;
   i2iParams: I2IParams;
+  i2iSizeMode?: ImageToImageSizeMode;
   inpaintModel: NAIInpaintModel;
   inpaintSizeMode?: "original" | "custom";
   inpaintCustomSize?: { width: number; height: number };

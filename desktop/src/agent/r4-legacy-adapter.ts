@@ -4,6 +4,9 @@ import {
   validateR4Result,
   type R4ToolName,
 } from './r4-contracts';
+import {workbenchParameterControls} from './workbench-parameters';
+import type {R4WorkbenchSnapshot} from './r4-workbench-contract';
+import {maxNAICharacterPrompts,supportsNAIVibeTransfer,supportsNAIPreciseReference} from '../types';
 
 export interface R4LegacyScope {
   conversationId: string;
@@ -374,6 +377,7 @@ export async function adaptR4LegacyResult(
       };
       if (workbench.draftSource) mapped.draftSource = workbench.draftSource;
       if(workbench.workbench){
+        mapped.parameterControls=workbenchParameterControls({...workbench,params:rawParams,draftSource:'workbench'} as R4WorkbenchSnapshot);
         const live=workbench.workbench,source=isRow(live.source)?live.source:undefined;
         const dims=source&&Number.isSafeInteger(source.width)&&Number.isSafeInteger(source.height)?{width:Number(source.width),height:Number(source.height)}:null;
         const captions=Array.isArray(live.charCaptions)?live.charCaptions.filter(isRow).slice(0,32).flatMap(item=>typeof item.prompt==='string'?[{
@@ -387,6 +391,7 @@ export async function adaptR4LegacyResult(
         const busy=isRow(live.busy)?live.busy:{};
         mapped.workbench={mode:typeof live.mode==='string'?live.mode:'generate:t2i',historyGroupId:typeof live.historyGroupId==='string'?live.historyGroupId:undefined,
           modelMode:live.modelMode==='furry'?'furry':'anime',batchCount:number(live.batchCount,1,1,999),
+          batchIntervalSeconds:number(live.batchIntervalSeconds,0,0,3600),
           sourceMode:typeof live.sourceMode==='string'?live.sourceMode:'latest',sourceAvailable:Boolean(source?.filePath),sourceDimensions:dims,
           maskAvailable:typeof live.mask==='string'&&live.mask.length>0,maskRevision:number(live.maskRevision,0,0,Number.MAX_SAFE_INTEGER),
           characterPrompts:captions,vibeReferences:vibes,preciseReferences:precise,
@@ -397,6 +402,14 @@ export async function adaptR4LegacyResult(
       if (providerName === 'novelai' || providerName === 'openai-images') mapped.imageProvider = providerName;
       if (data.modelMode === 'anime' || data.modelMode === 'furry') mapped.modelMode = data.modelMode;
       if (data.referenceCapabilities !== undefined) mapped.referenceCapabilities = data.referenceCapabilities;
+      if(workbench.workbench&&typeof rawParams.model==='string'){
+        // Persisted legacy settings may lag a renderer CAS write. Capability
+        // hints must describe the same live model as the returned parameters.
+        const model=workbench.workbench.mode==='inpaint'&&typeof workbench.workbench.inpaintModel==='string'
+          ?workbench.workbench.inpaintModel:rawParams.model;
+        mapped.referenceCapabilities={maxCharacterPrompts:maxNAICharacterPrompts(model),vibeTransfer:supportsNAIVibeTransfer(model),
+          preciseReference:supportsNAIPreciseReference(model),attachmentIdsRequiredForAgentReferences:true};
+      }
       result = resultRecord(canonical, 'completed', mapped, scope);
     }
   } else if (canonical === 'list_history') {

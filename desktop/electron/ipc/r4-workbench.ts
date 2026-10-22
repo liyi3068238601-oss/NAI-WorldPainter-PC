@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {ipcMain,type BrowserWindow,type IpcMainInvokeEvent,type WebContents} from 'electron';
 import {validateR4Result} from '../../src/agent/r4-contracts';
 import {prepareCharacterLayoutPrompts,type CharacterLayoutPrompt} from '../../src/agent/character-layout';
+import {prepareWorkbenchParameterPatch,workbenchParameters} from '../../src/agent/workbench-parameters';
 import type {R4ApplyPromptResult,R4WorkbenchPromptApplyRequest,R4WorkbenchPromptDiff,R4WorkbenchPromptFields,R4WorkbenchPromptPreview,R4WorkbenchPromptPreviewRequest,R4WorkbenchPromptWriteResult,R4WorkbenchSnapshot,R4WorkbenchRendererAction} from '../../src/agent/r4-workbench-contract';
 import type {StudioAgentReply} from '../../src/studio-agent-contract';
 import type {R4AgentState} from '../../src/agent/r4-types';
@@ -34,6 +35,7 @@ export interface R4WorkbenchService {
   ready():boolean;
   readR4WorkbenchSnapshot():Promise<R4WorkbenchSnapshot>;
   writeR4WorkbenchPrompts(args:Record<string,unknown>,scope:R4HostScope):Promise<Record<string,unknown>>;
+  writeR4WorkbenchParameters(args:Record<string,unknown>,scope:R4HostScope):Promise<Record<string,unknown>>;
   publishCompletedResults(conversationId:string):Promise<void>;
   previewR4PromptApply(args:Record<string,unknown>,scope:R4HostScope):Promise<R4WorkbenchPromptPreview|Record<string,unknown>>;
   applyR4PromptCAS(previewId:string,draftId:string,draftRevision:number,scope:R4HostScope):Promise<Record<string,unknown>>;
@@ -68,9 +70,10 @@ export function createR4WorkbenchService(options:{window:WindowGetter;host:()=>R
     return new Promise((resolve,reject)=>{
       const id=uuid(),contents=win.webContents;
       const remove=()=>{contents.removeListener?.('destroyed',destroyed);contents.removeListener?.('render-process-gone',destroyed);contents.removeListener?.('did-start-navigation',navigation);};
-      const destroyed=()=>{const item=pending.get(id);if(!item)return;clearTimeout(item.timer);pending.delete(id);remove();reject(new Error(action==='r4-workbench-apply'?'应用结果待核实；请回读工作台，未自动重试。':'Studio 工作台读取失败。'));};
+      const isWrite=action==='r4-workbench-apply'||action==='r4-workbench-parameters';
+      const destroyed=()=>{const item=pending.get(id);if(!item)return;clearTimeout(item.timer);pending.delete(id);remove();reject(new Error(isWrite?'应用结果待核实；请回读工作台，未自动重试。':'Studio 工作台读取失败。'));};
       const navigation=(details:{isMainFrame?:boolean;isSameDocument?:boolean})=>{if(details.isMainFrame&&!details.isSameDocument)destroyed();};
-      const timer=setTimeout(()=>{pending.delete(id);remove();reject(new Error(action==='r4-workbench-apply'?'应用结果待核实；请回读工作台，未自动重试。':'Studio 工作台读取超时。'));},timeoutMs);
+      const timer=setTimeout(()=>{pending.delete(id);remove();reject(new Error(isWrite?'应用结果待核实；请回读工作台，未自动重试。':'Studio 工作台读取超时。'));},timeoutMs);
       pending.set(id,{sender:contents,action,resolve,reject,timer,cleanup:remove});
       contents.once?.('destroyed',destroyed);contents.once?.('render-process-gone',destroyed);contents.on?.('did-start-navigation',navigation);
       try{contents.send('r4-workbench:request',{id,action,args});}
@@ -177,6 +180,26 @@ export function createR4WorkbenchService(options:{window:WindowGetter;host:()=>R
     if(!['applied','conflict'].includes(String(outcome.applyStatus))||typeof outcome.draftId!=='string'||!Number.isSafeInteger(outcome.draftRevision))throw new Error('工作台 CAS 返回无效结果；请回读确认，不要自动重试。');
     return promptWriteResult(scope,{writeStatus:outcome.applyStatus==='conflict'?'conflict':Object.values(effectiveChangedFields).some(Boolean)?'written':'unchanged',
       draftId:outcome.draftId,draftRevision:Number(outcome.draftRevision),changedFields:effectiveChangedFields});
+  }
+
+  async function writeR4WorkbenchParameters(args:Record<string,unknown>,scope:R4HostScope):Promise<Record<string,unknown>> {
+    if(Object.keys(args).some(key=>!['patch','expectedDraftRevision'].includes(key))
+      ||!Number.isSafeInteger(args.expectedDraftRevision)||Number(args.expectedDraftRevision)<0)throw Error('参数写入需要当前 expectedDraftRevision 和 patch。');
+    const snapshot=await readR4WorkbenchSnapshot();
+    const result=(data:Record<string,unknown>)=>{
+      const value={resultKind:'business',status:'completed',conversationId:scope.conversationId,creationId:scope.creationId,data};
+      const checked=validateR4Result('write_workbench_parameters',value);
+      if(!checked.valid)throw Error('工作台参数写入回执无效；请核对工作台，不要自动重试。');
+      return value;
+    };
+    if(args.expectedDraftRevision!==snapshot.draftRevision)return result({writeStatus:'conflict',draftId:snapshot.draftId,
+      draftRevision:snapshot.draftRevision,changedFields:[],parameters:workbenchParameters(snapshot)});
+    // Validate in both processes. The renderer repeats this against the exact
+    // live revision immediately before the atomic store update.
+    prepareWorkbenchParameterPatch(snapshot,args.patch);
+    const reply=await requestRenderer('r4-workbench-parameters',{draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,patch:args.patch});
+    if(!reply?.ok||!reply.data||typeof reply.data!=='object'||Array.isArray(reply.data))throw Error(reply?.error||'工作台参数写入结果待核实；未自动重试。');
+    return result(reply.data as Record<string,unknown>);
   }
 
   async function publishCompletedResultsOnce(conversationId:string):Promise<void> {
@@ -321,7 +344,7 @@ export function createR4WorkbenchService(options:{window:WindowGetter;host:()=>R
     else item.resolve(reply);
   }
 
-  return {ready:()=>{const win=owner();return Boolean(win&&!win.isDestroyed()&&!win.webContents.isDestroyed());},readR4WorkbenchSnapshot,writeR4WorkbenchPrompts,publishCompletedResults,previewR4PromptApply,applyR4PromptCAS,createR4ApplyPrompt,previewFromUI,applyFromUI,replyFromRenderer};
+  return {ready:()=>{const win=owner();return Boolean(win&&!win.isDestroyed()&&!win.webContents.isDestroyed());},readR4WorkbenchSnapshot,writeR4WorkbenchPrompts,writeR4WorkbenchParameters,publishCompletedResults,previewR4PromptApply,applyR4PromptCAS,createR4ApplyPrompt,previewFromUI,applyFromUI,replyFromRenderer};
 }
 
 let installed=false;

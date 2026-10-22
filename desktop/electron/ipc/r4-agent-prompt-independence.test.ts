@@ -161,6 +161,22 @@ describe('R4 assistant prompt is independent from workbench retained prompts', (
     expect(fixture.providerSubmissions).toHaveLength(0);
   });
 
+  it('prepares changed model, wide dimensions, sampling, seed and batch from the live parameter draft',async()=>{
+    const host=getR4CreativeHost(),state=host.read('chat');
+    fixture.workbench={...fixture.workbench,draftRevision:9,inputRevision:9,
+      params:{...fixture.workbench.params,model:'nai-diffusion-4-5-full',width:3072,height:1024,steps:35,cfgScale:5,cfgRescale:.3,
+        sampler:'k_euler',noiseSchedule:'native',seed:0xffffffff,seedMode:'fixed'},
+      workbench:{...fixture.workbench.workbench,batchCount:3,batchIntervalSeconds:4}};
+    const prepared=await host.invoke('prepare_generation',{}, {conversationId:'chat',creationId:state.currentCreationId!,userIntentRef:'parameter-edit',operationKey:'parameter-preview'});
+    expect(prepared).toMatchObject({resultKind:'business',data:{preview:{model:'nai-diffusion-4-5-full',width:3072,height:1024,count:3,requestedSeed:0xffffffff,batchIntervalSeconds:4}}});
+    const data=prepared.data as {preparationId:string};
+    const frozen=fixture.store!.readR4State().preparations[data.preparationId].inputSnapshot.publicParameters;
+    expect(frozen).toMatchObject({count:3,batchIntervalSeconds:4,workbenchDraftRevision:9,params:{steps:35,cfgScale:5,cfgRescale:.3,sampler:'k_euler',noiseSchedule:'native',seed:0xffffffff,seedMode:'fixed'}});
+    fixture.workbench.params.steps=20;fixture.workbench.workbench.batchCount=1;
+    expect(fixture.store!.readR4State().preparations[data.preparationId].inputSnapshot.publicParameters).toEqual(frozen);
+    expect(fixture.providerSubmissions).toEqual([]);
+  });
+
   it('enqueues the previewed snapshot after approval and ignores later live workbench edits',async()=>{
     const host=getR4CreativeHost(),state=host.read('chat');
     const prepared=await host.invoke('prepare_generation',{}, {conversationId:'chat',creationId:state.currentCreationId!,userIntentRef:'approved-workbench',operationKey:'approved-preview'});

@@ -21,6 +21,8 @@ const inputFixtures = [
   ...(fixtureDocument as { fixtures: Fixture[] }).fixtures.filter(item => item.target === 'input' && item.valid),
   { id: 'synthetic-write-workbench-prompts-valid', tool: 'write_workbench_prompts', target: 'input', valid: true,
     instance: { positivePrompt: 'synthetic writer fixture', expectedDraftRevision: 0 } } as Fixture,
+  { id: 'synthetic-write-workbench-parameters-valid', tool: 'write_workbench_parameters', target: 'input', valid: true,
+    instance: { expectedDraftRevision: 0, patch: { strength: 0.5 } } } as Fixture,
 ];
 const root = path.resolve(process.cwd(), '.tmp', 'r4-product-boundary-tests');
 const cleanup: Array<() => void> = [];
@@ -245,6 +247,8 @@ function piSessionOptions(host: R4CreativeHost, store: AgentSqlStore, creationId
   const applyPrompt = vi.fn(async () => ({}));
   const writeWorkbenchPrompts = vi.fn(async (_args:Record<string,unknown>,scope:R4HostScope) => ({resultKind:'business',status:'completed',conversationId:scope.conversationId,
     creationId:scope.creationId,data:{writeStatus:'unchanged',draftId:'fixture-draft',draftRevision:0,changedFields:{positivePromptChanged:false,negativePromptChanged:false,stylePromptChanged:false}}}));
+  const writeWorkbenchParameters = vi.fn(async (_args:Record<string,unknown>,scope:R4HostScope) => ({resultKind:'business',status:'completed',conversationId:scope.conversationId,
+    creationId:scope.creationId,data:{writeStatus:'unchanged',draftId:'fixture-draft',draftRevision:0,changedFields:[],parameters:{}}}));
   const askQuestion = vi.fn(async () => ({ cancelled: true, answers: [] }) as any);
   const readSkill = vi.fn(() => ({ id: 'skill-fixture', content: 'fixture' }));
   const readPromptingReference = vi.fn(async () => ({ content: 'fixture', source: 'fixture', version: 'fixture' }));
@@ -256,16 +260,16 @@ function piSessionOptions(host: R4CreativeHost, store: AgentSqlStore, creationId
     askQuestion,
     skillDirectory: [{ id: 'skill-fixture', name: 'Fixture', description: 'Synthetic test capability.' }],
     readSkill, readPromptingReference,
-    promptingReferenceEnabled: true, applyPrompt, writeWorkbenchPrompts, prepareImageOperation,
+    promptingReferenceEnabled: true, applyPrompt, writeWorkbenchPrompts, writeWorkbenchParameters, prepareImageOperation,
   };
   return { options, scope, hostInvoke, authorize, assertNoDispatchGate, adapterDependencies, prepareImageOperation, runPaidLegacy, coordinator,
-    applyPrompt, writeWorkbenchPrompts, askQuestion, readSkill, readPromptingReference };
+    applyPrompt, writeWorkbenchPrompts, writeWorkbenchParameters, askQuestion, readSkill, readPromptingReference };
 }
 
 describe('R4 real product boundary regression', () => {
   afterEach(() => { for (const close of cleanup.splice(0).reverse()) close(); });
 
-  it('routes generated malformed variants for all 37 tools through Pi preflight with zero side effects', async () => {
+  it('routes generated malformed variants for all 38 tools through Pi preflight with zero side effects', async () => {
     const { store } = sqlFixture();
     const { host, creationId } = hostFixture(store);
     const setup = piSessionOptions(host, store, creationId);
@@ -307,7 +311,7 @@ describe('R4 real product boundary regression', () => {
       }
       testCases.push(...variants.map(candidate => ({ tool: name, fixture, candidate })));
     }
-    expect(testCases.length).toBeGreaterThan(37 * 2);
+    expect(testCases.length).toBeGreaterThan(38 * 2);
 
     for (const { tool: name, candidate } of testCases) {
       const mounted = session.getTools().find(item => item.name === name);
@@ -326,6 +330,7 @@ describe('R4 real product boundary regression', () => {
       expect(setup.runPaidLegacy, `${name}/${candidate.kind} paid`).not.toHaveBeenCalled();
       expect(setup.applyPrompt, `${name}/${candidate.kind} workbench apply`).not.toHaveBeenCalled();
       expect(setup.writeWorkbenchPrompts, `${name}/${candidate.kind} direct workbench write`).not.toHaveBeenCalled();
+      expect(setup.writeWorkbenchParameters, `${name}/${candidate.kind} workbench parameter write`).not.toHaveBeenCalled();
       expect(setup.askQuestion, `${name}/${candidate.kind} question`).not.toHaveBeenCalled();
       expect(setup.readSkill, `${name}/${candidate.kind} skill read`).not.toHaveBeenCalled();
       expect(setup.readPromptingReference, `${name}/${candidate.kind} reference read`).not.toHaveBeenCalled();
@@ -333,7 +338,7 @@ describe('R4 real product boundary regression', () => {
     }
     expect(store.readR4State()).toEqual(beforeState);
     expect(store.readWorkspace()).toEqual(beforeWorkspace);
-    expect(Object.fromEntries(counts)).toMatchObject({ unknown_field: 37, wrong_type: 37 });
+    expect(Object.fromEntries(counts)).toMatchObject({ unknown_field: 38, wrong_type: 38 });
     // These are the tools whose frozen schemas actually declare required fields.
     expect(counts.get('missing_required')).toBeGreaterThan(0);
     expect(counts.get('enum')).toBeGreaterThan(0);

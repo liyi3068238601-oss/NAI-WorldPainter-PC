@@ -11,6 +11,7 @@ import {useAppStore} from './store';
 import {useMobileInpaintStore} from './mobile-inpaint-store';
 import {createRendererCollections} from './agent/renderer-collections';
 import {prepareCharacterLayoutPrompts,type CharacterLayoutPrompt} from './agent/character-layout';
+import {prepareWorkbenchParameterPatch,workbenchParameters} from './agent/workbench-parameters';
 import {maxNAICharacterPrompts, normalizeGenerateParams, type CharCaptionItem, type AppSettings, type LastGenerationState, type SettingKey, type StylePromptPreset} from './types';
 import {projectStudioData,STUDIO_WRITABLE,validateStudioPatch,validateStyleInput,type StudioAgentRequest,type StudioAgentReply} from './studio-agent-contract';
 
@@ -51,7 +52,7 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
     const imageIdentity=(image:{id?:unknown;filePath?:unknown;width?:unknown;height?:unknown}|null|undefined)=>image?{
       id:image.id??null,filePath:image.filePath??null,width:image.width??null,height:image.height??null,
     }:null;
-    const identity={generation:current,modelMode:state.settings?.modelMode,historyGroupId:state.generationGroupId,mobileInpaint:mobile,mode:state.activeCanvasSurface,sourceMode:state.i2iSourceMode,inpaintSourceMode:state.inpaintSourceMode,inpaintSizeMode:state.inpaintSizeMode,inpaintCustomSize:state.inpaintCustomSize,i2iSizeMode:state.i2iSizeMode,source:imageIdentity(state.i2iOriginalImage),
+    const identity={generation:current,modelMode:state.settings?.modelMode,imageProvider:state.settings?.imageProvider,imageServiceRevision:state.settings?.imageServiceRevision,historyGroupId:state.generationGroupId,mobileInpaint:mobile,mode:state.activeCanvasSurface,sourceMode:state.i2iSourceMode,inpaintSourceMode:state.inpaintSourceMode,inpaintSizeMode:state.inpaintSizeMode,inpaintCustomSize:state.inpaintCustomSize,i2iSizeMode:state.i2iSizeMode,source:imageIdentity(state.i2iOriginalImage),
       workbenchImage:imageIdentity(state.workbenchImage),maskRevision:state.maskRevision,hasMask:Boolean(state.inpaintMask),mask:state.inpaintMask,region:state.inpaintRegion,
       vibeImages:state.vibeImages.map(({id,name,strength,infoExtracted,base64,encodings})=>({id,name,strength,infoExtracted,base64,encodings})),
       preciseReferences:state.preciseReferences.map(({id,type,strength,fidelity,informationExtracted,base64})=>({id,type,strength,fidelity,informationExtracted,base64}))};
@@ -60,7 +61,7 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
     return {draftId:workbenchId,draftRevision:workbenchRevision,inputRevision:workbenchRevision,draftSource:'workbench' as const,
       params:projectStudioData(params) as Record<string,unknown>,
       ...(includeInputs?{workbench:structuredClone({busy:{isGenerating:state.isGenerating,isGenerateQueueRunning:state.isGenerateQueueRunning,batchRunning:state.batchRunning},mode:mobile?'inpaint:mobile':state.activeCanvasSurface??'generate:t2i',batchCount:state.batchCount,
-        batchIntervalSeconds:state.batchIntervalSeconds,historyGroupId:state.generationGroupId,modelMode:state.settings?.modelMode??'anime',charCaptions:state.charCaptions,i2iParams:state.i2iParams,
+        batchIntervalSeconds:state.batchIntervalSeconds,historyGroupId:state.generationGroupId,modelMode:state.settings?.modelMode??'anime',imageProvider:state.settings?.imageProvider??'novelai',charCaptions:state.charCaptions,i2iParams:state.i2iParams,
         i2iSizeMode:state.i2iSizeMode,sourceMode:state.activeCanvasSurface==='inpaint'?state.inpaintSourceMode:state.i2iSourceMode,
         source:(state.activeCanvasSurface==='inpaint'?state.inpaintSourceMode:state.i2iSourceMode)==='original'?state.i2iOriginalImage??state.workbenchImage:state.workbenchImage,
         inpaintPositivePrompt:state.inpaintPositivePrompt,inpaintModel:state.inpaintModel,
@@ -116,6 +117,19 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
     try {
       const args=request.args;
       if(request.action==='r4-workbench-read')return {ok:true,data:liveWorkbench(deps.getState(),true)};
+      if(request.action==='r4-workbench-parameters') {
+        const {draftId,draftRevision,patch}=args;
+        if(typeof draftId!=='string'||!draftId||!Number.isSafeInteger(draftRevision)||Number(draftRevision)<0)throw Error('工作台参数 CAS 无效。');
+        const state=deps.getState(),current=liveWorkbench(state,true);
+        if(current.draftId!==draftId||current.draftRevision!==draftRevision)return {ok:true,data:{writeStatus:'conflict',draftId:current.draftId,draftRevision:current.draftRevision,changedFields:[],parameters:workbenchParameters(current)}};
+        const prepared=prepareWorkbenchParameterPatch(current,patch);
+        // No await between validation and this single store commit: concurrent
+        // manual edits cannot be overwritten after the renderer CAS check.
+        if(prepared.changedFields.length)state.applyWorkbenchParameters(prepared.params,prepared.workbench);
+        const applied=liveWorkbench(deps.getState(),true);
+        return {ok:true,data:{writeStatus:prepared.changedFields.length?'written':'unchanged',draftId:applied.draftId,draftRevision:applied.draftRevision,
+          changedFields:prepared.changedFields,parameters:workbenchParameters(applied)}};
+      }
       if(request.action==='r4-workbench-result') {
         const executionId=args.executionId, outputId=args.outputId, image=args.image as Record<string,unknown>|undefined;
         if(typeof executionId!=='string'||!executionId||typeof outputId!=='string'||!outputId||!image||typeof image.filePath!=='string')throw Error('工作台结果回执无效。');

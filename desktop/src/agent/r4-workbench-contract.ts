@@ -1,3 +1,4 @@
+import type {I2IParams} from '../types';
 /** Public, non-secret workbench CAS data shared by the Electron bridge and UI. */
 export interface R4WorkbenchPromptFields {
   positivePrompt: string;
@@ -28,10 +29,11 @@ export interface R4WorkbenchSnapshot {
     historyGroupId?: string;
     /** Current renderer model mode, frozen with the rest of the Generate draft. */
     modelMode?: 'anime' | 'furry';
+    imageProvider?: 'novelai' | 'openai-images';
     batchCount?: number;
     batchIntervalSeconds?: number;
     charCaptions?: unknown[];
-    i2iParams?: Record<string, unknown>;
+    i2iParams?: I2IParams | Record<string, unknown>;
     i2iSizeMode?: string;
     sourceMode?: string;
     source?: { filePath?: string; fileUrl?: string; width?: number; height?: number } | null;
@@ -106,7 +108,7 @@ export interface R4ApplyPromptResult {
 
 export type R4WorkbenchIpcReply<T> = { ok: true; data: T } | { ok: false; message: string };
 
-export type R4WorkbenchRendererAction = 'r4-workbench-read' | 'r4-workbench-apply' | 'r4-workbench-result';
+export type R4WorkbenchRendererAction = 'r4-workbench-read' | 'r4-workbench-apply' | 'r4-workbench-parameters' | 'r4-workbench-result';
 
 export interface R4WorkbenchRendererRequest {
   id: string;

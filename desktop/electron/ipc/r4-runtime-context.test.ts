@@ -23,6 +23,11 @@ it('discovery only offers configured image actions and never tests service conne
   expect(names()).toContain('prepare_generation');expect(names()).not.toContain('redraw_image');
   fixture.settings.compatibleImage!.model='unsupported-model';expect(names()).not.toContain('generate_image');
 });
+it('offers parameter writes only when the Generate workbench is ready',()=>{
+  const names=(workbenchReady:boolean)=>r4RuntimeCapabilities({...options,workbenchReady}).available.flatMap(row=>row.toolNames);
+  expect(names(false)).not.toContain('write_workbench_parameters');
+  expect(names(true)).toContain('write_workbench_parameters');
+});
 it('a consumed steer cannot escape its origin failure gate, while independent turns remain available',()=>{
   fixture.state!.gates.failure={id:'failure',conversationId:'chat',turnId:'origin-a',active:true,reason:'prior_paid_failure',createdAt:new Date().toISOString()};
   expect(()=>assertR4DispatchAllowed(scope)).toThrow('本轮');

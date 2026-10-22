@@ -85,11 +85,11 @@ describe('Agent skill persistence',()=>{
 
  it('bounds and normalizes trigger keywords, and removes deleted skill selections',()=>{
   const workspace=createEmptyAgentWorkspace();writeAgentWorkspace(workspace);
-  expect(upsertAgentSkill({name:'Too many keywords',instructions:'body',triggerKeywords:Array.from({length:33},(_,i)=>`k${i}`)}).ok).toBe(false);
+  expect(upsertAgentSkill({name:'Too many keywords',instructions:'body',triggerKeywords:Array.from({length:STUDIO_SKILL_LIMITS.maxTriggerKeywords+1},(_,i)=>`k${i}`)}).ok).toBe(false);
   expect(upsertAgentSkill({name:'Too long keyword',instructions:'body',triggerKeywords:['x'.repeat(STUDIO_SKILL_LIMITS.maxTriggerKeywordLength+1)]}).ok).toBe(false);
-  const result=upsertAgentSkill({name:'Triggers',instructions:'body',triggerKeywords:[' one ','one',...Array.from({length:31},(_,i)=>`k${i}`)],autoSelect:true});
+  const result=upsertAgentSkill({name:'Triggers',instructions:'body',triggerKeywords:[' one ','one',...Array.from({length:STUDIO_SKILL_LIMITS.maxTriggerKeywords-1},(_,i)=>`k${i}`)],autoSelect:true});
   const skill=result.workspace.skills.find(item=>item.name==='Triggers')!;
-  expect(skill.triggerKeywords).toHaveLength(32);
+  expect(skill.triggerKeywords).toHaveLength(STUDIO_SKILL_LIMITS.maxTriggerKeywords);
   expect(skill.triggerKeywords?.[0]).toBe('one');
   expect(skill.triggerKeywords?.[1]).toBe('k0');
   const selected=setCurrentSkill(result.workspace,skill.id);

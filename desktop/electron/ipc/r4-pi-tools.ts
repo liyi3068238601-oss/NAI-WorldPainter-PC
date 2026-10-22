@@ -69,6 +69,7 @@ export interface R4PiToolSessionOptions {
   promptingReferenceEnabled?: boolean;
   applyPrompt?: (args: Record<string, unknown>, scope: R4HostScope, signal: AbortSignal) => Promise<Record<string, unknown>>;
   writeWorkbenchPrompts?: (args: Record<string, unknown>, scope: R4HostScope) => Promise<Record<string, unknown>>;
+  writeWorkbenchParameters?: (args: Record<string, unknown>, scope: R4HostScope) => Promise<Record<string, unknown>>;
   /** Rechecks a workbench-backed preview after explicit approval, before durable enqueue. */
   assertWorkbenchPreparationCurrent?: (preparationId:string,scope:R4HostScope)=>Promise<void>;
   prepareGeneration?: (args: Record<string, unknown>, scope: R4HostScope, signal: AbortSignal) => Promise<Record<string, unknown>>;
@@ -160,6 +161,7 @@ function isReady(name: R4ToolName, options: R4PiToolSessionOptions): boolean {
   if (name === 'get_capabilities') return true;
   if (name === 'apply_prompt') return Boolean(options.applyPrompt);
   if(name==='write_workbench_prompts')return Boolean(options.writeWorkbenchPrompts);
+  if(name==='write_workbench_parameters')return Boolean(options.writeWorkbenchParameters);
   if (['redraw_image', 'inpaint_image', 'upscale_image', 'process_image'].includes(name)) {
     return Boolean(options.prepareImageOperation);
   }
@@ -526,6 +528,7 @@ export function createR4PiToolSession(options: R4PiToolSessionOptions): R4PiTool
       return { result: await options.applyPrompt!(args, scope, signal) };
     }
     if(name==='write_workbench_prompts')return {result:await options.writeWorkbenchPrompts!(args,scope)};
+    if(name==='write_workbench_parameters')return {result:await options.writeWorkbenchParameters!(args,scope)};
     if(name==='prepare_generation'&&options.prepareGeneration){
       return {result:await options.prepareGeneration(args,scope,signal)};
     }

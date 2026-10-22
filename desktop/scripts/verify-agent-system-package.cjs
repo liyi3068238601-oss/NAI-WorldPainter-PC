@@ -27,6 +27,19 @@ function assert(value,message){if(!value)throw Error(message);}
   const registry=load('./dist-electron/src/agent/r4-registry.json');
   const write=registry.tools.find(tool=>tool.canonical==='write_workbench_prompts');
   assert(JSON.stringify(write).includes('characterLayoutIntent'),'Coordinate-intent contract missing from packaged registry');
+  const parameterTool=registry.tools.find(tool=>tool.canonical==='write_workbench_parameters');
+  assert(parameterTool&&parameterTool.approval==='none','Parameter tool missing or requires an unrelated approval');
+  const parameterModule=load('./dist-electron/src/agent/workbench-parameters.js');
+  const contracts=load('./dist-electron/src/agent/r4-contracts.js');
+  const snapshot={draftId:'packaged-fixture',draftRevision:3,inputRevision:3,draftSource:'workbench',
+    params:load('./dist-electron/src/types.js').DEFAULT_PARAMS,
+    workbench:{mode:'generate:t2i',imageProvider:'novelai',modelMode:'anime',batchCount:1,batchIntervalSeconds:0}};
+  const parameterPatch={model:'nai-diffusion-4-5-full',width:3072,height:1024,steps:35,seed:42,batchCount:3};
+  assert(contracts.validateR4Input('write_workbench_parameters',{expectedDraftRevision:3,patch:parameterPatch}).valid,'Packaged parameter schema mismatch');
+  const parameterResult=parameterModule.prepareWorkbenchParameterPatch(snapshot,parameterPatch);
+  assert(parameterResult.params.seedMode==='fixed'&&parameterResult.workbench.batchCount===3&&parameterResult.params.width===3072,'Packaged parameter validation failed');
+  let invalidRejected=false;try{parameterModule.prepareWorkbenchParameterPatch(snapshot,{width:1000});}catch{invalidRejected=true;}
+  assert(invalidRejected,'Packaged parameter validator accepted invalid dimensions');
   const knowledgeFile=path.join(root,'dist',baseline.mobileKnowledge.path.replace(/^public\//,''));
   assert(hash(fs.readFileSync(knowledgeFile))===baseline.mobileKnowledge.hash,'Bundled mobile knowledge changed');
   for(const reference of baseline.mobileReferences){
@@ -54,5 +67,5 @@ function assert(value,message){if(!value)throw Error(message);}
   assert(reads===1&&result.text==='OFFLINE_CANONICAL_TOOL_OK','Packaged canonical native tool loop failed');
   console.log(JSON.stringify({pass:true,source:'packaged production modules',skillCount:skills.length,optionalPresetsUnchanged:3,
     knowledgeEntries:book.length,mobileContentUnchanged:true,canonicalNativeToolLoop:true,defaultPresetCharacters:preset.length,
-    baseInstructionCharacters:base.length,paidCalls:0,providerRequests:0,archiveSha256:hash(require('original-fs').readFileSync(root))}));
+    baseInstructionCharacters:base.length,workbenchParameterTool:true,parameterValidation:true,paidCalls:0,providerRequests:0,archiveSha256:hash(require('original-fs').readFileSync(root))}));
 })().catch(error=>{console.error(error.stack||String(error));process.exitCode=1;});

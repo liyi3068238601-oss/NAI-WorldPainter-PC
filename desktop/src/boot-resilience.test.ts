@@ -27,6 +27,13 @@ describe("boot resilience (P1-07)", () => {
     useAppStore.setState(useAppStore.getInitialState(), true);
   });
 
+  it('restores an explicitly saved custom i2i size mode with its parameters',async()=>{
+    const naiDesktop={...baseNaiDesktop(),getSettings:vi.fn().mockResolvedValue({language:'zh-CN',persistGenerateParams:true,persistI2IParams:true,
+      lastGenerationState:{params:{width:1216,height:832},i2iSizeMode:'custom',i2iParams:{strength:.6,noise:0,extraNoiseSeed:0}}})};
+    vi.stubGlobal('window',{naiDesktop});await useAppStore.getState().load();
+    expect(useAppStore.getState()).toMatchObject({i2iSizeMode:'custom',i2iParams:{strength:.6},params:{width:1216,height:832}});
+  });
+
   it("a rejected non-critical read (history dates) still completes boot with a safe default", async () => {
     const naiDesktop = {
       ...baseNaiDesktop(),

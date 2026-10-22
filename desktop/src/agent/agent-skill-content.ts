@@ -45,11 +45,15 @@ export function createBuiltinAgentSkills(timestamp=new Date().toISOString()):Age
   {
    ...shared,id:'builtin-image-generation',name:'工作台写入与生图',
    description:'按明确意图写入真实 Generate 工作台，或准备并执行生图。',
-   triggerKeywords:['写提示词','写一版提示词','提示词','正向词','负向词','优化提示词','修改提示词','写入工作台','填入工作台','填到工作台','填进去','工作台','生成图片','生成图像','生成','生图','画','帮我画','绘制','generate image','create an image','write a prompt','text to image'],
+   triggerKeywords:['写提示词','写一版提示词','提示词','正向词','负向词','优化提示词','修改提示词','写入工作台','填入工作台','填到工作台','填进去','工作台','生成图片','生成图像','生成','生图','画','帮我画','绘制','generate image','create an image','write a prompt','text to image','参数','步数','尺寸','分辨率','采样器','cfg','seed','批量','batch','strength','模型','steps','sampler','effort','model','种子','张数','张','间隔','强度','宽度','高度','透明','质量'],
    instructions:[
-    '用于用户明确要求写入 Generate 工作台或生成图像。讨论、构思、点评和只要候选提示词时用文字协作，不调用写入或生图工具。',
+    '用于用户明确要求写入 Generate 工作台的提示词或参数，或生成图像。讨论、构思、点评和只要候选提示词时用文字协作，不调用写入或生图工具。提示词改写使用 write_workbench_prompts，参数改动只使用 write_workbench_parameters；两类写入都不授权生成。',
     '写词前调用 read_generation_state，确认 readStatus 为 ok、当前 mode、实际可编辑字段和 draftRevision。write_workbench_prompts 可编辑 positivePrompt、negativePrompt、stylePrompt 与完整 characterPrompts；角色数组是整体替换，布局意图另用 characterLayoutIntent。传 expectedDraftRevision；省略的文字字段不变，空字符串只用于用户明确要求清空，完整替换需要先合并要保留的旧文本。没有 append、target 或 mobile position 参数。只写当前 mode 实际返回且工具支持的字段。',
-    'CAS 冲突、blocked、状态不可用或 mode 不支持时停止并报告未写入，不自动重读或重试。成功后只有用户也明确要求生成时才 fresh-read，再调用 prepare_generation({})；prepare 不传提示词或覆盖模型、参数、来源或 mode，按真实预览、费用和应用确认策略处理。generate_image 只消费本回合返回的一次性 preparationId。',
+    '参数写入前也调用 read_generation_state，并确认 readStatus 为 ok、当前 mode 与 parameterControls。普通参数 patch 只写用户明确指定且当前 editableFields 允许的字段；若同一 patch 也修改 model/effort，则先按当前值与 patch 合并后的目标组合、工具 schema、parameterControls.models 与 limits 判断目标字段是否支持。目标组合新增可编辑字段时，可在这个同一 patch 中一起提交，即使它不在旧组合的 editableFields 中；由 write_workbench_parameters 做最终校验。必须有实际挂载的该工具且 parameterControls.writeSupported=true；否则按 reason 说明并停止。此规则只按真实工具 schema 与目标组合校验，不增加工具能力或权限，也不把未请求字段加进 patch。此路径只适用于 native NovelAI Generate 文生图/图生图（含 NAI relay）；openai-images 独立配置、独立重绘、enhance 或其他不支持模式不走此工具。strength 只用于受支持的图生图模式。图生图改 width 或 height 时，同时将 i2iSizeMode 设为 custom；若该字段不可写则说明限制并停止。不要为普通 model/effort 切换预先清理已有参数或额外追问；只按用户明确要求提交，并依据真实回执解释保存结果或必要的不兼容。成功回执的 draftRevision、changedFields 与 parameters 是本次写入依据。',
+    'seed 数值按 fixed 处理：用户给出数字时写 seed，并在可编辑时将 seedMode 设为 fixed；只有用户明确要求随机才设 seedMode=random，不编造种子。fixed 批次会逐张递增 uint32 seed，不保证重复生成得到完全相同的图。parameterControls.parameters 表示工作台参数，effectiveParameters 才表示实际生效值。Medium 实际使用 14 步、Euler、cfgRescale=0、ucPreset=0；这些值要自定义必须切到 High。不要暗中切换 effort，也不要把 Medium 下保存的数值说成已生效。',
+    '工作台 batchCount 可按 limits.maxBatchCount 设为 1..999；助手每次生成仍受 maxAssistantGenerationCount 限制（当前为 8）。若用户还要求一次生成超过该上限，不自动拆成多次收费批次；说明单次上限并停在准备/执行之外。',
+    '若同一请求既改提示词又改参数，分别调用 write_workbench_prompts 与 write_workbench_parameters；按顺序完成两次原子 CAS 写入，第二次 expectedDraftRevision 使用第一次成功回执的 draftRevision，不再为此重复读取。任一写入冲突、blocked、状态不可用或 mode 不支持时停止，不自动重读、不重试、不换字段。',
+    '成功后只有用户也明确要求生成时才 fresh-read 一次当前状态，并调用 prepare_generation({})；prepare 不传提示词或覆盖模型、参数、来源或 mode，按真实预览、费用和应用确认策略处理。generate_image 只消费本回合返回的一次性 preparationId。',
     '用户明确要求放大时，可调用当前目录提供的 upscale_image，并按其真实 schema 传 scale 2 或 4；不把放大和生成混为一谈。用真实回执判断是否写入、入队、完成或取消；需要核验执行状态时调用 get_execution。用户没有授权生成时，写入不附带生成。工具目录缺少所需操作时说明限制，不猜工具名或参数。',
    ].join('\n\n'),
   },

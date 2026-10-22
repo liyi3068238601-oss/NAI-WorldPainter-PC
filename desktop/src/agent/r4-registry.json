@@ -113,7 +113,7 @@
     {
       "path": "desktop/src/agent/generation-input.ts",
       "lines": "76-186",
-      "finding": "实际解析器支持动态 model/sampler、尺寸≤2048、CFG≤10、Vibe/precise/character refs；host 需对不支持值拒绝。"
+      "finding": "实际解析器支持动态 model/sampler、Generate 尺寸按 NovelAI 64 像素步进与总面积限制校验、CFG≤10、Vibe/precise/character refs；host 需对不支持值拒绝。"
     },
     {
       "path": "desktop/electron/ipc/agent-tools.ts",
@@ -675,12 +675,14 @@
                   "width": {
                     "type": "integer",
                     "minimum": 64,
-                    "maximum": 2048
+                    "maximum": 49152,
+                    "multipleOf": 64
                   },
                   "height": {
                     "type": "integer",
                     "minimum": 64,
-                    "maximum": 2048
+                    "maximum": 49152,
+                    "multipleOf": 64
                   },
                   "steps": {
                     "type": "integer",
@@ -770,7 +772,7 @@
                   "maxCharacterPrompts": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 16
+                    "maximum": 32
                   },
                   "vibeTransfer": {
                     "type": "boolean"
@@ -974,6 +976,11 @@
                       "anime",
                       "furry"
                     ]
+                  },
+                  "batchIntervalSeconds": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3600
                   }
                 },
                 "required": [
@@ -988,6 +995,413 @@
                   "vibeReferences",
                   "preciseReferences",
                   "busy"
+                ],
+                "additionalProperties": false
+              },
+              "parameterControls": {
+                "type": "object",
+                "properties": {
+                  "writeSupported": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "editableFields": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "model",
+                        "effort",
+                        "width",
+                        "height",
+                        "steps",
+                        "cfgScale",
+                        "cfgRescale",
+                        "sampler",
+                        "noiseSchedule",
+                        "seed",
+                        "seedMode",
+                        "batchCount",
+                        "batchIntervalSeconds",
+                        "ucPreset",
+                        "qualityPreset",
+                        "transparentBackground",
+                        "smea",
+                        "smeaDyn",
+                        "variety",
+                        "strength",
+                        "i2iSizeMode"
+                      ]
+                    },
+                    "uniqueItems": true,
+                    "maxItems": 21
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "model": {
+                        "type": "string",
+                        "enum": [
+                          "nai-diffusion-5-full",
+                          "nai-diffusion-5-curated",
+                          "nai-diffusion-4-5-full",
+                          "nai-diffusion-4-5-curated",
+                          "nai-diffusion-4-full",
+                          "nai-diffusion-4-curated",
+                          "nai-diffusion-3",
+                          "nai-diffusion-furry-3"
+                        ]
+                      },
+                      "effort": {
+                        "type": "string",
+                        "enum": [
+                          "high",
+                          "medium"
+                        ]
+                      },
+                      "width": {
+                        "type": "integer",
+                        "minimum": 64,
+                        "maximum": 49152,
+                        "multipleOf": 64
+                      },
+                      "height": {
+                        "type": "integer",
+                        "minimum": 64,
+                        "maximum": 49152,
+                        "multipleOf": 64
+                      },
+                      "steps": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50
+                      },
+                      "cfgScale": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10
+                      },
+                      "cfgRescale": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "sampler": {
+                        "type": "string",
+                        "enum": [
+                          "k_euler_ancestral",
+                          "k_euler",
+                          "k_dpmpp_2m",
+                          "k_dpmpp_2m_sde",
+                          "k_dpmpp_sde",
+                          "k_dpmpp_2s_ancestral",
+                          "ddim_v3"
+                        ]
+                      },
+                      "noiseSchedule": {
+                        "type": "string",
+                        "enum": [
+                          "native",
+                          "karras",
+                          "exponential"
+                        ]
+                      },
+                      "seed": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                      },
+                      "seedMode": {
+                        "type": "string",
+                        "enum": [
+                          "fixed",
+                          "random"
+                        ]
+                      },
+                      "batchCount": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 999
+                      },
+                      "batchIntervalSeconds": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 3600
+                      },
+                      "ucPreset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 3
+                      },
+                      "qualityPreset": {
+                        "type": "string",
+                        "enum": [
+                          "standard",
+                          "light",
+                          "none"
+                        ]
+                      },
+                      "transparentBackground": {
+                        "type": "boolean"
+                      },
+                      "smea": {
+                        "type": "boolean"
+                      },
+                      "smeaDyn": {
+                        "type": "boolean"
+                      },
+                      "variety": {
+                        "type": "boolean"
+                      },
+                      "strength": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "i2iSizeMode": {
+                        "type": "string",
+                        "enum": [
+                          "adaptive",
+                          "custom"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "effectiveParameters": {
+                    "type": "object",
+                    "properties": {
+                      "model": {
+                        "type": "string",
+                        "enum": [
+                          "nai-diffusion-5-full",
+                          "nai-diffusion-5-curated",
+                          "nai-diffusion-4-5-full",
+                          "nai-diffusion-4-5-curated",
+                          "nai-diffusion-4-full",
+                          "nai-diffusion-4-curated",
+                          "nai-diffusion-3",
+                          "nai-diffusion-furry-3",
+                          "nai-diffusion-5-full-medium"
+                        ]
+                      },
+                      "effort": {
+                        "type": "string",
+                        "enum": [
+                          "high",
+                          "medium"
+                        ]
+                      },
+                      "width": {
+                        "type": "integer",
+                        "minimum": 64,
+                        "maximum": 49152,
+                        "multipleOf": 64
+                      },
+                      "height": {
+                        "type": "integer",
+                        "minimum": 64,
+                        "maximum": 49152,
+                        "multipleOf": 64
+                      },
+                      "steps": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50
+                      },
+                      "cfgScale": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10
+                      },
+                      "cfgRescale": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "sampler": {
+                        "type": "string",
+                        "enum": [
+                          "k_euler_ancestral",
+                          "k_euler",
+                          "k_dpmpp_2m",
+                          "k_dpmpp_2m_sde",
+                          "k_dpmpp_sde",
+                          "k_dpmpp_2s_ancestral",
+                          "ddim_v3"
+                        ]
+                      },
+                      "noiseSchedule": {
+                        "type": "string",
+                        "enum": [
+                          "native",
+                          "karras",
+                          "exponential"
+                        ]
+                      },
+                      "seed": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                      },
+                      "seedMode": {
+                        "type": "string",
+                        "enum": [
+                          "fixed",
+                          "random"
+                        ]
+                      },
+                      "batchCount": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 999
+                      },
+                      "batchIntervalSeconds": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 3600
+                      },
+                      "ucPreset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 3
+                      },
+                      "qualityPreset": {
+                        "type": "string",
+                        "enum": [
+                          "standard",
+                          "light",
+                          "none"
+                        ]
+                      },
+                      "transparentBackground": {
+                        "type": "boolean"
+                      },
+                      "smea": {
+                        "type": "boolean"
+                      },
+                      "smeaDyn": {
+                        "type": "boolean"
+                      },
+                      "variety": {
+                        "type": "boolean"
+                      },
+                      "strength": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "i2iSizeMode": {
+                        "type": "string",
+                        "enum": [
+                          "adaptive",
+                          "custom"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "allOf": [
+                      {
+                        "if": {
+                          "properties": {
+                            "model": {
+                              "const": "nai-diffusion-5-full-medium"
+                            }
+                          },
+                          "required": [
+                            "model"
+                          ]
+                        },
+                        "then": {
+                          "properties": {
+                            "steps": {
+                              "const": 14
+                            }
+                          },
+                          "required": [
+                            "steps"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "metadataReplayOverrides": {
+                    "type": "object",
+                    "maxProperties": 32,
+                    "additionalProperties": {
+                      "type": [
+                        "boolean",
+                        "number",
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 200
+                    }
+                  },
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "dimensionStep": {
+                        "type": "integer",
+                        "const": 64
+                      },
+                      "maxPixelArea": {
+                        "type": "integer",
+                        "const": 3145728
+                      },
+                      "maxBatchCount": {
+                        "type": "integer",
+                        "const": 999
+                      },
+                      "maxAssistantGenerationCount": {
+                        "type": "integer",
+                        "const": 8
+                      }
+                    },
+                    "required": [
+                      "dimensionStep",
+                      "maxPixelArea",
+                      "maxBatchCount",
+                      "maxAssistantGenerationCount"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "models": {
+                    "type": "array",
+                    "maxItems": 32,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        }
+                      },
+                      "required": [
+                        "value",
+                        "label"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "writeSupported",
+                  "editableFields",
+                  "parameters",
+                  "effectiveParameters",
+                  "limits",
+                  "models"
                 ],
                 "additionalProperties": false
               }
@@ -1064,6 +1478,11 @@
                       {
                         "required": [
                           "referenceCapabilities"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "parameterControls"
                         ]
                       }
                     ]
@@ -10068,6 +10487,554 @@
       ]
     },
     {
+      "canonical": "write_workbench_parameters",
+      "schemaVersion": "1.0.0",
+      "description": "按用户明确要求修改当前 Generate 工作台参数。先 read_generation_state，并只修改 parameterControls.writeSupported=true 且 editableFields 列出的字段；传回该次读取的 expectedDraftRevision。patch 必须至少含一个参数。strength 和 i2iSizeMode 仅可用于 generate:i2i 模式，兼容网关或其他模式未支持时停止并说明。成功回执含本次安全回读参数；CAS 冲突不写且不自动重读或重试。此工具不收费、不需要额外审批，也不授权生图。",
+      "modelFields": [
+        "expectedDraftRevision",
+        "patch"
+      ],
+      "hostInjectedFields": [
+        "conversationId",
+        "creationId",
+        "operationKey",
+        "currentWorkbenchSnapshot",
+        "resolvedTargetScope",
+        "userIntentRef"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "expectedDraftRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "patch": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string",
+                "enum": [
+                  "nai-diffusion-5-full",
+                  "nai-diffusion-5-curated",
+                  "nai-diffusion-4-5-full",
+                  "nai-diffusion-4-5-curated",
+                  "nai-diffusion-4-full",
+                  "nai-diffusion-4-curated",
+                  "nai-diffusion-3",
+                  "nai-diffusion-furry-3"
+                ]
+              },
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium"
+                ]
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 49152,
+                "multipleOf": 64
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 49152,
+                "multipleOf": 64
+              },
+              "steps": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "cfgScale": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10
+              },
+              "cfgRescale": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "sampler": {
+                "type": "string",
+                "enum": [
+                  "k_euler_ancestral",
+                  "k_euler",
+                  "k_dpmpp_2m",
+                  "k_dpmpp_2m_sde",
+                  "k_dpmpp_sde",
+                  "k_dpmpp_2s_ancestral",
+                  "ddim_v3"
+                ]
+              },
+              "noiseSchedule": {
+                "type": "string",
+                "enum": [
+                  "native",
+                  "karras",
+                  "exponential"
+                ]
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "seedMode": {
+                "type": "string",
+                "enum": [
+                  "fixed",
+                  "random"
+                ]
+              },
+              "batchCount": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 999
+              },
+              "batchIntervalSeconds": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3600
+              },
+              "ucPreset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3
+              },
+              "qualityPreset": {
+                "type": "string",
+                "enum": [
+                  "standard",
+                  "light",
+                  "none"
+                ]
+              },
+              "transparentBackground": {
+                "type": "boolean"
+              },
+              "smea": {
+                "type": "boolean"
+              },
+              "smeaDyn": {
+                "type": "boolean"
+              },
+              "variety": {
+                "type": "boolean"
+              },
+              "strength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "i2iSizeMode": {
+                "type": "string",
+                "enum": [
+                  "adaptive",
+                  "custom"
+                ]
+              }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "expectedDraftRevision",
+          "patch"
+        ],
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      },
+      "resultSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "accepted",
+              "completed",
+              "denied",
+              "cancelled",
+              "blocked",
+              "error"
+            ]
+          },
+          "conversationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "creationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "writeStatus": {
+                "enum": [
+                  "written",
+                  "unchanged",
+                  "conflict"
+                ]
+              },
+              "draftId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "draftRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              },
+              "changedFields": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "model",
+                    "effort",
+                    "width",
+                    "height",
+                    "steps",
+                    "cfgScale",
+                    "cfgRescale",
+                    "sampler",
+                    "noiseSchedule",
+                    "seed",
+                    "seedMode",
+                    "batchCount",
+                    "batchIntervalSeconds",
+                    "ucPreset",
+                    "qualityPreset",
+                    "transparentBackground",
+                    "smea",
+                    "smeaDyn",
+                    "variety",
+                    "strength",
+                    "i2iSizeMode",
+                    "qualityToggle",
+                    "metadataReplay.parameters.cfg_rescale",
+                    "metadataReplay.parameters.dynamic_thresholding",
+                    "metadataReplay.parameters.quality_boost",
+                    "metadataReplay.parameters.straight_alpha"
+                  ]
+                },
+                "uniqueItems": true,
+                "maxItems": 26
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "enum": [
+                      "nai-diffusion-5-full",
+                      "nai-diffusion-5-curated",
+                      "nai-diffusion-4-5-full",
+                      "nai-diffusion-4-5-curated",
+                      "nai-diffusion-4-full",
+                      "nai-diffusion-4-curated",
+                      "nai-diffusion-3",
+                      "nai-diffusion-furry-3"
+                    ]
+                  },
+                  "effort": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium"
+                    ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 64,
+                    "maximum": 49152,
+                    "multipleOf": 64
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 64,
+                    "maximum": 49152,
+                    "multipleOf": 64
+                  },
+                  "steps": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "cfgScale": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "cfgRescale": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "sampler": {
+                    "type": "string",
+                    "enum": [
+                      "k_euler_ancestral",
+                      "k_euler",
+                      "k_dpmpp_2m",
+                      "k_dpmpp_2m_sde",
+                      "k_dpmpp_sde",
+                      "k_dpmpp_2s_ancestral",
+                      "ddim_v3"
+                    ]
+                  },
+                  "noiseSchedule": {
+                    "type": "string",
+                    "enum": [
+                      "native",
+                      "karras",
+                      "exponential"
+                    ]
+                  },
+                  "seed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295
+                  },
+                  "seedMode": {
+                    "type": "string",
+                    "enum": [
+                      "fixed",
+                      "random"
+                    ]
+                  },
+                  "batchCount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 999
+                  },
+                  "batchIntervalSeconds": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3600
+                  },
+                  "ucPreset": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3
+                  },
+                  "qualityPreset": {
+                    "type": "string",
+                    "enum": [
+                      "standard",
+                      "light",
+                      "none"
+                    ]
+                  },
+                  "transparentBackground": {
+                    "type": "boolean"
+                  },
+                  "smea": {
+                    "type": "boolean"
+                  },
+                  "smeaDyn": {
+                    "type": "boolean"
+                  },
+                  "variety": {
+                    "type": "boolean"
+                  },
+                  "strength": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "i2iSizeMode": {
+                    "type": "string",
+                    "enum": [
+                      "adaptive",
+                      "custom"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "writeStatus",
+              "draftId",
+              "draftRevision",
+              "changedFields",
+              "parameters"
+            ],
+            "additionalProperties": false
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "enum": [
+                  "invalid_arguments",
+                  "context_mismatch",
+                  "stale_revision",
+                  "user_denied"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "allowedActions": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "correct_arguments",
+                    "select_supported_capability",
+                    "continue_without_tool",
+                    "read_generation_state",
+                    "request_user_decision",
+                    "reselect_target_creation"
+                  ]
+                },
+                "maxItems": 10,
+                "minItems": 1
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "allowedActions"
+            ],
+            "additionalProperties": false
+          },
+          "resultKind": {
+            "enum": [
+              "business",
+              "preflight_failure"
+            ]
+          }
+        },
+        "required": [
+          "resultKind"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "error",
+                    "blocked"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "error"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "resultKind": {
+                  "const": "business"
+                }
+              },
+              "required": [
+                "resultKind"
+              ]
+            },
+            "then": {
+              "required": [
+                "status",
+                "conversationId",
+                "creationId",
+                "data"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "accepted",
+                    "completed",
+                    "denied",
+                    "cancelled",
+                    "blocked",
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "resultKind": {
+                  "const": "preflight_failure"
+                }
+              },
+              "required": [
+                "resultKind"
+              ]
+            },
+            "then": {
+              "required": [
+                "status",
+                "error"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "denied",
+                    "cancelled",
+                    "blocked",
+                    "error"
+                  ]
+                }
+              },
+              "not": {
+                "required": [
+                  "data"
+                ]
+              }
+            }
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      },
+      "availability": {
+        "exposure": "conditional",
+        "group": "workbench",
+        "requires": [],
+        "when": "用户明确要求修改参数且工作台可读时按需挂载"
+      },
+      "effect": "workbench_write",
+      "approval": "none",
+      "cost": {
+        "paid": false,
+        "mayCharge": false,
+        "chargeKinds": [],
+        "estimate": "none"
+      },
+      "classification": {
+        "readonly": false,
+        "paid": false,
+        "image": false
+      },
+      "evidence": [
+        "desktop/electron/ipc/r4-agent-runtime.ts",
+        "desktop/electron/ipc/r4-workbench.ts"
+      ]
+    },
+    {
       "canonical": "save_prompt_preset",
       "schemaVersion": "2.0.0",
       "description": "保存用户明确要求复用的正面提示词词条；不管理助手系统预设。",
@@ -12773,12 +13740,14 @@
           "width": {
             "type": "integer",
             "minimum": 64,
-            "maximum": 2048
+            "maximum": 49152,
+            "multipleOf": 64
           },
           "height": {
             "type": "integer",
             "minimum": 64,
-            "maximum": 2048
+            "maximum": 49152,
+            "multipleOf": 64
           },
           "steps": {
             "type": "integer",
@@ -13416,12 +14385,14 @@
                       "width": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 4096
+                        "maximum": 49152,
+                        "multipleOf": 64
                       },
                       "height": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 4096
+                        "maximum": 49152,
+                        "multipleOf": 64
                       },
                       "steps": {
                         "type": "integer",
@@ -13456,12 +14427,14 @@
                           "width": {
                             "type": "integer",
                             "minimum": 1,
-                            "maximum": 4096
+                            "maximum": 49152,
+                            "multipleOf": 64
                           },
                           "height": {
                             "type": "integer",
                             "minimum": 1,
-                            "maximum": 4096
+                            "maximum": 49152,
+                            "multipleOf": 64
                           }
                         },
                         "required": [
@@ -13476,12 +14449,14 @@
                           "width": {
                             "type": "integer",
                             "minimum": 1,
-                            "maximum": 4096
+                            "maximum": 49152,
+                            "multipleOf": 64
                           },
                           "height": {
                             "type": "integer",
                             "minimum": 1,
-                            "maximum": 4096
+                            "maximum": 49152,
+                            "multipleOf": 64
                           }
                         },
                         "required": [
@@ -13887,12 +14862,14 @@
                         "width": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 4096
+                          "maximum": 49152,
+                          "multipleOf": 64
                         },
                         "height": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 4096
+                          "maximum": 49152,
+                          "multipleOf": 64
                         },
                         "steps": {
                           "type": "integer",
@@ -13927,12 +14904,14 @@
                             "width": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 4096
+                              "maximum": 49152,
+                              "multipleOf": 64
                             },
                             "height": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 4096
+                              "maximum": 49152,
+                              "multipleOf": 64
                             }
                           },
                           "required": [
@@ -13947,12 +14926,14 @@
                             "width": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 4096
+                              "maximum": 49152,
+                              "multipleOf": 64
                             },
                             "height": {
                               "type": "integer",
                               "minimum": 1,
-                              "maximum": 4096
+                              "maximum": 49152,
+                              "multipleOf": 64
                             }
                           },
                           "required": [
@@ -20617,7 +21598,7 @@
       "hostContextRef": "#/$defs/TurnEffectiveInputSnapshot"
     }
   ],
-  "toolCount": 37,
+  "toolCount": 38,
   "toolNames": [
     "get_capabilities",
     "read_generation_state",
@@ -20640,6 +21621,7 @@
     "set_current_proposal",
     "apply_prompt",
     "write_workbench_prompts",
+    "write_workbench_parameters",
     "save_prompt_preset",
     "read_prompt_template",
     "manage_prompt_templates",
@@ -20819,7 +21801,8 @@
       "groupId": "workbench",
       "canonicalTools": [
         "apply_prompt",
-        "write_workbench_prompts"
+        "write_workbench_prompts",
+        "write_workbench_parameters"
       ],
       "alwaysOn": false
     },

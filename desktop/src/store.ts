@@ -298,6 +298,8 @@ interface AppState {
   resetWsWidths: () => void;
   setParam: <K extends keyof GenerateParams>(key: K, value: GenerateParams[K]) => void;
   applyParams: (patch: Partial<GenerateParams>, promptDraft?: {charCaptions?: CharCaptionItem[]; inpaintPositivePrompt?: string}) => void;
+  /** Applies an already validated CAS parameter patch without repairing unrelated draft values. */
+  applyWorkbenchParameters: (patch:Partial<GenerateParams>, workbench:{batchCount?:number;batchIntervalSeconds?:number;i2iParams?:I2IParams;i2iSizeMode?:ImageToImageSizeMode}) => void;
   restoreImportedMetadata: (
     patch: ImportedParams,
     captions: CharCaptionItem[],
@@ -858,6 +860,7 @@ function buildLastGenerationState(state: AppState): LastGenerationState {
     batchCount: state.batchCount,
     batchIntervalSeconds: state.batchIntervalSeconds,
     i2iParams: { ...state.i2iParams, upscaledEnhance: false },
+    i2iSizeMode: state.i2iSizeMode,
     inpaintModel: state.inpaintModel,
     inpaintStrength: state.inpaintStrength,
     inpaintNoise: state.inpaintNoise,
@@ -1070,6 +1073,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           ? normalizeBatchIntervalSeconds(last.batchIntervalSeconds ?? state.batchIntervalSeconds)
           : state.batchIntervalSeconds,
         i2iParams: settings.persistI2IParams ? repairedTools.i2iParams : state.i2iParams,
+        i2iSizeMode: settings.persistI2IParams && (last.i2iSizeMode === 'custom' || last.i2iSizeMode === 'adaptive') ? last.i2iSizeMode : state.i2iSizeMode,
         inpaintSizeMode: settings.persistInpaintParams ? repairedTools.inpaintSizeMode : state.inpaintSizeMode,
         inpaintCustomSize: settings.persistInpaintParams ? repairedTools.inpaintCustomSize : state.inpaintCustomSize,
         inpaintModel: settings.persistInpaintParams ? repairedTools.inpaintModel : state.inpaintModel,
@@ -1214,6 +1218,16 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({ params: normalizeGenerateParams({ ...state.params, ...patch }),
       ...(promptDraft?.charCaptions !== undefined ? {charCaptions:normalizeCharacterCaptions(promptDraft.charCaptions)} : {}),
       ...(promptDraft?.inpaintPositivePrompt !== undefined ? {inpaintPositivePrompt:promptDraft.inpaintPositivePrompt} : {}),
+    }));
+    persistGenerationState(get);
+  },
+
+  applyWorkbenchParameters(patch, workbench) {
+    set(state=>({params:{...state.params,...patch},
+      ...(workbench.batchCount!==undefined?{batchCount:workbench.batchCount}:{}),
+      ...(workbench.batchIntervalSeconds!==undefined?{batchIntervalSeconds:workbench.batchIntervalSeconds}:{}),
+      ...(workbench.i2iParams!==undefined?{i2iParams:workbench.i2iParams}:{}),
+      ...(workbench.i2iSizeMode!==undefined?{i2iSizeMode:workbench.i2iSizeMode}:{}),
     }));
     persistGenerationState(get);
   },
@@ -1494,6 +1508,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setI2ISizeMode(mode) {
     set({ i2iSizeMode: mode });
+    persistGenerationState(get);
   },
 
   setI2ISourceMode(mode) {

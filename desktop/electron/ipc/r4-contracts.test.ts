@@ -27,9 +27,13 @@ describe('R4 registry contracts', () => {
     const path = fileURLToPath(new URL('../../src/agent/r4-registry.json', import.meta.url));
     const hash = createHash('sha256').update(readFileSync(path)).digest('hex');
     expect(hash).toBe(R4_REGISTRY_SHA256);
-    expect(registry.tools).toHaveLength(37);
-    expect(new Set(registry.tools.map(tool => tool.canonical)).size).toBe(37);
+    expect(registry.tools).toHaveLength(38);
+    expect(new Set(registry.tools.map(tool => tool.canonical)).size).toBe(38);
     expect(registry.tools.map(tool => tool.canonical)).toEqual([...R4_TOOL_NAMES]);
+    expect(registry.toolCount).toBe(registry.tools.length);
+    expect(registry.toolNames).toEqual([...R4_TOOL_NAMES]);
+    expect(registry.groupCatalog.find(group => group.groupId === 'workbench')?.canonicalTools)
+      .toContain('write_workbench_parameters');
     expect(r4Tool('read_creation')?.effect).toBe('read');
     expect(r4Tool('patch_creation_inputs')?.effect).toBe('creation_input_write');
     expect(r4Tool('not_a_tool')).toBeUndefined();
@@ -39,6 +43,66 @@ describe('R4 registry contracts', () => {
     const invalid = validateR4Input('search_tags', { query: 'cat', unexpected: true });
     expect(invalid.valid).toBe(false);
     if (!invalid.valid) expect(invalid.resultKind).toBe('preflight_failure');
+  });
+
+  it('defines strict non-paid workbench parameter patches and safe readback controls', () => {
+    const validInput={expectedDraftRevision:3,patch:{model:'nai-diffusion-5-full',width:3072,height:1024,
+      sampler:'k_euler_ancestral',strength:0.7,i2iSizeMode:'custom'}};
+    expect(validateR4Input('write_workbench_parameters',validInput).valid).toBe(true);
+    expect(validateR4Input('write_workbench_parameters',{expectedDraftRevision:3,patch:{}}).valid).toBe(false);
+    expect(validateR4Input('write_workbench_parameters',{expectedDraftRevision:3,patch:{noise:0.2}}).valid).toBe(false);
+    expect(validateR4Input('write_workbench_parameters',{expectedDraftRevision:3,patch:{model:'nai-diffusion-5-full-inpainting'}}).valid).toBe(false);
+    expect(validateR4Input('write_workbench_parameters',{expectedDraftRevision:3,patch:{width:3073}}).valid).toBe(false);
+    const definition=r4Tool('write_workbench_parameters')!;
+    expect(definition.availability.group).toBe('workbench');
+    expect(definition.approval).toBe('none');expect(definition.cost.mayCharge).toBe(false);
+    const baseRead=structuredClone(fixtures.find(item=>item.tool==='read_generation_state'&&item.target==='result'&&item.valid)!.instance) as any;
+    baseRead.data.parameterControls={writeSupported:true,editableFields:['width','strength','i2iSizeMode'],
+      parameters:{width:3072,strength:0.7,i2iSizeMode:'custom'},
+      effectiveParameters:{model:'nai-diffusion-5-full-medium',steps:14},
+      metadataReplayOverrides:{straight_alpha:true,uncond_scale:0,cfg_sched_eligibility:'enable'},
+      limits:{dimensionStep:64,maxPixelArea:3145728,maxBatchCount:999,maxAssistantGenerationCount:8},
+      models:[{value:'nai-diffusion-5-full',label:'V5 Full'}]};
+    expect(validateR4Result('read_generation_state',baseRead).valid).toBe(true);
+    baseRead.data.parameterControls.metadataReplayOverrides.source='x'.repeat(201);
+    expect(validateR4Result('read_generation_state',baseRead).valid).toBe(false);
+    delete baseRead.data.parameterControls.metadataReplayOverrides.source;
+    baseRead.data.parameterControls.metadataReplayOverrides.invalid={value:true};
+    expect(validateR4Result('read_generation_state',baseRead).valid).toBe(false);
+    delete baseRead.data.parameterControls.metadataReplayOverrides.invalid;
+    baseRead.data.parameterControls.effectiveParameters.steps=15;
+    expect(validateR4Result('read_generation_state',baseRead).valid).toBe(false);
+    const result={resultKind:'business',status:'completed',conversationId:'chat',creationId:'creation',data:{
+      writeStatus:'unchanged',draftId:'draft-1',draftRevision:4,changedFields:[],parameters:{}}};
+    expect(validateR4Result('write_workbench_parameters',result).valid).toBe(true);
+    const derivedChanges={...result,data:{...result.data,changedFields:[
+      'model','effort','width','height','steps','cfgScale','cfgRescale','sampler','noiseSchedule','seed','seedMode',
+      'batchCount','batchIntervalSeconds','ucPreset','qualityPreset','transparentBackground','smea','smeaDyn','variety',
+      'strength','i2iSizeMode','qualityToggle','metadataReplay.parameters.cfg_rescale',
+      'metadataReplay.parameters.dynamic_thresholding','metadataReplay.parameters.quality_boost',
+      'metadataReplay.parameters.straight_alpha',
+    ]}};
+    expect(validateR4Result('write_workbench_parameters',derivedChanges).valid).toBe(true);
+    expect(validateR4Result('write_workbench_parameters',{
+      ...result,data:{...result.data,changedFields:['not-a-workbench-field']},
+    }).valid).toBe(false);
+  });
+
+  it('matches the live NovelAI dimension ceiling and 64-pixel schema step',()=>{
+    const baseRead=structuredClone(fixtures.find(item=>item.tool==='read_generation_state'&&item.target==='result'&&item.valid
+      &&(item.instance as any)?.data?.readStatus==='ok')!.instance) as any;
+    baseRead.data.params.width=49152;baseRead.data.params.height=64;
+    expect(validateR4Result('read_generation_state',baseRead).valid).toBe(true);
+    baseRead.data.params.width=3073;
+    expect(validateR4Result('read_generation_state',baseRead).valid).toBe(false);
+    const prepare={...r4SdkInputFallbacks.prepare_generation,width:49152,height:64};
+    expect(validateR4Input('prepare_generation',prepare).valid).toBe(true);
+    expect(validateR4Input('prepare_generation',{...prepare,width:49153}).valid).toBe(false);
+    const prepareReceipt=structuredClone(fixtures.find(item=>item.id==='prepare-effective-reference-purpose-valid')!.instance) as any;
+    prepareReceipt.data.preview.width=49152;prepareReceipt.data.preview.height=64;
+    expect(validateR4Result('prepare_generation',prepareReceipt).valid).toBe(true);
+    prepareReceipt.data.preview.width=49153;
+    expect(validateR4Result('prepare_generation',prepareReceipt).valid).toBe(false);
   });
 
   it('keeps all Pi transport fallbacks schema-valid without replacing raw host arguments', () => {

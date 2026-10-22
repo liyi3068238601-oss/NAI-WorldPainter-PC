@@ -280,6 +280,53 @@ describe('R4 Pi tool session', () => {
     expect(names).toEqual(['get_capabilities']);
   });
 
+  it('does not mount parameter writes when the workbench callback is absent',()=>{
+    const session=createR4PiToolSession(options({
+      initialMounted:['write_workbench_parameters'],
+      capabilitySnapshot:()=>snapshot(['get_capabilities','write_workbench_parameters']),
+    }));
+    expect(session.mountedTools()).toEqual(['get_capabilities']);
+  });
+
+  it('lists and mounts the parameter tool through the requested workbench capability group',async()=>{
+    const setup=options({
+      initialMounted:['get_capabilities'],
+      writeWorkbenchParameters:vi.fn(async()=>({})),
+    });
+    const session=createR4PiToolSession(setup);
+    const response=await getTool(session,'get_capabilities').execute({requestedGroups:['workbench']},new AbortController().signal);
+    const canonical=JSON.parse(response.output);
+    expect(validateR4Result('get_capabilities',canonical).valid).toBe(true);
+    expect(canonical.data.available.find((group:any)=>group.group==='workbench').toolNames)
+      .toContain('write_workbench_parameters');
+    expect(canonical.data.mounted).toContain('write_workbench_parameters');
+    expect(session.mountedTools()).toContain('write_workbench_parameters');
+  });
+
+  it('mounts and dispatches parameter writes only with their workbench callback, without approval', async () => {
+    const writeWorkbenchParameters = vi.fn(async (args:Record<string,unknown>,callScope:typeof scope) => ({
+      resultKind:'business',status:'completed',conversationId:callScope.conversationId,creationId:callScope.creationId,
+      data:{writeStatus:'written',draftId:'draft-2',draftRevision:5,changedFields:Object.keys(args.patch as object),
+        parameters:args.patch},
+    }));
+    const setup=options({
+      initialMounted:['write_workbench_parameters'],
+      capabilitySnapshot:()=>snapshot(['get_capabilities','write_workbench_parameters']),
+      writeWorkbenchParameters,
+    });
+    const args={expectedDraftRevision:4,patch:{strength:0.7,i2iSizeMode:'custom'}};
+    const result=await getTool(createR4PiToolSession(setup),'write_workbench_parameters').execute(args,new AbortController().signal);
+    const canonical=JSON.parse(result.output);
+    expect(validateR4Result('write_workbench_parameters',canonical).valid).toBe(true);
+    expect(canonical.data).toMatchObject({writeStatus:'written',draftId:'draft-2',draftRevision:5,
+      changedFields:['strength','i2iSizeMode'],parameters:args.patch});
+    expect(writeWorkbenchParameters).toHaveBeenCalledWith(args,expect.objectContaining({
+      conversationId:scope.conversationId,creationId:scope.creationId,
+      operationKey:expect.stringMatching(/^intent-1:write_workbench_parameters:/),
+    }));
+    expect(setup.authorize).not.toHaveBeenCalled();
+  });
+
   it('prepares direct image edits before authorization and submits only after consent', async () => {
     const order: string[] = [];
     const setup = options({

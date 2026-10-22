@@ -12,6 +12,16 @@ describe('R4 workbench assistant instructions',()=>{
   expect(R4_USER_DECISION_AMENDMENT).toBe('');
  });
 
+ it('routes prompt edits and parameter edits through their distinct canonical tools',()=>{
+  expect(R4_SYSTEM_PROMPT).toContain('改提示词只用 write_workbench_prompts，改参数只用 write_workbench_parameters');
+  expect(R4_SYSTEM_PROMPT).toContain('普通参数 patch 只写用户明确要求且当前 editableFields 允许的字段');
+  expect(R4_SYSTEM_PROMPT).toContain('若同一 patch 修改 model/effort');
+  expect(R4_SYSTEM_PROMPT).toContain('不增加工具能力、不清理未请求字段');
+  expect(R4_SYSTEM_PROMPT).toContain('第二次 expectedDraftRevision 使用第一次成功回执的 draftRevision');
+  expect(R4_SYSTEM_PROMPT).toContain('不重复读取');
+  expect(R4_SYSTEM_PROMPT).toContain('写入授权不等于生成授权');
+ });
+
  it('keeps native tool discovery, CAS, one-time preparation, and receipt boundaries',()=>{
   expect(R4_SYSTEM_PROMPT).toContain('get_capabilities 始终可用');
   expect(R4_SYSTEM_PROMPT).toContain('只请求它登记的工具组');

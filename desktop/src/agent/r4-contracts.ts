@@ -1,7 +1,7 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import rawRegistry from './r4-registry.json';
 
-export const R4_REGISTRY_SHA256 = 'ab1103eed1d674ef3f1c7a9cc72248cc4fb92ad028bd6e5d11c6b3655cad9d9e';
+export const R4_REGISTRY_SHA256 = '0142e7af90b47413c363c9e95e66950a7dc217fb545921545c1e20777309b72a';
 
 export const R4_TOOL_NAMES = [
   'get_capabilities', 'read_generation_state', 'list_history', 'search_tags',
@@ -9,7 +9,7 @@ export const R4_TOOL_NAMES = [
   'search_reference_presets', 'read_image_metadata', 'search_memories', 'read_skill',
   'read_prompting_reference', 'ask_user', 'get_execution', 'propose_prompt',
   'read_creation', 'read_proposal', 'set_current_proposal', 'apply_prompt',
-  'write_workbench_prompts',
+  'write_workbench_prompts', 'write_workbench_parameters',
   'save_prompt_preset', 'read_prompt_template', 'manage_prompt_templates',
   'convert_prompt', 'edit_prompt', 'reverse_prompt', 'prepare_generation',
   'generate_image', 'redraw_image', 'inpaint_image', 'upscale_image', 'process_image',
@@ -41,6 +41,9 @@ export interface R4Registry {
   designState: string;
   title: string;
   tools: R4ToolDefinition[];
+  toolCount: number;
+  toolNames: R4ToolName[];
+  groupCatalog: Array<{ groupId: string; canonicalTools: R4ToolName[]; alwaysOn: boolean }>;
   [key: string]: unknown;
 }
 
