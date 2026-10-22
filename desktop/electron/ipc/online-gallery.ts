@@ -1,4 +1,6 @@
 import {loadTagsGalleryPage, tagsGalleryCategory, tagsGalleryDetailUrl, parseTagsGalleryDetail} from "../../src/tags-gallery";
+import { loadCivitaiGalleryPage, loadCivitaiGalleryDetail } from "../../src/civitai-gallery";
+import { buildBooruQuery, normalizeGallerySort, gallerySupportsTimeRange, sortQuickGalleryItems } from "../../src/gallery-discovery";
 import { galleryImageHeaders, validateGalleryImage, MAX_GALLERY_IMAGE_BYTES } from "../../src/gallery-download";
 import { quickCatalogNavigation, quickResolveCollection, quickCollectionType, quickCategories, quickLink, quickMatch, quickSafe, quickSourceUrl } from "../../src/quicktag";
 import { type AxiosRequestConfig } from "axios";
@@ -109,7 +111,7 @@ function gelbooruCredentials(request: Pick<OnlineGallerySearchRequest, "gelbooru
 }
 
 function safeSource(value: unknown): ExternalSource {
-  if (value === "danbooru" || value === "safebooru" || value === "gelbooru" || value === "quicktag" || value === "tags-gallery") return value;
+  if (value === "danbooru" || value === "safebooru" || value === "gelbooru" || value === "quicktag" || value === "tags-gallery" || value === "civitai") return value;
   throw new Error("Unsupported online gallery source");
 }
 
@@ -256,11 +258,9 @@ async function fetchDonmai(request: OnlineGallerySearchRequest): Promise<OnlineG
   const base = source === "safebooru" ? "https://safebooru.donmai.us" : "https://danbooru.donmai.us";
   const targetPage = page(request.page);
   const targetPageSize = pageSize(request.pageSize);
-  const rawQuery = query(request.query);
-  const safeOnly = request.safeOnly !== false;
-  const tags = [rawQuery, safeOnly ? "rating:g" : ""].filter(Boolean).join(" ");
+  const tags = buildBooruQuery(request);
   const key = `${source}:search:${targetPage}:${targetPageSize}:${tags}`;
-  return cached(key, async () => {
+  const load = async (): Promise<OnlineGalleryPage> => {
     const countPromise = cached(`${source}:count:${tags}`, () => galleryGet(`${base}/counts/posts.json`, {
       params: { tags }, timeout: 3_000, headers: headers(base),
     })).catch(() => null);
@@ -283,18 +283,17 @@ async function fetchDonmai(request: OnlineGallerySearchRequest): Promise<OnlineG
         : raw.length >= targetPageSize,
       items,
     };
-  });
+  };
+  return /(?:order|sort):random\b/.test(tags) ? load() : cached(key, load);
 }
 
 async function fetchGelbooru(request: OnlineGallerySearchRequest): Promise<OnlineGalleryPage> {
   const targetPage = page(request.page);
   const targetPageSize = pageSize(request.pageSize);
-  const rawQuery = query(request.query);
-  const safeOnly = request.safeOnly !== false;
-  const tags = [rawQuery, safeOnly ? "rating:general" : ""].filter(Boolean).join(" ");
+  const tags = buildBooruQuery(request);
   const { apiKey, userId } = gelbooruCredentials(request);
   const key = `gelbooru:search:${targetPage}:${targetPageSize}:${tags}:${userId}:${createHash("sha256").update(apiKey).digest("hex")}`;
-  return cached(key, async () => {
+  const load = async (): Promise<OnlineGalleryPage> => {
     const response = await galleryGet("https://gelbooru.com/index.php", {
       params: {
         page: "dapi",
@@ -320,7 +319,8 @@ async function fetchGelbooru(request: OnlineGallerySearchRequest): Promise<Onlin
       hasMore: raw.length >= targetPageSize,
       items,
     };
-  });
+  };
+  return /(?:order|sort):random\b/.test(tags) ? load() : cached(key, load);
 }
 
 function normalizeQuickMeta(value: unknown): QuickTagCodexMeta {
@@ -546,6 +546,7 @@ async function fetchQuickTag(request: OnlineGallerySearchRequest): Promise<Onlin
   const navigation: NonNullable<OnlineGalleryPage["navigation"]> = { ...quickCatalogNavigation(catalog.codexes, safeOnly), collectionType, categories: [] as ReturnType<typeof quickCategories>, categoryPath, failedCollections: [] as string[], release: catalog.release };
   const targetPageSize = pageSize(request.pageSize);
   const slice = (filtered: OnlineGalleryItem[], title = ""): OnlineGalleryPage => {
+    filtered = sortQuickGalleryItems(filtered, request.sort ?? "default", request.shuffleSeed ?? 0);
     const targetPage = Math.min(page(request.page), Math.max(1, Math.ceil(filtered.length / targetPageSize)));
     const offset = (targetPage - 1) * targetPageSize;
     return { source: "quicktag", page: targetPage, pageSize: targetPageSize, total: filtered.length, hasMore: offset + targetPageSize < filtered.length, collectionId, collectionTitle: title, navigation, items: filtered.slice(offset, offset + targetPageSize) };
@@ -592,12 +593,22 @@ async function fetchQuickTag(request: OnlineGallerySearchRequest): Promise<Onlin
 
 export async function searchOnlineGallery(raw: unknown): Promise<OnlineGalleryPage> {
   const input = record(raw);
+  const source = safeSource(input.source);
+  const timeRange = input.timeRange ?? "all";
+  if (!["all", "day", "week", "month", "year"].includes(String(timeRange))) throw new Error("Invalid gallery time range");
+  if (timeRange !== "all" && !gallerySupportsTimeRange(source)) throw new Error("Unsupported gallery time range");
+  if (input.model != null && input.model !== "v4-5" && input.model !== "v5") throw new Error("Invalid TAGs model");
+  if (input.cursor != null && (typeof input.cursor !== "string" || input.cursor.length > 4096)) throw new Error("Invalid gallery cursor");
   const request: OnlineGallerySearchRequest = {
-    source: safeSource(input.source),
+    source,
     page: page(input.page),
     pageSize: pageSize(input.pageSize),
     query: query(input.query),
-    sort: input.sort === "count" || input.sort === "name" ? input.sort : "score",
+    sort: normalizeGallerySort(source, input.sort),
+    timeRange: timeRange as OnlineGallerySearchRequest["timeRange"],
+    model: input.model === "v5" ? "v5" : "v4-5",
+    cursor: typeof input.cursor === "string" ? input.cursor : undefined,
+    shuffleSeed: Number.isSafeInteger(input.shuffleSeed) ? Number(input.shuffleSeed) : 0,
     collectionId: safeCollectionId(input.collectionId),
     categoryPath: list(input.categoryPath).filter((s): s is string => typeof s === "string").slice(0, 16),
     searchAll: input.searchAll === true,
@@ -608,7 +619,8 @@ export async function searchOnlineGallery(raw: unknown): Promise<OnlineGalleryPa
   };
   if (request.source === "danbooru" || request.source === "safebooru") return fetchDonmai(request);
   if (request.source === "gelbooru") return fetchGelbooru(request);
-  if (request.source === "tags-gallery") return loadTagsGalleryPage(fetchTagsHtml,tagsGalleryCategory(request.categoryPath?.[0]),request.page,request.pageSize,request.query,request.sort);
+  if (request.source === "tags-gallery") return loadTagsGalleryPage(fetchTagsHtml,tagsGalleryCategory(request.categoryPath?.[0]),request.page,request.pageSize,request.query,request.sort,request.model);
+  if (request.source === "civitai") return loadCivitaiGalleryPage(fetchCivitaiJson, request);
   return fetchQuickTag(request);
 }
 
@@ -670,6 +682,7 @@ export async function getOnlineGalleryDetail(raw: unknown): Promise<OnlineGaller
   const input = record(raw);
   const request: OnlineGalleryDetailRequest = {
     source: safeSource(input.source),
+    safeOnly: input.safeOnly !== false,
     id: text(input.id).trim().slice(0, 256),
     collectionId: safeCollectionId(input.collectionId),
     gelbooruApiKey: query(input.gelbooruApiKey),
@@ -679,7 +692,18 @@ export async function getOnlineGalleryDetail(raw: unknown): Promise<OnlineGaller
   if (request.source === "danbooru" || request.source === "safebooru") return fetchDonmaiDetail(request);
   if (request.source === "gelbooru") return fetchGelbooruDetail(request);
   if (request.source === "tags-gallery") return parseTagsGalleryDetail(await fetchTagsHtml(tagsGalleryDetailUrl(request.id)),request.id);
+  if (request.source === "civitai") return loadCivitaiGalleryDetail(fetchCivitaiJson, request.id, request.safeOnly);
   return fetchQuickDetail(request);
+}
+
+async function fetchCivitaiJson(url: string): Promise<unknown> {
+  const parsed = new URL(url);
+  if (parsed.origin !== "https://civitai.com" || parsed.pathname !== "/api/v1/images") throw new Error("Invalid Civitai API URL");
+  const load = async () => (await galleryGet(url, {
+    timeout: REQUEST_TIMEOUT, maxContentLength: 10_000_000,
+    headers: headers("https://civitai.com/"),
+  })).data;
+  return parsed.searchParams.get("sort") === "Random" ? load() : cached(`civitai:${url}`, load);
 }
 
 export function clearOnlineGalleryDataCache() {
@@ -742,7 +766,7 @@ export async function selectOnlineGalleryDownloadDir(): Promise<string | null> {
 export async function downloadOnlineGalleryImages(raw: unknown): Promise<OnlineGalleryDownloadResult> {
   const input = record(raw) as unknown as OnlineGalleryDownloadRequest;
   const source = text(input.source).trim();
-  if (!["aitag", "artist-ranking", "safebooru", "danbooru", "gelbooru", "quicktag", "tags-gallery"].includes(source)) throw new Error("Invalid gallery source");
+  if (!["aitag", "artist-ranking", "safebooru", "danbooru", "gelbooru", "quicktag", "tags-gallery", "civitai"].includes(source)) throw new Error("Invalid gallery source");
   const images = list(input.images).map((entry, index) => {
     const item = record(entry);
     return { id: safeDownloadPart(item.id, String(index + 1)), url: safeDownloadUrl(item.url) };

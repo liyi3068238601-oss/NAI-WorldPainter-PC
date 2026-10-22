@@ -2,8 +2,9 @@ import {GallerySaveStyleButton} from "./StyleLibrary";
 import { useGalleryReturn } from "./use-gallery-return";
 import {GalleryFavoriteButton,GalleryFavoritesButton} from './components/GalleryFavorites';
 import {favoriteFromGallery,type GalleryFavorite} from './gallery-favorites';
-import {galleryLibraryText,localizedGalleryTag,galleryTagQuery} from './gallery-labels';
+import {localizedGalleryTag,galleryTagQuery} from './gallery-labels';
 import {tagsGalleryLabels,tagsGalleryUi} from "./tags-gallery";
+import { defaultGallerySort, gallerySortOptions, gallerySupportsTimeRange, galleryDiscoveryText } from "./gallery-discovery";
 import {PreviewImageViewer} from './components/PreviewImageViewer';
 import {Icon} from './components/icons';
 import { formatAitagFailure } from "./aitag-error";
@@ -39,6 +40,8 @@ import {
   type OnlineGalleryItem,
   type OnlineGalleryPage,
   type OnlineGallerySourceId,
+  type OnlineGallerySort,
+  type OnlineGalleryTimeRange,
 } from "./online-gallery";
 import { useAppStore } from "./store";
 import type { ArtistStylePreviewPage, ArtistStylePreviewResult, ImportedParams } from "./types";
@@ -917,11 +920,17 @@ function ExternalGallery({
   const pageRef = useRef<HTMLElement>(null);
   const applyParams = useAppStore((state) => state.applyParams);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
-  const [tagsSort,setTagsSort]=useState('score');
+  const [sort, setSort] = useState<OnlineGallerySort>(() => defaultGallerySort(source));
+  const [timeRange, setTimeRange] = useState<OnlineGalleryTimeRange>("all");
+  const [tagsModel, setTagsModel] = useState<"v4-5" | "v5">("v4-5");
+  const cursorHistory = useRef<{ key: string; pages: Map<number, string | undefined> }>({ key: "", pages: new Map([[1, undefined]]) });
+  const shuffleSeed = useRef(0);
+  const [failedPage, setFailedPage] = useState(1);
   const [queryValue, setQueryValue] = useState("");
   const [safeOnly, setSafeOnly] = useState(true);
   const [collectionId, setCollectionId] = useState("");
   const language = useAppStore((state) => state.settings?.language);
+  const discoveryText = galleryDiscoveryText(language);
   const [categoryPath, setCategoryPath] = useState<string[]>([]);
   const [collectionType, setCollectionType] = useState("");
   const [searchAll, setSearchAll] = useState(false);
@@ -954,22 +963,35 @@ function ExternalGallery({
     targetPath = targetCollection === collectionId ? categoryPath : [],
     targetAll = searchAll,
     targetType = collectionType,
-    targetSort = tagsSort,
+    targetSort = sort,
+    targetTimeRange = timeRange,
+    targetModel = tagsModel,
   ) => {
     discardReturnPosition();
     const sequence = ++requestSequence.current;
+    const searchKey = JSON.stringify([source, targetQuery, targetSafeOnly, targetPageSize, targetSort, targetTimeRange, targetModel]);
+    if (source === "civitai" && cursorHistory.current.key !== searchKey) targetPage = 1;
+    if (targetPage === 1) {
+      cursorHistory.current = { key: searchKey, pages: new Map([[1, undefined]]) };
+      shuffleSeed.current = Math.floor(Math.random() * 0x7fffffff);
+    }
     const keepCurrentPage = result.items.length > 0;
     const scrollAfterSwap = keepCurrentPage && targetPage !== result.page;
     setPendingPage(keepCurrentPage ? targetPage : null);
     setLoading(true);
     setError("");
     try {
+      if (source === "civitai" && !cursorHistory.current.pages.has(targetPage)) throw new Error("Unknown Civitai page cursor");
       const pageResult = await window.naiDesktop.onlineGallerySearch({
         source,
         page: targetPage,
         pageSize: targetPageSize,
         query: source === "tags-gallery" ? galleryTagQuery(targetQuery,language) : targetQuery,
-        sort: targetSort as "score"|"count"|"name",
+        sort: targetSort,
+        timeRange: targetTimeRange,
+        model: targetModel,
+        cursor: source === "civitai" ? cursorHistory.current.pages.get(targetPage) : undefined,
+        shuffleSeed: shuffleSeed.current,
         collectionId: targetCollection || undefined,
         categoryPath: targetPath, searchAll: targetAll, collectionType: targetType,
         safeOnly: targetSafeOnly,
@@ -977,6 +999,13 @@ function ExternalGallery({
         gelbooruUserId,
       });
       if (sequence !== requestSequence.current) return;
+      if (source === "civitai") {
+        const pages = cursorHistory.current.pages;
+        if (pages.get(targetPage + 1) !== pageResult.nextCursor) {
+          for (const page of pages.keys()) if (page > targetPage) pages.delete(page);
+        }
+        if (pageResult.nextCursor) pages.set(targetPage + 1, pageResult.nextCursor);
+      }
       // Commit metadata immediately; one stalled thumbnail must not block pagination.
       setResult(pageResult);
       setCollectionId(pageResult.collectionId ?? "");
@@ -987,6 +1016,7 @@ function ExternalGallery({
       if (scrollAfterSwap) window.requestAnimationFrame(() => scrollGalleryPageToTop(pageRef.current));
     } catch (reason) {
       if (sequence !== requestSequence.current) return;
+      setFailedPage(targetPage);
       const message = String(reason ?? "");
       setError(/hidden by.*all-ages/i.test(message) ? quickTagLabels[normalizeAppLanguage(language)].filterBlocked : source === "gelbooru" && /401|403|unauthorized|credentials|GELBOORU/i.test(message)
         ? text.invalidCredentials
@@ -997,7 +1027,7 @@ function ExternalGallery({
         setLoading(false);
       }
     }
-  }, [tagsSort, language, collectionType, categoryPath, searchAll, collectionId, gelbooruApiKey, gelbooruUserId, pageSize, queryValue, result.items.length, result.page, safeOnly, source, text.invalidCredentials, text.sourceFailed]);
+  }, [sort, timeRange, tagsModel, language, collectionType, categoryPath, searchAll, collectionId, gelbooruApiKey, gelbooruUserId, pageSize, queryValue, result.items.length, result.page, safeOnly, source, text.invalidCredentials, text.sourceFailed]);
 
   useEffect(() => { globalThis.localStorage?.setItem(GALLERY_PAGE_SIZE_KEY, String(pageSize)); }, [pageSize]);
 
@@ -1009,17 +1039,19 @@ function ExternalGallery({
     setCategoryPath([]); setSearchAll(false); setCollectionType("");
     setCollectionTitle("");
     setQueryValue("");
+    setSort(defaultGallerySort(source));
+    setTimeRange("all");
     setResult({ ...EMPTY_EXTERNAL_PAGE, source });
   }, [source]);
 
   useEffect(() => {
-    void search(1, "", "", safeOnly, pageSize, [], false, "");
+    void search(1, "", "", safeOnly, pageSize, [], false, "", defaultGallerySort(source), "all");
     return () => { requestSequence.current++; };
   }, [source]); // source switch only; searches after that are explicit
 
   const refresh = async () => {
     await window.naiDesktop.onlineGalleryClearDataCache();
-    await search(result.page);
+    await search(sort === "random" || source === "civitai" ? 1 : result.page);
   };
 
   const openItem = async (item: OnlineGalleryItem) => {
@@ -1038,6 +1070,7 @@ function ExternalGallery({
         source,
         id: item.id,
         collectionId: item.collectionId,
+        safeOnly,
         gelbooruApiKey,
         gelbooruUserId,
       });
@@ -1120,6 +1153,8 @@ function ExternalGallery({
             {downloadStatus ? <p className="online-gallery-download-status" aria-live="polite">{downloadStatus}</p> : null}
           </div>
           <div className="aitag-metadata-panel online-gallery-detail-info">
+            {source === "civitai" && <p>{discoveryText.modelNotice}{selected.metadata.baseModel ? ` · ${String(selected.metadata.baseModel)}` : ""}</p>}
+            {source === "civitai" && !selected.prompt && <p className="aitag-state">{discoveryText.missingPrompt}</p>}
             {selected.prompt ? (
               <article className="aitag-data-block">
                 <header>
@@ -1148,7 +1183,7 @@ function ExternalGallery({
             {tagGroups.map(([label, tags]) => tags.length ? (
               <section key={label} className="online-gallery-tag-section">
                 <h3>{label} ({tags.length})</h3>
-                <div>{tags.map((tag) => <button key={tag} type="button" onClick={() => { leaveForSearch(); setQueryValue(tag); void search(1, collectionId, tag); }}>{source==="tags-gallery"?localizedGalleryTag(tag,language):tag.replaceAll("_", " ")}</button>)}</div>
+                <div>{tags.map((tag) => <button key={tag} type="button" disabled={source === "civitai"} onClick={() => { leaveForSearch(); setQueryValue(tag); void search(1, collectionId, tag); }}>{source==="tags-gallery"?localizedGalleryTag(tag,language):tag.replaceAll("_", " ")}</button>)}</div>
               </section>
             ) : null)}
             {selected.note ? <article className="aitag-data-block"><header><h3>{text.note}</h3></header><p>{selected.note}</p></article> : null}
@@ -1194,8 +1229,13 @@ function ExternalGallery({
         </div>
       </header>
       <section className="aitag-search-panel">
-        {source === "tags-gallery" && <div className="online-gallery-type-filters">
-          <SelectMenu label={galleryLibraryText(language).sort} ariaLabel={galleryLibraryText(language).sort} value={tagsSort} options={galleryLibraryText(language).tagSorts.map((label,i)=>({label,value:['score','count','name'][i]}))} onChange={value=>{setTagsSort(value);void search(1,collectionId,queryValue,safeOnly,pageSize,categoryPath,searchAll,collectionType,value);}}/>
+        <div className="online-gallery-type-filters online-gallery-discovery-controls">
+          <SelectMenu label={discoveryText.sort} ariaLabel={discoveryText.sort} value={sort} options={gallerySortOptions(source).map(value => ({value, label: source === "civitai" && value === "score" ? discoveryText.reactions : discoveryText.sorts[value]}))} onChange={value => { const next = value as OnlineGallerySort; setSort(next); void search(1, collectionId, queryValue, safeOnly, pageSize, categoryPath, searchAll, collectionType, next); }} />
+          {gallerySupportsTimeRange(source) && <SelectMenu label={source === "civitai" ? discoveryText.metricRange : discoveryText.timeRange} ariaLabel={source === "civitai" ? discoveryText.metricRange : discoveryText.timeRange} value={timeRange} options={(Object.keys(discoveryText.periods) as OnlineGalleryTimeRange[]).map(value => ({value, label: discoveryText.periods[value]}))} onChange={value => { const next = value as OnlineGalleryTimeRange; setTimeRange(next); void search(1, collectionId, queryValue, safeOnly, pageSize, categoryPath, searchAll, collectionType, sort, next); }} />}
+          {sort === "random" && <button type="button" className="btn secondary" disabled={loading} onClick={() => void refresh()}>{discoveryText.shuffle}</button>}
+        </div>
+        {source === "tags-gallery" && <div className="online-gallery-type-filters online-gallery-discovery-controls">
+          <SelectMenu label={discoveryText.model} ariaLabel={discoveryText.model} value={tagsModel} options={[{value:"v4-5",label:"V4.5"},{value:"v5",label:"V5"}]} onChange={value => { const model = value as "v4-5" | "v5"; setTagsModel(model); void search(1, collectionId, queryValue, safeOnly, pageSize, categoryPath, searchAll, collectionType, sort, timeRange, model); }} />
           <SelectMenu className="tags-gallery-category" label={tagsGalleryUi(language).category} ariaLabel={tagsGalleryUi(language).category} value={categoryPath[0]||"artist"} options={tagsGalleryLabels(language)} onChange={value=>void search(1,"",queryValue,safeOnly,pageSize,[value],false,"")} />
         </div>}
         {source === "quicktag" && <QuickTagNavigation navigation={result.navigation} collectionId={collectionId} searchAll={searchAll} loading={loading} language={language}
@@ -1204,7 +1244,7 @@ function ExternalGallery({
           onScope={(all)=>{setSearchAll(all);void search(1,all ? "" : collectionId,queryValue,safeOnly,pageSize,all ? [] : categoryPath,all,all ? "" : collectionType);}} />}
 
         <div className="online-gallery-search-row">
-          <input value={queryValue} onChange={(event) => setQueryValue(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void search(1); }} placeholder={source === "quicktag" ? text.searchCollections : text.searchTags} />
+          <input value={queryValue} onChange={(event) => setQueryValue(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void search(1); }} placeholder={source === "civitai" ? discoveryText.username : source === "quicktag" ? text.searchCollections : text.searchTags} />
           <button type="button" className="btn primary" disabled={loading} onClick={() => void search(1)}>{text.search}</button>
         </div>
         <div className="aitag-sort-tabs online-gallery-filter-row">
@@ -1214,19 +1254,19 @@ function ExternalGallery({
         </div>
       </section>
       {loading && result.items.length === 0 ? <div className="aitag-state">{formatText(text.loadingSource, { source: info.label })}</div> : null}
-      {error ? <div className="aitag-state error"><span>{error}</span><button type="button" className="btn secondary" onClick={() => void search(result.page)}>{text.retry}</button></div> : null}
+      {error ? <div className="aitag-state error"><span>{error}</span><button type="button" className="btn secondary" disabled={loading} onClick={() => void search(failedPage)}>{text.retry}</button></div> : null}
       {!loading && !error && result.items.length === 0 ? <div className="aitag-state">{text.empty}</div> : null}
       {result.items.length > 0 ? (
         <section className="aitag-work-grid online-gallery-work-grid">
           {result.items.map((item) => <ExternalWorkCard key={`${item.source}:${item.collectionId ?? ""}:${item.id}`} item={item} text={text} onOpen={(value) => void openItem(value)} />)}
         </section>
       ) : null}
-      {result.items.length > 0 ? (
+      {(result.items.length > 0 || result.hasMore || result.page > 1) && (sort !== "random" || source === "civitai" || source === "quicktag") ? (
         <nav className="aitag-pagination" aria-label={text.page}>
-          <button type="button" className="btn secondary" disabled={result.page <= 1 || pendingPage !== null} onClick={() => void search(result.page - 1)}>{text.previous}</button>
-          <GalleryPageNumberInput page={pendingPage ?? result.page} pageCount={maxPage || undefined} disabled={pendingPage !== null} text={text} onChange={(next) => void search(next)} />
+          <button type="button" className="btn secondary" disabled={result.page <= 1 || loading} onClick={() => void search(result.page - 1)}>{text.previous}</button>
+          {source !== "civitai" && <GalleryPageNumberInput page={pendingPage ?? result.page} pageCount={maxPage || undefined} disabled={loading} text={text} onChange={(next) => void search(next)} />}
           <b aria-live="polite">{pendingPage ? formatText(text.loadingPage, { page: pendingPage }) : maxPage ? formatText(text.pagePosition, { page: result.page, pages: maxPage }) : interpolate(text.page, "page", result.page)}</b>
-          <button type="button" className="btn secondary" disabled={pendingPage !== null || (maxPage ? result.page >= maxPage : !result.hasMore)} onClick={() => void search(result.page + 1)}>{text.next}</button>
+          <button type="button" className="btn secondary" disabled={loading || (maxPage ? result.page >= maxPage : !result.hasMore)} onClick={() => void search(result.page + 1)}>{text.next}</button>
         </nav>
       ) : null}
     </main>

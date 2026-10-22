@@ -5,6 +5,7 @@ export type OnlineGallerySourceId =
   | "safebooru"
   | "gelbooru"
   | "quicktag"
+  | "civitai"
   | "tags-gallery";
 
 export type OnlineGalleryItemKind = "work" | "collection";
@@ -24,7 +25,8 @@ export interface OnlineGallerySourceInfo {
 }
 
 export const ONLINE_GALLERY_SOURCES: readonly OnlineGallerySourceInfo[] = [
-  {id:"tags-gallery", label:"TAGs · V4.5", siteUrl:"https://tags.gallery/v4-5", supportsPromptSearch:false, supportsCollections:false},
+  {id:"tags-gallery", label:"TAGs Gallery", siteUrl:"https://tags.gallery/", supportsPromptSearch:false, supportsCollections:false},
+  {id:"civitai", label:"Civitai", siteUrl:"https://civitai.com/images", supportsPromptSearch:false, supportsCollections:false},
   {
     id: "artist-ranking",
     label: "画师排行榜",
@@ -70,8 +72,15 @@ export const ONLINE_GALLERY_SOURCES: readonly OnlineGallerySourceInfo[] = [
   },
 ] as const;
 
+export type OnlineGallerySort = "default" | "newest" | "oldest" | "score" | "favorites" | "comments" | "random" | "name" | "name-desc" | "count";
+export type OnlineGalleryTimeRange = "all" | "day" | "week" | "month" | "year";
+
 export interface OnlineGallerySearchRequest {
-  sort?: "score" | "count" | "name";
+  sort?: OnlineGallerySort;
+  timeRange?: OnlineGalleryTimeRange;
+  model?: "v4-5" | "v5";
+  cursor?: string;
+  shuffleSeed?: number;
   source: Exclude<OnlineGallerySourceId, "aitag" | "artist-ranking">;
   page?: number;
   pageSize?: number;
@@ -125,6 +134,7 @@ export interface OnlineGalleryItem {
 }
 
 export interface OnlineGalleryPage {
+  nextCursor?: string;
   navigation?: import("./quicktag").QuickNavigation;
   source: Exclude<OnlineGallerySourceId, "aitag" | "artist-ranking">;
   page: number;
@@ -170,6 +180,7 @@ export interface OnlineGalleryDownloadResult {
 }
 
 export interface OnlineGalleryDetailRequest {
+  safeOnly?: boolean;
   source: Exclude<OnlineGallerySourceId, "aitag" | "artist-ranking">;
   id: string;
   collectionId?: string;

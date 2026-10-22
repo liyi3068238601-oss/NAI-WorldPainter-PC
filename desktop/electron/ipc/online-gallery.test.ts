@@ -19,6 +19,44 @@ beforeEach(() => {
 });
 
 describe("online gallery adapters", () => {
+  it("maps source sorting on the server and separates cached sort orders", async () => {
+    axiosGet.mockImplementation(async (url: string) => url.includes("/counts/") ? {data: {counts: {posts: 0}}} : {data: []});
+    await searchOnlineGallery({source: "danbooru", query: "sitting order:id", sort: "favorites"});
+    await searchOnlineGallery({source: "danbooru", query: "sitting order:id", sort: "oldest"});
+    const calls = axiosGet.mock.calls.filter(([url]) => new URL(String(url)).pathname === "/posts.json");
+    expect(calls).toHaveLength(2);
+    expect(calls[0][1].params.tags).toContain("order:favcount");
+    expect(calls[0][1].params.tags).not.toMatch(/order:id\b/);
+    expect(calls[1][1].params.tags).toMatch(/order:id(?:_asc)?\b/);
+    expect(calls.every(([, options]) => options.params.tags.includes("rating:g"))).toBe(true);
+    await expect(searchOnlineGallery({source: "gelbooru", sort: "favorites"})).rejects.toThrow();
+  });
+
+  it("does not cache random discoveries", async () => {
+    axiosGet.mockImplementation(async (url: string) => url.includes("/counts/") ? {data: {counts: {posts: 0}}} : {data: []});
+    await searchOnlineGallery({source: "danbooru", sort: "random"});
+    await searchOnlineGallery({source: "danbooru", sort: "random"});
+    expect(axiosGet.mock.calls.filter(([url]) => new URL(String(url)).pathname === "/posts.json")).toHaveLength(2);
+  });
+
+  it("wires Civitai cursors, safe details and public metadata through IPC", async () => {
+    const post = {id: 9, type: "image", browsingLevel: 1, nsfwLevel: "None", url: "https://image.civitai.com/test/example.jpeg", meta: {prompt: "synthetic prompt", negativePrompt: "synthetic negative"}};
+    axiosGet.mockImplementation(async (url: string) => ({data: {items: [post], metadata: {nextCursor: new URL(url).searchParams.has("cursor") ? "feed:two:9" : "feed:one:9"}}}));
+    const first = await searchOnlineGallery({source: "civitai", sort: "favorites", timeRange: "week"});
+    const second = await searchOnlineGallery({source: "civitai", page: 2, cursor: first.nextCursor, sort: "favorites", timeRange: "week"});
+    expect(second.page).toBe(2);
+    const urls = axiosGet.mock.calls.map(([url]) => new URL(String(url)));
+    expect(urls[1].searchParams.get("cursor")).toBe("feed:one:9");
+    expect(urls[1].searchParams.get("sort")).toBe("Most Collected");
+    expect(urls[1].searchParams.get("period")).toBe("Week");
+    expect(urls[1].searchParams.get("page")).toBeNull();
+    const detail = await getOnlineGalleryDetail({source: "civitai", id: "9", safeOnly: false});
+    expect(detail.prompt).toBe("synthetic prompt");
+    const detailUrl = new URL(String(axiosGet.mock.calls.at(-1)![0]));
+    expect(detailUrl.searchParams.get("imageId")).toBe("9");
+    expect(detailUrl.searchParams.get("browsingLevel")).toBeNull();
+    await expect(searchOnlineGallery({source: "civitai", page: 2})).rejects.toThrow("CURSOR");
+  });
   it("normalizes Safebooru search and detail into one source-neutral shape", async () => {
     const post = {
       id: 42,

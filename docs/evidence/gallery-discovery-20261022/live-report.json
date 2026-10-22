@@ -1,0 +1,317 @@
+{
+  "checkedAt": "2026-10-22T10:19:55.996Z",
+  "requestTimeoutMs": 20000,
+  "constraints": {
+    "publicGetOnly": true,
+    "userConfigurationRead": false,
+    "credentialsUsed": false,
+    "imagesDownloaded": false,
+    "rawPromptsPersisted": false
+  },
+  "tagsGallery": {
+    "v4-5": {
+      "model": "v4-5",
+      "requestSort": "score",
+      "pageSize": 48,
+      "firstPage": {
+        "page": 1,
+        "count": 48,
+        "total": 16283,
+        "ids": [
+          "artist/bartolomeobari",
+          "artist/whispering_for_nothing",
+          "artist/kyogoku_shin",
+          "artist/yd_(orange_maru)",
+          "artist/squeezable_(squeezabledraws)"
+        ],
+        "hasMore": true,
+        "requestSort": "score"
+      },
+      "crossBoundaryPage": {
+        "page": 2,
+        "pageSize": 48,
+        "offset": 48,
+        "upstreamPageSize": 60,
+        "crossesUpstreamBoundary": true,
+        "crossBoundaryObserved": true,
+        "upstreamPagesRequested": [
+          1,
+          2
+        ],
+        "count": 48,
+        "total": 16283,
+        "ids": [
+          "artist/takemura_sessyu",
+          "artist/rea_loixacra",
+          "artist/yosola_pl",
+          "artist/toiro_gawon",
+          "artist/dishwasher1910"
+        ],
+        "overlapWithPreviousPage": 0,
+        "requestSort": "score"
+      },
+      "detail": {
+        "id": "artist/bartolomeobari",
+        "hasPrompt": true,
+        "hasModel": true,
+        "modelMatchesRequested": true
+      },
+      "upstreamRequests": [
+        {
+          "upstreamPage": 1,
+          "requestSort": "score",
+          "model": "v4-5",
+          "httpStatus": 200
+        },
+        {
+          "upstreamPage": 1,
+          "requestSort": "score",
+          "model": "v4-5",
+          "httpStatus": 200
+        },
+        {
+          "upstreamPage": 2,
+          "requestSort": "score",
+          "model": "v4-5",
+          "httpStatus": 200
+        }
+      ]
+    },
+    "v5": {
+      "model": "v5",
+      "requestSort": "score",
+      "pageSize": 48,
+      "firstPage": {
+        "page": 1,
+        "count": 48,
+        "total": 1953,
+        "ids": [
+          "v5/artist/kyogoku_shin",
+          "v5/artist/yd_(orange_maru)",
+          "v5/artist/squeezable_(squeezabledraws)",
+          "v5/artist/misaka_12003-gou",
+          "v5/artist/monobe_yuri"
+        ],
+        "hasMore": true,
+        "requestSort": "score"
+      },
+      "crossBoundaryPage": {
+        "page": 2,
+        "pageSize": 48,
+        "offset": 48,
+        "upstreamPageSize": 60,
+        "crossesUpstreamBoundary": true,
+        "crossBoundaryObserved": true,
+        "upstreamPagesRequested": [
+          1,
+          2
+        ],
+        "count": 48,
+        "total": 1953,
+        "ids": [
+          "v5/artist/aelion_draws",
+          "v5/artist/kakure_eria",
+          "v5/artist/camonome",
+          "v5/artist/ricegnat",
+          "v5/artist/omaru_gyuunyuu"
+        ],
+        "overlapWithPreviousPage": 0,
+        "requestSort": "score"
+      },
+      "detail": {
+        "id": "v5/artist/kyogoku_shin",
+        "hasPrompt": true,
+        "hasModel": true,
+        "modelMatchesRequested": true
+      },
+      "upstreamRequests": [
+        {
+          "upstreamPage": 1,
+          "requestSort": "score",
+          "model": "v5",
+          "httpStatus": 200
+        },
+        {
+          "upstreamPage": 1,
+          "requestSort": "score",
+          "model": "v5",
+          "httpStatus": 200
+        },
+        {
+          "upstreamPage": 2,
+          "requestSort": "score",
+          "model": "v5",
+          "httpStatus": 200
+        }
+      ]
+    }
+  },
+  "civitai": {
+    "requestTimeoutMs": 20000,
+    "newestPage1": {
+      "page": 1,
+      "count": 6,
+      "ids": [
+        "146426187",
+        "146451890",
+        "146451663",
+        "146451621",
+        "146451618"
+      ],
+      "promptCount": 5,
+      "negativePromptCount": 0,
+      "hasNextCursor": true,
+      "requestSort": "Newest",
+      "period": "AllTime"
+    },
+    "cursorPage2": {
+      "page": 2,
+      "count": 6,
+      "ids": [
+        "146451600",
+        "146451566",
+        "146451563",
+        "146451561",
+        "146451558"
+      ],
+      "promptCount": 6,
+      "negativePromptCount": 0,
+      "promptSummary": {
+        "count": 6,
+        "promptCount": 6,
+        "negativePromptCount": 0
+      },
+      "hasNextCursor": true,
+      "cursorSent": true,
+      "requestSort": "Newest",
+      "period": "AllTime"
+    },
+    "promptCoverage": {
+      "status": "covered",
+      "pages": {
+        "newestPage1": {
+          "count": 6,
+          "promptCount": 5,
+          "negativePromptCount": 0
+        },
+        "cursorPage2": {
+          "count": 6,
+          "promptCount": 6,
+          "negativePromptCount": 0
+        },
+        "favoritesPage1": {
+          "count": 6,
+          "promptCount": 6,
+          "negativePromptCount": 1
+        }
+      },
+      "detailId": "146426187"
+    },
+    "promptDetail": {
+      "source": "newest-page-1",
+      "id": "146426187",
+      "listHasPrompt": true,
+      "hasNestedPromptMetadata": true,
+      "hasPrompt": true,
+      "promptLength": 163,
+      "hasNegativePrompt": false,
+      "negativePromptLength": 0,
+      "hasBaseModel": true,
+      "hasModelVersionIds": true,
+      "hasModelMetadata": true
+    },
+    "favoritesPage": {
+      "page": 1,
+      "count": 6,
+      "ids": [
+        "144384989",
+        "144063815",
+        "144049164",
+        "143665790",
+        "143518055"
+      ],
+      "promptCount": 6,
+      "negativePromptCount": 1,
+      "hasNextCursor": true,
+      "requestSort": "Most Collected",
+      "metricRange": "Month"
+    },
+    "scoreFallbackPage": null,
+    "requests": [
+      {
+        "isDetail": false,
+        "requestSort": "Newest",
+        "period": "AllTime",
+        "hasCursor": false,
+        "httpStatus": 200
+      },
+      {
+        "isDetail": false,
+        "requestSort": "Newest",
+        "period": "AllTime",
+        "hasCursor": true,
+        "httpStatus": 200
+      },
+      {
+        "isDetail": false,
+        "requestSort": "Most Collected",
+        "period": "Month",
+        "hasCursor": false,
+        "httpStatus": 200
+      },
+      {
+        "isDetail": true,
+        "requestSort": "",
+        "period": "",
+        "hasCursor": false,
+        "httpStatus": 200
+      }
+    ]
+  },
+  "booru": {
+    "danbooru": {
+      "requestSort": "score",
+      "requestTimeRange": "day",
+      "sortTermIncluded": true,
+      "ageTermIncluded": true,
+      "safeRatingIncluded": true,
+      "count": 5,
+      "ids": [
+        "12422257",
+        "12423735",
+        "12421807",
+        "12424190",
+        "12422586"
+      ],
+      "httpStatus": 200
+    },
+    "safebooru": {
+      "requestSort": "score",
+      "requestTimeRange": "day",
+      "sortTermIncluded": true,
+      "ageTermIncluded": true,
+      "safeRatingIncluded": true,
+      "count": 5,
+      "ids": [
+        "12422257",
+        "12423735",
+        "12421807",
+        "12424190",
+        "12422586"
+      ],
+      "httpStatus": 200
+    },
+    "danbooruNewestOrderIdDesc": {
+      "requestSort": "newest",
+      "limit": 1,
+      "sortTermIncluded": true,
+      "safeRatingIncluded": true,
+      "count": 1,
+      "ids": [
+        "12426784"
+      ],
+      "httpStatus": 200
+    }
+  },
+  "errors": []
+}

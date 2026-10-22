@@ -20174,6 +20174,7 @@ html.motion-reduced .char-sort-list.is-dragging > .char-row { transition: none; 
 .gallery-favorite-lightbox p { max-width: 80vw; overflow-wrap: anywhere; }
 .online-gallery-type-filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 12px; min-width: 0; }
 .online-gallery-type-filters > * { min-width: 0; }
+.online-gallery-discovery-controls { grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 280px)); }
 
 /* A settled compound menu can overflow for nested controls. Keyframes provide
    a numeric closing clip even when its resting clip-path is none. */

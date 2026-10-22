@@ -7,7 +7,7 @@ export function validGalleryUrl(value:string){try {return ['https:','http:'].inc
 export function parseFavorites(raw:string|null):GalleryFavorite[]{
  if(!raw)return [];const data=JSON.parse(raw);if(data.version!==1||!Array.isArray(data.items))throw new Error('Invalid favorites library');
  const seen=new Set<string>();return data.items.filter((x:GalleryFavorite)=>{
-  if(!x||!['aitag','artist-ranking','danbooru','safebooru','gelbooru','quicktag','tags-gallery'].includes(x.source)||typeof x.id!=='string'||!x.id||typeof x.title!=='string'||!Array.isArray(x.images)||!Number.isFinite(x.savedAt))throw new Error('Invalid favorite');
+  if(!x||!['aitag','artist-ranking','danbooru','safebooru','gelbooru','quicktag','tags-gallery','civitai'].includes(x.source)||typeof x.id!=='string'||!x.id||typeof x.title!=='string'||!Array.isArray(x.images)||!Number.isFinite(x.savedAt))throw new Error('Invalid favorite');
   const key=favoriteKey(x);if(seen.has(key))return false;seen.add(key);return true;
  }).map((x:GalleryFavorite)=>({...x,author:String(x.author??''),prompt:String(x.prompt??''),negativePrompt:String(x.negativePrompt??''),createdAt:String(x.createdAt??''),score:Number(x.score)||0,sourceUrl:validGalleryUrl(x.sourceUrl),images:x.images.map(i=>({url:validGalleryUrl(i.url),thumb:validGalleryUrl(i.thumb)})).filter(i=>i.url)}));
 }
