@@ -39,7 +39,7 @@ function assert(value,message){if(!value)throw Error(message);}
   const rows=[{id:1,title:'General',source:'fixture',keywords:['red'],content:'Generic clothing'},
     {id:200,title:'red dress',source:'fixture',keywords:['red dress'],content:'Specific clothing'}];
   assert(knowledge.matchKnowledge(rows,'red dress')[0]?.id===200,'Knowledge retrieval still prioritizes old IDs');
-  const aiMeta=load('@earendil-works/pi-ai/package.json');
+  const aiMeta=JSON.parse(fs.readFileSync(path.join(root,'node_modules/@earendil-works/pi-ai/package.json'),'utf8'));
   const ai=await import(pathToFileURL(path.join(root,'node_modules/@earendil-works/pi-ai',aiMeta.main)).href);
   const model={id:'offline-fixture',name:'Offline fixture',provider:'fixture',api:'openai-completions',baseUrl:'https://fixture.invalid',reasoning:false,input:['text'],cost:{input:0,output:0,cacheRead:0,cacheWrite:0},contextWindow:4096,maxTokens:1024};
   const usage={input:0,output:0,cacheRead:0,cacheWrite:0,totalTokens:0,cost:{input:0,output:0,cacheRead:0,cacheWrite:0,total:0}};
