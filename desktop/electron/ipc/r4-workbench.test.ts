@@ -21,7 +21,8 @@ function fixture() {
     inpaintPositivePrompt:'keep inpaint',brushSize:32,brushOpacity:.8,brushColor:'#fff',brushShape:'round',upscaleScale:2,directorTool:'colorize',augmentOptions:{...DEFAULT_AUGMENT_OPTIONS},
     vibeImages:[{id:'vibe-1',base64:'synthetic-only',strength:.7,infoExtracted:.8}],preciseReferences:[{id:'reference-1',base64:'synthetic-only',type:'style',strength:.6,fidelity:.7}],
     i2iSourceMode:'image',i2iOriginalImage:{filePath:'fixture.png',width:512,height:512},workbenchImage:{filePath:'fixture.png',width:512,height:512},maskRevision:3,inpaintMask:'synthetic-mask',
-    applyParams(patch:Record<string,unknown>){state={...state,params:{...state.params,...patch}};writes++;}};
+    applyParams(patch:Record<string,unknown>,draft?:{charCaptions?:Array<Record<string,unknown>>}){state={...state,params:{...state.params,...patch},
+      ...(draft?.charCaptions?{charCaptions:draft.charCaptions.map((item,index)=>({...item,id:String(index)}))}:{})};writes++;}};
   const renderer=createStudioAgentService({getState:()=>state,setState:patch=>{state={...state,...patch};},api:{} as never,uuid:()=>`renderer-workbench`});
   const rendererRequest=async(action:'r4-workbench-read'|'r4-workbench-apply',args:Record<string,unknown>)=>renderer.handle({id:'synthetic',action,args});
   const host={store:{readR4State:()=>structuredClone(durableState)},invoke:vi.fn(async(name:string,args:Record<string,unknown>,target:R4HostScope)=>{
@@ -39,6 +40,27 @@ function fixture() {
 async function read(f:ReturnType<typeof fixture>) {return f.workbench.readR4WorkbenchSnapshot();}
 
 describe('R4 live workbench prompt CAS',()=>{
+  it('requires explicit free intent for new all-false roles, checks CAS before row validation, and writes complete planned arrays atomically',async()=>{
+    const f=fixture(),snapshot=await read(f);
+    const freeRows=[{name:'A',prompt:'alice',useCoords:false,x:.3,y:.5},{name:'B',prompt:'bob',useCoords:false,x:.7,y:.5}];
+    await expect(f.workbench.writeR4WorkbenchPrompts({characterPrompts:freeRows,expectedDraftRevision:snapshot.draftRevision},scope))
+      .rejects.toThrow(/characterLayoutIntent='free'/);
+    expect(f.writes).toBe(0);
+
+    f.setState({charCaptions:[{id:'caption-a',name:'A',prompt:'alice',enabled:true,useCoords:true,x:.2,y:.5}]});
+    const stale=await f.workbench.writeR4WorkbenchPrompts({characterPrompts:[{prompt:'',useCoords:false,x:2,y:.5}],
+      characterLayoutIntent:'free',expectedDraftRevision:snapshot.draftRevision},scope);
+    expect(stale).toMatchObject({data:{writeStatus:'conflict'}});
+    expect(f.writes).toBe(0);
+
+    const fresh=await read(f);
+    const planned=[{name:'A',prompt:'alice',useCoords:true,x:.2,y:.5},{name:'B',prompt:'bob',useCoords:true,x:.8,y:.5}];
+    const written=await f.workbench.writeR4WorkbenchPrompts({characterPrompts:planned,expectedDraftRevision:fresh.draftRevision},scope);
+    expect(written).toMatchObject({data:{writeStatus:'written',changedFields:{characterPromptsChanged:true}}});
+    expect(f.state.charCaptions.map(item=>item.prompt)).toEqual(['alice','bob']);
+    expect(f.writes).toBe(1);
+  });
+
   it('typing after preview invalidates its renderer revision and causes zero writes',async()=>{
     const f=fixture(),snapshot=await read(f);
     const preview=await f.workbench.previewR4PromptApply({proposalId:'proposal-a',proposalRevision:7,targetDraftId:snapshot.draftId,expectedDraftRevision:snapshot.draftRevision},scope) as {previewId:string;draftId:string;draftRevision:number};

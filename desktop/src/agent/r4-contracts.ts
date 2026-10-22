@@ -1,7 +1,7 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import rawRegistry from './r4-registry.json';
 
-export const R4_REGISTRY_SHA256 = '284d8bc63a59b4205c493f9e22bd5b3c4ffc50d91cf9db2c624d3133de5a1a3c';
+export const R4_REGISTRY_SHA256 = 'ab1103eed1d674ef3f1c7a9cc72248cc4fb92ad028bd6e5d11c6b3655cad9d9e';
 
 export const R4_TOOL_NAMES = [
   'get_capabilities', 'read_generation_state', 'list_history', 'search_tags',

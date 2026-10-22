@@ -290,6 +290,69 @@ describe("Agent workspace one-time SQLite migration", () => {
     expect(reopened.compatibility.presetRevisionHistory).toBeUndefined();
   });
 
+  it("upgrades only the pristine NovelAI default body and keeps its prior revision", () => {
+    const store = getAgentSqlStore();
+    const priorBody = fs.readFileSync(
+      path.resolve(process.cwd(), "electron/ipc/__fixtures__/legacy-novelai-default-v1.txt"),
+      "utf8",
+    ).replace(/\r?\n$/, "");
+    const priorHash = "2d17b53e0340789623652b9ee45a9580a288339988be9fb000375655f8e4f85d";
+    expect(createHash("sha256").update(priorBody).digest("hex")).toBe(priorHash);
+    const defaultPreset = STUDIO_BUILTIN_PRESETS.find((preset) => preset.id === STUDIO_DEFAULT_PRESET_ID)!;
+    const defaultHash = createHash("sha256").update(defaultPreset.body).digest("hex");
+    store.transaction((tx) => {
+      const state = tx.getR4State();
+      const preset = state.assistantPresets[STUDIO_DEFAULT_PRESET_ID]!;
+      state.assistantPresets[STUDIO_DEFAULT_PRESET_ID] = {
+        ...preset,
+        body: priorBody,
+        hash: priorHash,
+        revision: 1,
+        source: "builtin",
+      };
+      state.assistantPresetDefaultBinding = { presetId: "studio-complete", enabled: false };
+      delete state.compatibility.studioDefaultPresetBodyMigrationVersion;
+      tx.setR4State(state);
+    });
+
+    resetAgentStoreCacheForTests();
+    const migrated = readAgentR4State();
+    expect(migrated.assistantPresets[STUDIO_DEFAULT_PRESET_ID]).toMatchObject({
+      body: defaultPreset.body,
+      hash: defaultHash,
+      revision: 2,
+      source: "builtin",
+    });
+    expect(migrated.compatibility.presetRevisionHistory).toMatchObject({
+      [`${STUDIO_DEFAULT_PRESET_ID}@1`]: {
+        body: priorBody,
+        hash: priorHash,
+        revision: 1,
+      },
+    });
+    expect(migrated.compatibility.studioDefaultPresetBodyMigrationVersion).toBe(1);
+    expect(migrated.assistantPresetDefaultBinding).toEqual({ presetId: "studio-complete", enabled: false });
+
+    const editedBody = "user-owned default prompt";
+    const editedHash = createHash("sha256").update(editedBody).digest("hex");
+    const reopenedStore = getAgentSqlStore();
+    reopenedStore.transaction((tx) => {
+      const state = tx.getR4State();
+      const preset = state.assistantPresets[STUDIO_DEFAULT_PRESET_ID]!;
+      state.assistantPresets[STUDIO_DEFAULT_PRESET_ID] = { ...preset, body: editedBody, hash: editedHash, revision: 3 };
+      delete state.compatibility.studioDefaultPresetBodyMigrationVersion;
+      tx.setR4State(state);
+    });
+    resetAgentStoreCacheForTests();
+    const edited = readAgentR4State();
+    expect(edited.assistantPresets[STUDIO_DEFAULT_PRESET_ID]).toMatchObject({
+      body: editedBody,
+      hash: editedHash,
+      revision: 3,
+    });
+    expect(edited.assistantPresetDefaultBinding).toEqual({ presetId: "studio-complete", enabled: false });
+  });
+
   it("snapshots the current assistant preset default when each conversation is created", () => {
     const store = getAgentSqlStore();
     const originalDefault = readAgentR4State().assistantPresetDefaultBinding!;

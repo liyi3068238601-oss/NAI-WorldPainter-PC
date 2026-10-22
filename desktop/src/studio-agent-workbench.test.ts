@@ -50,6 +50,18 @@ describe('Actual Generate workbench bridge',()=>{
     expect(await f.call('r4-workbench-apply',{draftId:v3.draftId,draftRevision:v3.draftRevision,patch,characterPrompts})).toMatchObject({ok:false});
     expect(f.state.charCaptions).toHaveLength(0);
   });
+  it('validates layout after renderer CAS and leaves invalid layout writes unapplied',async()=>{
+    const f=fixture(),read=(await f.call('r4-workbench-read')).data as any;
+    const patch={positivePrompt:'two people',negativePrompt:'avoid',stylePrompt:'ink'};
+    const invalid=[{prompt:'first',useCoords:false,x:.5,y:.5}];
+    expect(await f.call('r4-workbench-apply',{draftId:read.draftId,draftRevision:read.draftRevision,patch,characterPrompts:invalid})).toMatchObject({ok:false});
+    expect(f.state.params.positivePrompt).toBe('live');expect(f.state.charCaptions).toEqual([]);
+
+    f.change({params:{...f.state.params,positivePrompt:'manual edit'}});
+    expect(await f.call('r4-workbench-apply',{draftId:read.draftId,draftRevision:read.draftRevision,patch,
+      characterPrompts:[{prompt:'malformed',useCoords:false,x:2,y:.5}]})).toMatchObject({ok:true,data:{applyStatus:'conflict'}});
+    expect(f.state.params.positivePrompt).toBe('manual edit');expect(f.state.charCaptions).toEqual([]);
+  });
   it('reads and writes the independent legacy inpaint prompt without replacing the Generate prompt',async()=>{
     const f=fixture();
     f.change({activeCanvasSurface:'inpaint',inpaintPositivePrompt:'old inpaint',setInpaintPositivePrompt:value=>f.change({inpaintPositivePrompt:value})});

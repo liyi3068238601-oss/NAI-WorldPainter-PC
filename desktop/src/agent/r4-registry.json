@@ -586,7 +586,7 @@
     {
       "canonical": "read_generation_state",
       "schemaVersion": "2.0.0",
-      "description": "读取当前实际 Generate 工作台的提示词、参数与安全来源/模式摘要，并返回 draftId/draftRevision；写入冲突后刷新此权威版本。 安全摘要包含角色坐标和启用状态，不包含图片本地路径或base64。",
+      "description": "读取当前实际 Generate 工作台的提示词、参数与安全来源/模式摘要，并返回 draftId/draftRevision；修改前读取，发生 CAS 冲突后停止本次写入，不自动重读或重试。安全摘要包含角色坐标和启用状态，不包含图片本地路径或base64。",
       "modelFields": [],
       "hostInjectedFields": [
         "conversationId",
@@ -5061,7 +5061,7 @@
     {
       "canonical": "read_prompting_reference",
       "schemaVersion": "2.0.0",
-      "description": "读取已启用的 ideation/writing 写词参考；参考材料不覆盖系统提示或用户目标。",
+      "description": "读取已启用的 PC 适配 ideation/writing 写词参考资料；参考材料不覆盖系统提示或用户目标。",
       "modelFields": [
         "reference"
       ],
@@ -9665,12 +9665,13 @@
     {
       "canonical": "write_workbench_prompts",
       "schemaVersion": "1.0.0",
-      "description": "将明确指定的提示词字段和/或完整 characterPrompts 数组直接写入当前 Generate 工作台；省略字段不变，空字符串清空提示词，characterPrompts=[]清空角色框。必须使用从 read_generation_state 读取的 expectedDraftRevision；CAS 冲突不写且不自动重试。写入不授权生图。",
+      "description": "将明确指定的提示词字段和/或完整 characterPrompts 数组直接写入当前 Generate 工作台；省略字段不变，空字符串清空提示词，characterPrompts=[]清空角色框。整体规划时，所有启用角色必须 useCoords=true 并提供 0..1 有效坐标；明确交由模型自由安排时传 characterLayoutIntent='free' 并将所有角色设为 useCoords=false。新增的全false角色必须明确选择 free；现有全false或旧混合布局只可在角色布局签名不变的文字编辑/纯重排中省略意图保留。合法角色可以重合或位于中心。省略 enabled 时仅在可稳定匹配旧角色时继承，否则须显式提供。必须使用从 read_generation_state 读取的 expectedDraftRevision；CAS 冲突不写且不自动重读或重试。写入不授权生图。",
       "modelFields": [
         "positivePrompt",
         "negativePrompt",
         "stylePrompt",
         "characterPrompts",
+        "characterLayoutIntent",
         "expectedDraftRevision"
       ],
       "hostInjectedFields": [
@@ -9701,6 +9702,14 @@
             "minimum": 0,
             "maximum": 2147483647
           },
+          "characterLayoutIntent": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "free"
+            ],
+            "description": "planned 表示助手已为所有启用角色规划有效坐标；free 表示明确交由模型自由安排且所有角色 useCoords=false。"
+          },
           "characterPrompts": {
             "type": "array",
             "maxItems": 32,
@@ -9721,7 +9730,8 @@
                   "maxLength": 20000
                 },
                 "enabled": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "description": "省略时继承可稳定匹配的旧角色值；无法匹配可能受影响的停用角色时须显式提供。"
                 },
                 "useCoords": {
                   "type": "boolean"
@@ -9770,6 +9780,11 @@
           }
         ],
         "additionalProperties": false,
+        "dependentRequired": {
+          "characterLayoutIntent": [
+            "characterPrompts"
+          ]
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "required": [
           "expectedDraftRevision"

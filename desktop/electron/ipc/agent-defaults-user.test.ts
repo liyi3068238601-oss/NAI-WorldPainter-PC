@@ -5,7 +5,7 @@ const fixture=vi.hoisted(()=>({root:''}));
 vi.mock('./store',()=>({getSettings:()=>({agentContextWindow:8192,agentAutoCompactThreshold:.8,outputDir:''}),getHistoryReferenceItems:()=>[],fileExistsWithDirectoryCache:()=>false,readWithBackupRecoverySync:()=>null,atomicWriteFileSync:vi.fn(),rotateBackupsSync:vi.fn()}));
 vi.mock('./agent-workspace-location',()=>({agentWorkspaceDirectory:()=>fixture.root,rebaseAgentWorkspaceFile:(value:string)=>value}));
 import {createEmptyAgentWorkspace,createAgentConversation,normalizeAgentWorkspace,resetAgentStoreCacheForTests,setStudioConversationOptions} from './agent-store';
-import {studioSessionOptions,studioCreativeReferenceData,studioSelectedSystemPrompt,STUDIO_DEFAULT_PRESET_ID} from '../../src/agent/workspace-controls';
+import {studioSessionOptions,studioCreativeReferenceData,studioSelectedSystemPrompt,STUDIO_DEFAULT_PRESET_ID,STUDIO_NOVELAI_ASSISTANT_PRESET_BODY} from '../../src/agent/workspace-controls';
 
 let fixtureRoot='';
 beforeEach(()=>{const temp=path.resolve(process.cwd(),'.tmp');fs.mkdirSync(temp,{recursive:true});fixtureRoot=fs.mkdtempSync(path.join(temp,'agent-defaults-user-'));fixture.root=fixtureRoot;resetAgentStoreCacheForTests();});
@@ -56,7 +56,7 @@ describe('fresh Studio defaults without private profiles',()=>{
   const enabled=JSON.parse(studioCreativeReferenceData(workspace,chat,[]));
   expect(enabled.preset?.id).toBe(STUDIO_DEFAULT_PRESET_ID);
   expect(enabled.preset?.body).toBeUndefined();
-  expect(studioSelectedSystemPrompt(workspace,chat)).toContain('image');
+  expect(studioSelectedSystemPrompt(workspace,chat)).toBe(STUDIO_NOVELAI_ASSISTANT_PRESET_BODY);
   expect(enabled.preset?.name).toBe('presetNovelAiAssistant');
   expect(enabled).not.toHaveProperty('characters');
   expect(JSON.stringify(enabled)).not.toContain('PRIVATE_');

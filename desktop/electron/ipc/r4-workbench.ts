@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {ipcMain,type BrowserWindow,type IpcMainInvokeEvent,type WebContents} from 'electron';
 import {validateR4Result} from '../../src/agent/r4-contracts';
+import {prepareCharacterLayoutPrompts,type CharacterLayoutPrompt} from '../../src/agent/character-layout';
 import type {R4ApplyPromptResult,R4WorkbenchPromptApplyRequest,R4WorkbenchPromptDiff,R4WorkbenchPromptFields,R4WorkbenchPromptPreview,R4WorkbenchPromptPreviewRequest,R4WorkbenchPromptWriteResult,R4WorkbenchSnapshot,R4WorkbenchRendererAction} from '../../src/agent/r4-workbench-contract';
 import type {StudioAgentReply} from '../../src/studio-agent-contract';
 import type {R4AgentState} from '../../src/agent/r4-types';
@@ -135,46 +136,47 @@ export function createR4WorkbenchService(options:{window:WindowGetter;host:()=>R
       const value=args[key];if(typeof value!=='string'||value.length>100_000)throw new Error(`工作台字段 ${key} 无效或超过100000字符。`);
       patch[key]=value;provided++;
     }
-    let characterPrompts:Record<string,unknown>[]|undefined;
-    if(args.characterPrompts!==undefined){
-      if(!Array.isArray(args.characterPrompts)||args.characterPrompts.length>32)throw new Error('characterPrompts 必须是最多32个角色项的完整数组。');
-      characterPrompts=args.characterPrompts.map((value,index)=>{
-        if(!value||typeof value!=='object'||Array.isArray(value))throw new Error(`characterPrompts[${index}] 格式无效。`);
-        const item=value as Record<string,unknown>;
-        if(typeof item.prompt!=='string'||!item.prompt.trim()||item.prompt.length>20_000)throw new Error(`characterPrompts[${index}].prompt 不能为空且最多20000字符。`);
-        if(item.negativePrompt!==undefined&&(typeof item.negativePrompt!=='string'||item.negativePrompt.length>20_000))throw new Error(`characterPrompts[${index}].negativePrompt 格式无效。`);
-        if(item.name!==undefined&&(typeof item.name!=='string'||item.name.length>64))throw new Error(`characterPrompts[${index}].name 格式无效。`);
-        if(item.enabled!==undefined&&typeof item.enabled!=='boolean')throw new Error(`characterPrompts[${index}].enabled 格式无效。`);
-        if(typeof item.useCoords!=='boolean'||typeof item.x!=='number'||!Number.isFinite(item.x)||item.x<0||item.x>1
-          ||typeof item.y!=='number'||!Number.isFinite(item.y)||item.y<0||item.y>1)throw new Error(`characterPrompts[${index}] 必须包含有效的 useCoords/x/y 坐标。`);
-        return { ...(typeof item.name==='string'?{name:item.name}:{}),prompt:item.prompt,
-          ...(typeof item.negativePrompt==='string'?{negativePrompt:item.negativePrompt}:{}),enabled:item.enabled!==false,
-          useCoords:item.useCoords,x:item.x,y:item.y };
-      });
-      provided++;
-    }
+    const hasCharacterPrompts=args.characterPrompts!==undefined;
+    const rawCharacterPrompts=args.characterPrompts;
+    if(hasCharacterPrompts)provided++;
     if(!provided)throw new Error('至少指定一个提示词字段或 characterPrompts。');
     if(!Number.isSafeInteger(args.expectedDraftRevision)||Number(args.expectedDraftRevision)<0)throw new Error('expectedDraftRevision 必须是从 read_generation_state 读取的非负整数。');
     const snapshot=await readR4WorkbenchSnapshot(),before=promptPatch(snapshot.params);
-    const currentCharacters=Array.isArray(snapshot.workbench?.charCaptions)?snapshot.workbench!.charCaptions!.map(value=>{
-      if(!value||typeof value!=='object'||Array.isArray(value))return {};
+    let currentCharactersValid=true;
+    const currentCharacters:CharacterLayoutPrompt[]=Array.isArray(snapshot.workbench?.charCaptions)?snapshot.workbench!.charCaptions!.map(value=>{
+      if(!value||typeof value!=='object'||Array.isArray(value)){
+        currentCharactersValid=false;
+        return {prompt:'',enabled:true,useCoords:false,x:0.5,y:0.5};
+      }
       const item=value as Record<string,unknown>;
+      const x=typeof item.x==='number'&&Number.isFinite(item.x)&&item.x>=0&&item.x<=1?item.x:0.5;
+      const y=typeof item.y==='number'&&Number.isFinite(item.y)&&item.y>=0&&item.y<=1?item.y:0.5;
+      if(typeof item.prompt!=='string'||(item.x!==undefined&&x!==item.x)||(item.y!==undefined&&y!==item.y)
+        ||(item.useCoords!==undefined&&typeof item.useCoords!=='boolean')||(item.enabled!==undefined&&typeof item.enabled!=='boolean'))currentCharactersValid=false;
       return { ...(typeof item.name==='string'?{name:item.name}:{}),prompt:typeof item.prompt==='string'?item.prompt:'',
         ...(typeof item.negativePrompt==='string'?{negativePrompt:item.negativePrompt}:{}),enabled:item.enabled!==false,
-        useCoords:item.useCoords===true,x:Number(item.x??0.5),y:Number(item.y??0.5) };
+        useCoords:item.useCoords===true,x,y };
     }):[];
-    const changedFields={...diff(before,{...before,...patch}),...(characterPrompts?{characterPromptsChanged:JSON.stringify(currentCharacters)!==JSON.stringify(characterPrompts)}:{})};
+    const changedFields={...diff(before,{...before,...patch}),...(hasCharacterPrompts?{characterPromptsChanged:JSON.stringify(currentCharacters)!==JSON.stringify(rawCharacterPrompts)}:{})};
     if(args.expectedDraftRevision!==undefined&&args.expectedDraftRevision!==snapshot.draftRevision){
       return promptWriteResult(scope,{writeStatus:'conflict',draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,changedFields});
     }
-    if(!Object.values(changedFields).some(Boolean))return promptWriteResult(scope,{writeStatus:'unchanged',draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,changedFields});
+    if(args.characterLayoutIntent!==undefined&&!hasCharacterPrompts)throw new Error('characterLayoutIntent 必须与 characterPrompts 一起提供。');
+    if(hasCharacterPrompts&&!currentCharactersValid)throw new Error('当前工作台角色项格式无效；请重新读取后再进行完整列表写入。');
+    const characterPrompts=hasCharacterPrompts
+      ?prepareCharacterLayoutPrompts(currentCharacters,rawCharacterPrompts,args.characterLayoutIntent)
+      :undefined;
+    const effectiveChangedFields={...diff(before,{...before,...patch}),...(characterPrompts!==undefined
+      ?{characterPromptsChanged:JSON.stringify(currentCharacters)!==JSON.stringify(characterPrompts)}:{})};
+    if(!Object.values(effectiveChangedFields).some(Boolean))return promptWriteResult(scope,{writeStatus:'unchanged',draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,changedFields:effectiveChangedFields});
     const merged={...before,...patch};
-    const reply=await requestRenderer('r4-workbench-apply',{draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,patch:merged,...(characterPrompts?{characterPrompts}:{} )});
+    const reply=await requestRenderer('r4-workbench-apply',{draftId:snapshot.draftId,draftRevision:snapshot.draftRevision,patch:merged,
+      ...(characterPrompts!==undefined?{characterPrompts,...(args.characterLayoutIntent!==undefined?{characterLayoutIntent:args.characterLayoutIntent}:{})}:{})});
     if(!reply?.ok||!reply.data||typeof reply.data!=='object'||Array.isArray(reply.data))throw new Error(reply?.error||'工作台提示词写入结果待核实；请重新读取，未自动重试。');
     const outcome=reply.data as {applyStatus?:unknown;draftId?:unknown;draftRevision?:unknown};
     if(!['applied','conflict'].includes(String(outcome.applyStatus))||typeof outcome.draftId!=='string'||!Number.isSafeInteger(outcome.draftRevision))throw new Error('工作台 CAS 返回无效结果；请回读确认，不要自动重试。');
-    return promptWriteResult(scope,{writeStatus:outcome.applyStatus==='conflict'?'conflict':Object.values(changedFields).some(Boolean)?'written':'unchanged',
-      draftId:outcome.draftId,draftRevision:Number(outcome.draftRevision),changedFields});
+    return promptWriteResult(scope,{writeStatus:outcome.applyStatus==='conflict'?'conflict':Object.values(effectiveChangedFields).some(Boolean)?'written':'unchanged',
+      draftId:outcome.draftId,draftRevision:Number(outcome.draftRevision),changedFields:effectiveChangedFields});
   }
 
   async function publishCompletedResultsOnce(conversationId:string):Promise<void> {

@@ -74,6 +74,7 @@ vi.mock('./pi-agent-provider',()=>({studioPiModel:()=>model,studioPiStream:()=>(
 import {R4AgentRuntime} from './r4-agent-runtime';
 import {getR4CreativeHost,getR4ExecutionCoordinator,prepareR4ImageOperation} from './r4-agent-service';
 import {StudioPiApprovals} from './pi-agent-approval';
+import {createBuiltinAgentSkills} from '../../src/agent/workspace-controls';
 const runtime=new R4AgentRuntime({emit:()=>{},activeRequests:new Map(),approvals:new StudioPiApprovals(),images:messages=>messages,smoothEmitter:()=>({push:()=>{},flush:()=>{}})});
 const root=path.resolve('.tmp/r4-runtime-e2e');
 beforeEach(()=>{
@@ -96,6 +97,24 @@ afterEach(async()=>{
 });
 
 describe('actual R4 Pi / SQL / host / worker integration with local fake providers',()=>{
+  it.each([true,false])('routes plural follow-ups only from the same creation (same=%s) with matching read access',async sameCreation=>{
+    const initial=getR4CreativeHost().read('chat');
+    fixture.store!.transaction(tx=>{
+      const workspace=tx.getWorkspace();workspace.skills=createBuiltinAgentSkills();
+      workspace.conversations[0].messages.push({id:'prior-cast',role:'user',content:'两个女孩在窗边交谈',creationId:sameCreation?initial.currentCreationId:'unrelated-creation',
+        attachments:[],tools:[],status:'complete',createdAt:new Date().toISOString()});tx.setWorkspace(workspace);
+    });
+    const received:Record<string,any>[]=[];
+    const isolatedRuntime=new R4AgentRuntime({emit:()=>{},activeRequests:new Map(),approvals:new StudioPiApprovals(),images:messages=>messages,
+      smoothEmitter:()=>({push:()=>{},flush:()=>{}}),completeTurn:(async(options:unknown)=>{received.push(options as Record<string,any>);return {content:'已讨论配色'};}) as never});
+    const admitted=isolatedRuntime.send({conversationId:'chat',creationId:initial.currentCreationId,text:'沿用刚才的设定，只讨论配色'});
+    expect(admitted.ok).toBe(true);await isolatedRuntime.queue().kick('chat');
+    expect(received).toHaveLength(1);
+    const turn=received[0];expect(turn.skillDirectory.some((row:any)=>row.id==='builtin-multi-character-composition')).toBe(sameCreation);
+    expect(Boolean(turn.readSkill('builtin-multi-character-composition')?.instructions)).toBe(sameCreation);
+    expect(fixture.requests).toHaveLength(0);expect(fixture.workbench.draftRevision).toBe(1);
+  });
+
   it('uses the queued preset snapshot for runtime metadata and body after the current selection changes',async()=>{
     const host=getR4CreativeHost(),initial=host.read('chat');
     const oldPresetId='queued-preset',newPresetId='current-preset',oldBody='frozen queued preset body';

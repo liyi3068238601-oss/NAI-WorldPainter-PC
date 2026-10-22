@@ -10,6 +10,7 @@ import {validateTaskRequest} from './agent/task-contract';
 import {useAppStore} from './store';
 import {useMobileInpaintStore} from './mobile-inpaint-store';
 import {createRendererCollections} from './agent/renderer-collections';
+import {prepareCharacterLayoutPrompts,type CharacterLayoutPrompt} from './agent/character-layout';
 import {maxNAICharacterPrompts, normalizeGenerateParams, type CharCaptionItem, type AppSettings, type LastGenerationState, type SettingKey, type StylePromptPreset} from './types';
 import {projectStudioData,STUDIO_WRITABLE,validateStudioPatch,validateStyleInput,type StudioAgentRequest,type StudioAgentReply} from './studio-agent-contract';
 
@@ -23,20 +24,9 @@ type PromptField=typeof PROMPT_FIELDS[number];
 function promptFields(params:Record<string,unknown>) {
   return Object.fromEntries(PROMPT_FIELDS.map(key=>[key,typeof params[key]==='string'?params[key]:''])) as Record<PromptField,string>;
 }
-function characterFields(raw:unknown,model:string):CharCaptionItem[] {
+function characterFields(raw:unknown,model:string,previous:readonly CharacterLayoutPrompt[],intent:unknown):CharCaptionItem[] {
   if(!Array.isArray(raw)||raw.length>maxNAICharacterPrompts(model))throw Error('多角色提示词数量超过当前模型上限。');
-  return raw.map(item=>{
-    if(!item||typeof item!=='object'||Array.isArray(item))throw Error('多角色提示词格式无效。');
-    const row=item as Record<string,unknown>;
-    if(Object.keys(row).some(key=>!['prompt','negativePrompt','name','enabled','useCoords','x','y'].includes(key))
-      ||typeof row.prompt!=='string'||row.prompt.length>20_000
-      ||['negativePrompt','name'].some(key=>row[key]!==undefined&&(typeof row[key]!=='string'||String(row[key]).length>(key==='name'?64:20_000)))
-      ||['enabled','useCoords'].some(key=>row[key]!==undefined&&typeof row[key]!=='boolean')
-      ||['x','y'].some(key=>row[key]!==undefined&&(typeof row[key]!=='number'||!Number.isFinite(row[key])||Number(row[key])<0||Number(row[key])>1)))throw Error('多角色提示词或坐标无效。');
-    return {prompt:row.prompt,negativePrompt:typeof row.negativePrompt==='string'?row.negativePrompt:'',
-      ...(typeof row.name==='string'&&row.name.trim()?{name:row.name.trim()}:{}),enabled:row.enabled!==false,
-      useCoords:row.useCoords===true,x:typeof row.x==='number'?row.x:.5,y:typeof row.y==='number'?row.y:.5};
-  });
+  return prepareCharacterLayoutPrompts(previous,raw,intent);
 }
 export interface StudioAgentDependencies {
   getState:()=>State;
@@ -149,13 +139,19 @@ export function createStudioAgentService(deps:StudioAgentDependencies) {
         const values=patch as Record<string,unknown>;
         if(Object.keys(values).length!==PROMPT_FIELDS.length||PROMPT_FIELDS.some(key=>typeof values[key]!=='string'||String(values[key]).length>100_000))throw new Error('工作台只能应用完整、有效的提示词字段。');
         const state=deps.getState();
-        if(state.activeCanvasSurface==='inpaint'&&useMobileInpaintStore.getState().mode==='mobile')throw Error('新版重绘正在使用独立画布，请回到生成页后使用助手写词。');
         const current=liveWorkbench(state),before=promptFields(current.params),after=promptFields(values);
-        const captions=args.characterPrompts===undefined?undefined:characterFields(args.characterPrompts,state.activeCanvasSurface==='inpaint'?state.inpaintModel:state.params.model);
-        const diff={positivePromptChanged:before.positivePrompt!==after.positivePrompt,
+        let diff={positivePromptChanged:before.positivePrompt!==after.positivePrompt,
           negativePromptChanged:before.negativePrompt!==after.negativePrompt,stylePromptChanged:before.stylePrompt!==after.stylePrompt,
-          ...(captions!==undefined?{characterPromptsChanged:JSON.stringify(state.charCaptions.map(item=>({prompt:item.prompt,negativePrompt:item.negativePrompt??'',...(item.name?.trim()?{name:item.name.trim()}:{}),enabled:item.enabled!==false,useCoords:item.useCoords===true,x:item.x,y:item.y})))!==JSON.stringify(captions)}:{})};
+          ...(args.characterPrompts!==undefined?{characterPromptsChanged:true}:{})};
         if(current.draftId!==draftId||current.draftRevision!==draftRevision)return {ok:true,data:{applyStatus:'conflict',draftId:current.draftId,draftRevision:current.draftRevision,diff}};
+        if(args.characterLayoutIntent!==undefined&&args.characterPrompts===undefined)throw Error('characterLayoutIntent 必须与 characterPrompts 一起提供。');
+        if(state.activeCanvasSurface==='inpaint'&&useMobileInpaintStore.getState().mode==='mobile')throw Error('新版重绘正在使用独立画布，请回到生成页后使用助手写词。');
+        const previousCharacters:CharacterLayoutPrompt[]=state.charCaptions.map(item=>({
+          ...(item.name!==undefined?{name:item.name}:{}),prompt:item.prompt,negativePrompt:item.negativePrompt??'',enabled:item.enabled!==false,
+          useCoords:item.useCoords===true,x:item.x,y:item.y,
+        }));
+        const captions=args.characterPrompts===undefined?undefined:characterFields(args.characterPrompts,state.activeCanvasSurface==='inpaint'?state.inpaintModel:state.params.model,previousCharacters,args.characterLayoutIntent);
+        diff={...diff,...(captions!==undefined?{characterPromptsChanged:JSON.stringify(previousCharacters)!==JSON.stringify(captions)}:{})};
         if(Object.values(diff).some(Boolean)) {
           // Commit every prompt box atomically after checking the same live CAS token.
           const {positivePrompt,...other}=after;

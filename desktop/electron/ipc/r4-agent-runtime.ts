@@ -192,7 +192,12 @@ export class R4AgentRuntime{
       const workspace=readAgentWorkspace(),chat=workspace.conversations.find(row=>row.id===item.conversationId)!;
       const causal=r4CausalHistory(chat.messages,getAgentSqlStore().readR4State(),item);
       const causalChat={...chat,messages:causal},sessionOptions={...studioSessionOptions(chat),presetId:item.conversationConfig.presetId??'',templateEnabled:item.conversationConfig.enabled};
-      const skillDirectory=studioSkillDirectory(workspace,causalChat,item.text);
+      // Route follow-up requests such as “把他们的衣服改红” using only this
+      // creation's recent human messages. This does not read the workbench or
+      // turn historical text into new authorization.
+      const skillMatchContext={recentUserText:causal.filter(message=>message.role==='user'&&message.id!==item.messageId&&message.creationId===item.creationId)
+        .slice(-4).map(message=>message.content.slice(-1000)).join('\n')};
+      const skillDirectory=studioSkillDirectory(workspace,causalChat,item.text,skillMatchContext);
       const knowledge=await worldpainterKnowledgeContext(item.providerText??item.text);controller.signal.throwIfAborted();
       let workbench:ReturnType<typeof getR4WorkbenchService>|undefined;
       try{workbench=getR4WorkbenchService();}catch{/* Before renderer startup, the capability is explicitly unavailable. */}
@@ -208,7 +213,7 @@ export class R4AgentRuntime{
         reasoningEffort:(item.conversationConfig.publicParameters.reasoningEffort??'auto') as AgentReasoningEffort,
         sessionOptions,configuredSystemPrompt:item.conversationConfig.enabled?item.conversationConfig.body??'':'',
         resourceContext:studioCreativeReferenceData(workspace,causalChat,[],item.conversationConfig),worldpainterKnowledge:knowledge,skillDirectory,
-        readSkill:id=>studioReadSkill(readAgentWorkspace(),causalChat,id,item.text),
+        readSkill:id=>studioReadSkill(readAgentWorkspace(),causalChat,id,item.text,skillMatchContext),
         prompt:this.dependencies.images(transcript,item.conversationId,settings),
         toolHistory:Object.fromEntries(causal.filter(message=>message.tools.length).map(message=>[message.id,message.tools])),
         signal:controller.signal,emit:this.dependencies.emit,onText:delta=>{streamed+=delta;deltas.push(delta);},

@@ -638,11 +638,13 @@ function seedR4FromLegacyWorkspace(raw: Record<string, unknown>, sourceFile: str
   return state;
 }
 
-// The preset bodies are immutable defaults. Upgrades add new entries, never
-// rewrite built-ins already stored in a user's catalog.
+// Preset upgrades add missing entries. The current NovelAI default has one
+// content migration that replaces only the exact, pristine factory revision.
 const LEGACY_STUDIO_DEFAULT_PRESET_ID = "dsh-infinite-gen-5";
 const LEGACY_STUDIO_DEFAULT_PRESET_HASH = "969c9d5893f696cd92a5cd9c18b89213d3fb169a27499310bba8d4c636deb9b6";
 const STUDIO_DEFAULT_PRESET_MIGRATION_VERSION = 1;
+const STUDIO_DEFAULT_PRESET_BODY_MIGRATION_VERSION = 1;
+const LEGACY_NOVELAI_DEFAULT_PRESET_HASH = "2d17b53e0340789623652b9ee45a9580a288339988be9fb000375655f8e4f85d";
 function migrateStudioDefaultPreset(state: R4AgentState) {
   let changed = false;
   for (const preset of STUDIO_BUILTIN_PRESETS) {
@@ -682,6 +684,29 @@ function migrateStudioDefaultPreset(state: R4AgentState) {
   }
   if (changed) state.updatedAt = now();
   return changed;
+}
+
+function migrateStudioDefaultPresetBody(state: R4AgentState) {
+  if (state.compatibility.studioDefaultPresetBodyMigrationVersion === STUDIO_DEFAULT_PRESET_BODY_MIGRATION_VERSION) return false;
+  const preset = state.assistantPresets[STUDIO_DEFAULT_PRESET_ID];
+  const latestBody = STUDIO_BUILTIN_PRESETS.find((item) => item.id === STUDIO_DEFAULT_PRESET_ID)?.body;
+  if (!preset || !latestBody) return false;
+  const isPristinePreviousDefault = preset.source === "builtin"
+    && preset.revision === 1
+    && preset.hash === LEGACY_NOVELAI_DEFAULT_PRESET_HASH
+    && sha256(preset.body) === LEGACY_NOVELAI_DEFAULT_PRESET_HASH;
+  if (isPristinePreviousDefault) {
+    const history = asRecord(state.compatibility.presetRevisionHistory)
+      ?? (state.compatibility.presetRevisionHistory = {}) as Record<string, unknown>;
+    history[`${preset.id}@${preset.revision}`] ??= structuredClone(preset);
+    preset.body = latestBody;
+    preset.hash = sha256(latestBody);
+    preset.revision++;
+    preset.updatedAt = now();
+  }
+  state.compatibility.studioDefaultPresetBodyMigrationVersion = STUDIO_DEFAULT_PRESET_BODY_MIGRATION_VERSION;
+  state.updatedAt = now();
+  return true;
 }
 
 /** Mirror deliberate legacy resource-preset edits into versioned R4 history. */
@@ -781,7 +806,9 @@ export function getAgentSqlStore() {
     });
     sqlStore.transaction((tx) => {
       const state = tx.getR4State();
-      if (migrateStudioDefaultPreset(state)) tx.setR4State(state);
+      const defaultChoiceChanged = migrateStudioDefaultPreset(state);
+      const defaultBodyChanged = migrateStudioDefaultPresetBody(state);
+      if (defaultChoiceChanged || defaultBodyChanged) tx.setR4State(state);
     });
   }
   return sqlStore;

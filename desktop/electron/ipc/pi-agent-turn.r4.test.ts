@@ -10,6 +10,7 @@ vi.mock('./pi-studio-tools', () => ({ createStudioPiTools: mocks.legacyTools }))
 vi.mock('./worldpainter-knowledge', () => ({ readWorldpainterPromptingReference: vi.fn(async () => 'reference') }));
 
 import { completeStudioPiTurn } from './pi-agent-turn';
+import { R4_SYSTEM_PROMPT } from '../../src/agent/r4-system-prompt';
 
 const emptyUsage = {
   input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0,
@@ -139,9 +140,9 @@ describe('completeStudioPiTurn protocol split', () => {
     expect(call.tools.every((tool: { flatArguments?: boolean; handlesAuthorization?: boolean }) => tool.flatArguments && tool.handlesAuthorization)).toBe(true);
     expect(call.getTools).toBeTypeOf('function');
     expect(call.beforeModelCall).toBeTypeOf('function');
-    expect(call.systemPrompt).toContain('你是绘世图像工作台助手');
-    expect(call.systemPrompt).toContain('write_workbench_prompts');
-    expect(call.systemPrompt).toContain('使用已挂载的 ask_user');
+    expect(call.systemPrompt).toContain(R4_SYSTEM_PROMPT);
+    expect(call.systemPrompt).toContain('read_skill');
+    expect(call.systemPrompt).toContain('ask_user');
     expect(call.systemPrompt).not.toContain('langbai_software_capabilities');
     expect(call.onReady).toBe(turn.onReady);
     expect(call.onSteeringConsumed).toBe(turn.onSteeringConsumed);
@@ -164,5 +165,23 @@ describe('completeStudioPiTurn protocol split', () => {
     expect(call.getTools).toBeUndefined();
     expect(call.beforeModelCall).toBeUndefined();
     expect(mocks.legacyTools).toHaveBeenCalledTimes(1);
+  });
+
+  it('assembles fixed rules, the selected preset and bounded references once without eagerly injecting Skill bodies', async () => {
+    const preset='SELECTED_CREATIVE_PRESET',knowledge='MATCHED_REFERENCE_FACTS',hostContext='HOST_INPUT_SNAPSHOT';
+    const readSkill=vi.fn(()=>({id:'layout',name:'Layout',description:'Composition',instructions:'SKILL_BODY_ONLY_ON_READ'}));
+    await completeStudioPiTurn(baseOptions({
+      r4Context:r4Context(),configuredSystemPrompt:preset,worldpainterKnowledge:{version:'v5',prompt:knowledge},
+      skillDirectory:[{id:'layout',name:'Layout',description:'Composition'}],readSkill,
+      prompt:[{role:'system',content:'Studio Pi conversation'},{role:'system',content:R4_SYSTEM_PROMPT},
+        {role:'system',content:preset},{role:'system',content:knowledge},{role:'system',content:hostContext},
+        {role:'system',content:hostContext},{role:'user',content:'仅讨论画面'}],
+    }));
+    const call=mocks.run.mock.calls[0][0];
+    expect(call.systemPrompt.startsWith(R4_SYSTEM_PROMPT)).toBe(true);
+    for(const section of [R4_SYSTEM_PROMPT,preset,knowledge,hostContext])expect(call.systemPrompt.split(section)).toHaveLength(2);
+    expect(call.systemPrompt).toContain('Applicable Skill directory');
+    expect(call.systemPrompt).not.toContain('SKILL_BODY_ONLY_ON_READ');
+    expect(readSkill).not.toHaveBeenCalled();
   });
 });

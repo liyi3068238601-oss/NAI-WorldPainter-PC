@@ -27,10 +27,32 @@ afterEach(()=>{
 });
 
 describe('Agent skill persistence',()=>{
- it('seeds stable built-in image generation, editing and term lookup skills',()=>{
+ it('seeds the seven stable built-in creative skills',()=>{
   const workspace=createEmptyAgentWorkspace();
-  expect(workspace.skills.map(skill=>skill.id)).toEqual(['builtin-image-generation','builtin-multi-character-composition','builtin-image-editing','builtin-prompt-term-lookup','builtin-creative-memory']);
+  expect(workspace.skills.map(skill=>skill.id)).toEqual([
+   'builtin-scene-ideation-storyboarding','builtin-novelai-prompt-versions','builtin-multi-character-composition',
+   'builtin-image-generation','builtin-image-editing','builtin-prompt-term-lookup','builtin-creative-memory',
+  ]);
   expect(workspace.skills.every(skill=>skill.enabled&&skill.builtIn&&skill.autoSelect)).toBe(true);
+ });
+
+ it('upgrades old built-in skill bodies while preserving custom skills and disabled choices',()=>{
+  const workspace=createEmptyAgentWorkspace();
+  const custom={id:'user-skill',name:'My notes',description:'private description',instructions:'private instructions',enabled:true,autoSelect:false,triggerKeywords:['keep me'],createdAt:'older',updatedAt:'older'};
+  const legacySkills=workspace.skills
+   .filter(skill=>!['builtin-scene-ideation-storyboarding','builtin-novelai-prompt-versions'].includes(skill.id))
+   .map((skill,index)=>index===0?{...skill,name:'old product name',instructions:'old built-in body',triggerKeywords:['old trigger'],enabled:false}:skill);
+  const migrated=normalizeAgentWorkspace({...workspace,skills:[...legacySkills,custom]});
+  expect(migrated.skills).toHaveLength(7+1);
+  expect(migrated.skills.find(skill=>skill.id==='builtin-scene-ideation-storyboarding')?.instructions).toContain('画面');
+  expect(migrated.skills.find(skill=>skill.id==='builtin-novelai-prompt-versions')?.instructions).toContain('V4.5');
+  expect(migrated.skills.find(skill=>skill.id==='builtin-multi-character-composition')).toMatchObject({
+   builtIn:true,enabled:false,name:workspace.skills.find(skill=>skill.id==='builtin-multi-character-composition')?.name,
+  });
+  expect(migrated.skills.find(skill=>skill.id==='builtin-image-generation')?.instructions).not.toBe('old built-in body');
+  expect(migrated.skills.find(skill=>skill.id==='user-skill')).toMatchObject({
+   name:'My notes',description:'private description',instructions:'private instructions',enabled:true,autoSelect:false,triggerKeywords:['keep me'],createdAt:'older',
+  });
  });
 
  it('persists custom skill metadata and the conversation selection through workspace normalization',()=>{

@@ -119,18 +119,20 @@ describe('R4 registry contracts', () => {
     });
   });
 
-  it('keeps the active system prompt aligned with direct workbench writing and guarded generation', () => {
-    expect(R4_SYSTEM_PROMPT).toContain('write_workbench_prompts');
+  it('keeps the active base prompt concise while preserving core execution boundaries', () => {
+    expect(R4_SYSTEM_PROMPT).toContain('先分清讨论/构思、写入工作台和执行图像操作');
+    expect(R4_SYSTEM_PROMPT).toContain('get_capabilities 始终可用');
     expect(R4_SYSTEM_PROMPT).toContain('expectedDraftRevision');
-    expect(R4_SYSTEM_PROMPT).toContain('revision 冲突、blocked 或状态不可用表示未应用，停止且不自动重读或重试');
-    expect(R4_SYSTEM_PROMPT).toContain('收到 write_workbench_prompts 成功回执后，fresh-read 工作台');
-    expect(R4_SYSTEM_PROMPT).toContain('prepare_generation({})，不另带提示词或模型参数');
-    expect(R4_SYSTEM_PROMPT).toContain('生成使用工作台当前实际提示词、模型、尺寸、采样器、步数、种子策略、强度、批量和输入图片');
-    expect(R4_SYSTEM_PROMPT).toContain('只把用户明确授权参与生成的确切图片作为参考');
+    expect(R4_SYSTEM_PROMPT).toContain('characterPrompts 是完整数组替换');
+    expect(R4_SYSTEM_PROMPT).toContain('revision 冲突、blocked、mode 不支持或读取失败时停止，不自动重读、不重试');
+    expect(R4_SYSTEM_PROMPT).toContain('prepare_generation({})');
+    expect(R4_SYSTEM_PROMPT).toContain('本回合的一次性 preparationId');
+    expect(R4_SYSTEM_PROMPT).toContain('只把用户明确授权参与当前操作的确切图片作为来源或参考');
     expect(R4_SYSTEM_PROMPT).toContain('read_skill');
     expect(R4_SYSTEM_PROMPT).toContain('任何收费操作失败或结果未知后');
-    expect(R4_USER_DECISION_AMENDMENT).not.toContain('read_generation_state 只读工作台');
-    expect(R4_SYSTEM_PROMPT).not.toContain('助手每次生图的正向词、负向词和风格词');
+    expect(R4_USER_DECISION_AMENDMENT).toBe('');
+    expect(R4_SYSTEM_PROMPT).not.toContain('legacy inpaint mode');
+    expect(R4_SYSTEM_PROMPT).not.toContain('prepare_generation({})，不另带提示词或模型参数');
   });
 
   it('rejects all three R3 terminal aggregates that conceal pending work', () => {
